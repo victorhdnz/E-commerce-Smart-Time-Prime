@@ -1,0 +1,68 @@
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+import { Database } from '@/types/database.types'
+
+export async function GET(request: Request) {
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+  const error = requestUrl.searchParams.get('error')
+  const errorDescription = requestUrl.searchParams.get('error_description')
+
+  // Se já veio com erro do OAuth provider
+  if (error) {
+    return NextResponse.redirect(`${requestUrl.origin}/login?error=${error}`)
+  }
+
+  if (!code) {
+    return NextResponse.redirect(`${requestUrl.origin}/login?error=no_code`)
+  }
+
+  try {
+    const supabase = createRouteHandlerClient<Database>({ cookies })
+    
+    // Trocar código por sessão
+    const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code)
+    
+    if (sessionError) {
+      console.error('Erro ao trocar código por sessão:', sessionError)
+      return NextResponse.redirect(`${requestUrl.origin}/login?error=session_exchange_failed`)
+    }
+
+    if (!sessionData?.session?.user) {
+      return NextResponse.redirect(`${requestUrl.origin}/login?error=no_user`)
+    }
+
+    const user = sessionData.session.user
+    
+    // Aguardar um pouco para dar tempo do trigger criar o profile
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // Verificar se o profile já existe
+    const { data: existingProfile, error: profileCheckError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .single()
+
+    // Se o profile não existe, criar manualmente
+    if (!existingProfile && profileCheckError?.code === 'PGRST116') {
+      await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          email: user.email || '',
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+          avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+          role: 'customer'
+        })
+    }
+
+    // Redirecionar para a página de origem com parâmetro para forçar refresh
+    return NextResponse.redirect(`${requestUrl.origin}?auth=success`)
+  } catch (error: any) {
+    console.error('Erro no callback:', error)
+    return NextResponse.redirect(`${requestUrl.origin}/login?error=unexpected_error`)
+  }
+}
+
