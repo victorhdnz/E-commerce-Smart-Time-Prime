@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
 
 export default function NovoProduct() {
   const router = useRouter()
@@ -145,23 +146,15 @@ export default function NovoProduct() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard/produtos"
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <ArrowLeft size={24} />
-            </Link>
-            <div>
-              <h1 className="text-4xl font-bold">Novo Produto</h1>
-              <p className="text-gray-600 mt-1">
-                Preencha as informações do produto
-              </p>
-            </div>
-          </div>
+        {/* Navigation */}
+        <DashboardNavigation
+          title="Novo Produto"
+          subtitle="Preencha as informações do produto"
+          backUrl="/dashboard/produtos"
+          backLabel="Voltar aos Produtos"
+        />
 
+        <div className="flex justify-end mb-8">
           <Button onClick={handleSave} isLoading={loading} size="lg">
             <Save size={18} className="mr-2" />
             Salvar Produto

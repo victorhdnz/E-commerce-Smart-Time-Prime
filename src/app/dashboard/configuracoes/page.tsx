@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import { Save, ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
 
 interface SiteConfig {
   site_name: string
@@ -144,23 +145,15 @@ export default function ConfiguracoesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <ArrowLeft size={24} />
-            </Link>
-            <div>
-              <h1 className="text-4xl font-bold">Configurações</h1>
-              <p className="text-gray-600 mt-1">
-                Configure as informações gerais do site
-              </p>
-            </div>
-          </div>
+        {/* Navigation */}
+        <DashboardNavigation
+          title="Configurações"
+          subtitle="Configure as informações gerais do site"
+          backUrl="/dashboard"
+          backLabel="Voltar ao Dashboard"
+        />
 
+        <div className="flex justify-end mb-8">
           <Button onClick={handleSave} isLoading={saving}>
             <Save size={18} className="mr-2" />
             Salvar Alterações

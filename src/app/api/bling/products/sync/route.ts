@@ -5,21 +5,39 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 /**
  * Sincronizar produtos do Bling com o banco local
  * Busca produtos do Bling e atualiza/cria no Supabase
+ * Opções: ?onlyWithStock=true para sincronizar apenas produtos com estoque
  */
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const onlyWithStock = searchParams.get('onlyWithStock') === 'true'
+    
     const supabase = createSupabaseClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
     // Buscar produtos do Bling
-    const blingProducts = await blingClient.getProducts(1000)
+    const allBlingProducts = await blingClient.getProducts(1000)
 
-    if (!blingProducts || blingProducts.length === 0) {
+    if (!allBlingProducts || allBlingProducts.length === 0) {
       return NextResponse.json({
         success: false,
         error: 'Nenhum produto encontrado no Bling',
+      })
+    }
+
+    // Filtrar produtos com estoque se solicitado
+    const blingProducts = onlyWithStock 
+      ? allBlingProducts.filter(product => product.estoqueAtual && product.estoqueAtual > 0)
+      : allBlingProducts
+
+    if (blingProducts.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: onlyWithStock 
+          ? `Nenhum produto com estoque encontrado (${allBlingProducts.length} produtos sem estoque ignorados)`
+          : 'Nenhum produto encontrado no Bling',
       })
     }
 
@@ -96,12 +114,23 @@ export async function POST() {
       }
     }
 
+    // Estatísticas finais
+    const productsWithStock = blingProducts.filter(p => p.estoqueAtual && p.estoqueAtual > 0).length
+    const productsWithoutStock = blingProducts.length - productsWithStock
+    const totalFound = allBlingProducts.length
+
     return NextResponse.json({
       success: true,
       synced,
       created,
       updated,
-      message: `Sincronizados ${synced} produtos (${created} criados, ${updated} atualizados)`,
+      totalFound,
+      productsWithStock,
+      productsWithoutStock,
+      onlyWithStock,
+      message: onlyWithStock 
+        ? `Sincronizados ${synced} produtos com estoque (${created} criados, ${updated} atualizados). ${allBlingProducts.length - blingProducts.length} produtos sem estoque ignorados.`
+        : `Sincronizados ${synced} produtos (${created} criados, ${updated} atualizados). ${productsWithStock} com estoque, ${productsWithoutStock} sem estoque.`,
     })
   } catch (error: any) {
     console.error('Erro ao sincronizar produtos:', error)

@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { FAQ } from '@/types'
 import { Plus, Edit, Trash2, GripVertical } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
 
 export default function DashboardFAQPage() {
   const router = useRouter()
@@ -141,11 +142,15 @@ export default function DashboardFAQPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">Perguntas Frequentes</h1>
-            <p className="text-gray-600">{faqs.length} FAQs cadastradas</p>
-          </div>
+        {/* Navigation */}
+        <DashboardNavigation
+          title="Perguntas Frequentes"
+          subtitle={`${faqs.length} FAQs cadastradas`}
+          backUrl="/dashboard"
+          backLabel="Voltar ao Dashboard"
+        />
+
+        <div className="flex justify-end mb-8">
           <Button size="lg" onClick={() => handleOpenModal()}>
             <Plus size={20} className="mr-2" />
             Nova FAQ

@@ -428,7 +428,8 @@ class BlingClient {
         id: product.id?.toString() || product.idBling?.toString() || '',
         nome: product.nome || product.name || '',
         preco: parseFloat(product.preco || product.precoVenda || product.price || 0),
-        estoqueAtual: product.estoque?.quantidade || 
+        estoqueAtual: product.estoque?.saldoVirtualTotal || 
+                      product.estoque?.quantidade || 
                       product.estoque || 
                       product.estoqueAtual || 
                       product.stock || 

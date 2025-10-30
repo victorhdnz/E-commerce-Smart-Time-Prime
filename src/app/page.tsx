@@ -2,6 +2,7 @@ import { HeroSection } from '@/components/landing/HeroSection'
 import { MediaShowcase } from '@/components/landing/MediaShowcase'
 import { TimerSection } from '@/components/landing/TimerSection'
 import { FeaturedProducts } from '@/components/landing/FeaturedProducts'
+import { FeaturedCombos } from '@/components/landing/FeaturedCombos'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { FAQSection } from '@/components/landing/FAQSection'
 import { createServerClient } from '@/lib/supabase/server'
@@ -19,9 +20,18 @@ async function getPageData() {
       supabase.from('reviews').select('*').eq('is_approved', true).order('created_at', { ascending: false }).limit(6),
       supabase.from('faqs').select('*').eq('is_active', true).order('order_position', { ascending: true }),
       supabase.from('seasonal_layouts').select('*').eq('is_active', true).maybeSingle(),
+      supabase.from('product_combos').select(`
+        *,
+        combo_items (
+          id,
+          product_id,
+          quantity,
+          product:products (id, name, local_price, images)
+        )
+      `).eq('is_featured', true).eq('is_active', true).limit(6),
     ])
 
-    const [settingsResult, productsResult, reviewsResult, faqsResult, layoutResult] = results
+    const [settingsResult, productsResult, reviewsResult, faqsResult, layoutResult, combosResult] = results
 
     return {
       siteSettings: settingsResult.status === 'fulfilled' ? settingsResult.value.data : null,
@@ -29,6 +39,7 @@ async function getPageData() {
       reviews: reviewsResult.status === 'fulfilled' ? reviewsResult.value.data || [] : [],
       faqs: faqsResult.status === 'fulfilled' ? faqsResult.value.data || [] : [],
       activeLayout: layoutResult.status === 'fulfilled' ? layoutResult.value.data : null,
+      combos: combosResult.status === 'fulfilled' ? combosResult.value.data || [] : [],
     }
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
@@ -39,12 +50,13 @@ async function getPageData() {
       reviews: [],
       faqs: [],
       activeLayout: null,
+      combos: [],
     }
   }
 }
 
 export default async function Home() {
-  const { siteSettings, products, reviews, faqs, activeLayout } = await getPageData()
+  const { siteSettings, products, reviews, faqs, activeLayout, combos } = await getPageData()
 
   // Extrair configurações do formato key-value
   const settings = siteSettings?.value || {}
@@ -162,6 +174,15 @@ export default async function Home() {
           products={products as any}
           title="Produtos em Destaque"
           subtitle="Descubra nossa coleção exclusiva de relógios premium"
+        />
+      )}
+
+      {/* Featured Combos */}
+      {combos && combos.length > 0 && (
+        <FeaturedCombos
+          combos={combos as any}
+          title="Combos Promocionais"
+          subtitle="Economize mais comprando nossos kits exclusivos com desconto especial"
         />
       )}
 
@@ -323,4 +344,3 @@ export default async function Home() {
     </div>
   )
 }
-

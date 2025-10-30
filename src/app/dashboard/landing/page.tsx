@@ -12,6 +12,7 @@ import toast from 'react-hot-toast'
 import { Save, Eye, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
 
 interface LandingSettings {
   hero_title: string
@@ -27,6 +28,12 @@ interface LandingSettings {
   showcase_image_3: string
   showcase_image_4: string
   showcase_video_url: string
+  theme_colors: {
+    primary: string
+    secondary: string
+    accent: string
+    background: string
+  }
 }
 
 export default function EditLandingPage() {
@@ -50,6 +57,12 @@ export default function EditLandingPage() {
     showcase_image_3: '',
     showcase_image_4: '',
     showcase_video_url: '',
+    theme_colors: {
+      primary: '#000000',
+      secondary: '#ffffff',
+      accent: '#FFD700',
+      background: '#ffffff',
+    },
   })
 
   useEffect(() => {
@@ -174,36 +187,27 @@ export default function EditLandingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <ArrowLeft size={24} />
-            </Link>
-            <div>
-              <h1 className="text-4xl font-bold">Editar Landing Page</h1>
-              <p className="text-gray-600 mt-1">
-                Personalize os textos da página inicial
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <Link href="/" target="_blank">
-              <Button variant="outline">
-                <Eye size={18} className="mr-2" />
-                Visualizar
+        {/* Navigation */}
+        <DashboardNavigation
+          title="Editar Landing Page"
+          subtitle="Personalize os textos da página inicial"
+          backUrl="/dashboard"
+          backLabel="Voltar ao Dashboard"
+          actions={
+            <div className="flex gap-3">
+              <Link href="/" target="_blank">
+                <Button variant="outline">
+                  <Eye size={18} className="mr-2" />
+                  Visualizar
+                </Button>
+              </Link>
+              <Button onClick={handleSave} isLoading={saving}>
+                <Save size={18} className="mr-2" />
+                Salvar Alterações
               </Button>
-            </Link>
-            <Button onClick={handleSave} isLoading={saving}>
-              <Save size={18} className="mr-2" />
-              Salvar Alterações
-            </Button>
-          </div>
-        </div>
+            </div>
+          }
+        />
 
         {/* Form */}
         <div className="max-w-4xl space-y-6">
@@ -339,11 +343,218 @@ export default function EditLandingPage() {
             </div>
           </motion.div>
 
-          {/* Media Showcase Section */}
+          {/* Theme Colors Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h2 className="text-2xl font-bold mb-6">Personalização de Cores</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Personalize as cores do seu site. Use o layout padrão (preto e branco) ou crie sua própria paleta.
+            </p>
+            
+            <div className="space-y-6">
+              {/* Botão para resetar para padrão */}
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Cores do Tema</h3>
+                <Button
+                  variant="outline"
+                  onClick={() => setSettings({
+                    ...settings,
+                    theme_colors: {
+                      primary: '#000000',
+                      secondary: '#ffffff',
+                      accent: '#FFD700',
+                      background: '#ffffff',
+                    }
+                  })}
+                >
+                  Restaurar Padrão
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Cor Primária */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Cor Primária
+                    <span className="ml-2 text-xs text-gray-500 font-normal">
+                      (Botões, links, destaques)
+                    </span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={settings.theme_colors.primary}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        theme_colors: {
+                          ...settings.theme_colors,
+                          primary: e.target.value
+                        }
+                      })}
+                      className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                    />
+                    <Input
+                      value={settings.theme_colors.primary}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        theme_colors: {
+                          ...settings.theme_colors,
+                          primary: e.target.value
+                        }
+                      })}
+                      placeholder="#000000"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                {/* Cor Secundária */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Cor Secundária
+                    <span className="ml-2 text-xs text-gray-500 font-normal">
+                      (Textos, bordas)
+                    </span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={settings.theme_colors.secondary}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        theme_colors: {
+                          ...settings.theme_colors,
+                          secondary: e.target.value
+                        }
+                      })}
+                      className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                    />
+                    <Input
+                      value={settings.theme_colors.secondary}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        theme_colors: {
+                          ...settings.theme_colors,
+                          secondary: e.target.value
+                        }
+                      })}
+                      placeholder="#ffffff"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                {/* Cor de Destaque */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Cor de Destaque
+                    <span className="ml-2 text-xs text-gray-500 font-normal">
+                      (Promoções, ofertas especiais)
+                    </span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={settings.theme_colors.accent}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        theme_colors: {
+                          ...settings.theme_colors,
+                          accent: e.target.value
+                        }
+                      })}
+                      className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                    />
+                    <Input
+                      value={settings.theme_colors.accent}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        theme_colors: {
+                          ...settings.theme_colors,
+                          accent: e.target.value
+                        }
+                      })}
+                      placeholder="#FFD700"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                {/* Cor de Fundo */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Cor de Fundo
+                    <span className="ml-2 text-xs text-gray-500 font-normal">
+                      (Fundo principal do site)
+                    </span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={settings.theme_colors.background}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        theme_colors: {
+                          ...settings.theme_colors,
+                          background: e.target.value
+                        }
+                      })}
+                      className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                    />
+                    <Input
+                      value={settings.theme_colors.background}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        theme_colors: {
+                          ...settings.theme_colors,
+                          background: e.target.value
+                        }
+                      })}
+                      placeholder="#ffffff"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Preview das cores */}
+              <div className="mt-6 p-4 border rounded-lg">
+                <h4 className="text-sm font-medium mb-3">Preview das Cores</h4>
+                <div className="flex gap-4">
+                  <div 
+                    className="w-16 h-16 rounded-lg border"
+                    style={{ backgroundColor: settings.theme_colors.primary }}
+                    title="Primária"
+                  ></div>
+                  <div 
+                    className="w-16 h-16 rounded-lg border"
+                    style={{ backgroundColor: settings.theme_colors.secondary }}
+                    title="Secundária"
+                  ></div>
+                  <div 
+                    className="w-16 h-16 rounded-lg border"
+                    style={{ backgroundColor: settings.theme_colors.accent }}
+                    title="Destaque"
+                  ></div>
+                  <div 
+                    className="w-16 h-16 rounded-lg border"
+                    style={{ backgroundColor: settings.theme_colors.background }}
+                    title="Fundo"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Media Showcase Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
             <h2 className="text-2xl font-bold mb-6">Galeria de Destaques</h2>

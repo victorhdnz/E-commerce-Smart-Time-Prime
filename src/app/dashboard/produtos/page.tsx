@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
 import { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
-import { Plus, Edit, Trash2, Eye, EyeOff, Package, RefreshCw, Link2 } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye, EyeOff, Package, RefreshCw, Link2, ChevronDown, Search, Filter, Star, MoreVertical } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
@@ -15,8 +15,14 @@ export default function DashboardProductsPage() {
   const router = useRouter()
   const { isAuthenticated, isEditor, loading: authLoading } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
+  const [showSyncOptions, setShowSyncOptions] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all')
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([])
 
   const supabase = createClient()
 
@@ -35,6 +41,18 @@ export default function DashboardProductsPage() {
       mounted = false
     }
   }, [isAuthenticated, isEditor, authLoading, router])
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showSyncOptions) {
+        setShowSyncOptions(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showSyncOptions])
 
   const loadProducts = async () => {
     try {
@@ -84,10 +102,16 @@ export default function DashboardProductsPage() {
     }
   }
 
-  const syncBlingProducts = async () => {
+  const syncBlingProducts = async (onlyWithStock = false) => {
     setSyncing(true)
+    setShowSyncOptions(false)
+    
     try {
-      const response = await fetch('/api/bling/products/sync', {
+      const url = onlyWithStock 
+        ? '/api/bling/products/sync?onlyWithStock=true'
+        : '/api/bling/products/sync'
+        
+      const response = await fetch(url, {
         method: 'POST',
       })
 
@@ -125,6 +149,113 @@ export default function DashboardProductsPage() {
     }
   }
 
+  // Filter products based on search and filters
+  useEffect(() => {
+    let filtered = products
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.slug.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(product =>
+        statusFilter === 'active' ? product.is_active : !product.is_active
+      )
+    }
+
+    // Stock filter
+    if (stockFilter !== 'all') {
+      filtered = filtered.filter(product => {
+        switch (stockFilter) {
+          case 'in_stock':
+            return product.stock > 10
+          case 'low_stock':
+            return product.stock > 0 && product.stock <= 10
+          case 'out_of_stock':
+            return product.stock === 0
+          default:
+            return true
+        }
+      })
+    }
+
+    setFilteredProducts(filtered)
+  }, [products, searchTerm, statusFilter, stockFilter])
+
+  const handleBulkAction = async (action: 'activate' | 'deactivate' | 'feature' | 'unfeature' | 'delete') => {
+    if (selectedProducts.length === 0) {
+      toast.error('Selecione pelo menos um produto')
+      return
+    }
+
+    if (action === 'delete' && !confirm(`Tem certeza que deseja excluir ${selectedProducts.length} produto(s)?`)) {
+      return
+    }
+
+    try {
+      let updateData: any = {}
+      
+      switch (action) {
+        case 'activate':
+          updateData = { is_active: true }
+          break
+        case 'deactivate':
+          updateData = { is_active: false }
+          break
+        case 'feature':
+          updateData = { is_featured: true }
+          break
+        case 'unfeature':
+          updateData = { is_featured: false }
+          break
+        case 'delete':
+          const { error: deleteError } = await supabase
+            .from('products')
+            .delete()
+            .in('id', selectedProducts)
+          
+          if (deleteError) throw deleteError
+          toast.success(`${selectedProducts.length} produto(s) excluído(s)`)
+          setSelectedProducts([])
+          loadProducts()
+          return
+      }
+
+      const { error } = await supabase
+        .from('products')
+        .update(updateData)
+        .in('id', selectedProducts)
+
+      if (error) throw error
+
+      toast.success(`${selectedProducts.length} produto(s) atualizado(s)`)
+      setSelectedProducts([])
+      loadProducts()
+    } catch (error) {
+      toast.error('Erro ao executar ação em lote')
+    }
+  }
+
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProducts(prev =>
+      prev.includes(productId)
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    )
+  }
+
+  const toggleSelectAll = () => {
+    setSelectedProducts(prev =>
+      prev.length === filteredProducts.length ? [] : filteredProducts.map(p => p.id)
+    )
+  }
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -136,23 +267,57 @@ export default function DashboardProductsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex justify-between items-center mb-8">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Gerenciar Produtos</h1>
-            <p className="text-gray-600">
-              {products.length} produtos cadastrados
+            <h1 className="text-4xl font-bold">Produtos</h1>
+            <p className="text-gray-600 mt-1">
+              Gerencie seu catálogo de produtos
             </p>
           </div>
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={syncBlingProducts}
-              disabled={syncing}
-            >
-              <RefreshCw size={20} className={`mr-2 ${syncing ? 'animate-spin' : ''}`} />
-              {syncing ? 'Sincronizando...' : 'Sincronizar Bling'}
-            </Button>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Sync Dropdown */}
+            <div className="relative">
+              <Button
+                variant="outline"
+                onClick={() => setShowSyncOptions(!showSyncOptions)}
+                isLoading={syncing}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw size={18} />
+                Sincronizar Bling
+                <ChevronDown size={16} />
+              </Button>
+              
+              {showSyncOptions && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border z-10">
+                  <div className="p-2">
+                    <button
+                      onClick={() => {
+                        syncBlingProducts(false)
+                        setShowSyncOptions(false)
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-md"
+                    >
+                      <div className="font-medium">Todos os produtos</div>
+                      <div className="text-sm text-gray-500">Sincronizar todos os produtos do Bling</div>
+                    </button>
+                    <button
+                      onClick={() => {
+                        syncBlingProducts(true)
+                        setShowSyncOptions(false)
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-md"
+                    >
+                      <div className="font-medium">Apenas com estoque</div>
+                      <div className="text-sm text-gray-500">Sincronizar apenas produtos em estoque</div>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
             <Link href="/dashboard/produtos/brindes-combos">
               <Button variant="outline" size="lg">
                 <Package size={20} className="mr-2" />
@@ -168,12 +333,114 @@ export default function DashboardProductsPage() {
           </div>
         </div>
 
+        {/* Filters and Search */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1">
+              <div className="relative">
+                <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Buscar produtos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="flex gap-3">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+              >
+                <option value="all">Todos os status</option>
+                <option value="active">Ativos</option>
+                <option value="inactive">Inativos</option>
+              </select>
+
+              <select
+                value={stockFilter}
+                onChange={(e) => setStockFilter(e.target.value as any)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+              >
+                <option value="all">Todo o estoque</option>
+                <option value="in_stock">Em estoque</option>
+                <option value="low_stock">Estoque baixo</option>
+                <option value="out_of_stock">Sem estoque</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Results count */}
+          <div className="mt-4 text-sm text-gray-600">
+            Mostrando {filteredProducts.length} de {products.length} produtos
+          </div>
+        </div>
+
+        {/* Bulk Actions */}
+        {selectedProducts.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <span className="text-blue-800 font-medium">
+                {selectedProducts.length} produto(s) selecionado(s)
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkAction('activate')}
+                >
+                  <Eye size={16} className="mr-1" />
+                  Ativar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkAction('deactivate')}
+                >
+                  <EyeOff size={16} className="mr-1" />
+                  Desativar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkAction('feature')}
+                >
+                  <Star size={16} className="mr-1" />
+                  Destacar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleBulkAction('delete')}
+                  className="text-red-600 border-red-300 hover:bg-red-50"
+                >
+                  <Trash2 size={16} className="mr-1" />
+                  Excluir
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Products Table */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
+                  <th className="px-6 py-3 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
+                      onChange={toggleSelectAll}
+                      className="rounded border-gray-300 text-black focus:ring-black"
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Produto
                   </th>
@@ -195,8 +462,16 @@ export default function DashboardProductsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {products.map((product) => (
+                {filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.includes(product.id)}
+                        onChange={() => toggleProductSelection(product.id)}
+                        className="rounded border-gray-300 text-black focus:ring-black"
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
@@ -271,6 +546,15 @@ export default function DashboardProductsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <button
+                          onClick={() => toggleFeatured(product.id, product.is_featured)}
+                          className={`${
+                            product.is_featured ? 'text-yellow-600' : 'text-gray-400'
+                          } hover:text-yellow-700`}
+                          title={product.is_featured ? 'Remover destaque' : 'Destacar produto'}
+                        >
+                          <Star size={18} />
+                        </button>
+                        <button
                           onClick={() =>
                             toggleProductStatus(product.id, product.is_active)
                           }
@@ -304,9 +588,32 @@ export default function DashboardProductsPage() {
               </tbody>
             </table>
           </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-12">
+              <Package size={48} className="mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {searchTerm || statusFilter !== 'all' || stockFilter !== 'all'
+                  ? 'Nenhum produto encontrado'
+                  : 'Nenhum produto cadastrado'}
+              </h3>
+              <p className="text-gray-500 mb-6">
+                {searchTerm || statusFilter !== 'all' || stockFilter !== 'all'
+                  ? 'Tente ajustar os filtros de busca'
+                  : 'Comece adicionando seu primeiro produto'}
+              </p>
+              {!searchTerm && statusFilter === 'all' && stockFilter === 'all' && (
+                <Link href="/dashboard/produtos/novo">
+                  <Button>
+                    <Plus size={20} className="mr-2" />
+                    Adicionar Produto
+                  </Button>
+                </Link>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
-
