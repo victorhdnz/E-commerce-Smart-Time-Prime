@@ -59,56 +59,177 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
   }
 
   const handleSave = async () => {
-    if (!canvasRef.current || !imgRef.current) return
+    if (!image) {
+      toast.error('Nenhuma imagem carregada')
+      return
+    }
 
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    const img = new Image()
-    img.onload = async () => {
-      // Limpar canvas
-      canvas.width = img.width
-      canvas.height = img.height
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      // Aplicar transformações
-      ctx.save()
-      ctx.translate(canvas.width / 2, canvas.height / 2)
-      ctx.rotate((rotation * Math.PI) / 180)
-      ctx.scale(scale, scale)
-      ctx.drawImage(img, -img.width / 2 + position.x, -img.height / 2 + position.y, img.width, img.height)
-      ctx.restore()
-
-      // Converter para blob e fazer upload
-      canvas.toBlob(async (blob) => {
-        if (!blob) return
-
-        try {
-          const formData = new FormData()
-          formData.append('file', blob, file.name)
-          formData.append('folder', 'images')
-
-          const response = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          })
-
-          const data = await response.json()
-
-          if (!response.ok || !data.success) {
-            throw new Error(data.error || 'Erro ao fazer upload')
+    try {
+      const canvas = canvasRef.current
+      if (!canvas) {
+        // Se não houver canvas, fazer upload da imagem original com transformações aplicadas
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        
+        img.onload = async () => {
+          // Criar canvas temporário
+          const tempCanvas = document.createElement('canvas')
+          tempCanvas.width = img.width
+          tempCanvas.height = img.height
+          const tempCtx = tempCanvas.getContext('2d')
+          
+          if (!tempCtx) {
+            toast.error('Erro ao processar imagem')
+            return
           }
 
-          onSave(data.url)
-          toast.success('Imagem editada e enviada com sucesso!')
-        } catch (error: any) {
-          console.error('Erro no upload:', error)
-          toast.error(error.message || 'Erro ao fazer upload da imagem')
+          // Dimensão final recomendada (Instagram Post: 1080x1080)
+          const targetWidth = 1080
+          const targetHeight = 1080
+          
+          // Atualizar tamanho do canvas
+          tempCanvas.width = targetWidth
+          tempCanvas.height = targetHeight
+          tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height)
+
+          // Calcular escala para preencher o canvas mantendo proporção
+          const scaleX = targetWidth / img.width
+          const scaleY = targetHeight / img.height
+          const finalScale = Math.max(scaleX, scaleY) // Usar o maior para preencher
+
+          // Aplicar transformações
+          tempCtx.save()
+          tempCtx.translate(targetWidth / 2, targetHeight / 2)
+          tempCtx.rotate((rotation * Math.PI) / 180)
+          tempCtx.scale(finalScale * scale, finalScale * scale)
+          tempCtx.drawImage(
+            img, 
+            -img.width / 2 + position.x, 
+            -img.height / 2 + position.y, 
+            img.width, 
+            img.height
+          )
+          tempCtx.restore()
+
+          // Converter para blob e fazer upload
+          tempCanvas.toBlob(async (blob) => {
+            if (!blob) {
+              toast.error('Erro ao processar imagem')
+              return
+            }
+
+            try {
+              const formData = new FormData()
+              formData.append('file', blob, file.name)
+              formData.append('folder', 'images')
+
+              const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+              })
+
+              const data = await response.json()
+
+              if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Erro ao fazer upload')
+              }
+
+              onSave(data.url)
+              toast.success('Imagem editada e enviada com sucesso!')
+            } catch (error: any) {
+              console.error('Erro no upload:', error)
+              toast.error(error.message || 'Erro ao fazer upload da imagem')
+            }
+          }, 'image/jpeg', 0.9)
         }
-      }, 'image/jpeg', 0.9)
+        
+        img.onerror = () => {
+          toast.error('Erro ao carregar imagem')
+        }
+        
+        img.src = image
+        return
+      }
+
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        toast.error('Erro ao processar imagem')
+        return
+      }
+
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      
+      img.onload = async () => {
+        // Dimensão final recomendada (Instagram Post: 1080x1080)
+        const targetWidth = 1080
+        const targetHeight = 1080
+
+        // Configurar canvas com dimensões finais
+        canvas.width = targetWidth
+        canvas.height = targetHeight
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+        // Calcular escala para preencher o canvas mantendo proporção
+        const scaleX = targetWidth / img.width
+        const scaleY = targetHeight / img.height
+        const baseScale = Math.max(scaleX, scaleY) // Usar o maior para preencher
+
+        // Aplicar transformações (scale é o estado do componente para zoom manual)
+        ctx.save()
+        ctx.translate(targetWidth / 2, targetHeight / 2)
+        ctx.rotate((rotation * Math.PI) / 180)
+        ctx.scale(baseScale * scale, baseScale * scale)
+        ctx.drawImage(
+          img, 
+          -img.width / 2 + position.x, 
+          -img.height / 2 + position.y, 
+          img.width, 
+          img.height
+        )
+        ctx.restore()
+
+        // Converter para blob e fazer upload
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            toast.error('Erro ao processar imagem')
+            return
+          }
+
+          try {
+            const formData = new FormData()
+            formData.append('file', blob, file.name)
+            formData.append('folder', 'images')
+
+            const response = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData,
+            })
+
+            const data = await response.json()
+
+            if (!response.ok || !data.success) {
+              throw new Error(data.error || 'Erro ao fazer upload')
+            }
+
+            onSave(data.url)
+            toast.success('Imagem editada e enviada com sucesso!')
+          } catch (error: any) {
+            console.error('Erro no upload:', error)
+            toast.error(error.message || 'Erro ao fazer upload da imagem')
+          }
+        }, 'image/jpeg', 0.9)
+      }
+      
+      img.onerror = () => {
+        toast.error('Erro ao carregar imagem')
+      }
+      
+      img.src = image
+    } catch (error: any) {
+      console.error('Erro ao processar imagem:', error)
+      toast.error(error.message || 'Erro ao processar imagem')
     }
-    img.src = image
   }
 
   return (
@@ -116,7 +237,12 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
       <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-xl font-semibold">Editar Imagem</h2>
+          <div>
+            <h2 className="text-xl font-semibold">Editar Imagem</h2>
+            <p className="text-xs text-gray-500 mt-1">
+              📐 Dimensão recomendada: <strong>1080 x 1080px</strong> (Formato Instagram Post)
+            </p>
+          </div>
           <button
             onClick={onCancel}
             className="p-2 hover:bg-gray-100 rounded-lg"

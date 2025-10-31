@@ -5,6 +5,7 @@ import { FeaturedProducts } from '@/components/landing/FeaturedProducts'
 import { FeaturedCombos } from '@/components/landing/FeaturedCombos'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { FAQSection } from '@/components/landing/FAQSection'
+import { AuthRedirect } from '@/components/landing/AuthRedirect'
 import { createServerClient } from '@/lib/supabase/server'
 
 export const revalidate = 60 // Revalidar a cada 60 segundos
@@ -143,6 +144,9 @@ export default async function Home() {
 
   return (
     <div>
+      {/* Auth Redirect Handler */}
+      <AuthRedirect />
+      
       {/* Hero Section */}
       <HeroSection 
         title={settings.hero_title || 'Elegância e Precisão em Cada Instante'}

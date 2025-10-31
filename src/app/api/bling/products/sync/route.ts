@@ -104,7 +104,7 @@ export async function POST(request: Request) {
               name: productData.name,
               bling_price: productData.bling_price,
               stock: productData.stock,
-              bling_product_id: productData.bling_product_id,
+              bling_id: productData.bling_id,
               description: productData.description,
               short_description: productData.short_description,
               category: productData.category,

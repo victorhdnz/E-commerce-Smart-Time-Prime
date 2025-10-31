@@ -28,23 +28,27 @@ export default function LoginPage() {
     
     if (isAuthenticated && !loading) {
       setHasRedirected(true)
-      const urlParams = new URLSearchParams(window.location.search)
-      const returnUrl = urlParams.get('returnUrl') || localStorage.getItem('auth_return_url')
       
-      // Limpar returnUrl do localStorage após usar
-      if (localStorage.getItem('auth_return_url')) {
-        localStorage.removeItem('auth_return_url')
-      }
-      
-      if (returnUrl) {
-        try {
-          router.push(decodeURIComponent(returnUrl))
-        } catch {
+      // Pequeno delay para garantir que a sessão está estabelecida
+      setTimeout(() => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const returnUrl = urlParams.get('returnUrl') || localStorage.getItem('auth_return_url')
+        
+        // Limpar returnUrl do localStorage após usar
+        if (localStorage.getItem('auth_return_url')) {
+          localStorage.removeItem('auth_return_url')
+        }
+        
+        if (returnUrl && returnUrl !== '/login') {
+          try {
+            router.push(decodeURIComponent(returnUrl))
+          } catch {
+            router.push('/')
+          }
+        } else {
           router.push('/')
         }
-      } else {
-        router.push('/')
-      }
+      }, 300)
     }
   }, [isAuthenticated, loading, router, hasRedirected])
 

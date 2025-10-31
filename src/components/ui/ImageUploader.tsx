@@ -106,6 +106,17 @@ export function ImageUploader({
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
             <ImageIcon size={48} className="mx-auto text-gray-400 mb-4" />
             <p className="text-gray-600 mb-4">{placeholder}</p>
+            
+            {/* Recomendação de Dimensões */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <p className="text-sm font-medium text-blue-900 mb-1">
+                📐 Dimensões Recomendadas
+              </p>
+              <p className="text-xs text-blue-700">
+                <strong>Imagens:</strong> 1080 x 1080px (Formato Instagram Post)
+              </p>
+            </div>
+            
             <div className="flex gap-2 justify-center">
               <Button
                 variant="outline"
