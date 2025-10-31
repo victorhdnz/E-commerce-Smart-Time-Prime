@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { getSiteUrl } from '@/lib/utils/siteUrl'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
@@ -11,10 +11,11 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<AppUser | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  // Criar cliente Supabase uma vez usando useMemo para evitar recriações
+  const supabase = useMemo(() => createClient(), [])
 
-  // Função auxiliar para garantir que o profile existe
-  const ensureProfileExists = async (userId: string, userEmail: string, userMetadata: any) => {
+  // Função auxiliar para garantir que o profile existe (memoizada)
+  const ensureProfileExists = useCallback(async (userId: string, userEmail: string, userMetadata: any) => {
     try {
       // Verificar se o profile existe
       const { data: existingProfile, error: checkError } = await supabase
@@ -52,7 +53,7 @@ export const useAuth = () => {
       console.error('Erro ao garantir profile:', error)
       return null
     }
-  }
+  }, [supabase])
 
   useEffect(() => {
     let mounted = true
@@ -198,7 +199,7 @@ export const useAuth = () => {
       }
       subscription.unsubscribe()
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [supabase, ensureProfileExists]) // Adicionar dependências
 
   const signInWithGoogle = async (returnUrl?: string) => {
     // Salvar returnUrl no localStorage para recuperar após login

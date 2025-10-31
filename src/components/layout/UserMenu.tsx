@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { User, Package, LayoutDashboard, LogOut } from 'lucide-react'
@@ -13,12 +13,41 @@ export const UserMenu = () => {
   const [isClosing, setIsClosing] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const { profile, signOut, isAuthenticated, loading, user } = useAuth()
   const router = useRouter()
   const isMobile = useMobile()
 
+  // Fechar menu com useCallback para evitar recriações
+  const closeMenu = useCallback(() => {
+    // Limpar timeout anterior se existir
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+
+    setIsClosing(true)
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false)
+      setIsClosing(false)
+      timeoutRef.current = null
+    }, 200)
+  }, [])
+
+  // Cleanup do timeout ao desmontar
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+    }
+  }, [])
+
   // Fechar menu ao clicar fora
   useEffect(() => {
+    if (!isOpen) return
+
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (
         dropdownRef.current && 
@@ -30,36 +59,28 @@ export const UserMenu = () => {
       }
     }
 
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      document.addEventListener('touchstart', handleClickOutside)
-    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('touchstart', handleClickOutside)
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('touchstart', handleClickOutside)
     }
-  }, [isOpen])
+  }, [isOpen, closeMenu])
 
   // Fechar menu ao pressionar ESC
   useEffect(() => {
+    if (!isOpen) return
+
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
+      if (event.key === 'Escape') {
         closeMenu()
       }
     }
 
     document.addEventListener('keydown', handleEscape)
     return () => document.removeEventListener('keydown', handleEscape)
-  }, [isOpen])
-
-  const closeMenu = () => {
-    setIsClosing(true)
-    setTimeout(() => {
-      setIsOpen(false)
-      setIsClosing(false)
-    }, 200)
-  }
+  }, [isOpen, closeMenu])
 
   const handleSignOut = async () => {
     closeMenu()
@@ -71,40 +92,38 @@ export const UserMenu = () => {
     }
   }
 
-  const handleMenuClick = (href: string) => {
-    console.log('🔗 Navegando para:', href)
+  const handleMenuClick = useCallback((href: string) => {
     closeMenu()
-    
-    // Se o menu está sendo exibido, significa que o usuário está autenticado
-    // Não verificar isAuthenticated aqui pois pode haver inconsistência de estado
-    // O middleware já protege as rotas que precisam de autenticação
     router.push(href)
-    console.log('✅ Navegação executada para:', href)
-  }
+  }, [closeMenu, router])
 
-  const menuItems = [
-    {
-      label: 'Minha Conta',
-      href: '/minha-conta',
-      icon: User,
-      visible: true,
-      description: 'Configurações do perfil'
-    },
-    {
-      label: 'Meus Pedidos',
-      href: '/minha-conta/pedidos',
-      icon: Package,
-      visible: true,
-      description: 'Histórico de compras'
-    },
-    {
-      label: 'Dashboard',
-      href: '/dashboard',
-      icon: LayoutDashboard,
-      visible: isAdminEmail(user?.email),
-      description: 'Painel administrativo'
-    }
-  ].filter(item => item.visible)
+  // Memoizar menuItems para evitar recriações
+  const menuItems = useMemo(() => {
+    const items = [
+      {
+        label: 'Minha Conta',
+        href: '/minha-conta',
+        icon: User,
+        visible: true,
+        description: 'Configurações do perfil'
+      },
+      {
+        label: 'Meus Pedidos',
+        href: '/minha-conta/pedidos',
+        icon: Package,
+        visible: true,
+        description: 'Histórico de compras'
+      },
+      {
+        label: 'Dashboard',
+        href: '/dashboard',
+        icon: LayoutDashboard,
+        visible: isAdminEmail(user?.email),
+        description: 'Painel administrativo'
+      }
+    ]
+    return items.filter(item => item.visible)
+  }, [user?.email])
 
   // Adicionar classe no body para prevenir scroll quando menu está aberto
   useEffect(() => {
