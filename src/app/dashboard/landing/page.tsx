@@ -184,11 +184,38 @@ export default function EditLandingPage() {
         .maybeSingle()
 
       // Preparar configurações para salvar (converter timer_end_date para ISO string)
+      // O input datetime-local retorna formato "YYYY-MM-DDTHH:mm" que precisa ser convertido
+      let timerEndDateISO: string | null = null
+      if (settings.timer_end_date) {
+        try {
+          // Se já está no formato ISO, usar diretamente
+          if (settings.timer_end_date.includes('T') && settings.timer_end_date.includes('Z')) {
+            timerEndDateISO = settings.timer_end_date
+          } else {
+            // Converter do formato datetime-local para ISO
+            // datetime-local retorna "YYYY-MM-DDTHH:mm" sem timezone
+            // Precisamos adicionar timezone ou assumir UTC
+            const date = new Date(settings.timer_end_date)
+            if (!isNaN(date.getTime())) {
+              timerEndDateISO = date.toISOString()
+            } else {
+              console.error('Data inválida:', settings.timer_end_date)
+              toast.error('Data de término do cronômetro inválida')
+              setSaving(false)
+              return
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao converter data:', error)
+          toast.error('Erro ao converter data do cronômetro')
+          setSaving(false)
+          return
+        }
+      }
+
       const settingsToSave = {
         ...settings,
-        timer_end_date: settings.timer_end_date 
-          ? new Date(settings.timer_end_date).toISOString()
-          : null,
+        timer_end_date: timerEndDateISO,
       }
 
       if (existing) {

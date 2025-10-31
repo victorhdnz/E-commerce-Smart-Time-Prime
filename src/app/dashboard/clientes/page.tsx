@@ -178,7 +178,8 @@ export default function DashboardClientsPage() {
             filteredClients.map((client) => (
               <div
                 key={client.id}
-                className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
+                className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setSelectedClient(selectedClient?.id === client.id ? null : client)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
@@ -280,6 +281,124 @@ export default function DashboardClientsPage() {
             ))
           )}
         </div>
+
+        {/* Modal de Detalhes do Cliente */}
+        {selectedClient && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+                <h2 className="text-2xl font-bold">Detalhes do Cliente</h2>
+                <button
+                  onClick={() => setSelectedClient(null)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Informações Básicas */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <User size={20} />
+                    Informações do Perfil
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Nome</p>
+                      <p className="text-gray-900">{selectedClient.full_name || 'Não informado'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">E-mail</p>
+                      <p className="text-gray-900">{selectedClient.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Data de Registro</p>
+                      <p className="text-gray-900">{formatDateTime(selectedClient.created_at)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">ID</p>
+                      <p className="text-gray-900 text-xs font-mono">{selectedClient.id}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Endereços */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <MapPin size={20} />
+                    Endereços Cadastrados ({selectedClient.addresses?.length || 0})
+                  </h3>
+                  {selectedClient.addresses && selectedClient.addresses.length > 0 ? (
+                    <div className="space-y-3">
+                      {selectedClient.addresses.map((addr) => (
+                        <div key={addr.id} className="bg-white p-4 rounded border border-gray-200">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <p className="font-semibold">{addr.recipient_name}</p>
+                              {addr.is_default && (
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  Endereço Padrão
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            {addr.street}, {addr.number}
+                            {addr.complement && `, ${addr.complement}`}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {addr.neighborhood} - {addr.city}/{addr.state}
+                          </p>
+                          <p className="text-sm text-gray-600">CEP: {addr.zipcode}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">Nenhum endereço cadastrado</p>
+                  )}
+                </div>
+
+                {/* Pedidos */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Package size={20} />
+                    Pedidos ({selectedClient.orders?.length || 0})
+                  </h3>
+                  {selectedClient.orders && selectedClient.orders.length > 0 ? (
+                    <div className="space-y-3">
+                      {selectedClient.orders.map((order) => (
+                        <div key={order.id} className="bg-white p-4 rounded border border-gray-200">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-semibold text-lg">{formatCurrency(order.total)}</p>
+                              <p className="text-sm text-gray-600">
+                                Status: <span className="capitalize font-medium">{order.status}</span>
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {formatDateTime(order.created_at)}
+                              </p>
+                            </div>
+                            <span className={`px-3 py-1 rounded text-xs font-medium ${
+                              order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {order.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">Nenhum pedido realizado</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

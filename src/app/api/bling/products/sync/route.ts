@@ -18,13 +18,30 @@ export async function POST(request: Request) {
     )
 
     // Buscar produtos do Bling
-    const allBlingProducts = await blingClient.getProducts(1000)
+    console.log('🔄 Iniciando sincronização de produtos do Bling...')
+    
+    let allBlingProducts: any[] = []
+    
+    try {
+      allBlingProducts = await blingClient.getProducts(1000)
+      
+      console.log(`📦 Produtos recebidos do Bling: ${allBlingProducts?.length || 0}`)
 
-    if (!allBlingProducts || allBlingProducts.length === 0) {
+      if (!allBlingProducts || allBlingProducts.length === 0) {
+        console.error('❌ Nenhum produto retornado do Bling')
+        return NextResponse.json({
+          success: false,
+          error: 'Nenhum produto encontrado no Bling. Verifique se há produtos cadastrados no Bling e se a API está configurada corretamente.',
+          details: 'A API do Bling não retornou nenhum produto. Verifique: 1) Se há produtos cadastrados no Bling, 2) Se o token/API Key está correto, 3) Se a conexão com o Bling está funcionando.',
+        }, { status: 404 })
+      }
+    } catch (error: any) {
+      console.error('❌ Erro ao buscar produtos do Bling:', error)
       return NextResponse.json({
         success: false,
-        error: 'Nenhum produto encontrado no Bling',
-      })
+        error: 'Erro ao buscar produtos do Bling',
+        details: error.message || 'Verifique se o Bling está configurado corretamente e se o token/API Key está válido.',
+      }, { status: 500 })
     }
 
     // Filtrar produtos com estoque se solicitado

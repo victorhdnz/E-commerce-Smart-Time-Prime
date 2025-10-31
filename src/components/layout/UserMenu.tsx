@@ -134,10 +134,13 @@ export const UserMenu = () => {
     )
   }
 
-  // Se não autenticado ou não há profile, não mostrar
-  if (!isAuthenticated || !profile) {
+  // Se não autenticado, não mostrar
+  if (!isAuthenticated) {
     return null
   }
+
+  // Sempre mostrar ícone, mesmo se profile não estiver carregado ainda
+  // O profile pode estar sendo carregado em background
 
   return (
     <div className="relative group">
@@ -187,10 +190,10 @@ export const UserMenu = () => {
             {/* Cabeçalho do Menu */}
             <div className="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
               <p className="text-sm font-semibold text-gray-900 truncate">
-                {profile.full_name || 'Usuário'}
+                {profile?.full_name || user?.email || 'Usuário'}
               </p>
               <p className="text-xs text-gray-600 truncate">
-                {profile.email}
+                {profile?.email || user?.email || ''}
               </p>
             </div>
 

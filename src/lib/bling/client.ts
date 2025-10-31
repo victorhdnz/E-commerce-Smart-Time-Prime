@@ -420,9 +420,13 @@ class BlingClient {
 
       if (products.length === 0) {
         // Se não encontrou produtos, pode ser que não existam produtos ou formato diferente
-        console.warn('Nenhum produto encontrado na resposta. Formato recebido:', JSON.stringify(data).substring(0, 200))
+        console.warn('⚠️ Nenhum produto encontrado na resposta do Bling')
+        console.warn('Formato recebido:', JSON.stringify(data).substring(0, 500))
+        console.warn('Estrutura completa:', Object.keys(data))
         return []
       }
+
+      console.log(`✅ Encontrados ${products.length} produtos no Bling`)
 
       return products.slice(0, limit).map((product: any) => ({
         id: product.id?.toString() || product.idBling?.toString() || '',

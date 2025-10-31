@@ -105,16 +105,20 @@ export const Header = () => {
 
             {/* User Menu */}
             {loading ? (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 animate-pulse">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200">
                 <User size={20} className="text-gray-400" />
               </div>
-            ) : isAuthenticated && profile ? (
+            ) : isAuthenticated ? (
               <UserMenu />
-            ) : !loading && !isAuthenticated ? (
+            ) : !loading ? (
               <Link href="/login">
                 <Button size="sm">Entrar</Button>
               </Link>
-            ) : null}
+            ) : (
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200">
+                <User size={20} className="text-gray-400" />
+              </div>
+            )}
 
             {/* Mobile Menu Toggle */}
             <button
