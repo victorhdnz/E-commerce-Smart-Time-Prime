@@ -12,7 +12,7 @@ export const UserMenu = () => {
   const [isClosing, setIsClosing] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const { profile, signOut, isAuthenticated } = useAuth()
+  const { profile, signOut, isAuthenticated, loading } = useAuth()
   const router = useRouter()
   const isMobile = useMobile()
 
@@ -74,15 +74,9 @@ export const UserMenu = () => {
     console.log('🔗 Navegando para:', href)
     closeMenu()
     
-    // Se usuário não está autenticado, redirecionar para login com returnUrl
-    if (!isAuthenticated) {
-      const returnUrl = encodeURIComponent(href)
-      router.push(`/login?returnUrl=${returnUrl}`)
-      console.log('🔐 Redirecionando para login com returnUrl:', href)
-      return
-    }
-    
-    // Se autenticado, navegar normalmente
+    // Se o menu está sendo exibido, significa que o usuário está autenticado
+    // Não verificar isAuthenticated aqui pois pode haver inconsistência de estado
+    // O middleware já protege as rotas que precisam de autenticação
     router.push(href)
     console.log('✅ Navegação executada para:', href)
   }
@@ -124,7 +118,8 @@ export const UserMenu = () => {
     }
   }, [isOpen])
 
-  if (!isAuthenticated || !profile) {
+  // Não renderizar durante loading ou se não autenticado
+  if (loading || !isAuthenticated || !profile) {
     return null
   }
 
