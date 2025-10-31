@@ -207,11 +207,8 @@ export default function MyAccountPage() {
               {showAvatarUpload && (
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                   <ImageUploader
-                    currentImage={profile?.avatar_url || undefined}
-                    onImageUploaded={handleAvatarUploaded}
-                    folder="profiles/avatars"
-                    aspectRatio={1}
-                    maxSizeMB={2}
+                    value={profile?.avatar_url || undefined}
+                    onChange={handleAvatarUploaded}
                   />
                 </div>
               )}

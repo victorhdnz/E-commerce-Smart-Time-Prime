@@ -236,10 +236,7 @@ export default function NovoProduct() {
               )}
 
               <ImageUploader
-                onImageUploaded={handleAddImage}
-                bucket="products"
-                folder="main"
-                aspectRatio={1}
+                onChange={handleAddImage}
               />
             </div>
 

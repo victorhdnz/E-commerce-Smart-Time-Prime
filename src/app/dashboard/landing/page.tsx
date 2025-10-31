@@ -400,10 +400,8 @@ export default function EditLandingPage() {
                   </span>
                 </label>
                 <ImageUploader
-                  currentImage={settings.about_image}
-                  onImageUploaded={(url) => setSettings({ ...settings, about_image: url })}
-                  folder="banners/about"
-                  aspectRatio={1}
+                  value={settings.about_image}
+                  onChange={(url) => setSettings({ ...settings, about_image: url })}
                 />
               </div>
             </div>
@@ -674,10 +672,8 @@ export default function EditLandingPage() {
                   </span>
                 </label>
                 <ImageUploader
-                  currentImage={settings.showcase_image_1}
-                  onImageUploaded={(url) => setSettings({ ...settings, showcase_image_1: url })}
-                  folder="banners/showcase"
-                  aspectRatio={1}
+                  value={settings.showcase_image_1}
+                  onChange={(url) => setSettings({ ...settings, showcase_image_1: url })}
                 />
               </div>
 
@@ -690,10 +686,8 @@ export default function EditLandingPage() {
                   </span>
                 </label>
                 <ImageUploader
-                  currentImage={settings.showcase_image_2}
-                  onImageUploaded={(url) => setSettings({ ...settings, showcase_image_2: url })}
-                  folder="banners/showcase"
-                  aspectRatio={1}
+                  value={settings.showcase_image_2}
+                  onChange={(url) => setSettings({ ...settings, showcase_image_2: url })}
                 />
               </div>
 
@@ -706,10 +700,8 @@ export default function EditLandingPage() {
                   </span>
                 </label>
                 <ImageUploader
-                  currentImage={settings.showcase_image_3}
-                  onImageUploaded={(url) => setSettings({ ...settings, showcase_image_3: url })}
-                  folder="banners/showcase"
-                  aspectRatio={1}
+                  value={settings.showcase_image_3}
+                  onChange={(url) => setSettings({ ...settings, showcase_image_3: url })}
                 />
               </div>
 
@@ -722,10 +714,8 @@ export default function EditLandingPage() {
                   </span>
                 </label>
                 <ImageUploader
-                  currentImage={settings.showcase_image_4}
-                  onImageUploaded={(url) => setSettings({ ...settings, showcase_image_4: url })}
-                  folder="banners/showcase"
-                  aspectRatio={1}
+                  value={settings.showcase_image_4}
+                  onChange={(url) => setSettings({ ...settings, showcase_image_4: url })}
                 />
               </div>
 
@@ -738,10 +728,8 @@ export default function EditLandingPage() {
                   </span>
                 </label>
                 <VideoUploader
-                  currentVideo={settings.showcase_video_url}
-                  onVideoUploaded={(url) => setSettings({ ...settings, showcase_video_url: url })}
-                  folder="banners/videos"
-                  maxSizeMB={50}
+                  value={settings.showcase_video_url}
+                  onChange={(url) => setSettings({ ...settings, showcase_video_url: url })}
                 />
               </div>
             </div>
@@ -753,7 +741,6 @@ export default function EditLandingPage() {
               <Save size={18} className="mr-2" />
               Salvar Alterações
             </Button>
-          </div>
           </div>
 
           {/* Sidebar */}
