@@ -48,7 +48,7 @@ export async function GET() {
         avatarUrl: profile.avatar_url
       } : null,
       isAuthenticated: !!session?.user,
-      hasValidSession: !!session && session.expires_at > Date.now() / 1000
+      hasValidSession: !!session && !!session.expires_at && session.expires_at > Date.now() / 1000
     })
 
   } catch (error) {
