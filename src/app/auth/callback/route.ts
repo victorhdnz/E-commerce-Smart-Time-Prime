@@ -11,11 +11,11 @@ export async function GET(request: Request) {
 
   // Se já veio com erro do OAuth provider
   if (error) {
-    return NextResponse.redirect(`${requestUrl.origin}/login?error=${error}`)
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/login?error=${error}`)
   }
 
   if (!code) {
-    return NextResponse.redirect(`${requestUrl.origin}/login?error=no_code`)
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/login?error=no_code`)
   }
 
   try {
@@ -26,11 +26,11 @@ export async function GET(request: Request) {
     
     if (sessionError) {
       console.error('Erro ao trocar código por sessão:', sessionError)
-      return NextResponse.redirect(`${requestUrl.origin}/login?error=session_exchange_failed`)
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/login?error=session_exchange_failed`)
     }
 
     if (!sessionData?.session?.user) {
-      return NextResponse.redirect(`${requestUrl.origin}/login?error=no_user`)
+      return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/login?error=no_user`)
     }
 
     const user = sessionData.session.user
@@ -59,10 +59,10 @@ export async function GET(request: Request) {
     }
 
     // Redirecionar para a página de origem com parâmetro para forçar refresh
-    return NextResponse.redirect(`${requestUrl.origin}?auth=success`)
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}?auth=success`)
   } catch (error: any) {
     console.error('Erro no callback:', error)
-    return NextResponse.redirect(`${requestUrl.origin}/login?error=unexpected_error`)
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/login?error=unexpected_error`)
   }
 }
 
