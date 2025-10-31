@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { ImageUploader } from '@/components/ui/ImageUploader'
-import { motion } from 'framer-motion'
+
 import toast from 'react-hot-toast'
 import { User, Mail, Phone, MapPin, Package, LogOut, Camera } from 'lucide-react'
 import Link from 'next/link'
@@ -216,11 +216,7 @@ export default function MyAccountPage() {
 
         {/* Content */}
         <div className="lg:col-span-2">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
+          <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold mb-6">Dados Pessoais</h2>
 
             <div className="space-y-4">
@@ -258,42 +254,27 @@ export default function MyAccountPage() {
                 Salvar Alterações
               </Button>
             </div>
-          </motion.div>
+          </div>
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white rounded-lg shadow-md p-6 text-center"
-            >
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
               <Package size={32} className="mx-auto mb-2 text-accent" />
               <p className="text-3xl font-bold">0</p>
               <p className="text-gray-600">Pedidos Realizados</p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-lg shadow-md p-6 text-center"
-            >
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
               <MapPin size={32} className="mx-auto mb-2 text-accent" />
               <p className="text-3xl font-bold">0</p>
               <p className="text-gray-600">Endereços Salvos</p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white rounded-lg shadow-md p-6 text-center"
-            >
+            <div className="bg-white rounded-lg shadow-md p-6 text-center">
               <Mail size={32} className="mx-auto mb-2 text-accent" />
               <p className="text-3xl font-bold">5%</p>
               <p className="text-gray-600">Desconto PIX</p>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
