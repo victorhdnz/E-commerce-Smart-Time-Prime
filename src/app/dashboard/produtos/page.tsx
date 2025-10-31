@@ -48,13 +48,17 @@ export default function DashboardProductsPage() {
   // Fechar dropdown ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (showSyncOptions) {
+      const target = event.target as HTMLElement
+      // Não fechar se clicar dentro do dropdown ou no botão
+      if (showSyncOptions && !target.closest('.sync-dropdown-container')) {
         setShowSyncOptions(false)
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    if (showSyncOptions) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
   }, [showSyncOptions])
 
   const loadProducts = async () => {
@@ -296,10 +300,13 @@ export default function DashboardProductsPage() {
 
           <div className="flex flex-wrap items-center gap-3">
             {/* Sync Dropdown */}
-            <div className="relative">
+            <div className="relative sync-dropdown-container">
               <Button
                 variant="outline"
-                onClick={() => setShowSyncOptions(!showSyncOptions)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowSyncOptions(!showSyncOptions)
+                }}
                 isLoading={syncing}
                 className="flex items-center gap-2"
               >
@@ -309,24 +316,29 @@ export default function DashboardProductsPage() {
               </Button>
               
               {showSyncOptions && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border z-10">
+                <div 
+                  className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <div className="p-2">
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation()
                         syncBlingProducts(false)
                         setShowSyncOptions(false)
                       }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-md"
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-md transition-colors"
                     >
                       <div className="font-medium">Todos os produtos</div>
                       <div className="text-sm text-gray-500">Sincronizar todos os produtos do Bling</div>
                     </button>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation()
                         syncBlingProducts(true)
                         setShowSyncOptions(false)
                       }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-md"
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-md transition-colors"
                     >
                       <div className="font-medium">Apenas com estoque</div>
                       <div className="text-sm text-gray-500">Sincronizar apenas produtos em estoque</div>

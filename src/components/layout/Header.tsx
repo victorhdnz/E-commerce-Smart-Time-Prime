@@ -104,10 +104,17 @@ export const Header = () => {
             </Link>
 
             {/* User Menu */}
-            {isAuthenticated && profile ? (
+            {loading ? (
+              <div className="w-16 h-8 bg-gray-200 animate-pulse rounded" />
+            ) : isAuthenticated && profile ? (
               <UserMenu />
             ) : (
-              <Link href="/login">
+              <Link href="/login" onClick={(e) => {
+                // Se já estiver autenticado mas ainda carregando, prevenir navegação
+                if (loading) {
+                  e.preventDefault()
+                }
+              }}>
                 <Button size="sm">Entrar</Button>
               </Link>
             )}

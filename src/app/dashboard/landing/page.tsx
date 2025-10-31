@@ -31,6 +31,10 @@ interface LandingSettings {
   showcase_image_3: string
   showcase_image_4: string
   showcase_video_url: string
+  timer_title: string
+  timer_end_date: string
+  timer_bg_color: string
+  timer_text_color: string
   theme_colors: {
     primary: string
     secondary: string
@@ -64,6 +68,10 @@ export default function EditLandingPage() {
     showcase_image_3: '',
     showcase_image_4: '',
     showcase_video_url: '',
+    timer_title: '⚡ Black Friday - Tempo Limitado!',
+    timer_end_date: '',
+    timer_bg_color: '#000000',
+    timer_text_color: '#FFFFFF',
     theme_colors: {
       primary: '#000000',
       secondary: '#ffffff',
@@ -111,6 +119,12 @@ export default function EditLandingPage() {
           showcase_image_3: savedSettings.showcase_image_3 || '',
           showcase_image_4: savedSettings.showcase_image_4 || '',
           showcase_video_url: savedSettings.showcase_video_url || '',
+          timer_title: savedSettings.timer_title || '⚡ Black Friday - Tempo Limitado!',
+          timer_end_date: savedSettings.timer_end_date 
+            ? new Date(savedSettings.timer_end_date).toISOString().slice(0, 16)
+            : '',
+          timer_bg_color: savedSettings.timer_bg_color || '#000000',
+          timer_text_color: savedSettings.timer_text_color || '#FFFFFF',
           theme_colors: savedSettings.theme_colors || {
             primary: '#000000',
             secondary: '#666666',
@@ -134,6 +148,10 @@ export default function EditLandingPage() {
           showcase_image_3: '',
           showcase_image_4: '',
           showcase_video_url: '',
+          timer_title: '⚡ Black Friday - Tempo Limitado!',
+          timer_end_date: '',
+          timer_bg_color: '#000000',
+          timer_text_color: '#FFFFFF',
           theme_colors: {
             primary: '#000000',
             secondary: '#666666',
@@ -165,13 +183,20 @@ export default function EditLandingPage() {
         .eq('key', 'general')
         .maybeSingle()
 
+      // Preparar configurações para salvar (converter timer_end_date para ISO string)
+      const settingsToSave = {
+        ...settings,
+        timer_end_date: settings.timer_end_date 
+          ? new Date(settings.timer_end_date).toISOString()
+          : null,
+      }
 
       if (existing) {
         // Atualizar existente
         const { error } = await supabase
           .from('site_settings')
           .update({
-            value: settings,
+            value: settingsToSave,
             updated_at: new Date().toISOString(),
           })
           .eq('key', 'general')
@@ -183,7 +208,7 @@ export default function EditLandingPage() {
           .from('site_settings')
           .insert({
             key: 'general',
-            value: settings,
+            value: settingsToSave,
             description: 'Configurações gerais do site',
           })
 
@@ -441,6 +466,142 @@ export default function EditLandingPage() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
+            </div>
+          </motion.div>
+
+          {/* Timer Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h2 className="text-2xl font-bold mb-6">Cronômetro (Timer)</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Configure o cronômetro de contagem regressiva que aparece na página inicial.
+            </p>
+            
+            <div className="space-y-6">
+              {/* Título do Timer */}
+              <div>
+                <Input
+                  label="Título do Timer"
+                  value={settings.timer_title}
+                  onChange={(e) =>
+                    setSettings({ ...settings, timer_title: e.target.value })
+                  }
+                  placeholder="Ex: ⚡ Black Friday - Tempo Limitado!"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Este texto aparecerá acima do cronômetro
+                </p>
+              </div>
+
+              {/* Data de Término */}
+              <div>
+                <Input
+                  label="Data e Hora de Término"
+                  type="datetime-local"
+                  value={settings.timer_end_date}
+                  onChange={(e) =>
+                    setSettings({ ...settings, timer_end_date: e.target.value })
+                  }
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Defina quando o cronômetro deve terminar
+                </p>
+              </div>
+
+              {/* Cores */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cor de Fundo
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={settings.timer_bg_color}
+                      onChange={(e) =>
+                        setSettings({ ...settings, timer_bg_color: e.target.value })
+                      }
+                      className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                    />
+                    <Input
+                      value={settings.timer_bg_color}
+                      onChange={(e) =>
+                        setSettings({ ...settings, timer_bg_color: e.target.value })
+                      }
+                      placeholder="#000000"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Cor de fundo do cronômetro
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cor do Texto
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={settings.timer_text_color}
+                      onChange={(e) =>
+                        setSettings({ ...settings, timer_text_color: e.target.value })
+                      }
+                      className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                    />
+                    <Input
+                      value={settings.timer_text_color}
+                      onChange={(e) =>
+                        setSettings({ ...settings, timer_text_color: e.target.value })
+                      }
+                      placeholder="#FFFFFF"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Cor do texto e números do cronômetro
+                  </p>
+                </div>
+              </div>
+
+              {/* Preview */}
+              {settings.timer_end_date && (
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Preview</h3>
+                  <div
+                    className="rounded-lg p-8 text-center"
+                    style={{
+                      backgroundColor: settings.timer_bg_color,
+                      color: settings.timer_text_color,
+                    }}
+                  >
+                    <h4 className="text-xl font-bold mb-4">{settings.timer_title}</h4>
+                    <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
+                      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4">
+                        <div className="text-3xl font-bold">00</div>
+                        <div className="text-sm opacity-75 mt-1">DIAS</div>
+                      </div>
+                      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4">
+                        <div className="text-3xl font-bold">00</div>
+                        <div className="text-sm opacity-75 mt-1">HORAS</div>
+                      </div>
+                      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4">
+                        <div className="text-3xl font-bold">00</div>
+                        <div className="text-sm opacity-75 mt-1">MIN</div>
+                      </div>
+                      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4">
+                        <div className="text-3xl font-bold">00</div>
+                        <div className="text-sm opacity-75 mt-1">SEG</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
 
