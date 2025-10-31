@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/Input'
 import { ImageUploader } from '@/components/ui/ImageUploader'
 
 import toast from 'react-hot-toast'
-import { User, Mail, Phone, MapPin, Package, LogOut, Camera } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Package, LogOut, Camera, Settings, CreditCard } from 'lucide-react'
 import Link from 'next/link'
 
 export default function MyAccountPage() {
@@ -17,10 +17,46 @@ export default function MyAccountPage() {
 
   const [loading, setLoading] = useState(false)
   const [showAvatarUpload, setShowAvatarUpload] = useState(false)
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    totalAddresses: 0,
+    loading: true
+  })
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
   })
+
+  // Função para carregar estatísticas
+  const loadStats = async () => {
+    if (!profile?.id) return
+
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+
+      // Carregar total de pedidos
+      const { count: ordersCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', profile.id)
+
+      // Carregar total de endereços
+      const { count: addressesCount } = await supabase
+        .from('addresses')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', profile.id)
+
+      setStats({
+        totalOrders: ordersCount || 0,
+        totalAddresses: addressesCount || 0,
+        loading: false
+      })
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error)
+      setStats(prev => ({ ...prev, loading: false }))
+    }
+  }
 
   useEffect(() => {
     let mounted = true
@@ -33,6 +69,7 @@ export default function MyAccountPage() {
           full_name: profile.full_name || '',
           phone: profile.phone || '',
         })
+        loadStats()
       }
     }
 
@@ -269,21 +306,29 @@ export default function MyAccountPage() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <Link href="/minha-conta/pedidos" className="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow">
               <Package size={32} className="mx-auto mb-2 text-accent" />
-              <p className="text-3xl font-bold">0</p>
+              {stats.loading ? (
+                <div className="h-8 bg-gray-200 rounded w-12 mx-auto mb-2 animate-pulse" />
+              ) : (
+                <p className="text-3xl font-bold">{stats.totalOrders}</p>
+              )}
               <p className="text-gray-600">Pedidos Realizados</p>
-            </div>
+            </Link>
 
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <Link href="/minha-conta/enderecos" className="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow">
               <MapPin size={32} className="mx-auto mb-2 text-accent" />
-              <p className="text-3xl font-bold">0</p>
+              {stats.loading ? (
+                <div className="h-8 bg-gray-200 rounded w-12 mx-auto mb-2 animate-pulse" />
+              ) : (
+                <p className="text-3xl font-bold">{stats.totalAddresses}</p>
+              )}
               <p className="text-gray-600">Endereços Salvos</p>
-            </div>
+            </Link>
 
             <div className="bg-white rounded-lg shadow-md p-6 text-center">
-              <Mail size={32} className="mx-auto mb-2 text-accent" />
-              <p className="text-3xl font-bold">5%</p>
+              <CreditCard size={32} className="mx-auto mb-2 text-green-600" />
+              <p className="text-3xl font-bold text-green-600">5%</p>
               <p className="text-gray-600">Desconto PIX</p>
             </div>
           </div>

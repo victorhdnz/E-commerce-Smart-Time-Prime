@@ -13,6 +13,8 @@ import { Save, Eye, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
+import { LandingPreview } from '@/components/dashboard/LandingPreview'
+import { PublicationControls } from '@/components/dashboard/PublicationControls'
 
 interface LandingSettings {
   hero_title: string
@@ -43,6 +45,10 @@ export default function EditLandingPage() {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
+  const [isPublished, setIsPublished] = useState(true)
+  const [scheduledPublishAt, setScheduledPublishAt] = useState<string>()
+  const [lastPublishedAt, setLastPublishedAt] = useState<string>()
   const [settings, setSettings] = useState<LandingSettings>({
     hero_title: '',
     hero_subtitle: '',
@@ -80,9 +86,8 @@ export default function EditLandingPage() {
     try {
       const { data, error } = await supabase
         .from('site_settings')
-        .select('*')
+        .select('value, is_published, scheduled_publish_at, last_published_at')
         .eq('key', 'general')
-        .limit(1)
         .maybeSingle()
 
       if (error) throw error
@@ -136,6 +141,11 @@ export default function EditLandingPage() {
           }
         })
       }
+
+      // Carregar informações de publicação
+      setIsPublished(data?.is_published ?? true)
+      setScheduledPublishAt(data?.scheduled_publish_at || undefined)
+      setLastPublishedAt(data?.last_published_at || undefined)
     } catch (error) {
       console.error('Erro ao carregar configurações:', error)
       toast.error('Erro ao carregar configurações')
@@ -188,6 +198,84 @@ export default function EditLandingPage() {
     }
   }
 
+  const handlePublish = async () => {
+    try {
+      const { error } = await supabase
+        .from('site_settings')
+        .update({ 
+          is_published: true,
+          last_published_at: new Date().toISOString(),
+          scheduled_publish_at: null
+        })
+        .eq('key', 'general')
+
+      if (error) throw error
+
+      setIsPublished(true)
+      setLastPublishedAt(new Date().toISOString())
+      setScheduledPublishAt(undefined)
+      
+      toast.success('Configurações publicadas com sucesso!')
+    } catch (error) {
+      console.error('Erro ao publicar:', error)
+      toast.error('Erro ao publicar configurações')
+    }
+  }
+
+  const handleUnpublish = async () => {
+    try {
+      const { error } = await supabase
+        .from('site_settings')
+        .update({ is_published: false })
+        .eq('key', 'general')
+
+      if (error) throw error
+
+      setIsPublished(false)
+      toast.success('Configurações despublicadas')
+    } catch (error) {
+      console.error('Erro ao despublicar:', error)
+      toast.error('Erro ao despublicar configurações')
+    }
+  }
+
+  const handleSchedule = async (scheduledDateTime: string) => {
+    try {
+      const { error } = await supabase
+        .from('site_settings')
+        .update({ 
+          scheduled_publish_at: scheduledDateTime,
+          is_published: false
+        })
+        .eq('key', 'general')
+
+      if (error) throw error
+
+      setScheduledPublishAt(scheduledDateTime)
+      setIsPublished(false)
+    } catch (error) {
+      console.error('Erro ao agendar:', error)
+      throw error
+    }
+  }
+
+  const handleCancelSchedule = async () => {
+    try {
+      const { error } = await supabase
+        .from('site_settings')
+        .update({ scheduled_publish_at: null })
+        .eq('key', 'general')
+
+      if (error) throw error
+
+      setScheduledPublishAt(undefined)
+      toast.success('Agendamento cancelado')
+    } catch (error) {
+      console.error('Erro ao cancelar agendamento:', error)
+      toast.error('Erro ao cancelar agendamento')
+    }
+  }
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -207,12 +295,14 @@ export default function EditLandingPage() {
           backLabel="Voltar ao Dashboard"
           actions={
             <div className="flex gap-3">
-              <Link href="/" target="_blank">
-                <Button variant="outline">
-                  <Eye size={18} className="mr-2" />
-                  Visualizar
-                </Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                size="lg"
+                onClick={() => setShowPreview(true)}
+              >
+                <Eye size={18} className="mr-2" />
+                Pré-visualizar
+              </Button>
               <Button onClick={handleSave} isLoading={saving}>
                 <Save size={18} className="mr-2" />
                 Salvar Alterações
@@ -664,8 +754,39 @@ export default function EditLandingPage() {
               Salvar Alterações
             </Button>
           </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Publication Controls */}
+            <PublicationControls
+              isPublished={isPublished}
+              scheduledPublishAt={scheduledPublishAt}
+              lastPublishedAt={lastPublishedAt}
+              onPublish={handlePublish}
+              onUnpublish={handleUnpublish}
+              onSchedule={handleSchedule}
+              onCancelSchedule={handleCancelSchedule}
+              loading={saving}
+            />
+
+            {/* Save Button (Desktop) */}
+            <div className="hidden lg:block">
+              <Button onClick={handleSave} isLoading={saving} className="w-full" size="lg">
+                <Save size={18} className="mr-2" />
+                Salvar Alterações
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Componente de Pré-visualização */}
+      <LandingPreview
+        settings={settings}
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+      />
     </div>
   )
 }

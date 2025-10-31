@@ -90,6 +90,23 @@ export default function MyOrdersPage() {
     }
   }
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Aguardando Pagamento'
+      case 'processing':
+        return 'Processando'
+      case 'shipped':
+        return 'Enviado'
+      case 'delivered':
+        return 'Entregue'
+      case 'cancelled':
+        return 'Cancelado'
+      default:
+        return 'Desconhecido'
+    }
+  }
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending':
@@ -223,7 +240,7 @@ export default function MyOrdersPage() {
                         )}`}
                       >
                         {getStatusIcon(order.status)}
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        {getStatusText(order.status)}
                       </span>
                     </div>
 

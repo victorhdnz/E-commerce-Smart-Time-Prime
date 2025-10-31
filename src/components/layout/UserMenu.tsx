@@ -73,7 +73,16 @@ export const UserMenu = () => {
   const handleMenuClick = (href: string) => {
     console.log('🔗 Navegando para:', href)
     closeMenu()
-    // Forçar navegação usando router.push
+    
+    // Se usuário não está autenticado, redirecionar para login com returnUrl
+    if (!isAuthenticated) {
+      const returnUrl = encodeURIComponent(href)
+      router.push(`/login?returnUrl=${returnUrl}`)
+      console.log('🔐 Redirecionando para login com returnUrl:', href)
+      return
+    }
+    
+    // Se autenticado, navegar normalmente
     router.push(href)
     console.log('✅ Navegação executada para:', href)
   }

@@ -14,7 +14,19 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated && !loading) {
-      router.push('/')
+      // Verificar se há um returnUrl nos parâmetros da URL
+      const urlParams = new URLSearchParams(window.location.search)
+      const returnUrl = urlParams.get('returnUrl')
+      
+      if (returnUrl) {
+        // Decodificar e redirecionar para a URL original
+        const decodedUrl = decodeURIComponent(returnUrl)
+        console.log('🔄 Redirecionando pós-login para:', decodedUrl)
+        router.push(decodedUrl)
+      } else {
+        // Redirecionar para home se não há returnUrl
+        router.push('/')
+      }
     }
   }, [isAuthenticated, loading, router])
 
