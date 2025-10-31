@@ -153,7 +153,7 @@ export const UserMenu = () => {
     )
   }
 
-  // Se não autenticado, não mostrar
+  // Se não autenticado, não mostrar (deixar o Header mostrar o botão "Entrar")
   if (!isAuthenticated) {
     return null
   }

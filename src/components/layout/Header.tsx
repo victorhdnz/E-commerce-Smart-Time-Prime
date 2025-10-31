@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { ShoppingCart, User, Menu, X } from 'lucide-react'
+import { ShoppingCart, Menu, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
@@ -104,20 +104,12 @@ export const Header = () => {
             </Link>
 
             {/* User Menu */}
-            {loading ? (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200">
-                <User size={20} className="text-gray-400" />
-              </div>
-            ) : isAuthenticated ? (
-              <UserMenu />
-            ) : !loading ? (
+            {!loading && !isAuthenticated ? (
               <Link href="/login">
                 <Button size="sm">Entrar</Button>
               </Link>
             ) : (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200">
-                <User size={20} className="text-gray-400" />
-              </div>
+              <UserMenu />
             )}
 
             {/* Mobile Menu Toggle */}

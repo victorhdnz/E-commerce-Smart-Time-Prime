@@ -13,8 +13,6 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true)
   // Criar cliente Supabase uma vez usando useMemo para evitar recriações
   const supabase = useMemo(() => createClient(), [])
-  // Rastrear se o useEffect já foi executado para evitar múltiplas execuções
-  const hasInitializedRef = useRef(false)
 
   // Função auxiliar para garantir que o profile existe (memoizada)
   const ensureProfileExists = useCallback(async (userId: string, userEmail: string, userMetadata: any) => {
@@ -58,18 +56,11 @@ export const useAuth = () => {
   }, [supabase])
 
   useEffect(() => {
-    // Evitar múltiplas execuções do useEffect
-    if (hasInitializedRef.current) {
-      return
-    }
-    hasInitializedRef.current = true
-
     let mounted = true
     let timeoutId: NodeJS.Timeout | null = null
-    let hasCompleted = false
 
     const getUser = async () => {
-      if (!mounted || hasCompleted) return
+      if (!mounted) return
       
       setLoading(true)
       
@@ -77,7 +68,7 @@ export const useAuth = () => {
         // Verificar sessão de forma simples
         const { data: { session }, error } = await supabase.auth.getSession()
         
-        if (!mounted || hasCompleted) return
+        if (!mounted) return
         
         if (session?.user) {
           setUser(session.user)
@@ -89,7 +80,7 @@ export const useAuth = () => {
             .eq('id', session.user.id)
             .single()
 
-          if (!mounted || hasCompleted) return
+          if (!mounted) return
 
           if (profileError?.code === 'PGRST116') {
             // Profile não existe, criar (primeiro login)
@@ -99,48 +90,46 @@ export const useAuth = () => {
                 session.user.email || '',
                 session.user.user_metadata
               )
-              if (mounted && !hasCompleted) {
+              if (mounted) {
                 setProfile(newProfile)
               }
             } catch (createError) {
               console.error('Erro ao criar profile:', createError)
               // Mesmo se falhar ao criar, continuar sem profile para não travar
-              if (mounted && !hasCompleted) {
+              if (mounted) {
                 setProfile(null)
               }
             }
           } else if (profileError) {
             console.error('Erro ao buscar perfil:', profileError)
-            if (mounted && !hasCompleted) {
+            if (mounted) {
               setProfile(null)
             }
           } else {
-            if (mounted && !hasCompleted) {
+            if (mounted) {
               setProfile(profile as AppUser || null)
             }
           }
         } else {
           // Não há sessão
-          if (mounted && !hasCompleted) {
+          if (mounted) {
             setUser(null)
             setProfile(null)
           }
         }
       } catch (error: any) {
         console.error('Erro ao buscar sessão:', error)
-        if (mounted && !hasCompleted) {
+        if (mounted) {
           setUser(null)
           setProfile(null)
         }
       } finally {
         // Sempre definir loading como false, mesmo em caso de erro
-        if (mounted && !hasCompleted) {
-          hasCompleted = true
-          // Limpar timeout se ainda existir
-          if (timeoutId) {
-            clearTimeout(timeoutId)
-            timeoutId = null
-          }
+        if (mounted && timeoutId) {
+          clearTimeout(timeoutId)
+          timeoutId = null
+        }
+        if (mounted) {
           setLoading(false)
         }
       }
@@ -148,18 +137,22 @@ export const useAuth = () => {
 
     // Timeout de segurança: se passar de 5 segundos, forçar loading = false
     timeoutId = setTimeout(() => {
-      if (mounted && !hasCompleted) {
-        hasCompleted = true
+      if (mounted) {
         console.warn('⚠️ Timeout de autenticação - forçando loading = false')
         setLoading(false)
       }
     }, 5000)
 
-    getUser()
+    getUser().then(() => {
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+        timeoutId = null
+      }
+    })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!mounted || hasCompleted) return
+        if (!mounted) return
         
         // Não alterar loading aqui para evitar conflitos
         // Apenas atualizar user e profile
@@ -173,7 +166,7 @@ export const useAuth = () => {
               .eq('id', session.user.id)
               .single()
 
-            if (!mounted || hasCompleted) return
+            if (!mounted) return
             
             if (profileError?.code === 'PGRST116') {
               const newProfile = await ensureProfileExists(
@@ -181,43 +174,40 @@ export const useAuth = () => {
                 session.user.email || '',
                 session.user.user_metadata
               )
-              if (mounted && !hasCompleted) {
+              if (mounted) {
                 setProfile(newProfile)
               }
             } else if (profileError) {
-              if (mounted && !hasCompleted) {
+              if (mounted) {
                 setProfile(null)
               }
             } else {
-              if (mounted && !hasCompleted) {
+              if (mounted) {
                 setProfile(profile as AppUser || null)
               }
             }
           } catch (error) {
-            if (mounted && !hasCompleted) {
+            if (mounted) {
               setProfile(null)
             }
           }
         } else {
-          if (mounted && !hasCompleted) {
+          if (mounted) {
             setProfile(null)
           }
         }
       }
     )
 
-    // Cleanup ao desmontar ou quando dependências mudarem
     return () => {
       mounted = false
-      hasCompleted = true
-      hasInitializedRef.current = false
       if (timeoutId) {
         clearTimeout(timeoutId)
         timeoutId = null
       }
       subscription.unsubscribe()
     }
-  }, [supabase, ensureProfileExists]) // Adicionar dependências
+  }, [supabase, ensureProfileExists]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const signInWithGoogle = async (returnUrl?: string) => {
     // Salvar returnUrl no localStorage para recuperar após login
