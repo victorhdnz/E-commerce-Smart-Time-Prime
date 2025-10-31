@@ -21,10 +21,20 @@ export default function LoginPage() {
     return undefined
   }
 
+  const [hasRedirected, setHasRedirected] = useState(false)
+
   useEffect(() => {
+    if (hasRedirected) return
+    
     if (isAuthenticated && !loading) {
+      setHasRedirected(true)
       const urlParams = new URLSearchParams(window.location.search)
-      const returnUrl = urlParams.get('returnUrl')
+      const returnUrl = urlParams.get('returnUrl') || localStorage.getItem('auth_return_url')
+      
+      // Limpar returnUrl do localStorage após usar
+      if (localStorage.getItem('auth_return_url')) {
+        localStorage.removeItem('auth_return_url')
+      }
       
       if (returnUrl) {
         try {
@@ -36,7 +46,7 @@ export default function LoginPage() {
         router.push('/')
       }
     }
-  }, [isAuthenticated, loading, router])
+  }, [isAuthenticated, loading, router, hasRedirected])
 
   if (loading) {
     return (

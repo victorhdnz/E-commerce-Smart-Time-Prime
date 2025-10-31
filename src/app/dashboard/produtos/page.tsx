@@ -10,6 +10,7 @@ import { formatCurrency } from '@/lib/utils/format'
 import { Plus, Edit, Trash2, Eye, EyeOff, Package, RefreshCw, Link2, ChevronDown, Search, Filter, Star, MoreVertical } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import { BackButton } from '@/components/ui/BackButton'
 
 export default function DashboardProductsPage() {
   const router = useRouter()
@@ -23,6 +24,8 @@ export default function DashboardProductsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all')
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 20
 
   const supabase = createClient()
 
@@ -186,7 +189,19 @@ export default function DashboardProductsPage() {
     }
 
     setFilteredProducts(filtered)
+    setCurrentPage(1) // Reset to first page when filters change
   }, [products, searchTerm, statusFilter, stockFilter])
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedProducts = filteredProducts.slice(startIndex, endIndex)
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const handleBulkAction = async (action: 'activate' | 'deactivate' | 'feature' | 'unfeature' | 'delete') => {
     if (selectedProducts.length === 0) {
@@ -267,6 +282,9 @@ export default function DashboardProductsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mb-6">
+          <BackButton href="/dashboard" />
+        </div>
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
           <div>
@@ -462,7 +480,7 @@ export default function DashboardProductsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredProducts.map((product) => (
+                {paginatedProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <input
@@ -610,6 +628,61 @@ export default function DashboardProductsPage() {
                   </Button>
                 </Link>
               )}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {filteredProducts.length > 0 && totalPages > 1 && (
+            <div className="flex items-center justify-between border-t px-6 py-4">
+              <div className="text-sm text-gray-600">
+                Mostrando {startIndex + 1} a {Math.min(endIndex, filteredProducts.length)} de {filteredProducts.length} produtos
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Anterior
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => {
+                      // Mostrar primeira, última, e páginas próximas à atual
+                      return page === 1 || 
+                             page === totalPages || 
+                             (page >= currentPage - 2 && page <= currentPage + 2)
+                    })
+                    .map((page, index, array) => {
+                      // Adicionar "..." quando houver gaps
+                      const prevPage = array[index - 1]
+                      const showEllipsis = prevPage && page - prevPage > 1
+                      
+                      return (
+                        <div key={page} className="flex items-center gap-1">
+                          {showEllipsis && <span className="px-2 text-gray-400">...</span>}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => goToPage(page)}
+                            className={currentPage === page ? "bg-black text-white border-black" : ""}
+                          >
+                            {page}
+                          </Button>
+                        </div>
+                      )
+                    })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Próxima
+                </Button>
+              </div>
             </div>
           )}
         </div>

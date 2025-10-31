@@ -1,140 +1,135 @@
-# 🔗 Configuração do Webhook do Bling
+# 🔔 Configuração de WebHooks do Bling
 
 ## 📋 Visão Geral
 
-O webhook do Bling permite que o sistema receba notificações em tempo real sobre mudanças nos produtos e pedidos, mantendo os dados sempre sincronizados.
+Os webhooks do Bling permitem sincronização automática em tempo real de produtos, pedidos e estoque entre o Bling e o site.
 
-## ⚠️ IMPORTANTE: Callback vs Webhook
+## 🚀 Como Configurar
 
-**NÃO confunda as duas URLs!** Elas têm funções completamente diferentes:
+### 1. Obter URL do Webhook
 
-| Tipo | URL | Função | Quando é Usado |
-|------|-----|--------|----------------|
-| **Callback** | `/api/bling/callback` | OAuth - Autorização | Durante login/configuração inicial |
-| **Webhook** | `/api/bling/webhook` | Notificações automáticas | Quando algo muda no Bling |
-
-### 🔄 Callback (OAuth)
-- **Onde configurar**: Aba "Dados Básicos" → Link de Redirecionamento
-- **Função**: Recebe o código de autorização após o usuário autorizar o app
-- **Quando é usado**: Apenas durante o processo de autorização OAuth
-
-### 📡 Webhook (Notificações)
-- **Onde configurar**: Aba "Webhooks" → URL do Webhook
-- **Função**: Recebe notificações automáticas quando algo muda no Bling
-- **Quando é usado**: Sempre que um produto é criado/atualizado/excluído
-
-## 🛠️ Configuração no Painel do Bling
-
-### Passo 1: Acessar o Aplicativo
-1. Acesse o [painel de desenvolvedores do Bling](https://developer.bling.com.br/)
-2. Faça login com suas credenciais
-3. Navegue até o aplicativo já cadastrado
-
-### Passo 2: Configurar URLs (IMPORTANTE - São Diferentes!)
-
-#### 🔄 Na Aba "Dados Básicos":
-**Link de Redirecionamento** (para OAuth):
+A URL do webhook é:
 ```
-https://e-commerce-smart-time-prime-ef8c.vercel.app/api/bling/callback
+https://seu-dominio.com/api/webhooks/bling
 ```
 
-#### 📡 Na Aba "Webhooks":
-**URL do Webhook** (para notificações automáticas):
+**Exemplo (conforme seu `.env.local`):**
+- Vercel: `https://e-commerce-smart-time-prime-ef8c.vercel.app/api/bling/webhook`
+- Produção: `https://smarttimeprime.com.br/api/bling/webhook` (quando tiver domínio próprio)
+- Desenvolvimento: `http://localhost:3000/api/bling/webhook` (apenas para teste local)
+
+⚠️ **IMPORTANTE:** 
+- Use a URL completa do seu domínio hospedado (Vercel/Produção), não localhost!
+- Seu `.env.local` já tem a URL correta: `BLING_WEBHOOK_URL=https://e-commerce-smart-time-prime-ef8c.vercel.app/api/bling/webhook`
+
+### 2. Configurar no Bling
+
+1. Acesse o painel do Bling: https://www.bling.com.br/home
+2. Vá em **Configurações** > **Integrações** > **WebHooks**
+3. Clique em **Adicionar WebHook**
+4. Configure:
+   - **URL**: Cole a URL do webhook acima
+   - **Eventos**:
+     - ✅ `produto.criado`
+     - ✅ `produto.alterado`
+     - ✅ `produto.excluido`
+     - ✅ `pedidoVenda.criado`
+     - ✅ `pedidoVenda.alterado`
+     - ✅ `pedidoVenda.excluido`
+     - ✅ `estoqueProduto.alterado`
+
+### 3. Variáveis de Ambiente no `.env.local`
+
+As variáveis necessárias para o funcionamento do webhook:
+
+```env
+# Bling API Configuration (já existem)
+BLING_API_KEY=f094aa6b71466caaea6d9a25fe748021ea9f8248
+BLING_CLIENT_ID=405e0fa8e3996b81f9e14d9b00521c548cbde104
+BLING_CLIENT_SECRET=ec5f42e35eec0721fb8fc2b1cc54af374fb1491cab35d3a76259e1923ffc
+
+# URLs de referência (não usadas no código, apenas para documentação)
+BLING_REDIRECT_URI=https://e-commerce-smart-time-prime-ef8c.vercel.app/api/bling/callback
+BLING_WEBHOOK_URL=https://e-commerce-smart-time-prime-ef8c.vercel.app/api/bling/webhook
 ```
-https://e-commerce-smart-time-prime-ef8c.vercel.app/api/bling/webhook
+
+**Nota:** 
+- `BLING_WEBHOOK_URL` e `BLING_REDIRECT_URI` são apenas para referência
+- O código não usa essas variáveis diretamente
+- Use essas URLs ao configurar no painel do Bling
+
+### 4. (Opcional) Configurar Secret para Segurança
+
+Para aumentar a segurança, você pode configurar um secret:
+
+1. No arquivo `.env.local`, adicione:
+```env
+BLING_WEBHOOK_SECRET=seu_secret_aqui
 ```
 
-### Passo 3: Configurar Webhook
-1. Certifique-se que o aplicativo possui os escopos necessários:
-   - `produtos` (para notificações de produtos)
-   - `pedidos` (para notificações de pedidos)
+2. No painel do Bling, configure o mesmo secret
+3. No arquivo `src/app/api/webhooks/bling/route.ts`, descomente as linhas de verificação (linhas 27-33)
 
-2. Navegue até a aba **"Webhooks"**
-
-3. Configure o servidor que receberá os eventos com a URL do webhook (não a do callback!)
-
-### Passo 3: Selecionar Recursos
-Configure os recursos que deseja receber notificações:
-
-#### Para Produtos:
-- ✅ `produto.criado` - Quando um produto é criado
-- ✅ `produto.atualizado` - Quando um produto é atualizado
-- ✅ `produto.excluido` - Quando um produto é excluído
-
-#### Para Pedidos:
-- ✅ `pedido.criado` - Quando um pedido é criado
-- ✅ `pedido.atualizado` - Quando um pedido é atualizado
-
-### Passo 4: Configurações Avançadas
-- **Versão do Payload**: Selecione a versão mais recente
-- **Autenticação**: O webhook usa HMAC SHA-256 com o `client_secret`
-
-## 🔐 Segurança
-
-O webhook implementa verificação de assinatura usando HMAC SHA-256:
-
-```typescript
-// Verificação automática da assinatura
-const signature = request.headers.get('X-Bling-Signature-256')
-const isValid = verifyWebhookSignature(payload, signature)
-```
-
-## 📦 Eventos Processados
+## 📥 Eventos Processados
 
 ### Produtos
-- **Criação/Atualização**: Sincroniza automaticamente com o banco local
-- **Exclusão**: Marca o produto como inativo (não remove do banco)
+- **produto.criado**: Cria novo produto no site
+- **produto.alterado**: Atualiza produto existente
+- **produto.excluido**: Desativa produto (não exclui)
 
 ### Pedidos
-- **Criação/Atualização**: Registra logs para auditoria
-- Pode ser expandido para enviar emails, atualizar status, etc.
+- **pedidoVenda.criado**: Registra evento (pedidos são buscados via API)
+- **pedidoVenda.alterado**: Registra evento
+- **pedidoVenda.excluido**: Registra evento
 
-## 🧪 Teste do Webhook
+### Estoque
+- **estoqueProduto.alterado**: Atualiza estoque do produto automaticamente
 
-Para testar se o webhook está funcionando:
+## ✅ Vantagens
 
-1. **Criar um produto no Bling**
-2. **Verificar os logs do servidor**:
-   ```bash
-   # Logs aparecerão no terminal do servidor
-   📥 Webhook recebido: { event: 'produto.criado', data: {...} }
-   ✅ Produto criado via webhook: Nome do Produto
-   ```
+- ✅ Sincronização automática em tempo real
+- ✅ Não precisa executar sincronização manual
+- ✅ Estoque sempre atualizado
+- ✅ Novos produtos aparecem automaticamente
 
-3. **Verificar no banco de dados**:
-   - O produto deve aparecer automaticamente na página de produtos
-   - Não é necessário sincronização manual
+## 🔍 Testando
 
-## 🔧 Troubleshooting
+Após configurar, você pode testar:
 
-### Webhook não está sendo chamado
-1. Verifique se a URL está correta no painel do Bling
-2. Confirme que o aplicativo tem os escopos necessários
-3. Verifique se o token OAuth está válido
+1. Criar um produto no Bling → Deve aparecer no site automaticamente
+2. Alterar estoque no Bling → Deve atualizar no site automaticamente
+3. Criar um pedido no Bling → Evento será registrado
 
-### Erro de autenticação
-1. Confirme que `BLING_CLIENT_SECRET` está correto no `.env.local`
-2. Verifique se a assinatura está sendo enviada no header `X-Bling-Signature-256`
+## 📝 Logs
 
-### Produtos não aparecem após webhook
-1. Verifique os logs do servidor para erros
-2. Confirme que o produto tem `is_active: true`
-3. Verifique se não há erros na conexão com o Supabase
+Os logs aparecem no console do servidor (Vercel logs ou terminal local):
 
-## 📚 Documentação Oficial
+```
+Produto 12345 criado via webhook
+Estoque do produto 12345 atualizado via webhook
+```
 
-- [Webhooks do Bling](https://developer.bling.com.br/webhooks)
-- [Autenticação HMAC](https://developer.bling.com.br/webhooks#autenticacao)
+## ⚠️ Observações
 
-## 🎯 Próximos Passos
+- Os pedidos do Bling não são salvos no banco do site, apenas buscados via API quando necessário
+- Produtos excluídos no Bling são desativados (não excluídos) no site
+- A verificação de assinatura está ativa por padrão (usa `BLING_CLIENT_SECRET`)
 
-Após configurar o webhook:
+## ❓ Pergunta Frequente
 
-1. ✅ Teste criando um produto no Bling
-2. ✅ Verifique se aparece automaticamente no site
-3. ✅ Configure notificações por email (opcional)
-4. ✅ Implemente lógica adicional para pedidos (opcional)
+### Preciso usar Make.com ou Zapier?
 
----
+**Não!** O webhook do Bling envia dados **diretamente** para o Next.js, sem necessidade de intermediários. O fluxo é:
 
-**⚠️ Importante**: Lembre-se de atualizar a URL do webhook quando fizer deploy em produção!
+```
+Bling → Next.js → Supabase (automático)
+```
+
+Você só precisaria de Make.com se quisesse:
+- Integrar com múltiplos serviços externos simultaneamente
+- Processar/transformar dados antes de chegar no site
+- Enviar para múltiplos destinos (ex: site + email + CRM)
+
+Para sincronização simples Bling ↔ Site, o fluxo direto é mais rápido e confiável!
+
+📖 Veja `COMO_FUNCIONA_WEBHOOK.md` para mais detalhes.

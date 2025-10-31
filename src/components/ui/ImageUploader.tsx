@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Upload, X, Image as ImageIcon, FolderOpen } from 'lucide-react'
+import { Upload, X, Image as ImageIcon } from 'lucide-react'
 import { Button } from './Button'
-import { MediaManager } from '@/components/dashboard/MediaManager'
+import { ImageEditor } from './ImageEditor'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 
@@ -24,6 +24,8 @@ export function ImageUploader({
 }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(value || null)
+  const [showEditor, setShowEditor] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,20 +44,25 @@ export function ImageUploader({
       return
     }
 
-    setUploading(true)
+    // Mostrar editor ao invés de fazer upload direto
+    setSelectedFile(file)
+    setShowEditor(true)
     
-    try {
-      // Aqui você faria o upload real para Cloudinary ou outro serviço
-      // Por enquanto, vamos simular com um URL local
-      const imageUrl = URL.createObjectURL(file)
-      setPreview(imageUrl)
-      onChange(imageUrl)
-      toast.success('Imagem carregada com sucesso!')
-    } catch (error) {
-      toast.error('Erro ao fazer upload da imagem')
-    } finally {
-      setUploading(false)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
+  }
+
+  const handleEditorSave = (url: string) => {
+    setPreview(url)
+    onChange(url)
+    setShowEditor(false)
+    setSelectedFile(null)
+  }
+
+  const handleEditorCancel = () => {
+    setShowEditor(false)
+    setSelectedFile(null)
   }
 
   const handleMediaSelect = (url: string) => {
@@ -103,20 +110,11 @@ export function ImageUploader({
               <Button
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
-                isLoading={uploading}
                 disabled={uploading}
               >
                 <Upload size={16} className="mr-2" />
-                {uploading ? 'Carregando...' : 'Upload'}
+                {uploading ? 'Carregando...' : 'Upload e Editar'}
               </Button>
-              {showMediaManager && (
-                <MediaManager
-                  onSelectMedia={handleMediaSelect}
-                  acceptedTypes={['image/*']}
-                  maxSizeMB={5}
-                  folder="images"
-                />
-              )}
             </div>
           </div>
         )}
@@ -129,6 +127,14 @@ export function ImageUploader({
         onChange={handleFileSelect}
         className="hidden"
       />
+
+      {showEditor && selectedFile && (
+        <ImageEditor
+          file={selectedFile}
+          onSave={handleEditorSave}
+          onCancel={handleEditorCancel}
+        />
+      )}
     </div>
   )
 }

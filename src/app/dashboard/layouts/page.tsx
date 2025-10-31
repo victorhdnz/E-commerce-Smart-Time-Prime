@@ -11,6 +11,7 @@ import { SeasonalLayout } from '@/types'
 import { Plus, Edit, Copy, Trash2, Calendar, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatDateTime } from '@/lib/utils/format'
+import { BackButton } from '@/components/ui/BackButton'
 
 export default function DashboardLayoutsPage() {
   const router = useRouter()
@@ -285,6 +286,9 @@ export default function DashboardLayoutsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mb-6">
+          <BackButton href="/dashboard" />
+        </div>
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2">Layouts Sazonais</h1>

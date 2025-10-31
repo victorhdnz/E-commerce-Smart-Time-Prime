@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
 
     switch (event) {
       case 'produto.criado':
+      case 'produto.alterado':
       case 'produto.atualizado':
         await handleProductEvent(data)
         break
@@ -36,13 +37,24 @@ export async function POST(request: NextRequest) {
         await handleProductDeleted(data)
         break
       
+      case 'pedidoVenda.criado':
+      case 'pedidoVenda.alterado':
       case 'pedido.criado':
       case 'pedido.atualizado':
         await handleOrderEvent(data)
         break
       
+      case 'pedidoVenda.excluido':
+      case 'pedido.excluido':
+        await handleOrderDeleted(data)
+        break
+      
+      case 'estoqueProduto.alterado':
+        await handleStockChange(data)
+        break
+      
       default:
-        console.log(`ℹ️ Evento não processado: ${event}`)
+        console.log(`ℹ️ Evento não processado: ${event}`, data)
     }
 
     // Retornar 200 para confirmar recebimento
@@ -96,49 +108,69 @@ async function handleProductEvent(productData: any) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
+    const blingId = productData.id?.toString()
+    if (!blingId) {
+      console.error('❌ Produto sem ID do Bling')
+      return
+    }
+
     // Verificar se produto já existe
     const { data: existingProduct } = await supabase
       .from('products')
-      .select('id')
-      .eq('bling_id', productData.id)
-      .single()
+      .select('id, local_price, national_price')
+      .eq('bling_id', blingId)
+      .maybeSingle()
 
     const productPayload = {
-      bling_id: productData.id,
-      name: productData.nome,
-      slug: productData.nome?.toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
+      bling_id: blingId,
+      name: productData.nome || productData.name || '',
+      slug: (productData.nome || productData.name || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
         .replace(/\s+/g, '-')
-        .trim(),
-      description: productData.descricao || '',
-      short_description: productData.descricaoComplementar || '',
-      bling_price: parseFloat(productData.preco) || 0,
-      local_price: parseFloat(productData.preco) || 0,
-      national_price: parseFloat(productData.preco) || 0,
-      stock: productData.estoqueAtual || 0,
-      category: productData.categoria?.descricao || 'Geral',
-      is_active: true,
+        .replace(/[^\w-]+/g, ''),
+      description: productData.descricao || productData.description || '',
+      short_description: (productData.descricao || productData.description || '').substring(0, 150),
+      bling_price: parseFloat(productData.preco || productData.price || '0'),
+      local_price: parseFloat(productData.preco || productData.price || '0'),
+      national_price: parseFloat(productData.preco || productData.price || '0'),
+      stock: parseInt(productData.estoqueAtual || productData.stock || '0'),
+      category: productData.categoria?.descricao || productData.categoria || productData.category || null,
       updated_at: new Date().toISOString(),
+    }
+
+    // Preservar preços locais/nacionais se já existirem
+    if (existingProduct) {
+      productPayload.local_price = existingProduct.local_price || productPayload.bling_price
+      productPayload.national_price = existingProduct.national_price || productPayload.bling_price
     }
 
     if (existingProduct) {
       // Atualizar produto existente
       await supabase
         .from('products')
-        .update(productPayload)
-        .eq('bling_id', productData.id)
+        .update({
+          ...productPayload,
+          // Preservar preços locais/nacionais se já existirem
+          local_price: existingProduct.local_price || productPayload.local_price,
+          national_price: existingProduct.national_price || productPayload.national_price,
+        })
+        .eq('id', existingProduct.id)
       
-      console.log(`✅ Produto atualizado via webhook: ${productData.nome}`)
+      console.log(`✅ Produto ${blingId} atualizado via webhook: ${productPayload.name}`)
     } else {
       // Criar novo produto
       await supabase
         .from('products')
         .insert({
           ...productPayload,
+          is_active: true,
+          is_featured: false,
           created_at: new Date().toISOString(),
         })
       
-      console.log(`✅ Produto criado via webhook: ${productData.nome}`)
+      console.log(`✅ Produto ${blingId} criado via webhook: ${productPayload.name}`)
     }
 
   } catch (error) {
@@ -156,6 +188,9 @@ async function handleProductDeleted(productData: any) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
+    const blingId = productData.id?.toString()
+    if (!blingId) return
+
     // Marcar produto como inativo em vez de excluir
     await supabase
       .from('products')
@@ -163,9 +198,9 @@ async function handleProductDeleted(productData: any) {
         is_active: false,
         updated_at: new Date().toISOString()
       })
-      .eq('bling_id', productData.id)
+      .eq('bling_id', blingId)
 
-    console.log(`✅ Produto desativado via webhook: ${productData.id}`)
+    console.log(`✅ Produto ${blingId} desativado via webhook`)
 
   } catch (error) {
     console.error('❌ Erro ao processar exclusão de produto:', error)
@@ -177,11 +212,58 @@ async function handleProductDeleted(productData: any) {
  */
 async function handleOrderEvent(orderData: any) {
   try {
-    console.log(`📦 Pedido ${orderData.numero} processado via webhook`)
-    // Aqui você pode implementar lógica específica para pedidos
-    // Por exemplo: atualizar status, enviar emails, etc.
+    console.log(`📦 Pedido ${orderData.numero || orderData.id} processado via webhook`)
+    // Os pedidos do Bling não precisam ser salvos no banco do site
+    // Eles já são buscados via API quando necessário
+    // Aqui podemos apenas registrar o evento se necessário
 
   } catch (error) {
     console.error('❌ Erro ao processar evento de pedido:', error)
+  }
+}
+
+/**
+ * Processar exclusão de pedido
+ */
+async function handleOrderDeleted(orderData: any) {
+  try {
+    console.log(`📦 Pedido ${orderData.numero || orderData.id} excluído via webhook`)
+    // Os pedidos do Bling não são salvos no banco, apenas registramos o evento
+
+  } catch (error) {
+    console.error('❌ Erro ao processar exclusão de pedido:', error)
+  }
+}
+
+/**
+ * Processar mudanças de estoque
+ */
+async function handleStockChange(stockData: any) {
+  try {
+    const supabase = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const blingId = stockData.idProduto?.toString() || stockData.product_id?.toString() || stockData.id?.toString()
+
+    if (!blingId) {
+      console.error('❌ Estoque sem ID do produto')
+      return
+    }
+
+    // Atualizar estoque do produto
+    await supabase
+      .from('products')
+      .update({
+        stock: parseInt(stockData.estoqueAtual || stockData.stock || '0'),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('bling_id', blingId)
+
+    console.log(`✅ Estoque do produto ${blingId} atualizado via webhook: ${stockData.estoqueAtual || stockData.stock}`)
+
+  } catch (error) {
+    console.error('❌ Erro ao processar mudança de estoque:', error)
   }
 }

@@ -48,13 +48,29 @@ export async function POST(request: Request) {
     // Para cada produto do Bling
     for (const blingProduct of blingProducts) {
       try {
-        // Verificar se produto já existe (por bling_id ou nome)
-        const { data: existing } = await supabase
-          .from('products')
-          .select('id, bling_id, local_price, national_price')
-          .or(`bling_id.eq.${blingProduct.id},name.ilike.%${blingProduct.nome}%`)
-          .limit(1)
-          .maybeSingle()
+        // Verificar se produto já existe (primeiro por bling_id, depois por nome)
+        let existing = null
+        
+        if (blingProduct.id) {
+          const { data } = await supabase
+            .from('products')
+            .select('id, bling_id, local_price, national_price')
+            .eq('bling_id', blingProduct.id)
+            .limit(1)
+            .maybeSingle()
+          existing = data
+        }
+        
+        // Se não encontrou por bling_id, buscar por nome exato (case insensitive)
+        if (!existing && blingProduct.nome) {
+          const { data } = await supabase
+            .from('products')
+            .select('id, bling_id, local_price, national_price')
+            .ilike('name', blingProduct.nome.trim())
+            .limit(1)
+            .maybeSingle()
+          existing = data
+        }
 
         // Criar slug do nome
         const slug = blingProduct.nome

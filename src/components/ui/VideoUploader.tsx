@@ -44,16 +44,34 @@ export function VideoUploader({
     setUploading(true)
     
     try {
-      // Aqui você faria o upload real para Cloudinary ou outro serviço
-      // Por enquanto, vamos simular com um URL local
-      const videoUrl = URL.createObjectURL(file)
-      setPreview(videoUrl)
-      onChange(videoUrl)
+      // Fazer upload real para Cloudinary
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'videos')
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Erro ao fazer upload')
+      }
+
+      // Usar a URL do Cloudinary
+      setPreview(data.url)
+      onChange(data.url)
       toast.success('Vídeo carregado com sucesso!')
-    } catch (error) {
-      toast.error('Erro ao fazer upload do vídeo')
+    } catch (error: any) {
+      console.error('Erro no upload:', error)
+      toast.error(error.message || 'Erro ao fazer upload do vídeo')
     } finally {
       setUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 

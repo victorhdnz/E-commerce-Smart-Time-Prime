@@ -26,17 +26,30 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
     
+    // Detectar tipo de arquivo
+    const isVideo = file.type.startsWith('video/')
+    const resourceType = isVideo ? 'video' : 'image'
+    
     // Upload para Cloudinary
     const result = await new Promise((resolve, reject) => {
+      const uploadOptions: any = {
+        folder: folder,
+        resource_type: resourceType,
+      }
+
+      // Aplicar transformações apenas para imagens
+      if (!isVideo) {
+        uploadOptions.transformation = [
+          { quality: 'auto:good' },
+          { fetch_format: 'auto' }
+        ]
+      } else {
+        // Para vídeos, usar configurações otimizadas
+        uploadOptions.resource_type = 'video'
+      }
+
       const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: folder,
-          resource_type: 'auto',
-          transformation: [
-            { quality: 'auto:good' },
-            { fetch_format: 'auto' }
-          ]
-        },
+        uploadOptions,
         (error, result) => {
           if (error) reject(error)
           else resolve(result)

@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  UserCheck,
 } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils/format'
@@ -208,6 +209,20 @@ export default function DashboardPage() {
       icon: MessageSquare,
       href: '/dashboard/faq',
       color: 'bg-yellow-500',
+    },
+    {
+      title: 'Clientes',
+      description: 'Visualizar contas registradas e informações',
+      icon: UserCheck,
+      href: '/dashboard/clientes',
+      color: 'bg-green-500',
+    },
+    {
+      title: 'Vendas e Pedidos',
+      description: 'Filtrar e visualizar todas as vendas',
+      icon: ShoppingBag,
+      href: '/dashboard/vendas',
+      color: 'bg-indigo-500',
     },
     {
       title: 'Configurações',
