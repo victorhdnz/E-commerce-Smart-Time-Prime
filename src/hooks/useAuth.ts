@@ -65,83 +65,115 @@ export const useAuth = () => {
       setLoading(true)
       
       try {
-        // Verificar sessão de forma simples
-        const { data: { session }, error } = await supabase.auth.getSession()
+        // Verificar sessão de forma simples com timeout curto
+        const sessionPromise = supabase.auth.getSession()
+        const sessionTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session timeout')), 3000)
+        )
+        
+        const { data: { session }, error } = await Promise.race([
+          sessionPromise,
+          sessionTimeout
+        ]) as { data: { session: any }, error: any }
         
         if (!mounted) return
         
         if (session?.user) {
+          // Atualizar user imediatamente
           setUser(session.user)
           
-          // Buscar perfil
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-
-          if (!mounted) return
-
-          if (profileError?.code === 'PGRST116') {
-            // Profile não existe, criar (primeiro login)
+          // Buscar perfil de forma assíncrona (não bloqueia o loading)
+          // Isso permite que a UI seja atualizada rapidamente
+          ;(async () => {
             try {
-              const newProfile = await ensureProfileExists(
-                session.user.id,
-                session.user.email || '',
-                session.user.user_metadata
-              )
-              if (mounted) {
-                setProfile(newProfile)
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single()
+
+              if (!mounted) return
+
+              if (profileError?.code === 'PGRST116') {
+                // Profile não existe, criar (primeiro login)
+                try {
+                  const newProfile = await ensureProfileExists(
+                    session.user.id,
+                    session.user.email || '',
+                    session.user.user_metadata
+                  )
+                  if (mounted) {
+                    setProfile(newProfile)
+                  }
+                } catch (createError) {
+                  console.error('Erro ao criar profile:', createError)
+                  // Mesmo se falhar ao criar, continuar sem profile para não travar
+                  if (mounted) {
+                    setProfile(null)
+                  }
+                }
+              } else if (profileError) {
+                console.error('Erro ao buscar perfil:', profileError)
+                if (mounted) {
+                  setProfile(null)
+                }
+              } else {
+                if (mounted) {
+                  setProfile(profile as AppUser || null)
+                }
               }
-            } catch (createError) {
-              console.error('Erro ao criar profile:', createError)
-              // Mesmo se falhar ao criar, continuar sem profile para não travar
+            } catch (error: any) {
+              console.error('Erro ao buscar perfil:', error)
               if (mounted) {
                 setProfile(null)
               }
             }
-          } else if (profileError) {
-            console.error('Erro ao buscar perfil:', profileError)
-            if (mounted) {
-              setProfile(null)
-            }
-          } else {
-            if (mounted) {
-              setProfile(profile as AppUser || null)
-            }
+          })()
+          
+          // Finalizar loading imediatamente após obter a sessão
+          // O profile será carregado em background
+          if (mounted && timeoutId) {
+            clearTimeout(timeoutId)
+            timeoutId = null
+          }
+          if (mounted) {
+            setLoading(false)
           }
         } else {
           // Não há sessão
+          if (mounted && timeoutId) {
+            clearTimeout(timeoutId)
+            timeoutId = null
+          }
           if (mounted) {
             setUser(null)
             setProfile(null)
+            setLoading(false)
           }
         }
       } catch (error: any) {
         console.error('Erro ao buscar sessão:', error)
-        if (mounted) {
-          setUser(null)
-          setProfile(null)
-        }
-      } finally {
-        // Sempre definir loading como false, mesmo em caso de erro
         if (mounted && timeoutId) {
           clearTimeout(timeoutId)
           timeoutId = null
         }
         if (mounted) {
+          setUser(null)
+          setProfile(null)
           setLoading(false)
         }
       }
     }
 
-    // Timeout de segurança: se passar de 5 segundos, forçar loading = false
+    // Timeout de segurança: se passar de 10 segundos, forçar loading = false
+    // Aumentado para 10 segundos para dar mais tempo em conexões lentas
     timeoutId = setTimeout(() => {
       if (mounted) {
         console.warn('⚠️ Timeout de autenticação - forçando loading = false')
         setLoading(false)
+        timeoutId = null
       }
-    }, 5000)
+    }, 10000)
 
     getUser().then(() => {
       if (timeoutId) {
