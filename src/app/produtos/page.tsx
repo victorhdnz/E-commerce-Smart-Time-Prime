@@ -1,75 +1,95 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { ProductCard } from '@/components/products/ProductCard'
-import { ProductFilters } from '@/components/products/ProductFilters'
+import { useState, useEffect } from 'react'
 import { FadeInSection } from '@/components/ui/FadeInSection'
 import { PageLoadingSkeleton } from '@/components/ui/LoadingSkeleton'
+import { ProductCard } from '@/components/products/ProductCard'
+import { ProductFilters } from '@/components/products/ProductFilters'
+import { createClient } from '@/lib/supabase/client'
 import { Product } from '@/types'
-import { motion } from 'framer-motion'
+
+interface FilterState {
+  categories: string[]
+  priceRange: [number, number]
+  sortBy: string
+  search: string
+}
 
 export default function ProductsPage() {
+  console.log('🎯 ProductsPage renderizado!')
+  
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [categories, setCategories] = useState<string[]>([])
 
-  const supabase = createClient()
-
-  useEffect(() => {
-    loadProducts()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
   const loadProducts = async () => {
-    setLoading(true)
-    const { data } = await supabase
-      .from('products')
-      .select(`
-        *,
-        colors:product_colors(*)
-      `)
-      .eq('is_active', true)
-      .order('created_at', { ascending: false })
-
-    if (data) {
-      setProducts(data as any)
-      setFilteredProducts(data as any)
+    console.log('🚀 loadProducts executado!')
+    try {
+      setLoading(true)
+      console.log('📡 Fazendo requisição para API...')
       
+      const response = await fetch('/api/products')
+      const result = await response.json()
+      
+      console.log('📊 Resultado da API:', { 
+        success: result.success, 
+        count: result.count 
+      })
+
+      if (!result.success) {
+        console.error('❌ Erro na API:', result.error)
+        return
+      }
+
+      const productsData = result.products || []
+      console.log('✅ Produtos carregados:', productsData.length)
+      console.log('📦 Primeiros 3 produtos:', productsData.slice(0, 3).map((p: any) => ({ id: p.id, name: p.name })))
+      
+      setProducts(productsData)
+      setFilteredProducts(productsData)
+
       // Extrair categorias únicas
-      const uniqueCategories = Array.from(
-        new Set(data.map((p: any) => p.category).filter(Boolean))
-      ) as string[]
+      const uniqueCategories = [...new Set(productsData.map((p: any) => p.category).filter(Boolean))]
+      console.log('🏷️ Categorias encontradas:', uniqueCategories)
       setCategories(uniqueCategories)
+
+    } catch (error) {
+      console.error('❌ Erro na requisição:', error)
+      console.error('❌ Stack trace:', error)
+    } finally {
+      console.log('🏁 Finalizando loading...')
+      setLoading(false)
     }
-    setLoading(false)
   }
 
-  const handleFilterChange = (filters: any) => {
+  const handleFilterChange = (filters: FilterState) => {
     let filtered = [...products]
 
-    // Filtro por busca
-    if (filters.search) {
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(filters.search.toLowerCase())
-      )
-    }
-
-    // Filtro por categoria
+    // Filtrar por categoria
     if (filters.categories.length > 0) {
-      filtered = filtered.filter((p) =>
-        filters.categories.includes(p.category)
+      filtered = filtered.filter(product => 
+        filters.categories.includes(product.category || '')
       )
     }
 
-    // Filtro por preço
-    filtered = filtered.filter(
-      (p) =>
-        p.local_price >= filters.priceRange[0] &&
-        p.local_price <= filters.priceRange[1]
+    // Filtrar por faixa de preço
+    filtered = filtered.filter(product => 
+      product.local_price >= filters.priceRange[0] && 
+      product.local_price <= filters.priceRange[1]
     )
 
-    // Ordenação
+    // Filtrar por busca
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase()
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchTerm) ||
+        product.short_description?.toLowerCase().includes(searchTerm) ||
+        product.description?.toLowerCase().includes(searchTerm)
+      )
+    }
+
+    // Ordenar
     switch (filters.sortBy) {
       case 'price_asc':
         filtered.sort((a, b) => a.local_price - b.local_price)
@@ -84,77 +104,58 @@ export default function ProductsPage() {
         filtered.sort((a, b) => b.name.localeCompare(a.name))
         break
       case 'newest':
-        filtered.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        )
+        filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         break
       case 'featured':
-        filtered.sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0))
+      default:
+        filtered.sort((a, b) => {
+          if (a.is_featured && !b.is_featured) return -1
+          if (!a.is_featured && b.is_featured) return 1
+          return 0
+        })
         break
     }
 
     setFilteredProducts(filtered)
   }
 
+  useEffect(() => {
+    console.log('🚀 useEffect executado!')
+    loadProducts()
+  }, [])
+
   if (loading) {
     return <PageLoadingSkeleton />
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">
-          Nossa Coleção
-        </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Explore nossa seleção exclusiva de relógios premium
-        </p>
-        <div className="w-24 h-1 bg-black mx-auto mt-6" />
+    <FadeInSection>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Nossos Produtos</h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Descubra nossa coleção exclusiva de relógios premium
+          </p>
+        </div>
+
+        <ProductFilters 
+          onFilterChange={handleFilterChange}
+          categories={categories}
+        />
+
+        {filteredProducts.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-600">Nenhum produto encontrado.</p>
+            <p className="text-gray-500 mt-2">Tente ajustar os filtros ou buscar por outros termos.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </div>
-
-      {/* Filters */}
-      <ProductFilters 
-        onFilterChange={handleFilterChange}
-        categories={categories}
-      />
-
-      {/* Products Grid */}
-      {filteredProducts && filteredProducts.length > 0 ? (
-        <motion.div 
-          layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-        >
-          {filteredProducts.map((product, index) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              layout
-            >
-              <ProductCard product={product} />
-            </motion.div>
-          ))}
-        </motion.div>
-      ) : products.length > 0 ? (
-        <div className="text-center py-20">
-          <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-2xl font-semibold mb-2">Nenhum produto encontrado</h3>
-          <p className="text-gray-600">
-            Tente ajustar os filtros ou buscar por outro termo.
-          </p>
-        </div>
-      ) : (
-        <div className="text-center py-20">
-          <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-2xl font-semibold mb-2">Nenhum produto encontrado</h3>
-          <p className="text-gray-600">
-            Estamos atualizando nosso catálogo. Volte em breve!
-          </p>
-        </div>
-      )}
-    </div>
+    </FadeInSection>
   )
 }
-
