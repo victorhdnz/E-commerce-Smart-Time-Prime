@@ -6,13 +6,14 @@ import { useAuth } from '@/hooks/useAuth'
 import { User, Package, LayoutDashboard, LogOut } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMobile } from '@/hooks/useMobile'
+import { isAdminEmail } from '@/lib/utils/admin'
 
 export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const { profile, signOut, isAuthenticated, loading } = useAuth()
+  const { profile, signOut, isAuthenticated, loading, user } = useAuth()
   const router = useRouter()
   const isMobile = useMobile()
 
@@ -100,7 +101,7 @@ export const UserMenu = () => {
       label: 'Dashboard',
       href: '/dashboard',
       icon: LayoutDashboard,
-      visible: profile?.role === 'admin' || profile?.role === 'editor',
+      visible: isAdminEmail(user?.email),
       description: 'Painel administrativo'
     }
   ].filter(item => item.visible)

@@ -60,18 +60,14 @@ export async function middleware(req: NextRequest) {
     }
   )
 
-  // Usar getUser() em vez de getSession() para melhor compatibilidade com SSR/Vercel
-  // O getUser() é mais confiável em ambientes de edge/serverless
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser()
+  // Verificar sessão de forma simples
+  const { data: { session } } = await supabase.auth.getSession()
 
   // Proteger rotas do dashboard
   if (req.nextUrl.pathname.startsWith('/dashboard')) {
-    if (!user || userError) {
+    if (!session?.user) {
       const loginUrl = new URL('/login', req.url)
-      loginUrl.searchParams.set('returnUrl', encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search))
+      loginUrl.searchParams.set('returnUrl', encodeURIComponent(req.nextUrl.pathname))
       return NextResponse.redirect(loginUrl)
     }
 
@@ -79,7 +75,7 @@ export async function middleware(req: NextRequest) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', session.user.id)
       .single()
 
     if (!profile || (profile.role !== 'admin' && profile.role !== 'editor')) {
@@ -92,9 +88,9 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith('/checkout') ||
     req.nextUrl.pathname.startsWith('/minha-conta')
   ) {
-    if (!user || userError) {
+    if (!session?.user) {
       const loginUrl = new URL('/login', req.url)
-      loginUrl.searchParams.set('returnUrl', encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search))
+      loginUrl.searchParams.set('returnUrl', encodeURIComponent(req.nextUrl.pathname))
       return NextResponse.redirect(loginUrl)
     }
   }

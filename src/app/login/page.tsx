@@ -21,48 +21,22 @@ export default function LoginPage() {
     return undefined
   }
 
-  const [hasRedirected, setHasRedirected] = useState(false)
-
   useEffect(() => {
-    // Evitar redirecionamento múltiplo
-    if (hasRedirected) return
-    
     if (isAuthenticated && !loading) {
-      setHasRedirected(true)
-      
-      // Verificar se há um returnUrl nos parâmetros da URL
       const urlParams = new URLSearchParams(window.location.search)
       const returnUrl = urlParams.get('returnUrl')
       
       if (returnUrl) {
         try {
-          const decodedUrl = decodeURIComponent(returnUrl)
-          console.log('🔄 Redirecionando pós-login para:', decodedUrl)
-          router.push(decodedUrl)
-        } catch (error) {
-          console.error('Erro ao decodificar returnUrl:', error)
+          router.push(decodeURIComponent(returnUrl))
+        } catch {
           router.push('/')
         }
       } else {
-        // Verificar se há returnUrl no localStorage (caso tenha vindo do OAuth)
-        const storedReturnUrl = localStorage.getItem('auth_return_url')
-        if (storedReturnUrl) {
-          localStorage.removeItem('auth_return_url')
-          try {
-            const decodedUrl = decodeURIComponent(storedReturnUrl)
-            console.log('🔄 Redirecionando pós-login (localStorage) para:', decodedUrl)
-            router.push(decodedUrl)
-          } catch (error) {
-            console.error('Erro ao decodificar returnUrl do localStorage:', error)
-            router.push('/')
-          }
-        } else {
-          // Redirecionar para home se não há returnUrl
-          router.push('/')
-        }
+        router.push('/')
       }
     }
-  }, [isAuthenticated, loading, router, hasRedirected])
+  }, [isAuthenticated, loading, router])
 
   if (loading) {
     return (
