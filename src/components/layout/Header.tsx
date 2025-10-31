@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { Button } from '@/components/ui/Button'
+import { UserMenu } from './UserMenu'
+import { AuthDebug } from './AuthDebug'
 
 export const Header = () => {
   const router = useRouter()
@@ -64,6 +66,7 @@ export const Header = () => {
 
   return (
     <header className="sticky top-0 z-30 bg-white shadow-sm">
+      <AuthDebug />
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
@@ -104,23 +107,7 @@ export const Header = () => {
             {loading ? (
               <div className="w-10 h-10 animate-pulse bg-gray-200 rounded-full"></div>
             ) : isAuthenticated && profile ? (
-              <Link
-                href="/minha-conta"
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                title="Minha Conta"
-              >
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt={profile.full_name || 'User'}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-lg">👤</span>
-                  </div>
-                )}
-              </Link>
+              <UserMenu />
             ) : (
               <Link href="/login">
                 <Button size="sm">Entrar</Button>
