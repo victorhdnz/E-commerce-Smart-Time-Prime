@@ -117,7 +117,7 @@ export const Header = () => {
                   />
                 ) : (
                   <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                    <User size={20} className="text-gray-600" />
+                    <span className="text-lg">👤</span>
                   </div>
                 )}
               </Link>

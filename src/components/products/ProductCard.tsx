@@ -1,12 +1,13 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 import { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
 import { ShoppingCart, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { useCart } from '@/hooks/useCart'
+import toast from 'react-hot-toast'
 
 interface ProductCardProps {
   product: Product
@@ -14,6 +15,27 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   const mainImage = product.images?.[0] || product.colors?.[0]?.images[0]
+  const { addItem } = useCart()
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault() // Previne navegação do Link pai
+    e.stopPropagation()
+    
+    if (product.stock === 0) {
+      toast.error('Produto esgotado')
+      return
+    }
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.local_price,
+      image: mainImage || '',
+      slug: product.slug
+    })
+    
+    toast.success('Produto adicionado ao carrinho!')
+  }
 
   return (
     <Card hover className="group">
@@ -41,10 +63,12 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
           {/* Hover Overlay */}
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-            <Button variant="secondary" size="sm" className="mr-2">
-              <Eye size={16} className="mr-2" />
-              Ver Detalhes
-            </Button>
+            <div className="flex items-center gap-2">
+              <span className="bg-white text-black px-3 py-1 rounded-full text-sm font-semibold flex items-center">
+                <Eye size={16} className="mr-2" />
+                Ver Detalhes
+              </span>
+            </div>
           </div>
         </div>
       </Link>
@@ -95,13 +119,14 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             </span>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+          <button
+            onClick={handleAddToCart}
+            disabled={product.stock === 0}
+            className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all hover:scale-110 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            title={product.stock === 0 ? 'Produto esgotado' : 'Adicionar ao carrinho'}
           >
             <ShoppingCart size={20} />
-          </motion.button>
+          </button>
         </div>
 
         {/* Stock Status */}
