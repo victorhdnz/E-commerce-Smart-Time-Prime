@@ -14,7 +14,8 @@ type Area = { x: number; y: number; width: number; height: number }
 interface ImageUploaderProps {
   currentImage?: string
   onImageUploaded: (url: string) => void
-  folder?: string // Ex: 'products', 'banners', 'profiles/avatars'
+  bucket?: string // Ex: 'products', 'banners', 'profiles'
+  folder?: string // Ex: 'main', 'thumbnails', 'avatars'
   aspectRatio?: number // ex: 1 para quadrado, 16/9 para widescreen, 9/16 para vertical
   maxSizeMB?: number
 }
@@ -22,6 +23,7 @@ interface ImageUploaderProps {
 export const ImageUploader = ({
   currentImage,
   onImageUploaded,
+  bucket = 'products',
   folder = 'uploads',
   aspectRatio = 1,
   maxSizeMB = 5,

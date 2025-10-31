@@ -105,6 +105,12 @@ export default function EditLandingPage() {
           showcase_image_3: savedSettings.showcase_image_3 || '',
           showcase_image_4: savedSettings.showcase_image_4 || '',
           showcase_video_url: savedSettings.showcase_video_url || '',
+          theme_colors: savedSettings.theme_colors || {
+            primary: '#000000',
+            secondary: '#666666',
+            accent: '#FFD700',
+            background: '#FFFFFF'
+          }
         })
       } else {
         // Se não há dados no banco, usar padrões
@@ -122,6 +128,12 @@ export default function EditLandingPage() {
           showcase_image_3: '',
           showcase_image_4: '',
           showcase_video_url: '',
+          theme_colors: {
+            primary: '#000000',
+            secondary: '#666666',
+            accent: '#FFD700',
+            background: '#FFFFFF'
+          }
         })
       }
     } catch (error) {

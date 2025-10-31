@@ -521,7 +521,7 @@ export default function DashboardProductsPage() {
                           {product.stock} unidades
                         </div>
                         {(product as any).bling_id && (
-                          <Link2 size={14} className="text-blue-500" title="Sincronizado com Bling" />
+                          <Link2 size={14} className="text-blue-500" />
                         )}
                       </div>
                     </td>

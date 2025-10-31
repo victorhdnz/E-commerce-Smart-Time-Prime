@@ -43,6 +43,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       lg: 'px-8 py-4 text-lg',
     }
 
+    // Separar props para evitar conflitos de tipos
+    const { onClick, onMouseDown, onMouseUp, onKeyDown, type, ...otherProps } = props
+
     return (
       <motion.button
         ref={ref}
@@ -50,7 +53,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         whileTap={{ scale: disabled ? 1 : 0.98 }}
         className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
         disabled={disabled || isLoading}
-        {...props}
+        onClick={onClick}
+        onMouseDown={onMouseDown}
+        onMouseUp={onMouseUp}
+        onKeyDown={onKeyDown}
+        type={type}
       >
         {isLoading ? (
           <div className="flex items-center">

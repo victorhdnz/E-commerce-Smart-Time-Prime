@@ -152,11 +152,11 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       const newColor: ProductColor = {
         id: Date.now().toString(),
         product_id: params.id,
-        name: name.trim(),
-        hex_code: '#000000',
+        color_name: name.trim(),
+        color_hex: '#000000',
         images: [],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        stock: 0,
+        is_active: true
       }
       setFormData(prev => ({
         ...prev,
@@ -205,27 +205,26 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         />
 
         <div className="flex justify-end gap-3 mb-8">
-            <Button
-              variant="outline"
-              onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
-              className={formData.is_active ? 'border-green-500 text-green-600' : 'border-red-500 text-red-600'}
-            >
-              {formData.is_active ? <Eye size={18} className="mr-2" /> : <EyeOff size={18} className="mr-2" />}
-              {formData.is_active ? 'Ativo' : 'Inativo'}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => setFormData(prev => ({ ...prev, is_featured: !prev.is_featured }))}
-              className={formData.is_featured ? 'border-yellow-500 text-yellow-600' : ''}
-            >
-              <Star size={18} className="mr-2" />
-              {formData.is_featured ? 'Em Destaque' : 'Destacar'}
-            </Button>
-            <Button onClick={handleSave} isLoading={saving} size="lg">
-              <Save size={18} className="mr-2" />
-              Salvar Alterações
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            onClick={() => setFormData(prev => ({ ...prev, is_active: !prev.is_active }))}
+            className={formData.is_active ? 'border-green-500 text-green-600' : 'border-red-500 text-red-600'}
+          >
+            {formData.is_active ? <Eye size={18} className="mr-2" /> : <EyeOff size={18} className="mr-2" />}
+            {formData.is_active ? 'Ativo' : 'Inativo'}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setFormData(prev => ({ ...prev, is_featured: !prev.is_featured }))}
+            className={formData.is_featured ? 'border-yellow-500 text-yellow-600' : ''}
+          >
+            <Star size={18} className="mr-2" />
+            {formData.is_featured ? 'Em Destaque' : 'Destacar'}
+          </Button>
+          <Button onClick={handleSave} isLoading={saving} size="lg">
+            <Save size={18} className="mr-2" />
+            Salvar Alterações
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -350,9 +349,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                   <div key={color.id} className="flex items-center gap-4 p-3 border rounded-lg">
                     <div
                       className="w-8 h-8 rounded-full border-2 border-gray-300"
-                      style={{ backgroundColor: color.hex_code }}
+                      style={{ backgroundColor: color.color_hex }}
                     />
-                    <span className="flex-1 font-medium">{color.name}</span>
+                    <span className="flex-1 font-medium">{color.color_name}</span>
                     <button
                       onClick={() => handleColorRemove(index)}
                       className="text-red-500 hover:text-red-700"
@@ -442,12 +441,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                   <span className="text-gray-600">Slug:</span>
                   <span className="ml-2 font-mono">{product.slug}</span>
                 </div>
-                {product.bling_id && (
-                  <div>
-                    <span className="text-gray-600">Bling ID:</span>
-                    <span className="ml-2 font-mono">{product.bling_id}</span>
-                  </div>
-                )}
+
                 <div>
                   <span className="text-gray-600">Criado em:</span>
                   <span className="ml-2">{new Date(product.created_at).toLocaleDateString('pt-BR')}</span>
