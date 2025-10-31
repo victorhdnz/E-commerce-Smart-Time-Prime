@@ -124,18 +124,13 @@ export const UserMenu = () => {
     return null
   }
 
-  // Sempre renderizar o ícone, mesmo durante loading (evita desaparecimento)
   return (
     <div className="relative group">
       {/* Botão do Avatar */}
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className={`p-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${
-          isOpen 
-            ? 'bg-gray-200 scale-105 shadow-lg' 
-            : 'hover:bg-gray-100 hover:scale-105 active:scale-95'
-        }`}
+        className="relative p-2 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
         aria-expanded={isOpen}
         aria-haspopup="true"
         title="Menu do usuário"
@@ -144,15 +139,11 @@ export const UserMenu = () => {
           <img
             src={profile.avatar_url}
             alt={profile.full_name || 'Usuário'}
-            className={`w-8 h-8 rounded-full object-cover transition-all duration-300 ${
-              isOpen ? 'ring-4 ring-gray-300' : 'ring-2 ring-transparent group-hover:ring-gray-200'
-            }`}
+            className="w-8 h-8 rounded-full object-cover"
           />
         ) : (
-          <div className={`w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center shadow-sm transition-all duration-300 ${
-            isOpen ? 'scale-110 shadow-lg' : ''
-          }`}>
-            <User size={20} className="text-gray-500" />
+          <div className="w-8 h-8 rounded-full flex items-center justify-center">
+            <User size={24} className="text-black" strokeWidth={1.5} />
           </div>
         )}
       </button>
