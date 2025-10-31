@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { ImageUploader } from '@/components/ui/ImageUploader'
 
 import toast from 'react-hot-toast'
-import { User, Mail, Phone, MapPin, Package, LogOut, Camera, Settings, CreditCard } from 'lucide-react'
+import { User, Mail, Phone, MapPin, Package, LogOut, Settings, CreditCard } from 'lucide-react'
 import Link from 'next/link'
 
 export default function MyAccountPage() {
@@ -16,7 +15,6 @@ export default function MyAccountPage() {
   const { isAuthenticated, profile, signOut, loading: authLoading } = useAuth()
 
   const [loading, setLoading] = useState(false)
-  const [showAvatarUpload, setShowAvatarUpload] = useState(false)
   const [stats, setStats] = useState({
     totalOrders: 0,
     totalAddresses: 0,
@@ -84,32 +82,6 @@ export default function MyAccountPage() {
       mounted = false
     }
   }, [isAuthenticated, authLoading, profile?.id])
-
-  const handleAvatarUploaded = async (url: string) => {
-    if (!profile?.id) return
-    
-    try {
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          avatar_url: url,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', profile.id)
-
-      if (error) throw error
-
-      toast.success('Foto atualizada com sucesso!')
-      setShowAvatarUpload(false)
-      window.location.reload()
-    } catch (error) {
-      console.error('Erro ao atualizar foto:', error)
-      toast.error('Erro ao atualizar foto')
-    }
-  }
 
   const handleUpdateProfile = async () => {
     if (!profile?.id) return
@@ -187,38 +159,19 @@ export default function MyAccountPage() {
           <div className="bg-white rounded-lg shadow-md p-6">
             {/* Avatar */}
             <div className="text-center mb-6">
-              <div className="relative inline-block">
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt={profile.full_name || 'User'}
-                    className="w-24 h-24 rounded-full mx-auto mb-4 object-cover"
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded-full bg-black text-white flex items-center justify-center mx-auto mb-4 text-3xl">
-                    {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                )}
-                <button
-                  onClick={() => setShowAvatarUpload(!showAvatarUpload)}
-                  className="absolute bottom-4 right-0 bg-black text-white p-2 rounded-full hover:bg-gray-800 transition-colors"
-                  title="Alterar foto"
-                >
-                  <Camera size={16} />
-                </button>
-              </div>
-              <h2 className="text-xl font-bold">{profile?.full_name || 'Usuário'}</h2>
-              <p className="text-gray-600">{profile?.email}</p>
-              
-              {/* Upload de Avatar */}
-              {showAvatarUpload && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                  <ImageUploader
-                    value={profile?.avatar_url || undefined}
-                    onChange={handleAvatarUploaded}
-                  />
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={profile.full_name || 'User'}
+                  className="w-24 h-24 rounded-full mx-auto mb-4 object-cover"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-black text-white flex items-center justify-center mx-auto mb-4 text-3xl">
+                  {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
                 </div>
               )}
+              <h2 className="text-xl font-bold">{profile?.full_name || 'Usuário'}</h2>
+              <p className="text-gray-600">{profile?.email}</p>
             </div>
 
             {/* Menu */}
