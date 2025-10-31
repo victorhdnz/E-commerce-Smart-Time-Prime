@@ -108,16 +108,11 @@ export const Header = () => {
               <div className="w-16 h-8 bg-gray-200 animate-pulse rounded" />
             ) : isAuthenticated && profile ? (
               <UserMenu />
-            ) : (
-              <Link href="/login" onClick={(e) => {
-                // Se já estiver autenticado mas ainda carregando, prevenir navegação
-                if (loading) {
-                  e.preventDefault()
-                }
-              }}>
+            ) : !loading && !isAuthenticated ? (
+              <Link href="/login">
                 <Button size="sm">Entrar</Button>
               </Link>
-            )}
+            ) : null}
 
             {/* Mobile Menu Toggle */}
             <button

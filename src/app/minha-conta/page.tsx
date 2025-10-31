@@ -12,7 +12,7 @@ import Link from 'next/link'
 
 export default function MyAccountPage() {
   const router = useRouter()
-  const { isAuthenticated, profile, signOut, loading: authLoading } = useAuth()
+  const { isAuthenticated, profile, signOut, refreshProfile, loading: authLoading } = useAuth()
 
   const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState({
@@ -102,9 +102,16 @@ export default function MyAccountPage() {
 
       if (error) throw error
 
+      // Atualizar o perfil no estado sem recarregar a página
+      await refreshProfile()
+      
+      // Atualizar o formData com os novos dados
+      setFormData({
+        full_name: formData.full_name,
+        phone: formData.phone,
+      })
+
       toast.success('Perfil atualizado com sucesso!')
-      // Recarregar a página para atualizar os dados
-      window.location.reload()
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error)
       toast.error('Erro ao atualizar perfil')

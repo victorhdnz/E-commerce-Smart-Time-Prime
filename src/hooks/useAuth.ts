@@ -196,6 +196,27 @@ export const useAuth = () => {
     }
   }
 
+  const refreshProfile = async () => {
+    if (!user?.id) return
+
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (profileError) {
+        console.error('Erro ao atualizar perfil:', profileError)
+        return
+      }
+
+      setProfile(profile as AppUser || null)
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error)
+    }
+  }
+
   const signOut = async () => {
     try {
       setLoading(true)
@@ -230,6 +251,7 @@ export const useAuth = () => {
     loading,
     signInWithGoogle,
     signOut,
+    refreshProfile,
     isAdmin,
     isEditor,
     isAuthenticated: !!user,

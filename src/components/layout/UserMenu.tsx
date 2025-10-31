@@ -11,6 +11,7 @@ import { isAdminEmail } from '@/lib/utils/admin'
 export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
+  const [imageError, setImageError] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { profile, signOut, isAuthenticated, loading, user } = useAuth()
@@ -106,6 +107,11 @@ export const UserMenu = () => {
     }
   ].filter(item => item.visible)
 
+  // Resetar erro de imagem quando o perfil mudar
+  useEffect(() => {
+    setImageError(false)
+  }, [profile?.avatar_url])
+
   // Adicionar classe no body para prevenir scroll quando menu está aberto
   useEffect(() => {
     if (isOpen) {
@@ -118,6 +124,21 @@ export const UserMenu = () => {
       document.body.style.overflow = 'unset'
     }
   }, [isOpen])
+
+  // Se ainda está carregando, mostrar ícone padrão (sempre visível)
+  if (loading) {
+    return (
+      <button
+        className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+        disabled
+        aria-label="Carregando perfil"
+      >
+        <div className="w-8 h-8 rounded-full flex items-center justify-center">
+          <User size={24} className="text-black" strokeWidth={1.5} />
+        </div>
+      </button>
+    )
+  }
 
   // Se não autenticado ou não há profile, não mostrar
   if (!isAuthenticated || !profile) {
@@ -135,11 +156,12 @@ export const UserMenu = () => {
         aria-haspopup="true"
         title="Menu do usuário"
       >
-        {profile?.avatar_url ? (
+        {profile?.avatar_url && !imageError ? (
           <img
             src={profile.avatar_url}
             alt={profile.full_name || 'Usuário'}
             className="w-8 h-8 rounded-full object-cover"
+            onError={() => setImageError(true)}
           />
         ) : (
           <div className="w-8 h-8 rounded-full flex items-center justify-center">
