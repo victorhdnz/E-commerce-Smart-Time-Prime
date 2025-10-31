@@ -15,11 +15,11 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true)
   const [categories, setCategories] = useState<string[]>([])
 
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = createClient()
 
   useEffect(() => {
     loadProducts()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadProducts = async () => {
     setLoading(true)

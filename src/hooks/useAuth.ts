@@ -10,7 +10,7 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<AppUser | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = createClient()
 
   // Função auxiliar para garantir que o profile existe
   const ensureProfileExists = async (userId: string, userEmail: string, userMetadata: any) => {
@@ -245,7 +245,7 @@ export const useAuth = () => {
       mounted = false
       subscription.unsubscribe()
     }
-  }, [supabase])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
