@@ -37,8 +37,8 @@ export async function GET() {
         userId: session.user?.id,
         email: session.user?.email,
         role: session.user?.role,
-        expiresAt: session.expires_at,
-        expiresIn: Math.floor((session.expires_at - Date.now() / 1000))
+        expiresAt: session.expires_at || null,
+        expiresIn: session.expires_at ? Math.floor((session.expires_at - Date.now() / 1000)) : null
       } : null,
       profile: profile ? {
         id: profile.id,
