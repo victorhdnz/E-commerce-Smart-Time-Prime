@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { User, Package, LayoutDashboard, LogOut } from 'lucide-react'
@@ -69,6 +68,14 @@ export const UserMenu = () => {
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
     }
+  }
+
+  const handleMenuClick = (href: string) => {
+    console.log('🔗 Navegando para:', href)
+    closeMenu()
+    // Forçar navegação usando router.push
+    router.push(href)
+    console.log('✅ Navegação executada para:', href)
   }
 
   const menuItems = [
@@ -192,10 +199,9 @@ export const UserMenu = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1, duration: 0.3 }}
                 >
-                  <Link
-                    href={item.href}
-                    onClick={closeMenu}
-                    className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-gray-900 transition-all duration-200 group relative"
+                  <button
+                    onClick={() => handleMenuClick(item.href)}
+                    className="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:text-gray-900 transition-all duration-200 group relative"
                     aria-label={item.label}
                     title={item.description}
                   >
@@ -211,7 +217,7 @@ export const UserMenu = () => {
                       )}
                     </div>
                     <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </Link>
+                  </button>
                 </motion.div>
               ))}
             </div>
