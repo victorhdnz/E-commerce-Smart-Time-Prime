@@ -19,6 +19,8 @@ export const Header = () => {
   const itemCount = getItemCount()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
+
+
   const navigation = [
     { name: 'Início', href: '/' },
     { name: 'Produtos', href: '/produtos' },
@@ -119,7 +121,7 @@ export const Header = () => {
             {/* User Menu */}
             {loading ? (
               <div className="w-10 h-10 animate-pulse bg-gray-200 rounded-full"></div>
-            ) : isAuthenticated ? (
+            ) : isAuthenticated && profile ? (
               <div className="relative" ref={dropdownRef}>
                 <button 
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
