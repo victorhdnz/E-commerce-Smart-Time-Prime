@@ -6,6 +6,7 @@ import { FeaturedCombos } from '@/components/landing/FeaturedCombos'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { FAQSection } from '@/components/landing/FAQSection'
 import { AuthRedirect } from '@/components/landing/AuthRedirect'
+import { WhatsAppVipRegistration } from '@/components/landing/WhatsAppVipRegistration'
 import { createServerClient } from '@/lib/supabase/server'
 
 export const revalidate = 60 // Revalidar a cada 60 segundos
@@ -30,9 +31,32 @@ async function getPageData() {
           product:products (id, name, local_price, images)
         )
       `).eq('is_featured', true).eq('is_active', true).limit(6),
+      supabase.from('site_settings').select('value').eq('key', 'whatsapp_vip_group_link').maybeSingle(),
     ])
 
-    const [settingsResult, productsResult, reviewsResult, faqsResult, layoutResult, combosResult] = results
+    const [settingsResult, productsResult, reviewsResult, faqsResult, layoutResult, combosResult, whatsappLinkResult] = results
+
+    // Extrair link do WhatsApp (pode vir do banco ou usar o padrão do código)
+    const whatsappLinkData = whatsappLinkResult.status === 'fulfilled' ? whatsappLinkResult.value.data : null
+    let whatsappLink: string | undefined = undefined
+    
+    if (whatsappLinkData?.value) {
+      // Se o value é uma string JSON, fazer parse
+      if (typeof whatsappLinkData.value === 'string') {
+        try {
+          const parsed = JSON.parse(whatsappLinkData.value)
+          whatsappLink = typeof parsed === 'string' ? parsed : undefined
+        } catch {
+          whatsappLink = whatsappLinkData.value
+        }
+      } else if (typeof whatsappLinkData.value === 'object') {
+        // Se já é um objeto, tentar extrair como string
+        whatsappLink = String(whatsappLinkData.value)
+      }
+    }
+    
+    // Se não tiver link no banco, usar o padrão do componente
+    // O componente já tem o link hardcoded como fallback
 
     return {
       siteSettings: settingsResult.status === 'fulfilled' ? settingsResult.value.data : null,
@@ -41,6 +65,7 @@ async function getPageData() {
       faqs: faqsResult.status === 'fulfilled' ? faqsResult.value.data || [] : [],
       activeLayout: layoutResult.status === 'fulfilled' ? layoutResult.value.data : null,
       combos: combosResult.status === 'fulfilled' ? combosResult.value.data || [] : [],
+      whatsappVipLink: whatsappLink,
     }
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
@@ -57,7 +82,7 @@ async function getPageData() {
 }
 
 export default async function Home() {
-  const { siteSettings, products, reviews, faqs, activeLayout, combos } = await getPageData()
+  const { siteSettings, products, reviews, faqs, activeLayout, combos, whatsappVipLink } = await getPageData()
 
   // Extrair configurações do formato key-value
   const settings = siteSettings?.value || {}
@@ -189,6 +214,9 @@ export default async function Home() {
           subtitle="Economize mais comprando nossos kits exclusivos com desconto especial"
         />
       )}
+
+      {/* WhatsApp VIP Registration */}
+      <WhatsAppVipRegistration whatsappGroupLink={whatsappVipLink} />
 
       {/* Social Proof */}
       <SocialProof reviews={reviews as any || []} />

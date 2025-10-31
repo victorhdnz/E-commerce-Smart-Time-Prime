@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Eye,
   UserCheck,
+  MessageCircle,
 } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils/format'
@@ -223,6 +224,13 @@ export default function DashboardPage() {
       icon: ShoppingBag,
       href: '/dashboard/vendas',
       color: 'bg-indigo-500',
+    },
+    {
+      title: 'Grupo VIP WhatsApp',
+      description: 'Visualizar registros do Grupo VIP',
+      icon: MessageCircle,
+      href: '/dashboard/whatsapp-vip',
+      color: 'bg-green-500',
     },
     {
       title: 'Configurações',

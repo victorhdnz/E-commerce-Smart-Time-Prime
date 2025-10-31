@@ -11,7 +11,6 @@ import { isAdminEmail } from '@/lib/utils/admin'
 export const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
-  const [imageError, setImageError] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { profile, signOut, isAuthenticated, loading, user } = useAuth()
@@ -107,11 +106,6 @@ export const UserMenu = () => {
     }
   ].filter(item => item.visible)
 
-  // Resetar erro de imagem quando o perfil mudar
-  useEffect(() => {
-    setImageError(false)
-  }, [profile?.avatar_url])
-
   // Adicionar classe no body para prevenir scroll quando menu está aberto
   useEffect(() => {
     if (isOpen) {
@@ -147,7 +141,7 @@ export const UserMenu = () => {
 
   return (
     <div className="relative group">
-      {/* Botão do Avatar */}
+      {/* Botão do Avatar - Sempre mostrar ícone, nunca imagem */}
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
@@ -156,18 +150,9 @@ export const UserMenu = () => {
         aria-haspopup="true"
         title="Menu do usuário"
       >
-        {profile?.avatar_url && !imageError ? (
-          <img
-            src={profile.avatar_url}
-            alt={profile.full_name || 'Usuário'}
-            className="w-8 h-8 rounded-full object-cover"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="w-8 h-8 rounded-full flex items-center justify-center">
-            <User size={24} className="text-black" strokeWidth={1.5} />
-          </div>
-        )}
+        <div className="w-8 h-8 rounded-full flex items-center justify-center">
+          <User size={24} className="text-black" strokeWidth={1.5} />
+        </div>
       </button>
 
       {/* Overlay para mobile */}

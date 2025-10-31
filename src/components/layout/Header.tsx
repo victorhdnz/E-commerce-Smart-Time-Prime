@@ -105,7 +105,9 @@ export const Header = () => {
 
             {/* User Menu */}
             {loading ? (
-              <div className="w-16 h-8 bg-gray-200 animate-pulse rounded" />
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 animate-pulse">
+                <User size={20} className="text-gray-400" />
+              </div>
             ) : isAuthenticated && profile ? (
               <UserMenu />
             ) : !loading && !isAuthenticated ? (

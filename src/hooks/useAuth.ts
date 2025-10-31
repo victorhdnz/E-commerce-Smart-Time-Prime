@@ -56,6 +56,7 @@ export const useAuth = () => {
 
   useEffect(() => {
     let mounted = true
+    let timeoutId: NodeJS.Timeout | null = null
 
     const getUser = async () => {
       if (!mounted) return
@@ -81,14 +82,22 @@ export const useAuth = () => {
           if (!mounted) return
 
           if (profileError?.code === 'PGRST116') {
-            // Profile não existe, criar
-            const newProfile = await ensureProfileExists(
-              session.user.id,
-              session.user.email || '',
-              session.user.user_metadata
-            )
-            if (mounted) {
-              setProfile(newProfile)
+            // Profile não existe, criar (primeiro login)
+            try {
+              const newProfile = await ensureProfileExists(
+                session.user.id,
+                session.user.email || '',
+                session.user.user_metadata
+              )
+              if (mounted) {
+                setProfile(newProfile)
+              }
+            } catch (createError) {
+              console.error('Erro ao criar profile:', createError)
+              // Mesmo se falhar ao criar, continuar sem profile para não travar
+              if (mounted) {
+                setProfile(null)
+              }
             }
           } else if (profileError) {
             console.error('Erro ao buscar perfil:', profileError)
@@ -111,19 +120,34 @@ export const useAuth = () => {
           setUser(null)
           setProfile(null)
         }
-      }
-
-      if (mounted) {
-        setLoading(false)
+      } finally {
+        // Sempre definir loading como false, mesmo em caso de erro
+        if (mounted) {
+          setLoading(false)
+        }
       }
     }
 
-    getUser()
+    // Timeout de segurança: se passar de 5 segundos, forçar loading = false
+    timeoutId = setTimeout(() => {
+      if (mounted) {
+        console.warn('⚠️ Timeout de autenticação - forçando loading = false')
+        setLoading(false)
+      }
+    }, 5000)
+
+    getUser().then(() => {
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
+    })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return
         
+        // Não alterar loading aqui para evitar conflitos
+        // Apenas atualizar user e profile
         setUser(session?.user ?? null)
 
         if (session?.user) {
@@ -164,15 +188,14 @@ export const useAuth = () => {
             setProfile(null)
           }
         }
-
-        if (mounted) {
-          setLoading(false)
-        }
       }
     )
 
     return () => {
       mounted = false
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
       subscription.unsubscribe()
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps

@@ -164,19 +164,11 @@ export default function MyAccountPage() {
         {/* Sidebar */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-lg shadow-md p-6">
-            {/* Avatar */}
+            {/* Avatar - Sempre mostrar ícone, nunca imagem */}
             <div className="text-center mb-6">
-              {profile?.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt={profile.full_name || 'User'}
-                  className="w-24 h-24 rounded-full mx-auto mb-4 object-cover"
-                />
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
-                  <User size={48} className="text-gray-500" />
-                </div>
-              )}
+              <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
+                <User size={48} className="text-gray-500" />
+              </div>
               <h2 className="text-xl font-bold">{profile?.full_name || 'Usuário'}</h2>
               <p className="text-gray-600">{profile?.email}</p>
             </div>

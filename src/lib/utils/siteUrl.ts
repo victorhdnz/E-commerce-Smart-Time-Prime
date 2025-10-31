@@ -14,7 +14,12 @@ export function getSiteUrl(): string {
     return window.location.origin
   }
 
-  // Fallback para URL do Vercel (nunca localhost para usuários externos)
-  return 'https://e-commerce-smart-time-prime-ef8c.vercel.app'
+  // Fallback: usar VERCEL_URL se disponível, senão domínio personalizado padrão
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`
+  }
+
+  // Fallback para domínio personalizado (configurar NEXT_PUBLIC_SITE_URL na Vercel)
+  return 'https://www.smarttimeprime.com.br'
 }
 
