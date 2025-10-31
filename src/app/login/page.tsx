@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/Button'
@@ -21,48 +21,48 @@ export default function LoginPage() {
     return undefined
   }
 
+  const [hasRedirected, setHasRedirected] = useState(false)
+
   useEffect(() => {
+    // Evitar redirecionamento múltiplo
+    if (hasRedirected) return
+    
     if (isAuthenticated && !loading) {
-      // Aguardar um pouco para garantir que a sessão está completamente estabelecida
-      const timeoutId = setTimeout(() => {
-        // Verificar se há um returnUrl nos parâmetros da URL
-        const urlParams = new URLSearchParams(window.location.search)
-        const returnUrl = urlParams.get('returnUrl')
-        
-        if (returnUrl) {
-          // Decodificar e redirecionar para a URL original
+      setHasRedirected(true)
+      
+      // Verificar se há um returnUrl nos parâmetros da URL
+      const urlParams = new URLSearchParams(window.location.search)
+      const returnUrl = urlParams.get('returnUrl')
+      
+      if (returnUrl) {
+        try {
+          const decodedUrl = decodeURIComponent(returnUrl)
+          console.log('🔄 Redirecionando pós-login para:', decodedUrl)
+          router.push(decodedUrl)
+        } catch (error) {
+          console.error('Erro ao decodificar returnUrl:', error)
+          router.push('/')
+        }
+      } else {
+        // Verificar se há returnUrl no localStorage (caso tenha vindo do OAuth)
+        const storedReturnUrl = localStorage.getItem('auth_return_url')
+        if (storedReturnUrl) {
+          localStorage.removeItem('auth_return_url')
           try {
-            const decodedUrl = decodeURIComponent(returnUrl)
-            console.log('🔄 Redirecionando pós-login para:', decodedUrl)
-            // Usar window.location.href para garantir que a navegação seja completa
-            window.location.href = decodedUrl
+            const decodedUrl = decodeURIComponent(storedReturnUrl)
+            console.log('🔄 Redirecionando pós-login (localStorage) para:', decodedUrl)
+            router.push(decodedUrl)
           } catch (error) {
-            console.error('Erro ao decodificar returnUrl:', error)
+            console.error('Erro ao decodificar returnUrl do localStorage:', error)
             router.push('/')
           }
         } else {
-          // Verificar se há returnUrl no localStorage (caso tenha vindo do OAuth)
-          const storedReturnUrl = localStorage.getItem('auth_return_url')
-          if (storedReturnUrl) {
-            localStorage.removeItem('auth_return_url')
-            try {
-              const decodedUrl = decodeURIComponent(storedReturnUrl)
-              console.log('🔄 Redirecionando pós-login (localStorage) para:', decodedUrl)
-              window.location.href = decodedUrl
-            } catch (error) {
-              console.error('Erro ao decodificar returnUrl do localStorage:', error)
-              router.push('/')
-            }
-          } else {
-            // Redirecionar para home se não há returnUrl
-            router.push('/')
-          }
+          // Redirecionar para home se não há returnUrl
+          router.push('/')
         }
-      }, 500) // Aguardar 500ms para garantir que a sessão está estabelecida
-      
-      return () => clearTimeout(timeoutId)
+      }
     }
-  }, [isAuthenticated, loading, router])
+  }, [isAuthenticated, loading, router, hasRedirected])
 
   if (loading) {
     return (

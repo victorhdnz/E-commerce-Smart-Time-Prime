@@ -106,16 +106,8 @@ export const useAuth = () => {
         
         if (!mounted) return
         
-        // Se veio do callback e temos returnUrl e sessão, redirecionar
-        if (authSuccess && returnUrl && session?.user) {
-          try {
-            const decodedUrl = decodeURIComponent(returnUrl)
-            window.location.href = decodedUrl
-            return // Não continuar a execução
-          } catch {
-            // Se houver erro ao decodificar, continuar normalmente
-          }
-        }
+        // Não redirecionar aqui - deixar a página de login fazer isso
+        // Isso evita loops de redirecionamento
         
         // Se veio do callback e não há sessão, tentar refresh
         if (authSuccess && (!session || sessionError)) {
