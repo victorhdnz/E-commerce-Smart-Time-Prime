@@ -59,7 +59,8 @@ export async function GET(request: Request) {
         })
     }
 
-    // Redirecionar para a página de origem com parâmetro para forçar refresh
+    // Redirecionar para home com parâmetro de sucesso
+    // O returnUrl será recuperado no cliente via localStorage
     return NextResponse.redirect(`${getSiteUrl()}?auth=success`)
   } catch (error: any) {
     console.error('Erro no callback:', error)

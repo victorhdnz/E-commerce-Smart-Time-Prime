@@ -61,16 +61,23 @@ export default function MyAccountPage() {
   useEffect(() => {
     let mounted = true
 
-    if (!authLoading) {
-      if (!isAuthenticated) {
-        router.push('/login')
-      } else if (profile && mounted) {
-        setFormData({
-          full_name: profile.full_name || '',
-          phone: profile.phone || '',
-        })
-        loadStats()
-      }
+    // Aguardar o carregamento da autenticação completar
+    if (authLoading) return
+
+    // O middleware já protege essa rota, então só verificar se realmente não está autenticado
+    // após o loading completar, para evitar race conditions
+    if (!isAuthenticated) {
+      const returnUrl = encodeURIComponent('/minha-conta')
+      router.push(`/login?returnUrl=${returnUrl}`)
+      return
+    }
+
+    if (profile && mounted) {
+      setFormData({
+        full_name: profile.full_name || '',
+        phone: profile.phone || '',
+      })
+      loadStats()
     }
 
     return () => {

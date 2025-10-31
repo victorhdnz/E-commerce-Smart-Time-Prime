@@ -83,7 +83,9 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith('/minha-conta')
   ) {
     if (!session) {
-      return NextResponse.redirect(new URL('/login', req.url))
+      const loginUrl = new URL('/login', req.url)
+      loginUrl.searchParams.set('returnUrl', encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search))
+      return NextResponse.redirect(loginUrl)
     }
   }
 

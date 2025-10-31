@@ -64,24 +64,58 @@ export const useAuth = () => {
       try {
         // Verificar se veio do callback de autenticação
         let authSuccess = false
+        let returnUrl: string | null = null
         if (typeof window !== 'undefined') {
           const urlParams = new URLSearchParams(window.location.search)
           authSuccess = urlParams.get('auth') === 'success'
+          
+          // Recuperar returnUrl do localStorage se houver
+          returnUrl = localStorage.getItem('auth_return_url')
+          if (returnUrl) {
+            localStorage.removeItem('auth_return_url')
+          }
           
           // Remover parâmetro da URL se existir
           if (authSuccess) {
             const url = new URL(window.location.href)
             url.searchParams.delete('auth')
             window.history.replaceState({}, '', url.toString())
-            // Aguardar um pouco para garantir que a sessão foi estabelecida
-            await new Promise(resolve => setTimeout(resolve, 500))
+            // Aguardar mais tempo em produção para garantir que a sessão foi estabelecida
+            await new Promise(resolve => setTimeout(resolve, 1000))
           }
         }
         
         // Primeiro verificar se há uma sessão (isso não lança erro se não houver sessão)
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        // Tentar múltiplas vezes em caso de problemas de sincronização
+        let session = null
+        let sessionError = null
+        let attempts = 0
+        const maxAttempts = 3
+        
+        while (attempts < maxAttempts && !session && mounted) {
+          const { data, error } = await supabase.auth.getSession()
+          session = data.session
+          sessionError = error
+          
+          if (!session && attempts < maxAttempts - 1) {
+            // Aguardar um pouco antes de tentar novamente
+            await new Promise(resolve => setTimeout(resolve, 300))
+          }
+          attempts++
+        }
         
         if (!mounted) return
+        
+        // Se veio do callback e temos returnUrl e sessão, redirecionar
+        if (authSuccess && returnUrl && session?.user) {
+          try {
+            const decodedUrl = decodeURIComponent(returnUrl)
+            window.location.href = decodedUrl
+            return // Não continuar a execução
+          } catch {
+            // Se houver erro ao decodificar, continuar normalmente
+          }
+        }
         
         // Se veio do callback e não há sessão, tentar refresh
         if (authSuccess && (!session || sessionError)) {
@@ -247,7 +281,12 @@ export const useAuth = () => {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (returnUrl?: string) => {
+    // Salvar returnUrl no localStorage para recuperar após login
+    if (returnUrl && typeof window !== 'undefined') {
+      localStorage.setItem('auth_return_url', returnUrl)
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

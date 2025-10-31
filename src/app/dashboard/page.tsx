@@ -51,8 +51,21 @@ export default function DashboardPage() {
   const [selectedOrder, setSelectedOrder] = useState<BlingOrder | null>(null)
 
   useEffect(() => {
-    if (!loading && (!isAuthenticated || !isEditor)) {
+    // Aguardar o carregamento da autenticação completar
+    if (loading) return
+    
+    // Verificar autenticação e permissões
+    // O middleware já protege essa rota, mas verificamos novamente no cliente
+    // para evitar problemas de sincronização em produção
+    if (!isAuthenticated) {
+      const returnUrl = encodeURIComponent('/dashboard')
+      router.push(`/login?returnUrl=${returnUrl}`)
+      return
+    }
+
+    if (!isEditor) {
       router.push('/')
+      return
     }
   }, [isAuthenticated, isEditor, loading, router])
 

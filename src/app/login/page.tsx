@@ -11,6 +11,15 @@ import { LogIn } from 'lucide-react'
 export default function LoginPage() {
   const { signInWithGoogle, isAuthenticated, loading } = useAuth()
   const router = useRouter()
+  
+  // Capturar returnUrl dos parâmetros da URL
+  const getReturnUrl = () => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      return urlParams.get('returnUrl') || undefined
+    }
+    return undefined
+  }
 
   useEffect(() => {
     if (isAuthenticated && !loading) {
@@ -67,7 +76,10 @@ export default function LoginPage() {
         </div>
 
         <Button
-          onClick={signInWithGoogle}
+          onClick={() => {
+            const returnUrl = getReturnUrl()
+            signInWithGoogle(returnUrl)
+          }}
           variant="outline"
           size="lg"
           className="w-full mb-4"

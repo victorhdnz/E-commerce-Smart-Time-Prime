@@ -35,8 +35,13 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState('credit_card')
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/login')
+    // Aguardar o carregamento da autenticação completar antes de verificar
+    if (authLoading) return
+    
+    // Se não está autenticado após o loading completar, redirecionar com returnUrl
+    if (!isAuthenticated) {
+      const returnUrl = encodeURIComponent('/checkout')
+      router.push(`/login?returnUrl=${returnUrl}`)
     }
   }, [isAuthenticated, authLoading, router])
 

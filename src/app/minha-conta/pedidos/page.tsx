@@ -51,10 +51,14 @@ export default function MyOrdersPage() {
   }, [supabase])
 
   useEffect(() => {
+    // Aguardar o carregamento da autenticação completar
     if (authLoading) return
     
+    // O middleware já protege essa rota, então só verificar se realmente não está autenticado
+    // após o loading completar, para evitar race conditions
     if (!isAuthenticated) {
-      router.push('/login')
+      const returnUrl = encodeURIComponent('/minha-conta/pedidos')
+      router.push(`/login?returnUrl=${returnUrl}`)
       return
     }
 
@@ -62,7 +66,7 @@ export default function MyOrdersPage() {
       hasLoadedRef.current = true
       loadOrders(profile.id)
     }
-  }, [authLoading, isAuthenticated, profile?.id])
+  }, [authLoading, isAuthenticated, profile?.id, router, loadOrders])
 
   const handleSignOut = useCallback(async () => {
     try {
