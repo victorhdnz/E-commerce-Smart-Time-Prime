@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSiteUrl } from '@/lib/utils/siteUrl'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -11,17 +12,17 @@ export async function GET(request: NextRequest) {
   const error = requestUrl.searchParams.get('error')
 
   if (error) {
-    return NextResponse.redirect(`${requestUrl.origin}/dashboard/configuracoes?bling_error=${error}`)
+    return NextResponse.redirect(`${getSiteUrl()}/dashboard/configuracoes?bling_error=${error}`)
   }
 
   if (!code) {
-    return NextResponse.redirect(`${requestUrl.origin}/dashboard/configuracoes?bling_error=no_code`)
+    return NextResponse.redirect(`${getSiteUrl()}/dashboard/configuracoes?bling_error=no_code`)
   }
 
   try {
     const clientId = process.env.BLING_CLIENT_ID
     const clientSecret = process.env.BLING_CLIENT_SECRET
-    const redirectUri = process.env.BLING_REDIRECT_URI || `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/bling/callback`
+    const redirectUri = process.env.BLING_REDIRECT_URI || `${getSiteUrl()}/api/bling/callback`
 
     if (!clientId || !clientSecret) {
       throw new Error('Bling OAuth não configurado')
@@ -88,10 +89,10 @@ export async function GET(request: NextRequest) {
         })
     }
 
-    return NextResponse.redirect(`${requestUrl.origin}/dashboard/configuracoes?bling_success=true`)
+    return NextResponse.redirect(`${getSiteUrl()}/dashboard/configuracoes?bling_success=true`)
   } catch (error: any) {
     console.error('Erro no callback OAuth Bling:', error)
-    return NextResponse.redirect(`${requestUrl.origin}/dashboard/configuracoes?bling_error=${encodeURIComponent(error.message)}`)
+    return NextResponse.redirect(`${getSiteUrl()}/dashboard/configuracoes?bling_error=${encodeURIComponent(error.message)}`)
   }
 }
 

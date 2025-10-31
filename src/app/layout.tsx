@@ -6,11 +6,12 @@ import { Footer } from '@/components/layout/Footer'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
 import { Toaster } from 'react-hot-toast'
+import { getSiteUrl } from '@/lib/utils/siteUrl'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(getSiteUrl()),
   title: 'Smart Time Prime - Relógios Premium',
   description: 'E-commerce moderno de relógios premium com design elegante e sofisticado.',
   keywords: ['relógios', 'premium', 'smart watch', 'acessórios', 'moda'],
