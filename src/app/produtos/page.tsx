@@ -50,7 +50,7 @@ export default function ProductsPage() {
       setFilteredProducts(productsData)
 
       // Extrair categorias únicas
-      const uniqueCategories = [...new Set(productsData.map((p: any) => p.category).filter(Boolean))]
+      const uniqueCategories = [...new Set(productsData.map((p: any) => p.category).filter(Boolean))] as string[]
       console.log('🏷️ Categorias encontradas:', uniqueCategories)
       setCategories(uniqueCategories)
 
