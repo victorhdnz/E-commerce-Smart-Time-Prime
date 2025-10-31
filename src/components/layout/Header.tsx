@@ -104,9 +104,7 @@ export const Header = () => {
             </Link>
 
             {/* User Menu */}
-            {loading ? (
-              <div className="w-10 h-10 animate-pulse bg-gray-200 rounded-full"></div>
-            ) : isAuthenticated && profile ? (
+            {isAuthenticated && profile ? (
               <UserMenu />
             ) : (
               <Link href="/login">

@@ -166,8 +166,8 @@ export default function MyAccountPage() {
                   className="w-24 h-24 rounded-full mx-auto mb-4 object-cover"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-black text-white flex items-center justify-center mx-auto mb-4 text-3xl">
-                  {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
+                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
+                  <User size={48} className="text-gray-500" />
                 </div>
               )}
               <h2 className="text-xl font-bold">{profile?.full_name || 'Usuário'}</h2>

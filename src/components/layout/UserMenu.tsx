@@ -119,11 +119,12 @@ export const UserMenu = () => {
     }
   }, [isOpen])
 
-  // Não renderizar durante loading ou se não autenticado
-  if (loading || !isAuthenticated || !profile) {
+  // Se não autenticado ou não há profile, não mostrar
+  if (!isAuthenticated || !profile) {
     return null
   }
 
+  // Sempre renderizar o ícone, mesmo durante loading (evita desaparecimento)
   return (
     <div className="relative group">
       {/* Botão do Avatar */}
@@ -148,10 +149,10 @@ export const UserMenu = () => {
             }`}
           />
         ) : (
-          <div className={`w-8 h-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center shadow-sm transition-all duration-300 ${
+          <div className={`w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center shadow-sm transition-all duration-300 ${
             isOpen ? 'scale-110 shadow-lg' : ''
           }`}>
-            <span className="text-lg">👤</span>
+            <User size={20} className="text-gray-500" />
           </div>
         )}
       </button>
