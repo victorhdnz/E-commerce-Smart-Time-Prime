@@ -26,13 +26,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       return
     }
 
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.local_price,
-      image: mainImage || '',
-      slug: product.slug
-    })
+    addItem(product)
     
     toast.success('Produto adicionado ao carrinho!')
   }
