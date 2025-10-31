@@ -31,7 +31,12 @@ export async function middleware(req: NextRequest) {
           res.cookies.set({
             name,
             value,
-            ...options,
+            path: options?.path || '/',
+            domain: options?.domain,
+            maxAge: options?.maxAge,
+            httpOnly: options?.httpOnly,
+            secure: options?.secure,
+            sameSite: options?.sameSite || 'lax',
           })
         },
         remove(name: string, options: any) {
@@ -55,21 +60,26 @@ export async function middleware(req: NextRequest) {
     }
   )
 
+  // Usar getUser() em vez de getSession() para melhor compatibilidade com SSR/Vercel
+  // O getUser() é mais confiável em ambientes de edge/serverless
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
 
   // Proteger rotas do dashboard
   if (req.nextUrl.pathname.startsWith('/dashboard')) {
-    if (!session) {
-      return NextResponse.redirect(new URL('/login', req.url))
+    if (!user || userError) {
+      const loginUrl = new URL('/login', req.url)
+      loginUrl.searchParams.set('returnUrl', encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search))
+      return NextResponse.redirect(loginUrl)
     }
 
     // Verificar se é admin ou editor
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
 
     if (!profile || (profile.role !== 'admin' && profile.role !== 'editor')) {
@@ -82,7 +92,7 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname.startsWith('/checkout') ||
     req.nextUrl.pathname.startsWith('/minha-conta')
   ) {
-    if (!session) {
+    if (!user || userError) {
       const loginUrl = new URL('/login', req.url)
       loginUrl.searchParams.set('returnUrl', encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search))
       return NextResponse.redirect(loginUrl)
