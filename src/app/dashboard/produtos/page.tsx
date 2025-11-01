@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
 import { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
-import { Plus, Edit, Trash2, Eye, EyeOff, Package, RefreshCw, Link2, ChevronDown, Search, Filter, Star, MoreVertical } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye, EyeOff, Package, Search, Filter, Star, MoreVertical } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
@@ -18,8 +18,6 @@ export default function DashboardProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [syncing, setSyncing] = useState(false)
-  const [showSyncOptions, setShowSyncOptions] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all')
@@ -45,21 +43,6 @@ export default function DashboardProductsPage() {
     }
   }, [isAuthenticated, isEditor, authLoading, router])
 
-  // Fechar dropdown ao clicar fora
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      // Não fechar se clicar dentro do dropdown ou no botão
-      if (showSyncOptions && !target.closest('.sync-dropdown-container')) {
-        setShowSyncOptions(false)
-      }
-    }
-
-    if (showSyncOptions) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showSyncOptions])
 
   const loadProducts = async () => {
     try {
@@ -109,34 +92,6 @@ export default function DashboardProductsPage() {
     }
   }
 
-  const syncBlingProducts = async (onlyWithStock = false) => {
-    setSyncing(true)
-    setShowSyncOptions(false)
-    
-    try {
-      const url = onlyWithStock 
-        ? '/api/bling/products/sync?onlyWithStock=true'
-        : '/api/bling/products/sync'
-        
-      const response = await fetch(url, {
-        method: 'POST',
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        toast.success(data.message || 'Produtos sincronizados!')
-        loadProducts()
-      } else {
-        throw new Error(data.error)
-      }
-    } catch (error: any) {
-      console.error('Erro ao sincronizar produtos:', error)
-      toast.error(error.message || 'Erro ao sincronizar produtos do Bling')
-    } finally {
-      setSyncing(false)
-    }
-  }
 
   const deleteProduct = async (productId: string) => {
     if (!confirm('Tem certeza que deseja excluir este produto?')) return
@@ -299,55 +254,6 @@ export default function DashboardProductsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {/* Sync Dropdown */}
-            <div className="relative sync-dropdown-container">
-              <Button
-                variant="outline"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowSyncOptions(!showSyncOptions)
-                }}
-                isLoading={syncing}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw size={18} />
-                Sincronizar Bling
-                <ChevronDown size={16} />
-              </Button>
-              
-              {showSyncOptions && (
-                <div 
-                  className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border z-50"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="p-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        syncBlingProducts(false)
-                        setShowSyncOptions(false)
-                      }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-md transition-colors"
-                    >
-                      <div className="font-medium">Todos os produtos</div>
-                      <div className="text-sm text-gray-500">Sincronizar todos os produtos do Bling</div>
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        syncBlingProducts(true)
-                        setShowSyncOptions(false)
-                      }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded-md transition-colors"
-                    >
-                      <div className="font-medium">Apenas com estoque</div>
-                      <div className="text-sm text-gray-500">Sincronizar apenas produtos em estoque</div>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-            
             <Link href="/dashboard/produtos/brindes-combos">
               <Button variant="outline" size="lg">
                 <Package size={20} className="mr-2" />
@@ -550,8 +456,10 @@ export default function DashboardProductsPage() {
                         >
                           {product.stock} unidades
                         </div>
-                        {(product as any).bling_id && (
-                          <Link2 size={14} className="text-blue-500" />
+                        {(product as any).product_code && (
+                          <span className="text-xs text-gray-500 ml-2">
+                            Cód: {(product as any).product_code}
+                          </span>
                         )}
                       </div>
                     </td>

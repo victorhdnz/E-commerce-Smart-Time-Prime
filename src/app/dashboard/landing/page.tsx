@@ -9,13 +9,11 @@ import { ImageUploader } from '@/components/ui/ImageUploader'
 import { VideoUploader } from '@/components/ui/VideoUploader'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Save, Eye, ArrowLeft } from 'lucide-react'
+import { Save } from 'lucide-react'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import { createClient } from '@/lib/supabase/client'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
-import { LandingPreview } from '@/components/dashboard/LandingPreview'
-import { PublicationControls } from '@/components/dashboard/PublicationControls'
 
 interface LandingSettings {
   hero_title: string
@@ -50,10 +48,6 @@ export default function EditLandingPage() {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
-  const [isPublished, setIsPublished] = useState(true)
-  const [scheduledPublishAt, setScheduledPublishAt] = useState<string>()
-  const [lastPublishedAt, setLastPublishedAt] = useState<string>()
   const [settings, setSettings] = useState<LandingSettings>({
     hero_title: '',
     hero_subtitle: '',
@@ -95,7 +89,7 @@ export default function EditLandingPage() {
     try {
       const { data, error } = await supabase
         .from('site_settings')
-        .select('value, is_published, scheduled_publish_at, last_published_at')
+        .select('value')
         .eq('key', 'general')
         .maybeSingle()
 
@@ -161,10 +155,6 @@ export default function EditLandingPage() {
         })
       }
 
-      // Carregar informações de publicação
-      setIsPublished(data?.is_published ?? true)
-      setScheduledPublishAt(data?.scheduled_publish_at || undefined)
-      setLastPublishedAt(data?.last_published_at || undefined)
     } catch (error) {
       console.error('Erro ao carregar configurações:', error)
       toast.error('Erro ao carregar configurações')
@@ -251,83 +241,6 @@ export default function EditLandingPage() {
     }
   }
 
-  const handlePublish = async () => {
-    try {
-      const { error } = await supabase
-        .from('site_settings')
-        .update({ 
-          is_published: true,
-          last_published_at: new Date().toISOString(),
-          scheduled_publish_at: null
-        })
-        .eq('key', 'general')
-
-      if (error) throw error
-
-      setIsPublished(true)
-      setLastPublishedAt(new Date().toISOString())
-      setScheduledPublishAt(undefined)
-      
-      toast.success('Configurações publicadas com sucesso!')
-    } catch (error) {
-      console.error('Erro ao publicar:', error)
-      toast.error('Erro ao publicar configurações')
-    }
-  }
-
-  const handleUnpublish = async () => {
-    try {
-      const { error } = await supabase
-        .from('site_settings')
-        .update({ is_published: false })
-        .eq('key', 'general')
-
-      if (error) throw error
-
-      setIsPublished(false)
-      toast.success('Configurações despublicadas')
-    } catch (error) {
-      console.error('Erro ao despublicar:', error)
-      toast.error('Erro ao despublicar configurações')
-    }
-  }
-
-  const handleSchedule = async (scheduledDateTime: string) => {
-    try {
-      const { error } = await supabase
-        .from('site_settings')
-        .update({ 
-          scheduled_publish_at: scheduledDateTime,
-          is_published: false
-        })
-        .eq('key', 'general')
-
-      if (error) throw error
-
-      setScheduledPublishAt(scheduledDateTime)
-      setIsPublished(false)
-    } catch (error) {
-      console.error('Erro ao agendar:', error)
-      throw error
-    }
-  }
-
-  const handleCancelSchedule = async () => {
-    try {
-      const { error } = await supabase
-        .from('site_settings')
-        .update({ scheduled_publish_at: null })
-        .eq('key', 'general')
-
-      if (error) throw error
-
-      setScheduledPublishAt(undefined)
-      toast.success('Agendamento cancelado')
-    } catch (error) {
-      console.error('Erro ao cancelar agendamento:', error)
-      toast.error('Erro ao cancelar agendamento')
-    }
-  }
 
   if (authLoading || loading) {
     return (
@@ -347,20 +260,10 @@ export default function EditLandingPage() {
           backUrl="/dashboard"
           backLabel="Voltar ao Dashboard"
           actions={
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                size="lg"
-                onClick={() => setShowPreview(true)}
-              >
-                <Eye size={18} className="mr-2" />
-                Pré-visualizar
-              </Button>
-              <Button onClick={handleSave} isLoading={saving}>
-                <Save size={18} className="mr-2" />
-                Salvar Alterações
-              </Button>
-            </div>
+            <Button onClick={handleSave} isLoading={saving}>
+              <Save size={18} className="mr-2" />
+              Salvar Alterações
+            </Button>
           }
         />
 
@@ -596,246 +499,6 @@ export default function EditLandingPage() {
                 </div>
               </div>
 
-              {/* Preview */}
-              {settings.timer_end_date && (
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Preview</h3>
-                  <div
-                    className="rounded-lg p-8 text-center"
-                    style={{
-                      backgroundColor: settings.timer_bg_color,
-                      color: settings.timer_text_color,
-                    }}
-                  >
-                    <h4 className="text-xl font-bold mb-4">{settings.timer_title}</h4>
-                    <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
-                      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4">
-                        <div className="text-3xl font-bold">00</div>
-                        <div className="text-sm opacity-75 mt-1">DIAS</div>
-                      </div>
-                      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4">
-                        <div className="text-3xl font-bold">00</div>
-                        <div className="text-sm opacity-75 mt-1">HORAS</div>
-                      </div>
-                      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4">
-                        <div className="text-3xl font-bold">00</div>
-                        <div className="text-sm opacity-75 mt-1">MIN</div>
-                      </div>
-                      <div className="bg-white/10 backdrop-blur-md rounded-lg p-4">
-                        <div className="text-3xl font-bold">00</div>
-                        <div className="text-sm opacity-75 mt-1">SEG</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Theme Colors Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">Personalização de Cores</h2>
-            <p className="text-sm text-gray-600 mb-6">
-              Personalize as cores do seu site. Use o layout padrão (preto e branco) ou crie sua própria paleta.
-            </p>
-            
-            <div className="space-y-6">
-              {/* Botão para resetar para padrão */}
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Cores do Tema</h3>
-                <Button
-                  variant="outline"
-                  onClick={() => setSettings({
-                    ...settings,
-                    theme_colors: {
-                      primary: '#000000',
-                      secondary: '#ffffff',
-                      accent: '#FFD700',
-                      background: '#ffffff',
-                    }
-                  })}
-                >
-                  Restaurar Padrão
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Cor Primária */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Cor Primária
-                    <span className="ml-2 text-xs text-gray-500 font-normal">
-                      (Botões, links, destaques)
-                    </span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={settings.theme_colors.primary}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        theme_colors: {
-                          ...settings.theme_colors,
-                          primary: e.target.value
-                        }
-                      })}
-                      className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
-                    />
-                    <Input
-                      value={settings.theme_colors.primary}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        theme_colors: {
-                          ...settings.theme_colors,
-                          primary: e.target.value
-                        }
-                      })}
-                      placeholder="#000000"
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
-
-                {/* Cor Secundária */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Cor Secundária
-                    <span className="ml-2 text-xs text-gray-500 font-normal">
-                      (Textos, bordas)
-                    </span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={settings.theme_colors.secondary}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        theme_colors: {
-                          ...settings.theme_colors,
-                          secondary: e.target.value
-                        }
-                      })}
-                      className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
-                    />
-                    <Input
-                      value={settings.theme_colors.secondary}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        theme_colors: {
-                          ...settings.theme_colors,
-                          secondary: e.target.value
-                        }
-                      })}
-                      placeholder="#ffffff"
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
-
-                {/* Cor de Destaque */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Cor de Destaque
-                    <span className="ml-2 text-xs text-gray-500 font-normal">
-                      (Promoções, ofertas especiais)
-                    </span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={settings.theme_colors.accent}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        theme_colors: {
-                          ...settings.theme_colors,
-                          accent: e.target.value
-                        }
-                      })}
-                      className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
-                    />
-                    <Input
-                      value={settings.theme_colors.accent}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        theme_colors: {
-                          ...settings.theme_colors,
-                          accent: e.target.value
-                        }
-                      })}
-                      placeholder="#FFD700"
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
-
-                {/* Cor de Fundo */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Cor de Fundo
-                    <span className="ml-2 text-xs text-gray-500 font-normal">
-                      (Fundo principal do site)
-                    </span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={settings.theme_colors.background}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        theme_colors: {
-                          ...settings.theme_colors,
-                          background: e.target.value
-                        }
-                      })}
-                      className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
-                    />
-                    <Input
-                      value={settings.theme_colors.background}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        theme_colors: {
-                          ...settings.theme_colors,
-                          background: e.target.value
-                        }
-                      })}
-                      placeholder="#ffffff"
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Preview das cores */}
-              <div className="mt-6 p-4 border rounded-lg">
-                <h4 className="text-sm font-medium mb-3">Preview das Cores</h4>
-                <div className="flex gap-4">
-                  <div 
-                    className="w-16 h-16 rounded-lg border"
-                    style={{ backgroundColor: settings.theme_colors.primary }}
-                    title="Primária"
-                  ></div>
-                  <div 
-                    className="w-16 h-16 rounded-lg border"
-                    style={{ backgroundColor: settings.theme_colors.secondary }}
-                    title="Secundária"
-                  ></div>
-                  <div 
-                    className="w-16 h-16 rounded-lg border"
-                    style={{ backgroundColor: settings.theme_colors.accent }}
-                    title="Destaque"
-                  ></div>
-                  <div 
-                    className="w-16 h-16 rounded-lg border"
-                    style={{ backgroundColor: settings.theme_colors.background }}
-                    title="Fundo"
-                  ></div>
-                </div>
-              </div>
             </div>
           </motion.div>
 
@@ -919,50 +582,14 @@ export default function EditLandingPage() {
                 <VideoUploader
                   value={settings.showcase_video_url}
                   onChange={(url) => setSettings({ ...settings, showcase_video_url: url })}
+                  showMediaManager={false}
                 />
               </div>
             </div>
           </motion.div>
 
-          {/* Save Button (Mobile) */}
-          <div className="lg:hidden">
-            <Button onClick={handleSave} isLoading={saving} className="w-full" size="lg">
-              <Save size={18} className="mr-2" />
-              Salvar Alterações
-            </Button>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Publication Controls */}
-            <PublicationControls
-              isPublished={isPublished}
-              scheduledPublishAt={scheduledPublishAt}
-              lastPublishedAt={lastPublishedAt}
-              onPublish={handlePublish}
-              onUnpublish={handleUnpublish}
-              onSchedule={handleSchedule}
-              onCancelSchedule={handleCancelSchedule}
-              loading={saving}
-            />
-
-            {/* Save Button (Desktop) */}
-            <div className="hidden lg:block">
-              <Button onClick={handleSave} isLoading={saving} className="w-full" size="lg">
-                <Save size={18} className="mr-2" />
-                Salvar Alterações
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
-
-      {/* Componente de Pré-visualização */}
-      <LandingPreview
-        settings={settings}
-        isOpen={showPreview}
-        onClose={() => setShowPreview(false)}
-      />
     </div>
   )
 }

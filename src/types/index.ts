@@ -6,10 +6,10 @@ export interface Product {
   slug: string
   description: string | null
   short_description: string | null
-  bling_price: number | null
   local_price: number
   national_price: number
   stock: number
+  product_code: string | null
   is_featured: boolean
   is_active: boolean
   weight: number | null

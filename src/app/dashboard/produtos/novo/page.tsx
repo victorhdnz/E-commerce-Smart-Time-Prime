@@ -26,6 +26,7 @@ export default function NovoProduct() {
     stock: '',
     category: '',
     slug: '',
+    product_code: '',
     images: [] as string[],
     specifications: [] as { key: string; value: string }[],
     is_featured: false,
@@ -107,6 +108,7 @@ export default function NovoProduct() {
           stock: parseInt(formData.stock) || 0,
           category: formData.category,
           slug: formData.slug,
+          product_code: formData.product_code || null,
           images: formData.images,
           specifications: formData.specifications,
           is_featured: formData.is_featured,
@@ -182,6 +184,16 @@ export default function NovoProduct() {
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                   placeholder="relogio-smartwatch-premium"
                 />
+
+                <Input
+                  label="Código do Produto (apenas no dashboard)"
+                  value={formData.product_code}
+                  onChange={(e) => setFormData({ ...formData, product_code: e.target.value })}
+                  placeholder="Código para baixa manual no Bling"
+                />
+                <p className="text-xs text-gray-500 -mt-2">
+                  Este código ficará visível apenas no dashboard para facilitar a baixa manual no Bling
+                </p>
 
                 <Input
                   label="Categoria"

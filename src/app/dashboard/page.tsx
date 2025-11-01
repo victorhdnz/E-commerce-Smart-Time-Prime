@@ -20,13 +20,20 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils/format'
-import { BlingOrder } from '@/lib/bling/client'
-
 interface DashboardStats {
   todaySales: number
   newOrders: number
   activeProducts: number
   clients: number
+}
+
+interface Order {
+  id: string
+  order_number: string
+  total: number
+  status: string
+  created_at: string
+  user_id: string
 }
 
 export default function DashboardPage() {
@@ -38,7 +45,7 @@ export default function DashboardPage() {
     activeProducts: 0,
     clients: 0,
   })
-  const [recentOrders, setRecentOrders] = useState<BlingOrder[]>([])
+  const [recentOrders, setRecentOrders] = useState<Order[]>([])
   const [loadingData, setLoadingData] = useState(true)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [currentDay, setCurrentDay] = useState<string>(() => {
@@ -50,7 +57,7 @@ export default function DashboardPage() {
   // Estados para paginação
   const [currentPage, setCurrentPage] = useState(1)
   const [ordersPerPage] = useState(5)
-  const [selectedOrder, setSelectedOrder] = useState<BlingOrder | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
   useEffect(() => {
     // Aguardar o carregamento da autenticação completar
@@ -103,25 +110,53 @@ export default function DashboardPage() {
     try {
       setLoadingData(true)
       
+      // Buscar dados diretamente do Supabase
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+
       // Buscar estatísticas e pedidos em paralelo
-      const [statsRes, ordersRes] = await Promise.all([
-        fetch('/api/bling/stats'),
-        fetch('/api/bling/orders'),
+      const [ordersResult, productsResult, clientsResult] = await Promise.all([
+        supabase
+          .from('orders')
+          .select('*')
+          .eq('status', 'completed')
+          .gte('created_at', new Date().toISOString().split('T')[0])
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('products')
+          .select('id')
+          .eq('is_active', true),
+        supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'customer'),
       ])
 
-      if (statsRes.ok) {
-        const statsData = await statsRes.json()
-        if (statsData.success) {
-          setStats(statsData.stats)
-        }
-      }
+      // Calcular estatísticas
+      const todayOrders = ordersResult.data || []
+      const todaySales = todayOrders.reduce((sum, order) => sum + (order.total || 0), 0)
+      const newOrders = todayOrders.length
+      const activeProducts = productsResult.data?.length || 0
+      const clients = clientsResult.data?.length || 0
 
-      if (ordersRes.ok) {
-        const ordersData = await ordersRes.json()
-        if (ordersData.success) {
-          setRecentOrders(ordersData.orders || [])
-        }
-      }
+      setStats({
+        todaySales,
+        newOrders,
+        activeProducts,
+        clients,
+      })
+
+      // Mapear pedidos para o formato esperado
+      const mappedOrders: Order[] = (todayOrders || []).map(order => ({
+        id: order.id,
+        order_number: order.order_number || order.id,
+        total: order.total || 0,
+        status: order.status || 'pending',
+        created_at: order.created_at,
+        user_id: order.user_id,
+      }))
+
+      setRecentOrders(mappedOrders)
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error)
     } finally {
@@ -129,14 +164,13 @@ export default function DashboardPage() {
     }
   }
 
-  // A API já retorna apenas pedidos de hoje filtrados
-  // Usar diretamente recentOrders, apenas validando que existe data
+  // Filtrar pedidos de hoje
   const todayOrders = recentOrders.filter(order => {
-    // Validar que o pedido tem dados básicos
-    if (!order || !order.numero || !order.data) {
+    if (!order || !order.created_at) {
       return false
     }
-    return true // Se tem os dados, aceitar (API já filtra por hoje)
+    const orderDate = new Date(order.created_at).toISOString().split('T')[0]
+    return orderDate === currentDay
   })
 
   // Cálculos de paginação
@@ -328,7 +362,7 @@ export default function DashboardPage() {
               <>
                 {currentOrders.map((order) => (
                   <motion.div
-                    key={order.numero}
+                    key={order.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="border rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -339,9 +373,9 @@ export default function DashboardPage() {
                           <ShoppingBag size={20} className="text-green-600" />
                         </div>
                         <div>
-                          <p className="font-semibold text-lg">Pedido #{order.numero}</p>
+                          <p className="font-semibold text-lg">Pedido #{order.order_number}</p>
                           <p className="text-sm text-gray-600">
-                            Cliente: {order.cliente.nome}
+                            Status: {order.status}
                           </p>
                         </div>
                       </div>
@@ -350,49 +384,12 @@ export default function DashboardPage() {
                           {formatCurrency(order.total)}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {new Date(order.data).toLocaleTimeString('pt-BR', { 
+                          {new Date(order.created_at).toLocaleTimeString('pt-BR', { 
                             hour: '2-digit', 
                             minute: '2-digit' 
                           })}
                         </p>
                       </div>
-                    </div>
-
-                    {/* Produtos do pedido */}
-                    {order.itens && order.itens.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-gray-100">
-                        <p className="text-sm font-medium text-gray-700 mb-2">
-                          Produtos ({order.itens.length}):
-                        </p>
-                        <div className="space-y-1">
-                          {order.itens.slice(0, 3).map((item, index) => (
-                            <div key={index} className="flex justify-between items-center text-sm">
-                              <span className="text-gray-600">
-                                {item.quantidade}x {item.produto.nome}
-                              </span>
-                              <span className="font-medium">
-                                {formatCurrency(item.valor * item.quantidade)}
-                              </span>
-                            </div>
-                          ))}
-                          {order.itens.length > 3 && (
-                            <p className="text-xs text-gray-500 italic">
-                              +{order.itens.length - 3} produto(s) adicional(is)
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Botão para ver detalhes */}
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      <button
-                        onClick={() => setSelectedOrder(order)}
-                        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        <Eye size={16} />
-                        Ver detalhes completos
-                      </button>
                     </div>
                   </motion.div>
                 ))}

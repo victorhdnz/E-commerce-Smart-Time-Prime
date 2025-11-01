@@ -65,16 +65,8 @@ export const useAuth = () => {
       setLoading(true)
       
       try {
-        // Verificar sessão de forma simples com timeout curto
-        const sessionPromise = supabase.auth.getSession()
-        const sessionTimeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session timeout')), 3000)
-        )
-        
-        const { data: { session }, error } = await Promise.race([
-          sessionPromise,
-          sessionTimeout
-        ]) as { data: { session: any }, error: any }
+        // Verificar sessão de forma simples
+        const { data: { session }, error } = await supabase.auth.getSession()
         
         if (!mounted) return
         

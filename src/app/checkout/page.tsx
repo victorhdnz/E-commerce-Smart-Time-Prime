@@ -127,27 +127,7 @@ export default function CheckoutPage() {
         throw new Error(createJson?.error || 'Erro ao criar pedido')
       }
 
-      // Atualizar estoque no Bling para cada produto vendido
-      const stockUpdates = items.map(async (item) => {
-        if ((item as any).isGift || (item as any).is_gift) return // Brindes não atualizam estoque
-
-        try {
-          await fetch('/api/bling/stock/update', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              productId: item.product.id,
-              quantity: item.quantity,
-              operation: 'decrease',
-            }),
-          })
-        } catch (error) {
-          console.error(`Erro ao atualizar estoque do produto ${item.product.name}:`, error)
-          // Não bloqueia o pedido se houver erro ao atualizar estoque
-        }
-      })
-
-      await Promise.allSettled(stockUpdates)
+      // Estoque já foi atualizado ao criar o pedido na API
 
       toast.success('Pedido realizado com sucesso!')
       clearCart()
