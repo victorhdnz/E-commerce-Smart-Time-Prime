@@ -28,14 +28,17 @@ export const HeroSection = ({
   ctaText = '💬 QUERO MEU SÉRIE 11 AGORA!',
   ctaLink,
   images = [],
-  backgroundColor = '#000000',
-  textColor = '#ffffff',
+  backgroundColor, // Será ignorado, sempre usará preto
+  textColor, // Será ignorado, sempre usará branco
   badgeText = '🚨 A BLACK FRIDAY CHEGOU!',
   viewerCountText,
   timerEndDate,
   heroImages = [],
   heroBanner,
 }: HeroSectionProps) => {
+  // Cores fixas da empresa (preto e branco)
+  const finalBackgroundColor = '#000000'
+  const finalTextColor = '#ffffff'
   const [viewerCount, setViewerCount] = useState(15)
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -79,7 +82,7 @@ export const HeroSection = ({
   }, [timerEndDate])
   return (
     <section
-      style={{ backgroundColor, color: textColor }}
+      style={{ backgroundColor: finalBackgroundColor, color: finalTextColor }}
       className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden"
     >
       {/* Banner acima do texto (1920x650) */}
@@ -107,7 +110,7 @@ export const HeroSection = ({
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `radial-gradient(circle, ${textColor} 1px, transparent 1px)`,
+            backgroundImage: `radial-gradient(circle, ${finalTextColor} 1px, transparent 1px)`,
             backgroundSize: '50px 50px',
           }}
         />
@@ -208,13 +211,13 @@ export const HeroSection = ({
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
           className="w-6 h-10 border-2 rounded-full flex items-start justify-center p-2"
-          style={{ borderColor: textColor }}
+          style={{ borderColor: finalTextColor }}
         >
           <motion.div
             animate={{ opacity: [0, 1, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
             className="w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: textColor }}
+            style={{ backgroundColor: finalTextColor }}
           />
         </motion.div>
       </motion.div>
