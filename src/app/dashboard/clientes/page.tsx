@@ -15,6 +15,7 @@ interface ClientProfile {
   id: string
   email: string
   full_name: string | null
+  phone: string | null
   avatar_url: string | null
   created_at: string
   addresses?: ClientAddress[]
@@ -66,7 +67,7 @@ export default function DashboardClientsPage() {
       // Buscar todos os perfis de clientes
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, full_name, avatar_url, created_at')
+        .select('id, email, full_name, phone, avatar_url, created_at')
         .order('created_at', { ascending: false })
 
       if (profilesError) throw profilesError
@@ -88,9 +89,16 @@ export default function DashboardClientsPage() {
             .eq('user_id', profile.id)
             .order('created_at', { ascending: false })
 
+          // Mapear endereços para incluir zipcode (usar cep como zipcode) e recipient_name (usar full_name do perfil)
+          const mappedAddresses = (addresses || []).map((addr: any) => ({
+            ...addr,
+            zipcode: addr.cep || '',
+            recipient_name: profile.full_name || 'N/A',
+          }))
+
           return {
             ...profile,
-            addresses: addresses || [],
+            addresses: mappedAddresses,
             orders: orders || [],
           } as ClientProfile
         })
@@ -116,6 +124,7 @@ export default function DashboardClientsPage() {
       (client) =>
         client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.addresses?.some((addr) =>
           addr.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
           addr.state.toLowerCase().includes(searchTerm.toLowerCase())
@@ -206,6 +215,12 @@ export default function DashboardClientsPage() {
                           <Mail size={14} />
                           {client.email}
                         </div>
+                        {client.phone && (
+                          <div className="flex items-center gap-1">
+                            <Phone size={14} />
+                            {client.phone}
+                          </div>
+                        )}
                         <div className="flex items-center gap-1">
                           <Package size={14} />
                           {client.orders?.length || 0} pedido(s)
@@ -311,6 +326,13 @@ export default function DashboardClientsPage() {
                     <div>
                       <p className="text-sm font-medium text-gray-700">E-mail</p>
                       <p className="text-gray-900">{selectedClient.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                        <Phone size={14} />
+                        Telefone
+                      </p>
+                      <p className="text-gray-900">{selectedClient.phone || 'Não informado'}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-700">Data de Registro</p>

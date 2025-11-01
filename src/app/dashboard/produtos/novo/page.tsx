@@ -189,10 +189,10 @@ export default function NovoProduct() {
                   label="Código do Produto (apenas no dashboard)"
                   value={formData.product_code}
                   onChange={(e) => setFormData({ ...formData, product_code: e.target.value })}
-                  placeholder="Código para baixa manual no Bling"
+                  placeholder="Código interno do produto (opcional)"
                 />
                 <p className="text-xs text-gray-500 -mt-2">
-                  Este código ficará visível apenas no dashboard para facilitar a baixa manual no Bling
+                  Este código ficará visível apenas no dashboard para referência interna
                 </p>
 
                 <Input
