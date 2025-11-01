@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Save, ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
+import { Save, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
@@ -33,7 +33,6 @@ export default function ConfiguracoesPage() {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [blingStatus, setBlingStatus] = useState<'loading' | 'connected' | 'disconnected'>('loading')
   const [config, setConfig] = useState<SiteConfig>({
     site_name: 'Smart Time Prime',
     site_description: 'E-commerce de produtos premium',
@@ -55,31 +54,8 @@ export default function ConfiguracoesPage() {
 
     if (isAuthenticated && isAdmin) {
       loadConfig()
-      checkBlingStatus()
     }
   }, [isAuthenticated, isAdmin, authLoading, router])
-
-  const checkBlingStatus = async () => {
-    try {
-      const { data } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'bling_tokens')
-        .maybeSingle()
-
-      if (data?.value) {
-        const tokens = data.value as any
-        if (tokens.access_token && tokens.expires_at && new Date(tokens.expires_at) > new Date()) {
-          setBlingStatus('connected')
-          return
-        }
-      }
-      setBlingStatus('disconnected')
-    } catch (error) {
-      setBlingStatus('disconnected')
-    }
-  }
-
 
   const loadConfig = async () => {
     try {
@@ -320,65 +296,6 @@ export default function ConfiguracoesPage() {
             </div>
           </motion.div>
 
-          {/* Integração Bling */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">Integração Bling</h2>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  {blingStatus === 'loading' && (
-                    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-400"></div>
-                  )}
-                  {blingStatus === 'connected' && (
-                    <CheckCircle size={24} className="text-green-500" />
-                  )}
-                  {blingStatus === 'disconnected' && (
-                    <XCircle size={24} className="text-gray-400" />
-                  )}
-                  <div>
-                    <p className="font-semibold">
-                      {blingStatus === 'connected' ? 'Conectado' : blingStatus === 'loading' ? 'Verificando...' : 'Desconectado'}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {blingStatus === 'connected'
-                        ? 'Sincronização ativa com Bling'
-                        : 'Configure o token OAuth via Postman'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">
-                <p className="font-semibold mb-2">Configuração via Postman:</p>
-                <ol className="list-decimal list-inside space-y-2 text-xs">
-                  <li>Obtenha o <code className="bg-gray-200 px-1 rounded">access_token</code> e <code className="bg-gray-200 px-1 rounded">refresh_token</code> do Bling via Postman</li>
-                  <li>Insira os tokens na tabela <code className="bg-gray-200 px-1 rounded">site_settings</code> do Supabase com:</li>
-                  <li className="ml-6">
-                    <code className="bg-gray-200 px-1 rounded">key: "bling_tokens"</code>
-                  </li>
-                  <li className="ml-6">
-                    <code className="bg-gray-200 px-1 rounded">value: {"{ access_token, refresh_token, expires_in, expires_at }"}</code>
-                  </li>
-                </ol>
-                <p className="mt-3 text-xs text-gray-500">
-                  O sistema detectará automaticamente quando os tokens forem adicionados.
-                </p>
-              </div>
-
-              {blingStatus === 'connected' && (
-                <div className="text-sm text-green-600 bg-green-50 p-4 rounded-lg border border-green-200">
-                  <p className="font-semibold mb-1">✓ Integração Ativa</p>
-                  <p>O dashboard está recebendo dados do Bling em tempo real.</p>
-                </div>
-              )}
-            </div>
-          </motion.div>
 
           {/* Save Button (Mobile) */}
           <div className="lg:hidden">

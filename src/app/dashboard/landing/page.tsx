@@ -72,15 +72,17 @@ interface LandingSettings {
   // Story Section
   story_title: string
   story_content: string
-  story_image: string
+  story_images: string[] // Array de imagens
+  story_image: string // Mantido para compatibilidade
   story_founders_names: string
   
   // About Us Section
   about_us_title: string
   about_us_description: string
-  about_us_store_image: string
-  about_us_founders_image: string
-  about_us_founders_names: string
+  about_us_store_images: string[] // Array de imagens
+  about_us_store_image: string // Mantido para compatibilidade
+  about_us_founders_image: string // Removido do dashboard mas mantido para compatibilidade
+  about_us_founders_names: string // Removido do dashboard mas mantido para compatibilidade
   about_us_location: string
   
   // Social Proof
@@ -176,11 +178,13 @@ export default function EditLandingPage() {
     // Story
     story_title: '✍️ NOSSA HISTÓRIA',
     story_content: 'A Smart Time Prime nasceu em Uberlândia com o propósito de unir estilo e tecnologia no dia a dia das pessoas.\n\nHoje somos uma das lojas mais lembradas quando o assunto é smartwatch e confiança.',
+    story_images: [],
     story_image: '',
     story_founders_names: 'Guilherme e Letícia',
     // About Us
     about_us_title: '🏪 SOBRE A SMART TIME PRIME',
     about_us_description: 'A Smart Time Prime é uma loja de tecnologia localizada em Uberlândia/MG, dentro do Shopping Planalto.\n\nSomos referência em smartwatches e acessórios tecnológicos, com atendimento humano, entrega rápida e garantia total.',
+    about_us_store_images: [],
     about_us_store_image: '',
     about_us_founders_image: '',
     about_us_founders_names: 'Guilherme e Letícia',
@@ -306,11 +310,13 @@ export default function EditLandingPage() {
           // Story
           story_title: savedSettings.story_title || '✍️ NOSSA HISTÓRIA',
           story_content: savedSettings.story_content || 'A Smart Time Prime nasceu em Uberlândia com o propósito de unir estilo e tecnologia no dia a dia das pessoas.\n\nHoje somos uma das lojas mais lembradas quando o assunto é smartwatch e confiança.',
+          story_images: Array.isArray(savedSettings.story_images) ? savedSettings.story_images : (savedSettings.story_image ? [savedSettings.story_image] : []),
           story_image: savedSettings.story_image || '',
           story_founders_names: savedSettings.story_founders_names || 'Guilherme e Letícia',
           // About Us
           about_us_title: savedSettings.about_us_title || '🏪 SOBRE A SMART TIME PRIME',
           about_us_description: savedSettings.about_us_description || 'A Smart Time Prime é uma loja de tecnologia localizada em Uberlândia/MG, dentro do Shopping Planalto.\n\nSomos referência em smartwatches e acessórios tecnológicos, com atendimento humano, entrega rápida e garantia total.',
+          about_us_store_images: Array.isArray(savedSettings.about_us_store_images) ? savedSettings.about_us_store_images : (savedSettings.about_us_store_image ? [savedSettings.about_us_store_image] : []),
           about_us_store_image: savedSettings.about_us_store_image || '',
           about_us_founders_image: savedSettings.about_us_founders_image || '',
           about_us_founders_names: savedSettings.about_us_founders_names || 'Guilherme e Letícia',
@@ -938,7 +944,7 @@ export default function EditLandingPage() {
             transition={{ delay: 0.6 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">História (Story)</h2>
+            <h2 className="text-2xl font-bold mb-6">Nossa História</h2>
             
             <div className="space-y-4">
               <Input
@@ -973,10 +979,10 @@ export default function EditLandingPage() {
               />
 
               <div>
-                <label className="block text-sm font-medium mb-2">Foto dos Donos na Loja</label>
-                <ImageUploader
-                  value={settings.story_image}
-                  onChange={(url) => setSettings({ ...settings, story_image: url })}
+                <label className="block text-sm font-medium mb-2">Fotos dos Donos na Loja</label>
+                <ArrayImageManager
+                  value={settings.story_images}
+                  onChange={(images) => setSettings({ ...settings, story_images: images })}
                 />
               </div>
             </div>
@@ -989,7 +995,7 @@ export default function EditLandingPage() {
             transition={{ delay: 0.7 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Quem Somos (Fundadores)</h2>
+            <h2 className="text-2xl font-bold mb-6">Quem Somos</h2>
             
             <div className="space-y-4">
               <Input
@@ -1015,29 +1021,12 @@ export default function EditLandingPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Foto da Loja</label>
-                <ImageUploader
-                  value={settings.about_us_store_image}
-                  onChange={(url) => setSettings({ ...settings, about_us_store_image: url })}
+                <label className="block text-sm font-medium mb-2">Fotos da Loja</label>
+                <ArrayImageManager
+                  value={settings.about_us_store_images}
+                  onChange={(images) => setSettings({ ...settings, about_us_store_images: images })}
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Foto dos Fundadores</label>
-                <ImageUploader
-                  value={settings.about_us_founders_image}
-                  onChange={(url) => setSettings({ ...settings, about_us_founders_image: url })}
-                />
-              </div>
-
-              <Input
-                label="Nomes dos Fundadores/Donos"
-                value={settings.about_us_founders_names}
-                onChange={(e) =>
-                  setSettings({ ...settings, about_us_founders_names: e.target.value })
-                }
-                placeholder="Guilherme e Letícia"
-              />
             </div>
           </motion.div>
 

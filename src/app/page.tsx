@@ -269,18 +269,20 @@ export default async function Home() {
       <StorySection
         title={settings.story_title}
         content={settings.story_content}
-        image={settings.story_image}
+        images={settings.story_images}
+        image={settings.story_image} // Fallback para compatibilidade
         foundersNames={settings.story_founders_names}
       />
 
       {/* 7. WhatsApp Group (Grupo do WhatsApp) */}
       <WhatsAppVipRegistration whatsappGroupLink={whatsappVipLink} />
 
-      {/* 8. About Us (Quem Somos - apresentação dos fundadores) */}
+      {/* 8. About Us (Quem Somos - apresentação da loja) */}
       <AboutUsSection
         title={settings.about_us_title}
         description={settings.about_us_description}
-        storeImage={settings.about_us_store_image}
+        storeImages={settings.about_us_store_images}
+        storeImage={settings.about_us_store_image} // Fallback para compatibilidade
         foundersNames={settings.about_us_founders_names}
         location={settings.about_us_location}
       />

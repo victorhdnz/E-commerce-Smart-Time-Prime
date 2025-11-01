@@ -1,15 +1,31 @@
 'use client'
 
+import { useState } from 'react'
 import { useCart } from '@/hooks/useCart'
 import { Button } from '@/components/ui/Button'
 import { FadeInSection } from '@/components/ui/FadeInSection'
+import { ShippingCalculator } from '@/components/shipping/ShippingCalculator'
 import { formatCurrency } from '@/lib/utils/format'
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 
+interface ShippingOption {
+  id: string
+  name: string
+  price: number
+  currency: string
+  delivery_time: number
+  delivery_range?: {
+    min: number
+    max: number
+  }
+  company: string
+}
+
 export default function CartPage() {
   const { items, removeItem, updateQuantity, getTotal, clearCart } = useCart()
+  const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null)
 
   if (items.length === 0) {
     return (
@@ -172,41 +188,60 @@ export default function CartPage() {
 
           {/* Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
+            <div className="bg-white rounded-lg shadow-md p-6 sticky top-24 space-y-6">
               <h2 className="text-2xl font-bold mb-6">Resumo do Pedido</h2>
 
-              <div className="space-y-3 mb-6">
+              {/* Shipping Calculator */}
+              <div className="border-b pb-6">
+                <ShippingCalculator
+                  onShippingSelected={setSelectedShipping}
+                  selectedShipping={selectedShipping}
+                />
+              </div>
+
+              {/* Order Summary */}
+              <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-semibold">{formatCurrency(getTotal())}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Frete</span>
-                  <span className="font-semibold text-sm text-gray-500">
-                    Calcular no checkout
+                  <span className="font-semibold text-sm">
+                    {selectedShipping ? (
+                      formatCurrency(selectedShipping.price)
+                    ) : (
+                      <span className="text-gray-500">Calcular frete</span>
+                    )}
                   </span>
                 </div>
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-xl font-bold">
                     <span>Total</span>
-                    <span>{formatCurrency(getTotal())}</span>
+                    <span>
+                      {formatCurrency(
+                        getTotal() + (selectedShipping?.price || 0)
+                      )}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <Link href="/checkout">
-                <Button size="lg" className="w-full mb-3">
-                  Finalizar Compra
-                </Button>
-              </Link>
+              <div className="space-y-3">
+                <Link href="/checkout">
+                  <Button size="lg" className="w-full">
+                    Finalizar Compra
+                  </Button>
+                </Link>
 
-              <Link href="/produtos">
-                <Button variant="outline" size="lg" className="w-full">
-                  Continuar Comprando
-                </Button>
-              </Link>
+                <Link href="/produtos">
+                  <Button variant="outline" size="lg" className="w-full">
+                    Continuar Comprando
+                  </Button>
+                </Link>
+              </div>
 
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
+              <div className="p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
                 <p className="font-semibold mb-2">🔒 Compra 100% Segura</p>
                 <p>Seus dados estão protegidos e criptografados</p>
               </div>

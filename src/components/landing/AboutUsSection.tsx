@@ -6,7 +6,8 @@ import Image from 'next/image'
 interface AboutUsSectionProps {
   title?: string
   description?: string
-  storeImage?: string
+  storeImages?: string[] // Array de imagens
+  storeImage?: string // Mantido para compatibilidade
   foundersNames?: string
   location?: string
 }
@@ -14,10 +15,15 @@ interface AboutUsSectionProps {
 export const AboutUsSection = ({
   title = '🏪 SOBRE A SMART TIME PRIME',
   description = 'A Smart Time Prime é uma loja de tecnologia localizada em Uberlândia/MG, dentro do Shopping Planalto.\n\nSomos referência em smartwatches e acessórios tecnológicos, com atendimento humano, entrega rápida e garantia total.',
-  storeImage,
+  storeImages,
+  storeImage, // Compatibilidade com versão antiga
   foundersNames,
   location = 'Shopping Planalto, Uberlândia/MG',
 }: AboutUsSectionProps) => {
+  // Usar storeImages se disponível, senão usar storeImage como fallback
+  const images = storeImages && storeImages.length > 0 
+    ? storeImages 
+    : (storeImage ? [storeImage] : [])
   return (
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,21 +50,25 @@ export const AboutUsSection = ({
             </p>
           </motion.div>
 
-          {/* Imagem da Loja */}
+          {/* Imagens da Loja */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             className="relative max-w-2xl mx-auto"
           >
-            {storeImage ? (
-              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
-                <Image
-                  src={storeImage}
-                  alt="Loja Smart Time Prime"
-                  fill
-                  className="object-cover"
-                />
+            {images.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {images.map((img, index) => (
+                  <div key={index} className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
+                    <Image
+                      src={img}
+                      alt={`Loja Smart Time Prime - Foto ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl bg-gray-200 flex items-center justify-center">
