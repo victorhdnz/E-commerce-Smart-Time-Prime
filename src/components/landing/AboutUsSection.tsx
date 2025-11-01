@@ -1,6 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 
 interface AboutUsSectionProps {
@@ -24,6 +26,38 @@ export const AboutUsSection = ({
   const images = storeImages && storeImages.length > 0 
     ? storeImages 
     : (storeImage ? [storeImage] : [])
+  
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  const nextSlide = () => {
+    if (images.length === 0) return
+    setCurrentIndex((prev) => (prev + 1) % images.length)
+  }
+
+  const prevSlide = () => {
+    if (images.length === 0) return
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
+  }
+
+  // Resetar índice quando as imagens mudarem
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [images])
+
+  // Auto-play do carrossel
+  useEffect(() => {
+    if (images.length <= 1) return
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => {
+        const nextIndex = (prev + 1) % images.length
+        return nextIndex
+      })
+    }, 4000) // Troca a cada 4 segundos
+
+    return () => clearInterval(interval)
+  }, [images, images.length])
+
   return (
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,7 +84,7 @@ export const AboutUsSection = ({
             </p>
           </motion.div>
 
-          {/* Imagens da Loja */}
+          {/* Carrossel de Imagens - Estilo Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -58,17 +92,80 @@ export const AboutUsSection = ({
             className="relative max-w-2xl mx-auto"
           >
             {images.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {images.map((img, index) => (
-                  <div key={index} className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
-                    <Image
-                      src={img}
-                      alt={`Loja Smart Time Prime - Foto ${index + 1}`}
-                      fill
-                      className="object-cover"
-                    />
+              <div className="relative group z-0">
+                {/* Imagem Principal */}
+                <div className="relative aspect-[4/3] bg-gray-200 rounded-2xl overflow-hidden shadow-2xl z-0">
+                  <Image
+                    key={currentIndex}
+                    src={images[currentIndex]}
+                    alt={`Loja Smart Time Prime - Foto ${currentIndex + 1}`}
+                    fill
+                    className="object-cover"
+                    priority={currentIndex === 0}
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    unoptimized={false}
+                  />
+                </div>
+
+                {/* Botões de Navegação */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevSlide}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 text-black p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white z-10"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={nextSlide}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 text-black p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white z-10"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </>
+                )}
+
+                {/* Indicadores */}
+                {images.length > 1 && (
+                  <div className="flex justify-center gap-2 mt-4">
+                    {images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentIndex(index)}
+                        className={`h-3 rounded-full transition-all ${
+                          index === currentIndex
+                            ? 'bg-black w-8'
+                            : 'bg-gray-400 w-3 hover:bg-gray-600'
+                        }`}
+                      />
+                    ))}
                   </div>
-                ))}
+                )}
+
+                {/* Miniaturas - apenas se houver mais de 1 imagem */}
+                {images.length > 1 && (
+                  <div className={`grid gap-2 mt-4 relative z-10 ${images.length <= 4 ? 'grid-cols-4' : 'grid-cols-4 overflow-x-auto pb-2'}`}>
+                    {images.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentIndex(index)}
+                        className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                          index === currentIndex
+                            ? 'border-black scale-105 z-10'
+                            : 'border-gray-300 opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <Image
+                          src={image}
+                          alt={`Loja Smart Time Prime - Miniatura ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 25vw, 25vw"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl bg-gray-200 flex items-center justify-center">
