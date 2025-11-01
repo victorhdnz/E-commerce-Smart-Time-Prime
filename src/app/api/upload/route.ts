@@ -3,28 +3,34 @@ import { v2 as cloudinary } from 'cloudinary'
 
 // Configuração do Cloudinary
 cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
 // Formatos permitidos para imagens
 const ALLOWED_IMAGE_FORMATS = ['jpeg', 'jpg', 'png', 'webp', 'gif']
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB (conforme exemplo fornecido)
 
-// Validar tipo de arquivo
+// Validar tipo de arquivo (mais robusto)
 function isValidImageFile(file: File): boolean {
-  if (!file.type.startsWith('image/')) {
+  // Verificar MIME type
+  const validMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+  if (!validMimeTypes.includes(file.type) && !file.type.startsWith('image/')) {
     return false
   }
   
-  const extension = file.name.split('.').pop()?.toLowerCase()
-  return extension ? ALLOWED_IMAGE_FORMATS.includes(extension) : false
+  // Verificar extensão do arquivo também (para casos onde MIME type pode estar incorreto)
+  const fileName = file.name.toLowerCase()
+  const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+  const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext))
+  
+  return hasValidExtension
 }
 
 // Validar tamanho do arquivo
 function isValidFileSize(size: number, isVideo: boolean = false): boolean {
-  const maxSize = isVideo ? 50 * 1024 * 1024 : MAX_FILE_SIZE // 50MB para vídeos, 10MB para imagens
+  const maxSize = isVideo ? 50 * 1024 * 1024 : MAX_FILE_SIZE // 50MB para vídeos, 5MB para imagens
   return size <= maxSize
 }
 
@@ -38,8 +44,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Nenhum arquivo enviado' }, { status: 400 })
     }
 
-    // Verificar configuração do Cloudinary
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+    // Verificar configuração do Cloudinary (tentar ambos nomes de variáveis)
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME
     const apiKey = process.env.CLOUDINARY_API_KEY
     const apiSecret = process.env.CLOUDINARY_API_SECRET
 
@@ -48,9 +54,15 @@ export async function POST(request: NextRequest) {
         cloudName: !!cloudName,
         apiKey: !!apiKey,
         apiSecret: !!apiSecret,
+        envVars: {
+          NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: !!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+          CLOUDINARY_CLOUD_NAME: !!process.env.CLOUDINARY_CLOUD_NAME,
+          CLOUDINARY_API_KEY: !!process.env.CLOUDINARY_API_KEY,
+          CLOUDINARY_API_SECRET: !!process.env.CLOUDINARY_API_SECRET,
+        }
       })
       return NextResponse.json({ 
-        error: 'Cloudinary não configurado corretamente' 
+        error: 'Cloudinary não configurado corretamente. Verifique as variáveis de ambiente.' 
       }, { status: 500 })
     }
 
@@ -61,13 +73,13 @@ export async function POST(request: NextRequest) {
     // Validar tipo de arquivo
     if (!isVideo && !isValidImageFile(file)) {
       return NextResponse.json({ 
-        error: `Apenas arquivos de imagem são permitidos. Formatos aceitos: ${ALLOWED_IMAGE_FORMATS.join(', ')}` 
+        error: `Apenas arquivos de imagem são permitidos. Formatos aceitos: ${ALLOWED_IMAGE_FORMATS.join(', ').toUpperCase()}. Tipo de arquivo recebido: ${file.type || 'desconhecido'}, Nome: ${file.name}` 
       }, { status: 400 })
     }
 
     // Validar tamanho
     if (!isValidFileSize(file.size, isVideo)) {
-      const maxSizeMB = isVideo ? 50 : 10
+      const maxSizeMB = isVideo ? 50 : 5 // 5MB para imagens (conforme exemplo fornecido)
       return NextResponse.json({ 
         error: `Arquivo muito grande. Tamanho máximo: ${maxSizeMB}MB` 
       }, { status: 400 })
@@ -77,20 +89,19 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
     
-    // Configurar opções de upload
+    // Configurar opções de upload (seguindo lógica do exemplo fornecido)
     const uploadOptions: any = {
-      folder: folder,
+      folder: folder || 'smart-time-prime',
       resource_type: resourceType,
       use_filename: true,
       unique_filename: true,
     }
 
-    // Aplicar transformações para imagens (formato Instagram Post: 1080x1080)
+    // Aplicar transformações para imagens (conforme exemplo: width: 800, height: 600, crop: 'limit')
     if (!isVideo) {
       uploadOptions.transformation = [
-        { width: 1080, height: 1080, crop: 'fill', gravity: 'center' }, // Formato Instagram Post (1080x1080)
-        { quality: 'auto:good' }, // Otimização automática de qualidade
-        { fetch_format: 'auto' } // Formato automático (webp quando possível)
+        { width: 800, height: 600, crop: 'limit' }, // Limitar tamanho mas manter proporção
+        { quality: 'auto:good' } // Otimização automática de qualidade
       ]
       uploadOptions.allowed_formats = ALLOWED_IMAGE_FORMATS
     } else {
@@ -104,7 +115,7 @@ export async function POST(request: NextRequest) {
       ]
     }
 
-    // Upload para Cloudinary
+    // Upload para Cloudinary usando upload_stream
     const result = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         uploadOptions,

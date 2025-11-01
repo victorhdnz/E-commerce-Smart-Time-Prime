@@ -40,16 +40,24 @@ export const MediaShowcase = ({
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
   }
 
+  // Resetar índice quando as imagens mudarem
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [images])
+
   // Auto-play do carrossel (opcional - cicla por todas as imagens)
   useEffect(() => {
     if (images.length <= 1) return
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length)
+      setCurrentIndex((prev) => {
+        const nextIndex = (prev + 1) % images.length
+        return nextIndex
+      })
     }, 4000) // Troca a cada 4 segundos
 
     return () => clearInterval(interval)
-  }, [images.length])
+  }, [images, images.length])
 
   // Sempre renderizar a seção, mas mostrar placeholders se não houver conteúdo
 

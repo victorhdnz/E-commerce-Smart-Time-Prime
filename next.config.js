@@ -1,13 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['lh3.googleusercontent.com', 'images.unsplash.com'],
+    domains: ['lh3.googleusercontent.com', 'images.unsplash.com', 'res.cloudinary.com'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**.supabase.co',
         port: '',
         pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        port: '',
+        pathname: '/**',
       },
     ],
   },

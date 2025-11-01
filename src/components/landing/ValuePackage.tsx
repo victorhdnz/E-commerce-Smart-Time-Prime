@@ -201,17 +201,15 @@ export const ValuePackage = ({
                       {item.name}
                     </span>
                   </div>
-                  {item.price && (
-                    <motion.span 
-                      className="text-lg font-bold text-gray-700 px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200"
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.15 + 0.2 }}
-                    >
-                      {item.price}
-                    </motion.span>
-                  )}
+                  <motion.span 
+                    className="text-lg font-bold text-gray-700 px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.15 + 0.2 }}
+                  >
+                    {item.price || '-'}
+                  </motion.span>
                 </motion.div>
               ))}
             </div>
