@@ -254,7 +254,17 @@ export default function EditLandingPage() {
           timer_enabled: savedSettings.timer_enabled !== undefined ? savedSettings.timer_enabled : true,
           timer_title: savedSettings.timer_title || '⚡ Black Friday - Tempo Limitado!',
           timer_end_date: savedSettings.timer_end_date 
-            ? new Date(savedSettings.timer_end_date).toISOString().slice(0, 16)
+            ? (() => {
+                // Converter ISO string do banco para formato datetime-local (sem timezone)
+                const date = new Date(savedSettings.timer_end_date)
+                // Obter componentes no timezone local
+                const year = date.getFullYear()
+                const month = String(date.getMonth() + 1).padStart(2, '0')
+                const day = String(date.getDate()).padStart(2, '0')
+                const hours = String(date.getHours()).padStart(2, '0')
+                const minutes = String(date.getMinutes()).padStart(2, '0')
+                return `${year}-${month}-${day}T${hours}:${minutes}`
+              })()
             : '',
           timer_bg_color: savedSettings.timer_bg_color || '#000000',
           timer_text_color: savedSettings.timer_text_color || '#FFFFFF',
@@ -371,21 +381,30 @@ export default function EditLandingPage() {
         .maybeSingle()
 
       // Preparar configurações para salvar (converter timer_end_date para ISO string)
-      // O input datetime-local retorna formato "YYYY-MM-DDTHH:mm" que precisa ser convertido
+      // O input datetime-local retorna formato "YYYY-MM-DDTHH:mm" sem timezone (horário local)
       let timerEndDateISO: string | null = null
       if (settings.timer_end_date) {
         try {
-          // Se já está no formato ISO, usar diretamente
+          // Se já está no formato ISO completo, usar diretamente
           if (settings.timer_end_date.includes('T') && settings.timer_end_date.includes('Z')) {
             timerEndDateISO = settings.timer_end_date
           } else {
             // Converter do formato datetime-local para ISO
-            // datetime-local retorna "YYYY-MM-DDTHH:mm" sem timezone
-            // Precisamos adicionar timezone ou assumir UTC
-            const date = new Date(settings.timer_end_date)
-            if (!isNaN(date.getTime())) {
-              timerEndDateISO = date.toISOString()
-            } else {
+            // datetime-local retorna "YYYY-MM-DDTHH:mm" no horário local do navegador
+            // Parsear manualmente para garantir precisão
+            const localDateStr = settings.timer_end_date
+            const [datePart, timePart] = localDateStr.split('T')
+            const [year, month, day] = datePart.split('-').map(Number)
+            const [hours, minutes] = timePart.split(':').map(Number)
+            
+            // Criar Date no horário local (JavaScript interpreta isso corretamente)
+            const localDate = new Date(year, month - 1, day, hours, minutes)
+            
+            // Converter para ISO string (UTC)
+            // O JavaScript automaticamente ajusta para UTC ao converter
+            timerEndDateISO = localDate.toISOString()
+            
+            if (isNaN(localDate.getTime())) {
               console.error('Data inválida:', settings.timer_end_date)
               toast.error('Data de término do cronômetro inválida')
               setSaving(false)

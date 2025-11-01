@@ -122,6 +122,20 @@ export default function NovoProduct() {
 
       if (productError) {
         console.error('Erro detalhado ao criar produto:', productError)
+        
+        // Mensagem mais específica para erro de coluna ausente
+        if (productError.code === 'PGRST204') {
+          if (productError.message?.includes('images')) {
+            toast.error('Erro: Coluna "images" não encontrada na tabela products. Execute o SQL script "supabase/add_missing_product_columns.sql" no Supabase.')
+          } else if (productError.message?.includes('product_code')) {
+            toast.error('Erro: Coluna "product_code" não encontrada na tabela products. Execute o SQL script "supabase/add_missing_product_columns.sql" no Supabase.')
+          } else {
+            toast.error(`Erro: ${productError.message}. Verifique o console para mais detalhes.`)
+          }
+        } else {
+          toast.error(productError.message || 'Erro ao criar produto. Verifique o console para mais detalhes.')
+        }
+        
         throw productError
       }
 
@@ -129,8 +143,8 @@ export default function NovoProduct() {
       if (colors.length > 0 && product) {
         const colorInserts = colors.map(color => ({
           product_id: product.id,
-          name: color.name,
-          hex_code: color.hex,
+          color_name: color.name, // Schema usa 'color_name', não 'name'
+          color_hex: color.hex,    // Schema usa 'color_hex', não 'hex_code'
           stock: color.stock,
         }))
 
@@ -138,7 +152,11 @@ export default function NovoProduct() {
           .from('product_colors')
           .insert(colorInserts)
 
-        if (colorError) throw colorError
+        if (colorError) {
+          console.error('Erro ao criar variações de cor:', colorError)
+          toast.error('Erro ao criar variações de cor. Verifique o console para mais detalhes.')
+          throw colorError
+        }
       }
 
       toast.success('Produto criado com sucesso!')
