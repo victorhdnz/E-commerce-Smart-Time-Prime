@@ -104,22 +104,20 @@ export const MediaShowcase = ({
           {/* Carrossel de Imagens - 1 coluna */}
           <div className="lg:col-span-1">
             {images.length > 0 ? (
-              <div className="relative group">
+              <div className="relative group z-0">
                 {/* Imagem Principal */}
-                <motion.div
-                  key={currentIndex}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="aspect-square bg-gray-900 rounded-lg overflow-hidden"
-                >
+                <div className="relative aspect-square bg-gray-900 rounded-lg overflow-hidden z-0">
                   <Image
+                    key={currentIndex}
                     src={images[currentIndex]}
                     alt={`Produto ${currentIndex + 1}`}
                     fill
                     className="object-cover"
+                    priority={currentIndex === 0}
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    unoptimized={false}
                   />
-                </motion.div>
+                </div>
 
                 {/* Botões de Navegação */}
                 {images.length > 1 && (
@@ -158,14 +156,14 @@ export const MediaShowcase = ({
 
                 {/* Miniaturas - apenas se houver mais de 1 imagem */}
                 {images.length > 1 && (
-                  <div className={`grid gap-2 mt-4 ${images.length <= 4 ? 'grid-cols-4' : 'grid-cols-4 overflow-x-auto pb-2'}`}>
+                  <div className={`grid gap-2 mt-4 relative z-10 ${images.length <= 4 ? 'grid-cols-4' : 'grid-cols-4 overflow-x-auto pb-2'}`}>
                     {images.map((image, index) => (
                       <button
                         key={index}
                         onClick={() => setCurrentIndex(index)}
                         className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
                           index === currentIndex
-                            ? 'border-white scale-105'
+                            ? 'border-white scale-105 z-10'
                             : 'border-gray-600 opacity-60 hover:opacity-100'
                         }`}
                       >

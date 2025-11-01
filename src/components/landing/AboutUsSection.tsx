@@ -68,9 +68,6 @@ export const AboutUsSection = ({
                 </div>
               </div>
             )}
-            <div className="mt-4 text-center">
-              <p className="font-semibold text-gray-700">Nossa Loja</p>
-            </div>
           </motion.div>
         </div>
       </div>

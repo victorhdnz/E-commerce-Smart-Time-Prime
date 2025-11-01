@@ -6,6 +6,7 @@ import { Button } from './Button'
 import toast from 'react-hot-toast'
 import Cropper from 'react-easy-crop'
 import { Area } from 'react-easy-crop'
+import 'react-easy-crop/react-easy-crop.css'
 
 interface ImageEditorProps {
   file: File
@@ -15,6 +16,7 @@ interface ImageEditorProps {
 
 export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
   const [imageSrc, setImageSrc] = useState<string>('')
+  const [loading, setLoading] = useState(true)
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [rotation, setRotation] = useState(0)
@@ -22,9 +24,20 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
 
   // Carregar imagem ao montar o componente
   useEffect(() => {
+    if (!file) return
+    
+    setLoading(true)
     const reader = new FileReader()
     reader.onload = (e) => {
-      setImageSrc(e.target?.result as string)
+      const result = e.target?.result as string
+      if (result) {
+        setImageSrc(result)
+        setLoading(false)
+      }
+    }
+    reader.onerror = () => {
+      toast.error('Erro ao carregar imagem')
+      setLoading(false)
     }
     reader.readAsDataURL(file)
   }, [file])
@@ -146,26 +159,46 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
         </div>
 
         {/* Editor Area com React Easy Crop */}
-        <div className="flex-1 relative bg-gray-900 min-h-[400px] max-h-[60vh]">
-          {imageSrc && (
-            <Cropper
-              image={imageSrc}
-              crop={crop}
-              zoom={zoom}
-              rotation={rotation}
-              aspect={1} // Aspect ratio quadrado (1:1)
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onRotationChange={setRotation}
-              onCropComplete={onCropComplete}
-              style={{
-                containerStyle: {
-                  width: '100%',
-                  height: '100%',
-                  position: 'relative',
-                },
-              }}
-            />
+        <div className="flex-1 relative bg-gray-900 min-h-[500px] max-h-[70vh] w-full" style={{ height: '500px' }}>
+          {loading ? (
+            <div className="flex items-center justify-center w-full h-full text-white">
+              <p>Carregando imagem...</p>
+            </div>
+          ) : imageSrc ? (
+            <div className="relative w-full h-full" style={{ height: '100%' }}>
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                rotation={rotation}
+                aspect={1}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onRotationChange={setRotation}
+                onCropComplete={onCropComplete}
+                cropShape="rect"
+                showGrid={false}
+                style={{
+                  containerStyle: {
+                    width: '100%',
+                    height: '100%',
+                    position: 'relative',
+                    background: '#111827',
+                  },
+                  cropAreaStyle: {
+                    border: '2px solid rgba(255, 255, 255, 0.8)',
+                  },
+                  mediaStyle: {
+                    width: 'auto',
+                    height: 'auto',
+                  },
+                }}
+              />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center w-full h-full text-white">
+              <p>Erro ao carregar imagem</p>
+            </div>
           )}
         </div>
 

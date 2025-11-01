@@ -1038,15 +1038,6 @@ export default function EditLandingPage() {
                 }
                 placeholder="Guilherme e Letícia"
               />
-
-              <Input
-                label="Localização"
-                value={settings.about_us_location}
-                onChange={(e) =>
-                  setSettings({ ...settings, about_us_location: e.target.value })
-                }
-                placeholder="Shopping Planalto, Uberlândia/MG"
-              />
             </div>
           </motion.div>
 
