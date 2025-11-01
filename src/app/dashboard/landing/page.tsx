@@ -29,9 +29,10 @@ interface LandingSettings {
   hero_banner: string
   hero_banners: string[] // Array de banners para carrossel
   
-  // Timer Section
+  // Timer Section (Centralizado - controla todos os cronômetros)
+  timer_enabled: boolean // Controla se os cronômetros estão ativos
+  timer_end_date: string // Data/hora de finalização (controla todos os cronômetros)
   timer_title: string
-  timer_end_date: string
   timer_bg_color: string
   timer_text_color: string
   
@@ -40,6 +41,7 @@ interface LandingSettings {
   fixed_timer_text_color: string
   
   // Exit Popup
+  exit_popup_enabled: boolean // Controla se o pop-up está ativo
   exit_popup_title: string
   exit_popup_message: string
   exit_popup_button_text: string
@@ -128,7 +130,8 @@ export default function EditLandingPage() {
     hero_images: [],
     hero_banner: '',
     hero_banners: [],
-    // Timer
+    // Timer (Centralizado)
+    timer_enabled: true,
     timer_title: '⚡ Black Friday - Tempo Limitado!',
     timer_end_date: '',
     timer_bg_color: '#000000',
@@ -137,6 +140,7 @@ export default function EditLandingPage() {
     fixed_timer_bg_color: '#000000',
     fixed_timer_text_color: '#FFFFFF',
     // Exit Popup
+    exit_popup_enabled: true,
     exit_popup_title: '⚠️ Espere!',
     exit_popup_message: 'Ainda dá tempo de garantir seu Smartwatch Série 11 com 4 brindes grátis.',
     exit_popup_button_text: '💬 FALAR AGORA NO WHATSAPP',
@@ -246,7 +250,8 @@ export default function EditLandingPage() {
           hero_images: Array.isArray(savedSettings.hero_images) ? savedSettings.hero_images : [],
           hero_banner: savedSettings.hero_banner || '',
           hero_banners: Array.isArray(savedSettings.hero_banners) ? savedSettings.hero_banners : [],
-          // Timer
+          // Timer (Centralizado)
+          timer_enabled: savedSettings.timer_enabled !== undefined ? savedSettings.timer_enabled : true,
           timer_title: savedSettings.timer_title || '⚡ Black Friday - Tempo Limitado!',
           timer_end_date: savedSettings.timer_end_date 
             ? new Date(savedSettings.timer_end_date).toISOString().slice(0, 16)
@@ -257,6 +262,7 @@ export default function EditLandingPage() {
           fixed_timer_bg_color: savedSettings.fixed_timer_bg_color || '#000000',
           fixed_timer_text_color: savedSettings.fixed_timer_text_color || '#FFFFFF',
           // Exit Popup
+          exit_popup_enabled: savedSettings.exit_popup_enabled !== undefined ? savedSettings.exit_popup_enabled : true,
           exit_popup_title: savedSettings.exit_popup_title || '⚠️ Espere!',
           exit_popup_message: savedSettings.exit_popup_message || 'Ainda dá tempo de garantir seu Smartwatch Série 11 com 4 brindes grátis.',
           exit_popup_button_text: savedSettings.exit_popup_button_text || '💬 FALAR AGORA NO WHATSAPP',
@@ -515,6 +521,105 @@ export default function EditLandingPage() {
 
         {/* Form */}
         <div className="max-w-4xl space-y-6">
+          {/* Cronômetros Centralizados */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h2 className="text-2xl font-bold mb-6">⏰ Cronômetros (Centralizado)</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Esta configuração controla TODOS os cronômetros da página (Fixed Timer, Hero Section, Value Package e Exit Popup).
+            </p>
+            
+            <div className="space-y-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.timer_enabled}
+                  onChange={(e) => setSettings({ ...settings, timer_enabled: e.target.checked })}
+                  className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+                />
+                <span className="font-semibold">Ativar Cronômetros</span>
+                <span className="text-sm text-gray-500">(Quando desativado, todos os cronômetros desaparecem da página)</span>
+              </label>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Data e Hora de Finalização *
+                </label>
+                <input
+                  type="datetime-local"
+                  value={settings.timer_end_date}
+                  onChange={(e) => setSettings({ ...settings, timer_end_date: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Esta data será usada em todos os cronômetros da página (Fixed Timer, Hero Section, Value Package e Exit Popup).
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Exit Popup */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h2 className="text-2xl font-bold mb-6">⚠️ Pop-up de Saída (Exit Popup)</h2>
+            
+            <div className="space-y-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.exit_popup_enabled}
+                  onChange={(e) => setSettings({ ...settings, exit_popup_enabled: e.target.checked })}
+                  className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+                />
+                <span className="font-semibold">Ativar Pop-up de Saída</span>
+                <span className="text-sm text-gray-500">(Aparece ao chegar no final da página ou tentar sair)</span>
+              </label>
+
+              <Input
+                label="Título do Pop-up"
+                value={settings.exit_popup_title}
+                onChange={(e) => setSettings({ ...settings, exit_popup_title: e.target.value })}
+                placeholder="⚠️ Espere!"
+              />
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Mensagem do Pop-up</label>
+                <textarea
+                  value={settings.exit_popup_message}
+                  onChange={(e) => setSettings({ ...settings, exit_popup_message: e.target.value })}
+                  placeholder="Ainda dá tempo de garantir seu Smartwatch Série 11 com 4 brindes grátis."
+                  rows={3}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+
+              <Input
+                label="Texto do Botão"
+                value={settings.exit_popup_button_text}
+                onChange={(e) => setSettings({ ...settings, exit_popup_button_text: e.target.value })}
+                placeholder="💬 FALAR AGORA NO WHATSAPP"
+              />
+
+              <Input
+                label="Número WhatsApp"
+                value={settings.exit_popup_whatsapp_number}
+                onChange={(e) => setSettings({ ...settings, exit_popup_whatsapp_number: e.target.value })}
+                placeholder="5534984136291"
+              />
+              <p className="text-xs text-gray-500 -mt-2">
+                Formato: 5534984136291 (sem espaços, com código do país e DDD)
+              </p>
+            </div>
+          </motion.div>
+
           {/* Hero Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

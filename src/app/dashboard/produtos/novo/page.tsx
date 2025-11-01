@@ -97,27 +97,33 @@ export default function NovoProduct() {
 
     setLoading(true)
     try {
+      // Garantir que o slug não está vazio
+      const finalSlug = formData.slug || generateSlug(formData.name) || `produto-${Date.now()}`
+      
       // Criar produto
       const { data: product, error: productError } = await supabase
         .from('products')
         .insert({
           name: formData.name,
-          description: formData.description,
+          description: formData.description || null,
+          short_description: formData.description ? formData.description.substring(0, 150) : null,
           local_price: parseFloat(formData.local_price),
           national_price: parseFloat(formData.national_price),
           stock: parseInt(formData.stock) || 0,
-          category: formData.category,
-          slug: formData.slug,
+          category: formData.category || null,
+          slug: finalSlug,
           product_code: formData.product_code || null,
-          images: formData.images,
-          specifications: formData.specifications,
+          images: formData.images.length > 0 ? formData.images : [],
           is_featured: formData.is_featured,
           is_active: formData.is_active,
         })
         .select()
         .single()
 
-      if (productError) throw productError
+      if (productError) {
+        console.error('Erro detalhado ao criar produto:', productError)
+        throw productError
+      }
 
       // Criar variações de cor
       if (colors.length > 0 && product) {

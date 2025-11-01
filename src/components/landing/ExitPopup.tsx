@@ -66,6 +66,23 @@ export const ExitPopup = ({
     calculateTimeLeft()
     const timer = setInterval(calculateTimeLeft, 1000)
 
+    // Detectar quando chegar ao final da página - apenas se ainda não foi exibido
+    const handleScroll = () => {
+      if (!show && !hasShown && typeof window !== 'undefined') {
+        // Calcular se chegou ao final da página (com margem de 100px)
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+        const windowHeight = window.innerHeight
+        const documentHeight = document.documentElement.scrollHeight
+        
+        // Verificar se está próximo do final (dentro de 100px do final)
+        if (scrollTop + windowHeight >= documentHeight - 100) {
+          setShow(true)
+          sessionStorage.setItem('exit_popup_shown', 'true')
+          setHasShown(true)
+        }
+      }
+    }
+
     // Detectar intenção de sair - apenas se ainda não foi exibido
     const handleMouseLeave = (e: MouseEvent) => {
       // Verificar se o mouse está saindo pela parte superior da tela
@@ -90,11 +107,27 @@ export const ExitPopup = ({
       }
     }
 
+    // Adicionar listener de scroll com throttle para melhor performance
+    let scrollTimeout: NodeJS.Timeout | null = null
+    const throttledHandleScroll = () => {
+      if (scrollTimeout) return
+      scrollTimeout = setTimeout(() => {
+        handleScroll()
+        scrollTimeout = null
+      }, 100) // Verificar a cada 100ms
+    }
+
+    window.addEventListener('scroll', throttledHandleScroll, { passive: true })
     document.addEventListener('mouseleave', handleMouseLeave)
     window.addEventListener('beforeunload', handleBeforeUnload)
 
+    // Verificar imediatamente se já está no final da página (caso o usuário já esteja lá)
+    handleScroll()
+
     return () => {
       clearInterval(timer)
+      if (scrollTimeout) clearTimeout(scrollTimeout)
+      window.removeEventListener('scroll', throttledHandleScroll)
       document.removeEventListener('mouseleave', handleMouseLeave)
       window.removeEventListener('beforeunload', handleBeforeUnload)
     }

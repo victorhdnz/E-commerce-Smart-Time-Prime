@@ -152,6 +152,7 @@ export default async function Home() {
 
   // Usar configurações do layout ativo ou padrão
   const layout = activeLayout as any
+  const timerEnabled = settings.timer_enabled !== undefined ? settings.timer_enabled : true
   const timerTitle = settings.timer_title || layout?.timer_title || '⚡ Black Friday - Tempo Limitado!'
   const timerEndDate = settings.timer_end_date 
     ? new Date(settings.timer_end_date as string) 
@@ -160,6 +161,8 @@ export default async function Home() {
       : new Date('2025-11-29T23:59:59')
   const timerBgColor = settings.timer_bg_color || layout?.timer_bg_color || '#000000'
   const timerTextColor = settings.timer_text_color || layout?.timer_text_color || '#FFFFFF'
+  
+  const exitPopupEnabled = settings.exit_popup_enabled !== undefined ? settings.exit_popup_enabled : true
 
   // Imagens do carrossel do banco de dados - usar showcase_images se disponível, senão usar showcase_image_1-4
   const showcaseImages = Array.isArray(settings.showcase_images) && settings.showcase_images.length > 0
@@ -199,21 +202,21 @@ export default async function Home() {
       <AuthRedirect />
       
       {/* 1. Fixed Timer + Exit Popup (Elementos Persistentes) */}
-      {timerEndDate && (
-        <>
-          <FixedTimer
-            endDate={timerEndDate}
-            backgroundColor={settings.fixed_timer_bg_color || '#000000'}
-            textColor={settings.fixed_timer_text_color || '#FFFFFF'}
-          />
-          <ExitPopup
-            endDate={timerEndDate}
-            title={settings.exit_popup_title}
-            message={settings.exit_popup_message}
-            buttonText={settings.exit_popup_button_text}
-            whatsappNumber={settings.exit_popup_whatsapp_number}
-          />
-        </>
+      {timerEnabled && timerEndDate && (
+        <FixedTimer
+          endDate={timerEndDate}
+          backgroundColor={settings.fixed_timer_bg_color || '#000000'}
+          textColor={settings.fixed_timer_text_color || '#FFFFFF'}
+        />
+      )}
+      {exitPopupEnabled && timerEnabled && timerEndDate && (
+        <ExitPopup
+          endDate={timerEndDate}
+          title={settings.exit_popup_title}
+          message={settings.exit_popup_message}
+          buttonText={settings.exit_popup_button_text}
+          whatsappNumber={settings.exit_popup_whatsapp_number}
+        />
       )}
 
       {/* 2. Hero Section (Banner de Abertura) */}
@@ -228,7 +231,7 @@ export default async function Home() {
         heroImages={heroImages}
         heroBanner={settings.hero_banner}
         heroBanners={heroBanners}
-        timerEndDate={timerEndDate}
+        timerEndDate={timerEnabled ? timerEndDate : undefined}
       />
 
       {/* 3. Product Photos and Video (Fotos e Vídeo do Produto) */}
@@ -253,7 +256,7 @@ export default async function Home() {
         stockText={settings.value_package_stock_text}
         discountText={settings.value_package_discount_text}
         promotionText={settings.value_package_promotion_text}
-        endDate={timerEndDate}
+        endDate={timerEnabled ? timerEndDate : undefined}
       />
 
       {/* 5. Customer Reviews (Avaliações de Clientes) */}

@@ -90,19 +90,18 @@ export const Header = () => {
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center h-12">
-            {siteSettings?.site_logo ? (
+          <Link href="/" className="flex items-center gap-3 h-12">
+            {siteSettings?.site_logo && (
               <Image
                 src={siteSettings.site_logo}
                 alt="Smart Time Prime"
-                width={120}
+                width={48}
                 height={48}
-                className="h-full w-auto object-contain"
+                className="h-12 w-auto object-contain"
                 priority
               />
-            ) : (
-              <span className="text-2xl font-bold">Smart Time Prime</span>
             )}
+            <span className="text-2xl font-bold">Smart Time Prime</span>
           </Link>
 
           {/* Desktop Navigation */}
