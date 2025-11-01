@@ -25,6 +25,7 @@ interface LandingSettings {
   hero_bg_color: string
   hero_text_color: string
   hero_images: string[]
+  hero_banner: string
   
   // Timer Section
   timer_title: string
@@ -120,6 +121,7 @@ export default function EditLandingPage() {
     hero_bg_color: '#000000',
     hero_text_color: '#FFFFFF',
     hero_images: [],
+    hero_banner: '',
     // Timer
     timer_title: '⚡ Black Friday - Tempo Limitado!',
     timer_end_date: '',
@@ -233,6 +235,7 @@ export default function EditLandingPage() {
           hero_bg_color: savedSettings.hero_bg_color || '#000000',
           hero_text_color: savedSettings.hero_text_color || '#FFFFFF',
           hero_images: Array.isArray(savedSettings.hero_images) ? savedSettings.hero_images : [],
+          hero_banner: savedSettings.hero_banner || '',
           // Timer
           timer_title: savedSettings.timer_title || '⚡ Black Friday - Tempo Limitado!',
           timer_end_date: savedSettings.timer_end_date 
@@ -497,50 +500,19 @@ export default function EditLandingPage() {
               />
 
               {/* Cores Hero */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Cor de Fundo</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={settings.hero_bg_color}
-                      onChange={(e) =>
-                        setSettings({ ...settings, hero_bg_color: e.target.value })
-                      }
-                      className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
-                    />
-                    <Input
-                      value={settings.hero_bg_color}
-                      onChange={(e) =>
-                        setSettings({ ...settings, hero_bg_color: e.target.value })
-                      }
-                      placeholder="#000000"
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Cor do Texto</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={settings.hero_text_color}
-                      onChange={(e) =>
-                        setSettings({ ...settings, hero_text_color: e.target.value })
-                      }
-                      className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
-                    />
-                    <Input
-                      value={settings.hero_text_color}
-                      onChange={(e) =>
-                        setSettings({ ...settings, hero_text_color: e.target.value })
-                      }
-                      placeholder="#FFFFFF"
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
+              {/* Banner Principal (1920x650) */}
+              <div className="pt-4 border-t">
+                <label className="block text-sm font-medium mb-2">
+                  Banner Principal (1920x650)
+                </label>
+                <p className="text-xs text-gray-500 mb-4">
+                  📸 Banner que aparece acima do texto do início. Dimensões recomendadas: 1920x650px
+                </p>
+                <ImageUploader
+                  value={settings.hero_banner || ''}
+                  onChange={(url) => setSettings({ ...settings, hero_banner: url })}
+                  placeholder="Clique para fazer upload do banner (1920x650)"
+                />
               </div>
 
               {/* Hero Images */}

@@ -217,6 +217,7 @@ export default async function Home() {
         backgroundColor={settings.hero_bg_color || '#000000'}
         textColor={settings.hero_text_color || '#FFFFFF'}
         heroImages={heroImages}
+        heroBanner={settings.hero_banner}
         timerEndDate={timerEndDate}
       />
 

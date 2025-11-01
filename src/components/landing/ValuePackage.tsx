@@ -276,7 +276,7 @@ export const ValuePackage = ({
                     }}
                     size="lg"
                     variant="secondary"
-                    className="w-full text-lg md:text-xl font-black py-6 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 hover:from-yellow-300 hover:via-yellow-400 hover:to-yellow-300 text-black shadow-2xl hover:shadow-yellow-500/50 transition-all duration-300 border-2 border-yellow-300/50"
+                    className="w-full text-base md:text-lg font-bold py-3 md:py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 hover:from-yellow-300 hover:via-yellow-400 hover:to-yellow-300 text-black shadow-lg hover:shadow-yellow-500/30 transition-all duration-300 border border-yellow-300/50 rounded-xl"
                   >
                     {buttonText}
                   </Button>
@@ -327,7 +327,7 @@ export const ValuePackage = ({
                     viewport={{ once: true }}
                     transition={{ delay: item.delay, type: 'spring', stiffness: 150 }}
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="bg-white/20 backdrop-blur-md rounded-xl p-5 md:p-6 border-2 border-white/30 shadow-xl hover:bg-white/30 transition-all duration-300"
+                    className="bg-white/15 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-white/20 shadow-md hover:bg-white/25 transition-all duration-300"
                   >
                     <p className="text-lg md:text-xl font-bold">{item.text}</p>
                   </motion.div>
@@ -374,7 +374,7 @@ export const ValuePackage = ({
                             
                             <div className="relative z-10">
                               <motion.div 
-                                className="text-4xl md:text-6xl font-black text-white mb-2 font-mono tracking-tight drop-shadow-lg bg-gradient-to-b from-white to-yellow-200 bg-clip-text text-transparent"
+                                className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-2 font-mono tracking-tight drop-shadow-lg bg-gradient-to-b from-white to-yellow-200 bg-clip-text text-transparent break-words overflow-hidden"
                                 key={item.value}
                                 initial={{ scale: 1.2, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
@@ -382,7 +382,7 @@ export const ValuePackage = ({
                               >
                                 {String(item.value).padStart(2, '0')}
                               </motion.div>
-                              <div className="text-xs md:text-sm text-gray-300 font-bold uppercase tracking-wider">
+                              <div className="text-[10px] md:text-xs lg:text-sm text-gray-300 font-bold uppercase tracking-wider break-words overflow-hidden">
                                 {item.label}
                               </div>
                             </div>
@@ -415,7 +415,7 @@ export const ValuePackage = ({
                   onClick={() => window.open(`https://wa.me/${whatsappNumber}`, '_blank')}
                   size="lg"
                   variant="secondary"
-                  className="text-xl md:text-2xl font-black py-6 px-12 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 hover:from-yellow-300 hover:via-yellow-400 hover:to-yellow-300 text-black shadow-2xl hover:shadow-yellow-500/50 transition-all duration-300 border-4 border-yellow-300/50 rounded-2xl"
+                  className="text-base md:text-lg font-bold py-3 md:py-4 px-8 md:px-10 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 hover:from-yellow-300 hover:via-yellow-400 hover:to-yellow-300 text-black shadow-lg hover:shadow-yellow-500/30 transition-all duration-300 border border-yellow-300/50 rounded-xl"
                 >
                   GARANTIR AGORA
                 </Button>

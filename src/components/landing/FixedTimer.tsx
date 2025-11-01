@@ -62,33 +62,33 @@ export const FixedTimer = ({
         <div className="text-xs md:text-sm font-bold mb-2 text-center text-white drop-shadow-lg">
           ⏰ Termina em:
         </div>
-        <div className="flex items-center gap-1 md:gap-1.5">
-          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1.5 border-2 border-white/30 min-w-[40px] md:min-w-[50px] shadow-lg">
-            <div className="text-base md:text-xl font-bold text-white font-mono drop-shadow-md">
+        <div className="flex items-center gap-1 md:gap-1.5 justify-center">
+          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1 md:py-1.5 border-2 border-white/30 min-w-[45px] md:min-w-[55px] max-w-[50px] md:max-w-[60px] shadow-lg overflow-hidden">
+            <div className="text-sm md:text-xl font-bold text-white font-mono drop-shadow-md leading-tight truncate">
               {String(timeLeft.days).padStart(2, '0')}
             </div>
-            <div className="text-[7px] md:text-[9px] text-gray-200 uppercase tracking-wide font-semibold">d</div>
+            <div className="text-[8px] md:text-[10px] text-gray-200 uppercase tracking-wide font-semibold truncate">d</div>
           </div>
-          <div className="text-sm md:text-lg font-bold text-red-500 drop-shadow-lg">:</div>
-          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1.5 border-2 border-white/30 min-w-[40px] md:min-w-[50px] shadow-lg">
-            <div className="text-base md:text-xl font-bold text-white font-mono drop-shadow-md">
+          <div className="text-xs md:text-lg font-bold text-red-500 drop-shadow-lg">:</div>
+          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1 md:py-1.5 border-2 border-white/30 min-w-[45px] md:min-w-[55px] max-w-[50px] md:max-w-[60px] shadow-lg overflow-hidden">
+            <div className="text-sm md:text-xl font-bold text-white font-mono drop-shadow-md leading-tight truncate">
               {String(timeLeft.hours).padStart(2, '0')}
             </div>
-            <div className="text-[7px] md:text-[9px] text-gray-200 uppercase tracking-wide font-semibold">h</div>
+            <div className="text-[8px] md:text-[10px] text-gray-200 uppercase tracking-wide font-semibold truncate">h</div>
           </div>
-          <div className="text-sm md:text-lg font-bold text-red-500 drop-shadow-lg">:</div>
-          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1.5 border-2 border-white/30 min-w-[40px] md:min-w-[50px] shadow-lg">
-            <div className="text-base md:text-xl font-bold text-white font-mono drop-shadow-md">
+          <div className="text-xs md:text-lg font-bold text-red-500 drop-shadow-lg">:</div>
+          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1 md:py-1.5 border-2 border-white/30 min-w-[45px] md:min-w-[55px] max-w-[50px] md:max-w-[60px] shadow-lg overflow-hidden">
+            <div className="text-sm md:text-xl font-bold text-white font-mono drop-shadow-md leading-tight truncate">
               {String(timeLeft.minutes).padStart(2, '0')}
             </div>
-            <div className="text-[7px] md:text-[9px] text-gray-200 uppercase tracking-wide font-semibold">m</div>
+            <div className="text-[8px] md:text-[10px] text-gray-200 uppercase tracking-wide font-semibold truncate">m</div>
           </div>
-          <div className="text-sm md:text-lg font-bold text-red-500 drop-shadow-lg">:</div>
-          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1.5 border-2 border-white/30 min-w-[40px] md:min-w-[50px] shadow-lg">
-            <div className="text-base md:text-xl font-bold text-white font-mono drop-shadow-md">
+          <div className="text-xs md:text-lg font-bold text-red-500 drop-shadow-lg">:</div>
+          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1 md:py-1.5 border-2 border-white/30 min-w-[45px] md:min-w-[55px] max-w-[50px] md:max-w-[60px] shadow-lg overflow-hidden">
+            <div className="text-sm md:text-xl font-bold text-white font-mono drop-shadow-md leading-tight truncate">
               {String(timeLeft.seconds).padStart(2, '0')}
             </div>
-            <div className="text-[7px] md:text-[9px] text-gray-200 uppercase tracking-wide font-semibold">s</div>
+            <div className="text-[8px] md:text-[10px] text-gray-200 uppercase tracking-wide font-semibold truncate">s</div>
           </div>
         </div>
       </div>

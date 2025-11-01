@@ -32,9 +32,17 @@ export function ImageUploader({
     const file = event.target.files?.[0]
     if (!file) return
 
-    // Validar se é uma imagem
-    if (!file.type.startsWith('image/')) {
-      toast.error('Por favor, selecione apenas arquivos de imagem')
+    // Validar se é uma imagem - verificar múltiplos formatos
+    const imageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
+    const isValidImage = imageTypes.includes(file.type) || file.type.startsWith('image/')
+    
+    // Verificar extensão do arquivo também (para casos onde MIME type pode estar incorreto)
+    const fileName = file.name.toLowerCase()
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']
+    const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext))
+    
+    if (!isValidImage && !hasValidExtension) {
+      toast.error('Por favor, selecione apenas arquivos de imagem (JPG, PNG, GIF, WEBP, SVG)')
       return
     }
 

@@ -19,6 +19,7 @@ interface HeroSectionProps {
   viewerCountText?: string
   timerEndDate?: Date
   heroImages?: string[]
+  heroBanner?: string
 }
 
 export const HeroSection = ({
@@ -33,6 +34,7 @@ export const HeroSection = ({
   viewerCountText,
   timerEndDate,
   heroImages = [],
+  heroBanner,
 }: HeroSectionProps) => {
   const [viewerCount, setViewerCount] = useState(15)
   const [timeLeft, setTimeLeft] = useState({
@@ -78,8 +80,28 @@ export const HeroSection = ({
   return (
     <section
       style={{ backgroundColor, color: textColor }}
-      className="relative min-h-[90vh] flex items-center justify-center overflow-hidden"
+      className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden"
     >
+      {/* Banner acima do texto (1920x650) */}
+      {heroBanner && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="w-full relative"
+          style={{ aspectRatio: '1920/650', minHeight: '400px' }}
+        >
+          <Image
+            src={heroBanner}
+            alt="Banner Black Friday"
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+        </motion.div>
+      )}
+
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div
