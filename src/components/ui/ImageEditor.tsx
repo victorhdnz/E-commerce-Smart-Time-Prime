@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { X, RotateCw, RotateCcw, Check } from 'lucide-react'
 import { Button } from './Button'
 import toast from 'react-hot-toast'
