@@ -26,8 +26,7 @@ export const useAuth = () => {
 
       // Se não existe, criar
       if (!existingProfile && checkError?.code === 'PGRST116') {
-        console.log('Criando profile para usuário:', userId)
-        
+        // Selecionar apenas campos necessários após inserção
         const { data: newProfile, error: insertError } = await supabase
           .from('profiles')
           .insert({
@@ -37,11 +36,10 @@ export const useAuth = () => {
             avatar_url: userMetadata?.avatar_url || userMetadata?.picture || null,
             role: 'customer'
           })
-          .select()
+          .select('id, email, full_name, avatar_url, role, phone, created_at, updated_at')
           .single()
 
         if (insertError) {
-          console.error('Erro ao criar profile:', insertError)
           return null
         }
 
@@ -50,7 +48,6 @@ export const useAuth = () => {
 
       return existingProfile as AppUser
     } catch (error) {
-      console.error('Erro ao garantir profile:', error)
       return null
     }
   }, [supabase])
@@ -76,54 +73,72 @@ export const useAuth = () => {
           
           // Buscar perfil de forma assíncrona (não bloqueia o loading)
           // Isso permite que a UI seja atualizada rapidamente
-          ;(async () => {
+          const loadProfileAsync = async () => {
             try {
-              const { data: profile, error: profileError } = await supabase
+              // Usar timeout curto para buscar profile (1 segundo)
+              // Selecionar apenas campos necessários para melhor performance
+              const profilePromise = supabase
                 .from('profiles')
-                .select('*')
+                .select('id, email, full_name, avatar_url, role, phone, created_at, updated_at')
                 .eq('id', session.user.id)
                 .single()
 
-              if (!mounted) return
+              const profileTimeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Profile timeout')), 1000)
+              )
 
-              if (profileError?.code === 'PGRST116') {
-                // Profile não existe, criar (primeiro login)
-                try {
-                  const newProfile = await ensureProfileExists(
+              try {
+                const { data: profile, error: profileError } = await Promise.race([
+                  profilePromise,
+                  profileTimeout
+                ]) as { data: any, error: any }
+
+                if (!mounted) return
+
+                if (profileError?.code === 'PGRST116') {
+                  // Profile não existe, criar (primeiro login) - mas não bloquear
+                  ensureProfileExists(
                     session.user.id,
                     session.user.email || '',
                     session.user.user_metadata
-                  )
-                  if (mounted) {
-                    setProfile(newProfile)
-                  }
-                } catch (createError) {
-                  console.error('Erro ao criar profile:', createError)
-                  // Mesmo se falhar ao criar, continuar sem profile para não travar
+                  ).then((newProfile) => {
+                    if (mounted) {
+                      setProfile(newProfile)
+                    }
+                  }).catch(() => {
+                    // Falhou ao criar profile - continuar sem profile
+                    if (mounted) {
+                      setProfile(null)
+                    }
+                  })
+                } else if (profileError) {
                   if (mounted) {
                     setProfile(null)
                   }
+                } else {
+                  if (mounted) {
+                    setProfile(profile as AppUser || null)
+                  }
                 }
-              } else if (profileError) {
-                console.error('Erro ao buscar perfil:', profileError)
+              } catch (timeoutError) {
+                // Timeout ao buscar profile - continuar sem profile
                 if (mounted) {
                   setProfile(null)
                 }
-              } else {
-                if (mounted) {
-                  setProfile(profile as AppUser || null)
-                }
               }
             } catch (error: any) {
-              console.error('Erro ao buscar perfil:', error)
+              // Erro ao buscar perfil - continuar sem profile
               if (mounted) {
                 setProfile(null)
               }
             }
-          })()
+          }
+
+          // Iniciar busca do profile em background
+          loadProfileAsync()
           
           // Finalizar loading imediatamente após obter a sessão
-          // O profile será carregado em background
+          // O profile será carregado em background sem bloquear a UI
           if (mounted && timeoutId) {
             clearTimeout(timeoutId)
             timeoutId = null
@@ -157,15 +172,15 @@ export const useAuth = () => {
       }
     }
 
-    // Timeout de segurança: se passar de 10 segundos, forçar loading = false
-    // Aumentado para 10 segundos para dar mais tempo em conexões lentas
+    // Timeout de segurança: se passar de 5 segundos, forçar loading = false
+    // Mas não logar warning para não poluir o console
     timeoutId = setTimeout(() => {
       if (mounted) {
-        console.warn('⚠️ Timeout de autenticação - forçando loading = false')
+        // Silenciosamente forçar loading = false se ainda estiver carregando
         setLoading(false)
         timeoutId = null
       }
-    }, 10000)
+    }, 5000)
 
     getUser().then(() => {
       if (timeoutId) {
@@ -183,38 +198,65 @@ export const useAuth = () => {
         setUser(session?.user ?? null)
 
         if (session?.user) {
-          try {
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single()
+          // Buscar profile de forma assíncrona sem bloquear
+          ;(async () => {
+            try {
+                  // Usar timeout curto (1 segundo) para não travar
+                  // Selecionar apenas campos necessários para melhor performance
+                  const profilePromise = supabase
+                    .from('profiles')
+                    .select('id, email, full_name, avatar_url, role, phone, created_at, updated_at')
+                    .eq('id', session.user.id)
+                    .single()
 
-            if (!mounted) return
-            
-            if (profileError?.code === 'PGRST116') {
-              const newProfile = await ensureProfileExists(
-                session.user.id,
-                session.user.email || '',
-                session.user.user_metadata
+              const profileTimeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Profile timeout')), 1000)
               )
-              if (mounted) {
-                setProfile(newProfile)
+
+              try {
+                const { data: profile, error: profileError } = await Promise.race([
+                  profilePromise,
+                  profileTimeout
+                ]) as { data: any, error: any }
+
+                if (!mounted) return
+                
+                if (profileError?.code === 'PGRST116') {
+                  // Profile não existe - criar em background sem bloquear
+                  ensureProfileExists(
+                    session.user.id,
+                    session.user.email || '',
+                    session.user.user_metadata
+                  ).then((newProfile) => {
+                    if (mounted) {
+                      setProfile(newProfile)
+                    }
+                  }).catch(() => {
+                    if (mounted) {
+                      setProfile(null)
+                    }
+                  })
+                } else if (profileError) {
+                  if (mounted) {
+                    setProfile(null)
+                  }
+                } else {
+                  if (mounted) {
+                    setProfile(profile as AppUser || null)
+                  }
+                }
+              } catch (timeoutError) {
+                // Timeout - continuar sem profile
+                if (mounted) {
+                  setProfile(null)
+                }
               }
-            } else if (profileError) {
+            } catch (error) {
               if (mounted) {
                 setProfile(null)
               }
-            } else {
-              if (mounted) {
-                setProfile(profile as AppUser || null)
-              }
             }
-          } catch (error) {
-            if (mounted) {
-              setProfile(null)
-            }
-          }
+          })()
         } else {
           if (mounted) {
             setProfile(null)
@@ -256,11 +298,12 @@ export const useAuth = () => {
     if (!user?.id) return
 
     try {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+        // Selecionar apenas campos necessários para melhor performance
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, email, full_name, avatar_url, role, phone, created_at, updated_at')
+          .eq('id', user.id)
+          .single()
 
       if (profileError) {
         console.error('Erro ao atualizar perfil:', profileError)

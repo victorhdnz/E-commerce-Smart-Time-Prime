@@ -1,12 +1,14 @@
 import { HeroSection } from '@/components/landing/HeroSection'
 import { MediaShowcase } from '@/components/landing/MediaShowcase'
-import { TimerSection } from '@/components/landing/TimerSection'
-import { FeaturedProducts } from '@/components/landing/FeaturedProducts'
-import { FeaturedCombos } from '@/components/landing/FeaturedCombos'
 import { SocialProof } from '@/components/landing/SocialProof'
 import { FAQSection } from '@/components/landing/FAQSection'
 import { AuthRedirect } from '@/components/landing/AuthRedirect'
 import { WhatsAppVipRegistration } from '@/components/landing/WhatsAppVipRegistration'
+import { FixedTimer } from '@/components/landing/FixedTimer'
+import { ExitPopup } from '@/components/landing/ExitPopup'
+import { ValuePackage } from '@/components/landing/ValuePackage'
+import { StorySection } from '@/components/landing/StorySection'
+import { AboutUsSection } from '@/components/landing/AboutUsSection'
 import { createServerClient } from '@/lib/supabase/server'
 
 export const revalidate = 60 // Revalidar a cada 60 segundos
@@ -167,112 +169,113 @@ export default async function Home() {
     settings.showcase_image_4,
   ].filter(Boolean) // Remove strings vazias, mantém apenas URLs válidas
 
+  // Hero Images
+  const heroImages = Array.isArray(settings.hero_images) 
+    ? settings.hero_images.filter(Boolean) 
+    : []
+
+  // Media Showcase Features
+  const mediaFeatures = Array.isArray(settings.media_showcase_features)
+    ? settings.media_showcase_features
+    : []
+
+  // Value Package Items
+  const valuePackageItems = Array.isArray(settings.value_package_items)
+    ? settings.value_package_items
+    : []
+
   return (
     <div>
       {/* Auth Redirect Handler */}
       <AuthRedirect />
       
-      {/* Hero Section */}
+      {/* 1. Fixed Timer + Exit Popup (Elementos Persistentes) */}
+      {timerEndDate && (
+        <>
+          <FixedTimer
+            endDate={timerEndDate}
+            backgroundColor={settings.fixed_timer_bg_color || '#000000'}
+            textColor={settings.fixed_timer_text_color || '#FFFFFF'}
+          />
+          <ExitPopup
+            endDate={timerEndDate}
+            title={settings.exit_popup_title}
+            message={settings.exit_popup_message}
+            buttonText={settings.exit_popup_button_text}
+            whatsappNumber={settings.exit_popup_whatsapp_number}
+          />
+        </>
+      )}
+
+      {/* 2. Hero Section (Banner de Abertura) */}
       <HeroSection 
-        title={settings.hero_title || 'Elegância e Precisão em Cada Instante'}
-        subtitle={settings.hero_subtitle || 'Descubra nossa coleção exclusiva de relógios premium'}
-        ctaText={settings.hero_cta_text || 'Ver Coleção'}
+        title={settings.hero_title || '🖤 SMART TIME PRIME — BLACK FRIDAY UBERLÂNDIA'}
+        subtitle={settings.hero_subtitle || '🚨 A BLACK FRIDAY CHEGOU!\nSmartwatch Série 11 com até 50% OFF + 4 BRINDES EXCLUSIVOS\n📦 Entrega em até 24h direto do Shopping Planalto – Uberlândia/MG'}
+        badgeText={settings.hero_badge_text}
+        ctaText={settings.hero_cta_text || '💬 QUERO MEU SÉRIE 11 AGORA!'}
+        ctaLink={settings.hero_cta_link}
         backgroundColor={settings.hero_bg_color || '#000000'}
         textColor={settings.hero_text_color || '#FFFFFF'}
+        heroImages={heroImages}
+        timerEndDate={timerEndDate}
       />
 
-      {/* Media Showcase - Carrossel e Reels */}
+      {/* 3. Product Photos and Video (Fotos e Vídeo do Produto) */}
       <MediaShowcase 
+        title={settings.media_showcase_title || '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO'}
         images={showcaseImages}
         videoUrl={settings.showcase_video_url || ""}
+        features={mediaFeatures}
       />
 
-      {/* Timer Section */}
-      {timerEndDate && (
-        <TimerSection
-          title={timerTitle}
-          endDate={timerEndDate}
-          backgroundColor={timerBgColor}
-          textColor={timerTextColor}
-        />
-      )}
+      {/* 4. Value Package (Pacote de Valor - Oferta + Benefícios) */}
+      <ValuePackage
+        title={settings.value_package_title}
+        image={settings.value_package_image}
+        items={valuePackageItems}
+        totalPrice={settings.value_package_total_price}
+        salePrice={settings.value_package_sale_price}
+        deliveryText={settings.value_package_delivery_text}
+        buttonText={settings.value_package_button_text}
+        whatsappGroupLink={settings.value_package_whatsapp_group_link}
+        whatsappNumber={settings.value_package_whatsapp_number}
+        stockText={settings.value_package_stock_text}
+        discountText={settings.value_package_discount_text}
+        promotionText={settings.value_package_promotion_text}
+        endDate={timerEndDate}
+      />
 
-      {/* Featured Products */}
-      {products && products.length > 0 && (
-        <FeaturedProducts
-          products={products as any}
-          title="Produtos em Destaque"
-          subtitle="Descubra nossa coleção exclusiva de relógios premium"
-        />
-      )}
+      {/* 5. Customer Reviews (Avaliações de Clientes) */}
+      <SocialProof
+        reviews={reviews as any || []}
+        title={settings.social_proof_title}
+        googleIcon={settings.social_proof_google_icon !== undefined ? settings.social_proof_google_icon : true}
+        allowPhotos={settings.social_proof_allow_photos !== undefined ? settings.social_proof_allow_photos : true}
+        testimonialCount={settings.social_proof_testimonial_count}
+      />
 
-      {/* Featured Combos */}
-      {combos && combos.length > 0 && (
-        <FeaturedCombos
-          combos={combos as any}
-          title="Combos Promocionais"
-          subtitle="Economize mais comprando nossos kits exclusivos com desconto especial"
-        />
-      )}
+      {/* 6. Story (História) */}
+      <StorySection
+        title={settings.story_title}
+        content={settings.story_content}
+        image={settings.story_image}
+        foundersNames={settings.story_founders_names}
+      />
 
-      {/* WhatsApp VIP Registration */}
+      {/* 7. WhatsApp Group (Grupo do WhatsApp) */}
       <WhatsAppVipRegistration whatsappGroupLink={whatsappVipLink} />
 
-      {/* Social Proof */}
-      <SocialProof reviews={reviews as any || []} />
+      {/* 8. About Us (Quem Somos - apresentação dos fundadores) */}
+      <AboutUsSection
+        title={settings.about_us_title}
+        description={settings.about_us_description}
+        storeImage={settings.about_us_store_image}
+        foundersImage={settings.about_us_founders_image}
+        foundersNames={settings.about_us_founders_names}
+        location={settings.about_us_location}
+      />
 
-      {/* About Section */}
-      <section id="sobre" className="py-20 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                {settings.about_title || 'Sobre a Smart Time Prime'}
-              </h2>
-              <p className="text-lg text-gray-700 mb-6 whitespace-pre-line">
-                {settings.about_description || 'Somos especialistas em relógios premium, oferecendo as melhores marcas e modelos com design moderno e tecnologia de ponta.'}
-              </p>
-              <div className="grid grid-cols-3 gap-6 mt-8">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-accent mb-2">10+</div>
-                  <div className="text-sm text-gray-600">Anos no Mercado</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-accent mb-2">50k+</div>
-                  <div className="text-sm text-gray-600">Clientes Felizes</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-accent mb-2">100%</div>
-                  <div className="text-sm text-gray-600">Garantia Original</div>
-                </div>
-              </div>
-            </div>
-            {settings.about_image ? (
-              <div className="relative h-[500px] rounded-lg overflow-hidden shadow-2xl">
-                <img
-                  src={settings.about_image}
-                  alt="Sobre nós"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ) : (
-              <div className="relative h-[500px] rounded-lg overflow-hidden shadow-2xl">
-                <div className="w-full h-full bg-gradient-to-br from-black to-gray-800 flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <div className="text-8xl mb-4">⌚</div>
-                    <p className="text-2xl font-semibold">Elegância Atemporal</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <FAQSection faqs={faqsToShow as any} />
-
-      {/* Contact Section */}
+      {/* 9. Footer (Rodapé) - Manter seção de contato existente */}
       <section id="contato" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -355,6 +358,10 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      <FAQSection faqs={faqsToShow as any} />
+
 
       {/* CTA Section */}
       <section className="py-20 bg-black text-white mb-0">

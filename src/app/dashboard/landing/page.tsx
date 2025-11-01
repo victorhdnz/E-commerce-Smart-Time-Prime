@@ -9,30 +9,92 @@ import { ImageUploader } from '@/components/ui/ImageUploader'
 import { VideoUploader } from '@/components/ui/VideoUploader'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Save } from 'lucide-react'
+import { Save, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import { createClient } from '@/lib/supabase/client'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
 
 interface LandingSettings {
+  // Hero Section (expandido)
   hero_title: string
   hero_subtitle: string
+  hero_badge_text: string
   hero_cta_text: string
-  about_title: string
-  about_description: string
-  about_image: string
-  contact_title: string
-  contact_description: string
+  hero_cta_link: string
+  hero_bg_color: string
+  hero_text_color: string
+  hero_images: string[]
+  
+  // Timer Section
+  timer_title: string
+  timer_end_date: string
+  timer_bg_color: string
+  timer_text_color: string
+  
+  // Fixed Timer
+  fixed_timer_bg_color: string
+  fixed_timer_text_color: string
+  
+  // Exit Popup
+  exit_popup_title: string
+  exit_popup_message: string
+  exit_popup_button_text: string
+  exit_popup_whatsapp_number: string
+  
+  // Media Showcase (expandido)
+  media_showcase_title: string
+  media_showcase_features: Array<{icon: string, text: string}>
   showcase_image_1: string
   showcase_image_2: string
   showcase_image_3: string
   showcase_image_4: string
   showcase_video_url: string
-  timer_title: string
-  timer_end_date: string
-  timer_bg_color: string
-  timer_text_color: string
+  
+  // Value Package
+  value_package_title: string
+  value_package_image: string
+  value_package_items: Array<{name: string, price: string}>
+  value_package_total_price: string
+  value_package_sale_price: string
+  value_package_delivery_text: string
+  value_package_button_text: string
+  value_package_whatsapp_group_link: string
+  value_package_whatsapp_number: string
+  value_package_stock_text: string
+  value_package_discount_text: string
+  value_package_promotion_text: string
+  
+  // Story Section
+  story_title: string
+  story_content: string
+  story_image: string
+  story_founders_names: string
+  
+  // About Us Section
+  about_us_title: string
+  about_us_description: string
+  about_us_store_image: string
+  about_us_founders_image: string
+  about_us_founders_names: string
+  about_us_location: string
+  
+  // Social Proof
+  social_proof_title: string
+  social_proof_google_icon: boolean
+  social_proof_allow_photos: boolean
+  social_proof_testimonial_count: string
+  
+  // Contact Section
+  contact_title: string
+  contact_description: string
+  
+  // About antigo (compatibilidade)
+  about_title: string
+  about_description: string
+  about_image: string
+  
+  // Theme Colors (manter por enquanto)
   theme_colors: {
     primary: string
     secondary: string
@@ -49,23 +111,86 @@ export default function EditLandingPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState<LandingSettings>({
+    // Hero
     hero_title: '',
     hero_subtitle: '',
+    hero_badge_text: '',
     hero_cta_text: '',
-    about_title: '',
-    about_description: '',
-    about_image: '',
-    contact_title: '',
-    contact_description: '',
+    hero_cta_link: '',
+    hero_bg_color: '#000000',
+    hero_text_color: '#FFFFFF',
+    hero_images: [],
+    // Timer
+    timer_title: '⚡ Black Friday - Tempo Limitado!',
+    timer_end_date: '',
+    timer_bg_color: '#000000',
+    timer_text_color: '#FFFFFF',
+    // Fixed Timer
+    fixed_timer_bg_color: '#000000',
+    fixed_timer_text_color: '#FFFFFF',
+    // Exit Popup
+    exit_popup_title: '⚠️ Espere!',
+    exit_popup_message: 'Ainda dá tempo de garantir seu Smartwatch Série 11 com 4 brindes grátis.',
+    exit_popup_button_text: '💬 FALAR AGORA NO WHATSAPP',
+    exit_popup_whatsapp_number: '5534984136291',
+    // Media Showcase
+    media_showcase_title: '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO',
+    media_showcase_features: [
+      { icon: '📱', text: 'Responda mensagens e chamadas direto do relógio' },
+      { icon: '❤️', text: 'Monitore batimentos, sono e pressão arterial' },
+      { icon: '🔋', text: 'Bateria que dura até 5 dias' },
+      { icon: '💧', text: 'Resistente à água e suor' },
+      { icon: '🎨', text: 'Troque pulseiras em segundos' },
+      { icon: '📲', text: 'Compatível com Android e iPhone' },
+    ],
     showcase_image_1: '',
     showcase_image_2: '',
     showcase_image_3: '',
     showcase_image_4: '',
     showcase_video_url: '',
-    timer_title: '⚡ Black Friday - Tempo Limitado!',
-    timer_end_date: '',
-    timer_bg_color: '#000000',
-    timer_text_color: '#FFFFFF',
+    // Value Package
+    value_package_title: '🎁 VOCÊ LEVA TUDO ISSO',
+    value_package_image: '',
+    value_package_items: [
+      { name: 'Smartwatch Série 11', price: '' },
+      { name: '2 Pulseiras extras', price: 'R$ 79' },
+      { name: '1 Case protetor', price: 'R$ 39' },
+      { name: '1 Película premium', price: 'R$ 29' },
+    ],
+    value_package_total_price: 'R$ 447',
+    value_package_sale_price: 'R$ 299',
+    value_package_delivery_text: '📍 Entrega em até 24h para Uberlândia',
+    value_package_button_text: '💬 GARANTIR MEU DESCONTO AGORA!',
+    value_package_whatsapp_group_link: '',
+    value_package_whatsapp_number: '5534984136291',
+    value_package_stock_text: '📦 Estoque limitado',
+    value_package_discount_text: '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
+    value_package_promotion_text: '🕒 Promoção válida enquanto durar o estoque.',
+    // Story
+    story_title: '✍️ NOSSA HISTÓRIA',
+    story_content: 'A Smart Time Prime nasceu em Uberlândia com o propósito de unir estilo e tecnologia no dia a dia das pessoas.\n\nHoje somos uma das lojas mais lembradas quando o assunto é smartwatch e confiança.',
+    story_image: '',
+    story_founders_names: 'Guilherme e Letícia',
+    // About Us
+    about_us_title: '🏪 SOBRE A SMART TIME PRIME',
+    about_us_description: 'A Smart Time Prime é uma loja de tecnologia localizada em Uberlândia/MG, dentro do Shopping Planalto.\n\nSomos referência em smartwatches e acessórios tecnológicos, com atendimento humano, entrega rápida e garantia total.',
+    about_us_store_image: '',
+    about_us_founders_image: '',
+    about_us_founders_names: 'Guilherme e Letícia',
+    about_us_location: 'Shopping Planalto, Uberlândia/MG',
+    // Social Proof
+    social_proof_title: '⭐ CLIENTES DE UBERLÂNDIA QUE JÁ ESTÃO USANDO',
+    social_proof_google_icon: true,
+    social_proof_allow_photos: true,
+    social_proof_testimonial_count: '💬 Mais de 1.000 smartwatches entregues em Uberlândia.',
+    // Contact
+    contact_title: 'Entre em Contato',
+    contact_description: 'Estamos aqui para ajudar você!',
+    // About antigo
+    about_title: '',
+    about_description: '',
+    about_image: '',
+    // Theme
     theme_colors: {
       primary: '#000000',
       secondary: '#ffffff',
@@ -99,26 +224,92 @@ export default function EditLandingPage() {
         const savedSettings = data.value as any
         // Usar valores padrão apenas se não houver no banco
         setSettings({
-          hero_title: savedSettings.hero_title || 'Elegância e Precisão em Cada Instante',
-          hero_subtitle: savedSettings.hero_subtitle || 'Descubra nossa coleção exclusiva de relógios premium',
-          hero_cta_text: savedSettings.hero_cta_text || 'Ver Coleção',
-          about_title: savedSettings.about_title || 'Sobre a Smart Time Prime',
-          about_description: savedSettings.about_description || 'Somos uma loja especializada em relógios premium e produtos de qualidade. Nossa missão é oferecer produtos exclusivos com design moderno e elegante.',
-          about_image: savedSettings.about_image || '',
-          contact_title: savedSettings.contact_title || 'Entre em Contato',
-          contact_description: savedSettings.contact_description || 'Estamos aqui para ajudar você!',
-          // Imagens: usar o que está salvo no banco (pode ser string vazia)
-          showcase_image_1: savedSettings.showcase_image_1 || '',
-          showcase_image_2: savedSettings.showcase_image_2 || '',
-          showcase_image_3: savedSettings.showcase_image_3 || '',
-          showcase_image_4: savedSettings.showcase_image_4 || '',
-          showcase_video_url: savedSettings.showcase_video_url || '',
+          // Hero
+          hero_title: savedSettings.hero_title || '',
+          hero_subtitle: savedSettings.hero_subtitle || '',
+          hero_badge_text: savedSettings.hero_badge_text || '',
+          hero_cta_text: savedSettings.hero_cta_text || '',
+          hero_cta_link: savedSettings.hero_cta_link || '',
+          hero_bg_color: savedSettings.hero_bg_color || '#000000',
+          hero_text_color: savedSettings.hero_text_color || '#FFFFFF',
+          hero_images: Array.isArray(savedSettings.hero_images) ? savedSettings.hero_images : [],
+          // Timer
           timer_title: savedSettings.timer_title || '⚡ Black Friday - Tempo Limitado!',
           timer_end_date: savedSettings.timer_end_date 
             ? new Date(savedSettings.timer_end_date).toISOString().slice(0, 16)
             : '',
           timer_bg_color: savedSettings.timer_bg_color || '#000000',
           timer_text_color: savedSettings.timer_text_color || '#FFFFFF',
+          // Fixed Timer
+          fixed_timer_bg_color: savedSettings.fixed_timer_bg_color || '#000000',
+          fixed_timer_text_color: savedSettings.fixed_timer_text_color || '#FFFFFF',
+          // Exit Popup
+          exit_popup_title: savedSettings.exit_popup_title || '⚠️ Espere!',
+          exit_popup_message: savedSettings.exit_popup_message || 'Ainda dá tempo de garantir seu Smartwatch Série 11 com 4 brindes grátis.',
+          exit_popup_button_text: savedSettings.exit_popup_button_text || '💬 FALAR AGORA NO WHATSAPP',
+          exit_popup_whatsapp_number: savedSettings.exit_popup_whatsapp_number || '5534984136291',
+          // Media Showcase
+          media_showcase_title: savedSettings.media_showcase_title || '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO',
+          media_showcase_features: Array.isArray(savedSettings.media_showcase_features) 
+            ? savedSettings.media_showcase_features 
+            : [
+                { icon: '📱', text: 'Responda mensagens e chamadas direto do relógio' },
+                { icon: '❤️', text: 'Monitore batimentos, sono e pressão arterial' },
+                { icon: '🔋', text: 'Bateria que dura até 5 dias' },
+                { icon: '💧', text: 'Resistente à água e suor' },
+                { icon: '🎨', text: 'Troque pulseiras em segundos' },
+                { icon: '📲', text: 'Compatível com Android e iPhone' },
+              ],
+          showcase_image_1: savedSettings.showcase_image_1 || '',
+          showcase_image_2: savedSettings.showcase_image_2 || '',
+          showcase_image_3: savedSettings.showcase_image_3 || '',
+          showcase_image_4: savedSettings.showcase_image_4 || '',
+          showcase_video_url: savedSettings.showcase_video_url || '',
+          // Value Package
+          value_package_title: savedSettings.value_package_title || '🎁 VOCÊ LEVA TUDO ISSO',
+          value_package_image: savedSettings.value_package_image || '',
+          value_package_items: Array.isArray(savedSettings.value_package_items)
+            ? savedSettings.value_package_items
+            : [
+                { name: 'Smartwatch Série 11', price: '' },
+                { name: '2 Pulseiras extras', price: 'R$ 79' },
+                { name: '1 Case protetor', price: 'R$ 39' },
+                { name: '1 Película premium', price: 'R$ 29' },
+              ],
+          value_package_total_price: savedSettings.value_package_total_price || 'R$ 447',
+          value_package_sale_price: savedSettings.value_package_sale_price || 'R$ 299',
+          value_package_delivery_text: savedSettings.value_package_delivery_text || '📍 Entrega em até 24h para Uberlândia',
+          value_package_button_text: savedSettings.value_package_button_text || '💬 GARANTIR MEU DESCONTO AGORA!',
+          value_package_whatsapp_group_link: savedSettings.value_package_whatsapp_group_link || '',
+          value_package_whatsapp_number: savedSettings.value_package_whatsapp_number || '5534984136291',
+          value_package_stock_text: savedSettings.value_package_stock_text || '📦 Estoque limitado',
+          value_package_discount_text: savedSettings.value_package_discount_text || '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
+          value_package_promotion_text: savedSettings.value_package_promotion_text || '🕒 Promoção válida enquanto durar o estoque.',
+          // Story
+          story_title: savedSettings.story_title || '✍️ NOSSA HISTÓRIA',
+          story_content: savedSettings.story_content || 'A Smart Time Prime nasceu em Uberlândia com o propósito de unir estilo e tecnologia no dia a dia das pessoas.\n\nHoje somos uma das lojas mais lembradas quando o assunto é smartwatch e confiança.',
+          story_image: savedSettings.story_image || '',
+          story_founders_names: savedSettings.story_founders_names || 'Guilherme e Letícia',
+          // About Us
+          about_us_title: savedSettings.about_us_title || '🏪 SOBRE A SMART TIME PRIME',
+          about_us_description: savedSettings.about_us_description || 'A Smart Time Prime é uma loja de tecnologia localizada em Uberlândia/MG, dentro do Shopping Planalto.\n\nSomos referência em smartwatches e acessórios tecnológicos, com atendimento humano, entrega rápida e garantia total.',
+          about_us_store_image: savedSettings.about_us_store_image || '',
+          about_us_founders_image: savedSettings.about_us_founders_image || '',
+          about_us_founders_names: savedSettings.about_us_founders_names || 'Guilherme e Letícia',
+          about_us_location: savedSettings.about_us_location || 'Shopping Planalto, Uberlândia/MG',
+          // Social Proof
+          social_proof_title: savedSettings.social_proof_title || '⭐ CLIENTES DE UBERLÂNDIA QUE JÁ ESTÃO USANDO',
+          social_proof_google_icon: savedSettings.social_proof_google_icon !== undefined ? savedSettings.social_proof_google_icon : true,
+          social_proof_allow_photos: savedSettings.social_proof_allow_photos !== undefined ? savedSettings.social_proof_allow_photos : true,
+          social_proof_testimonial_count: savedSettings.social_proof_testimonial_count || '💬 Mais de 1.000 smartwatches entregues em Uberlândia.',
+          // Contact
+          contact_title: savedSettings.contact_title || 'Entre em Contato',
+          contact_description: savedSettings.contact_description || 'Estamos aqui para ajudar você!',
+          // About antigo (compatibilidade)
+          about_title: savedSettings.about_title || savedSettings.about_us_title || '',
+          about_description: savedSettings.about_description || savedSettings.about_us_description || '',
+          about_image: savedSettings.about_image || savedSettings.about_us_store_image || '',
+          // Theme
           theme_colors: savedSettings.theme_colors || {
             primary: '#000000',
             secondary: '#666666',
@@ -127,32 +318,8 @@ export default function EditLandingPage() {
           }
         })
       } else {
-        // Se não há dados no banco, usar padrões
-        setSettings({
-          hero_title: 'Elegância e Precisão em Cada Instante',
-          hero_subtitle: 'Descubra nossa coleção exclusiva de relógios premium',
-          hero_cta_text: 'Ver Coleção',
-          about_title: 'Sobre a Smart Time Prime',
-          about_description: 'Somos uma loja especializada em relógios premium e produtos de qualidade. Nossa missão é oferecer produtos exclusivos com design moderno e elegante.',
-          about_image: '',
-          contact_title: 'Entre em Contato',
-          contact_description: 'Estamos aqui para ajudar você!',
-          showcase_image_1: '',
-          showcase_image_2: '',
-          showcase_image_3: '',
-          showcase_image_4: '',
-          showcase_video_url: '',
-          timer_title: '⚡ Black Friday - Tempo Limitado!',
-          timer_end_date: '',
-          timer_bg_color: '#000000',
-          timer_text_color: '#FFFFFF',
-          theme_colors: {
-            primary: '#000000',
-            secondary: '#666666',
-            accent: '#FFD700',
-            background: '#FFFFFF'
-          }
-        })
+        // Se não há dados no banco, os valores padrão já estão no useState inicial
+        // Não precisa duplicar aqui
       }
 
     } catch (error) {
@@ -284,93 +451,144 @@ export default function EditLandingPage() {
                 onChange={(e) =>
                   setSettings({ ...settings, hero_title: e.target.value })
                 }
-                placeholder="Título que aparece em destaque"
+                placeholder="🖤 SMART TIME PRIME — BLACK FRIDAY UBERLÂNDIA"
               />
 
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Subtítulo
+                  Subtítulo (use \n para quebras de linha)
                 </label>
                 <textarea
                   value={settings.hero_subtitle}
                   onChange={(e) =>
                     setSettings({ ...settings, hero_subtitle: e.target.value })
                   }
-                  placeholder="Descrição ou subtítulo"
-                  rows={3}
+                  placeholder="🚨 A BLACK FRIDAY CHEGOU!..."
+                  rows={4}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                 />
               </div>
 
               <Input
-                label="Texto do Botão"
+                label="Texto do Badge (opcional)"
+                value={settings.hero_badge_text}
+                onChange={(e) =>
+                  setSettings({ ...settings, hero_badge_text: e.target.value })
+                }
+                placeholder="🚨 A BLACK FRIDAY CHEGOU!"
+              />
+
+              <Input
+                label="Texto do Botão Principal"
                 value={settings.hero_cta_text}
                 onChange={(e) =>
                   setSettings({ ...settings, hero_cta_text: e.target.value })
                 }
-                placeholder="Ex: Ver Coleção"
+                placeholder="💬 QUERO MEU SÉRIE 11 AGORA!"
               />
-            </div>
-          </motion.div>
 
-          {/* About Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">Seção Sobre</h2>
-            
-            <div className="space-y-4">
               <Input
-                label="Título da Seção"
-                value={settings.about_title}
+                label="Link do Botão (WhatsApp ou grupo)"
+                value={settings.hero_cta_link}
                 onChange={(e) =>
-                  setSettings({ ...settings, about_title: e.target.value })
+                  setSettings({ ...settings, hero_cta_link: e.target.value })
                 }
-                placeholder="Ex: Sobre a Smart Time Prime"
+                placeholder="https://wa.me/5534984136291 ou link do grupo"
               />
 
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Descrição
-                </label>
-                <textarea
-                  value={settings.about_description}
-                  onChange={(e) =>
-                    setSettings({ ...settings, about_description: e.target.value })
-                  }
-                  placeholder="Conte sobre sua empresa"
-                  rows={5}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                />
+              {/* Cores Hero */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Cor de Fundo</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={settings.hero_bg_color}
+                      onChange={(e) =>
+                        setSettings({ ...settings, hero_bg_color: e.target.value })
+                      }
+                      className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                    />
+                    <Input
+                      value={settings.hero_bg_color}
+                      onChange={(e) =>
+                        setSettings({ ...settings, hero_bg_color: e.target.value })
+                      }
+                      placeholder="#000000"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Cor do Texto</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={settings.hero_text_color}
+                      onChange={(e) =>
+                        setSettings({ ...settings, hero_text_color: e.target.value })
+                      }
+                      className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                    />
+                    <Input
+                      value={settings.hero_text_color}
+                      onChange={(e) =>
+                        setSettings({ ...settings, hero_text_color: e.target.value })
+                      }
+                      placeholder="#FFFFFF"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
               </div>
 
-              {/* Imagem da Seção Sobre */}
-              <div>
+              {/* Hero Images */}
+              <div className="pt-4 border-t">
                 <label className="block text-sm font-medium mb-2">
-                  Imagem da Seção (opcional)
-                  <span className="ml-2 text-xs text-gray-500 font-normal">
-                    (Formato Instagram Post: 1080x1080px)
-                  </span>
+                  Imagens de Fundo (até 4 imagens)
                 </label>
-                <ImageUploader
-                  value={settings.about_image}
-                  onChange={(url) => setSettings({ ...settings, about_image: url })}
-                />
+                <div className="space-y-2">
+                  {[0, 1, 2, 3].map((idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <Input
+                          value={settings.hero_images[idx] || ''}
+                          onChange={(e) => {
+                            const newImages = [...settings.hero_images]
+                            newImages[idx] = e.target.value
+                            while (newImages.length < 4) newImages.push('')
+                            setSettings({ ...settings, hero_images: newImages.slice(0, 4) })
+                          }}
+                          placeholder={`URL da imagem ${idx + 1} (opcional)`}
+                        />
+                      </div>
+                      {settings.hero_images[idx] && (
+                        <ImageUploader
+                          value={settings.hero_images[idx]}
+                          onChange={(url) => {
+                            const newImages = [...settings.hero_images]
+                            newImages[idx] = url
+                            while (newImages.length < 4) newImages.push('')
+                            setSettings({ ...settings, hero_images: newImages.slice(0, 4) })
+                          }}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
 
-          {/* Contact Section */}
+          {/* Contact Section (Footer) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.9 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Seção de Contato</h2>
+            <h2 className="text-2xl font-bold mb-6">Seção de Contato (Footer)</h2>
             
             <div className="space-y-4">
               <Input
@@ -399,109 +617,6 @@ export default function EditLandingPage() {
             </div>
           </motion.div>
 
-          {/* Timer Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">Cronômetro (Timer)</h2>
-            <p className="text-sm text-gray-600 mb-6">
-              Configure o cronômetro de contagem regressiva que aparece na página inicial.
-            </p>
-            
-            <div className="space-y-6">
-              {/* Título do Timer */}
-              <div>
-                <Input
-                  label="Título do Timer"
-                  value={settings.timer_title}
-                  onChange={(e) =>
-                    setSettings({ ...settings, timer_title: e.target.value })
-                  }
-                  placeholder="Ex: ⚡ Black Friday - Tempo Limitado!"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Este texto aparecerá acima do cronômetro
-                </p>
-              </div>
-
-              {/* Data de Término */}
-              <div>
-                <Input
-                  label="Data e Hora de Término"
-                  type="datetime-local"
-                  value={settings.timer_end_date}
-                  onChange={(e) =>
-                    setSettings({ ...settings, timer_end_date: e.target.value })
-                  }
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Defina quando o cronômetro deve terminar
-                </p>
-              </div>
-
-              {/* Cores */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cor de Fundo
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={settings.timer_bg_color}
-                      onChange={(e) =>
-                        setSettings({ ...settings, timer_bg_color: e.target.value })
-                      }
-                      className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
-                    />
-                    <Input
-                      value={settings.timer_bg_color}
-                      onChange={(e) =>
-                        setSettings({ ...settings, timer_bg_color: e.target.value })
-                      }
-                      placeholder="#000000"
-                      className="flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Cor de fundo do cronômetro
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cor do Texto
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      value={settings.timer_text_color}
-                      onChange={(e) =>
-                        setSettings({ ...settings, timer_text_color: e.target.value })
-                      }
-                      className="w-20 h-12 rounded-lg border border-gray-300 cursor-pointer"
-                    />
-                    <Input
-                      value={settings.timer_text_color}
-                      onChange={(e) =>
-                        setSettings({ ...settings, timer_text_color: e.target.value })
-                      }
-                      placeholder="#FFFFFF"
-                      className="flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Cor do texto e números do cronômetro
-                  </p>
-                </div>
-              </div>
-
-            </div>
-          </motion.div>
-
           {/* Media Showcase Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -513,6 +628,71 @@ export default function EditLandingPage() {
             <p className="text-sm text-gray-600 mb-6">
               📸 Envie imagens no formato Instagram Post (1080x1080px) para o carrossel + 1 vídeo vertical tipo Reels
             </p>
+            
+            <div className="space-y-4 mb-6">
+              <Input
+                label="Título da Seção"
+                value={settings.media_showcase_title}
+                onChange={(e) =>
+                  setSettings({ ...settings, media_showcase_title: e.target.value })
+                }
+                placeholder="💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO"
+              />
+
+              {/* Features Editor */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Recursos/Features (editar lista)
+                </label>
+                <div className="space-y-2">
+                  {settings.media_showcase_features.map((feature, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <Input
+                        value={feature.icon}
+                        onChange={(e) => {
+                          const features = [...settings.media_showcase_features]
+                          features[idx].icon = e.target.value
+                          setSettings({ ...settings, media_showcase_features: features })
+                        }}
+                        placeholder="📱"
+                        className="w-20"
+                      />
+                      <Input
+                        value={feature.text}
+                        onChange={(e) => {
+                          const features = [...settings.media_showcase_features]
+                          features[idx].text = e.target.value
+                          setSettings({ ...settings, media_showcase_features: features })
+                        }}
+                        placeholder="Responda mensagens..."
+                        className="flex-1"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const features = settings.media_showcase_features.filter((_, i) => i !== idx)
+                          setSettings({ ...settings, media_showcase_features: features })
+                        }}
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSettings({
+                        ...settings,
+                        media_showcase_features: [...settings.media_showcase_features, { icon: '', text: '' }]
+                      })
+                    }}
+                  >
+                    + Adicionar Feature
+                  </Button>
+                </div>
+              </div>
+            </div>
             
             <div className="space-y-6">
               {/* Imagem 1 */}
@@ -585,6 +765,345 @@ export default function EditLandingPage() {
                   showMediaManager={false}
                 />
               </div>
+            </div>
+          </motion.div>
+
+          {/* Value Package Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h2 className="text-2xl font-bold mb-6">Pacote de Valor</h2>
+            
+            <div className="space-y-4">
+              <Input
+                label="Título"
+                value={settings.value_package_title}
+                onChange={(e) =>
+                  setSettings({ ...settings, value_package_title: e.target.value })
+                }
+                placeholder="🎁 VOCÊ LEVA TUDO ISSO"
+              />
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Imagem do Pacote</label>
+                <ImageUploader
+                  value={settings.value_package_image}
+                  onChange={(url) => setSettings({ ...settings, value_package_image: url })}
+                />
+              </div>
+
+              {/* Items Array */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Itens do Pacote</label>
+                <div className="space-y-2">
+                  {settings.value_package_items.map((item, idx) => (
+                    <div key={idx} className="flex gap-2 items-center">
+                      <Input
+                        value={item.name}
+                        onChange={(e) => {
+                          const items = [...settings.value_package_items]
+                          items[idx].name = e.target.value
+                          setSettings({ ...settings, value_package_items: items })
+                        }}
+                        placeholder="Nome do item"
+                        className="flex-1"
+                      />
+                      <Input
+                        value={item.price}
+                        onChange={(e) => {
+                          const items = [...settings.value_package_items]
+                          items[idx].price = e.target.value
+                          setSettings({ ...settings, value_package_items: items })
+                        }}
+                        placeholder="R$ 79"
+                        className="w-32"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const items = settings.value_package_items.filter((_, i) => i !== idx)
+                          setSettings({ ...settings, value_package_items: items })
+                        }}
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSettings({
+                        ...settings,
+                        value_package_items: [...settings.value_package_items, { name: '', price: '' }]
+                      })
+                    }}
+                  >
+                    + Adicionar Item
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Preço Total"
+                  value={settings.value_package_total_price}
+                  onChange={(e) =>
+                    setSettings({ ...settings, value_package_total_price: e.target.value })
+                  }
+                  placeholder="R$ 447"
+                />
+
+                <Input
+                  label="Preço de Venda"
+                  value={settings.value_package_sale_price}
+                  onChange={(e) =>
+                    setSettings({ ...settings, value_package_sale_price: e.target.value })
+                  }
+                  placeholder="R$ 299"
+                />
+              </div>
+
+              <Input
+                label="Texto de Entrega"
+                value={settings.value_package_delivery_text}
+                onChange={(e) =>
+                  setSettings({ ...settings, value_package_delivery_text: e.target.value })
+                }
+                placeholder="📍 Entrega em até 24h para Uberlândia"
+              />
+
+              <Input
+                label="Texto do Botão"
+                value={settings.value_package_button_text}
+                onChange={(e) =>
+                  setSettings({ ...settings, value_package_button_text: e.target.value })
+                }
+                placeholder="💬 GARANTIR MEU DESCONTO AGORA!"
+              />
+
+              <Input
+                label="Link do Grupo WhatsApp (opcional)"
+                value={settings.value_package_whatsapp_group_link}
+                onChange={(e) =>
+                  setSettings({ ...settings, value_package_whatsapp_group_link: e.target.value })
+                }
+                placeholder="https://chat.whatsapp.com/..."
+              />
+
+              <Input
+                label="Número WhatsApp (fallback)"
+                value={settings.value_package_whatsapp_number}
+                onChange={(e) =>
+                  setSettings({ ...settings, value_package_whatsapp_number: e.target.value })
+                }
+                placeholder="5534984136291"
+              />
+
+              <Input
+                label="Texto de Estoque"
+                value={settings.value_package_stock_text}
+                onChange={(e) =>
+                  setSettings({ ...settings, value_package_stock_text: e.target.value })
+                }
+                placeholder="📦 Estoque limitado"
+              />
+
+              <Input
+                label="Texto de Desconto"
+                value={settings.value_package_discount_text}
+                onChange={(e) =>
+                  setSettings({ ...settings, value_package_discount_text: e.target.value })
+                }
+                placeholder="🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!"
+              />
+
+              <Input
+                label="Texto de Promoção"
+                value={settings.value_package_promotion_text}
+                onChange={(e) =>
+                  setSettings({ ...settings, value_package_promotion_text: e.target.value })
+                }
+                placeholder="🕒 Promoção válida enquanto durar o estoque."
+              />
+            </div>
+          </motion.div>
+
+          {/* Story Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h2 className="text-2xl font-bold mb-6">História (Story)</h2>
+            
+            <div className="space-y-4">
+              <Input
+                label="Título"
+                value={settings.story_title}
+                onChange={(e) =>
+                  setSettings({ ...settings, story_title: e.target.value })
+                }
+                placeholder="✍️ NOSSA HISTÓRIA"
+              />
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Conteúdo (use \n para quebras de linha)</label>
+                <textarea
+                  value={settings.story_content}
+                  onChange={(e) =>
+                    setSettings({ ...settings, story_content: e.target.value })
+                  }
+                  placeholder="A Smart Time Prime nasceu em Uberlândia..."
+                  rows={6}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+
+              <Input
+                label="Nomes dos Donos/Fundadores"
+                value={settings.story_founders_names}
+                onChange={(e) =>
+                  setSettings({ ...settings, story_founders_names: e.target.value })
+                }
+                placeholder="Guilherme e Letícia"
+              />
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Foto dos Donos na Loja</label>
+                <ImageUploader
+                  value={settings.story_image}
+                  onChange={(url) => setSettings({ ...settings, story_image: url })}
+                />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* About Us Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h2 className="text-2xl font-bold mb-6">Quem Somos (Fundadores)</h2>
+            
+            <div className="space-y-4">
+              <Input
+                label="Título"
+                value={settings.about_us_title}
+                onChange={(e) =>
+                  setSettings({ ...settings, about_us_title: e.target.value })
+                }
+                placeholder="🏪 SOBRE A SMART TIME PRIME"
+              />
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Descrição (use \n para quebras de linha)</label>
+                <textarea
+                  value={settings.about_us_description}
+                  onChange={(e) =>
+                    setSettings({ ...settings, about_us_description: e.target.value })
+                  }
+                  placeholder="A Smart Time Prime é uma loja..."
+                  rows={5}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Foto da Loja</label>
+                <ImageUploader
+                  value={settings.about_us_store_image}
+                  onChange={(url) => setSettings({ ...settings, about_us_store_image: url })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Foto dos Fundadores</label>
+                <ImageUploader
+                  value={settings.about_us_founders_image}
+                  onChange={(url) => setSettings({ ...settings, about_us_founders_image: url })}
+                />
+              </div>
+
+              <Input
+                label="Nomes dos Fundadores/Donos"
+                value={settings.about_us_founders_names}
+                onChange={(e) =>
+                  setSettings({ ...settings, about_us_founders_names: e.target.value })
+                }
+                placeholder="Guilherme e Letícia"
+              />
+
+              <Input
+                label="Localização"
+                value={settings.about_us_location}
+                onChange={(e) =>
+                  setSettings({ ...settings, about_us_location: e.target.value })
+                }
+                placeholder="Shopping Planalto, Uberlândia/MG"
+              />
+            </div>
+          </motion.div>
+
+          {/* Social Proof Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h2 className="text-2xl font-bold mb-6">Avaliações (Social Proof)</h2>
+            
+            <div className="space-y-4">
+              <Input
+                label="Título"
+                value={settings.social_proof_title}
+                onChange={(e) =>
+                  setSettings({ ...settings, social_proof_title: e.target.value })
+                }
+                placeholder="⭐ CLIENTES DE UBERLÂNDIA QUE JÁ ESTÃO USANDO"
+              />
+
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.social_proof_google_icon}
+                    onChange={(e) =>
+                      setSettings({ ...settings, social_proof_google_icon: e.target.checked })
+                    }
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">Mostrar ícone do Google</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.social_proof_allow_photos}
+                    onChange={(e) =>
+                      setSettings({ ...settings, social_proof_allow_photos: e.target.checked })
+                    }
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">Permitir fotos nas avaliações</span>
+                </label>
+              </div>
+
+              <Input
+                label="Texto de Contagem de Testimonials"
+                value={settings.social_proof_testimonial_count}
+                onChange={(e) =>
+                  setSettings({ ...settings, social_proof_testimonial_count: e.target.value })
+                }
+                placeholder="💬 Mais de 1.000 smartwatches entregues em Uberlândia."
+              />
             </div>
           </motion.div>
 

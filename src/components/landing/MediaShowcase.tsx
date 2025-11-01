@@ -3,15 +3,30 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import Image from 'next/image'
 
 interface MediaShowcaseProps {
+  title?: string
   images?: string[]
   videoUrl?: string
+  features?: Array<{
+    icon: string
+    text: string
+  }>
 }
 
 export const MediaShowcase = ({
+  title = '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO',
   images = [],
   videoUrl,
+  features = [
+    { icon: '📱', text: 'Responda mensagens e chamadas direto do relógio' },
+    { icon: '❤️', text: 'Monitore batimentos, sono e pressão arterial' },
+    { icon: '🔋', text: 'Bateria que dura até 5 dias' },
+    { icon: '💧', text: 'Resistente à água e suor' },
+    { icon: '🎨', text: 'Troque pulseiras em segundos' },
+    { icon: '📲', text: 'Compatível com Android e iPhone' },
+  ],
 }: MediaShowcaseProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -32,13 +47,37 @@ export const MediaShowcase = ({
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-8"
+          className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-3">
-            ✨ Destaques
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+            {title}
           </h2>
-          <div className="w-20 h-1 bg-accent mx-auto" />
+          <div className="w-24 h-1 bg-accent mx-auto" />
         </motion.div>
+
+        {/* Features Grid */}
+        {features && features.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-12 max-w-4xl mx-auto"
+          >
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white/10 backdrop-blur-md rounded-lg p-4 md:p-6 text-center hover:bg-white/20 transition-colors"
+              >
+                <div className="text-4xl md:text-5xl mb-3">{feature.icon}</div>
+                <p className="text-sm md:text-base text-gray-200">{feature.text}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
           {/* Carrossel de Imagens - 1 coluna */}
@@ -53,10 +92,11 @@ export const MediaShowcase = ({
                   transition={{ duration: 0.5 }}
                   className="aspect-square bg-gray-900 rounded-lg overflow-hidden"
                 >
-                  <img
+                  <Image
                     src={images[currentIndex]}
                     alt={`Produto ${currentIndex + 1}`}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 </motion.div>
 
@@ -108,10 +148,11 @@ export const MediaShowcase = ({
                             : 'border-transparent opacity-60 hover:opacity-100'
                         }`}
                       >
-                        <img
+                        <Image
                           src={image}
                           alt={`Miniatura ${index + 1}`}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
                         />
                       </button>
                     ))}

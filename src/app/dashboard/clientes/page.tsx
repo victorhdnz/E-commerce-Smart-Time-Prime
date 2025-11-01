@@ -74,10 +74,10 @@ export default function DashboardClientsPage() {
       // Buscar endereços e pedidos para cada cliente
       const clientsWithDetails = await Promise.all(
         (profiles || []).map(async (profile) => {
-          // Buscar endereços
+          // Buscar endereços - selecionar apenas campos necessários
           const { data: addresses } = await supabase
             .from('addresses')
-            .select('*')
+            .select('id, street, number, complement, neighborhood, city, state, cep, is_default')
             .eq('user_id', profile.id)
             .order('is_default', { ascending: false })
 

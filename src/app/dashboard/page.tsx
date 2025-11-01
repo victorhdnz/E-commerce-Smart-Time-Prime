@@ -115,10 +115,11 @@ export default function DashboardPage() {
       const supabase = createClient()
 
       // Buscar estatísticas e pedidos em paralelo
+      // Selecionar apenas campos necessários para melhor performance
       const [ordersResult, productsResult, clientsResult] = await Promise.all([
         supabase
           .from('orders')
-          .select('*')
+          .select('id, order_number, total, status, created_at, user_id')
           .eq('status', 'completed')
           .gte('created_at', new Date().toISOString().split('T')[0])
           .order('created_at', { ascending: false }),
