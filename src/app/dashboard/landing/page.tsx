@@ -499,7 +499,6 @@ export default function EditLandingPage() {
                 placeholder="https://wa.me/5534984136291 ou link do grupo"
               />
 
-              {/* Cores Hero */}
               {/* Banner Principal (1920x650) */}
               <div className="pt-4 border-t">
                 <label className="block text-sm font-medium mb-2">
