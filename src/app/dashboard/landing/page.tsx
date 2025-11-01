@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { ImageUploader } from '@/components/ui/ImageUploader'
 import { VideoUploader } from '@/components/ui/VideoUploader'
+import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Save, Plus, Trash2 } from 'lucide-react'
@@ -26,6 +27,7 @@ interface LandingSettings {
   hero_text_color: string
   hero_images: string[]
   hero_banner: string
+  hero_banners: string[] // Array de banners para carrossel
   
   // Timer Section
   timer_title: string
@@ -46,7 +48,8 @@ interface LandingSettings {
   // Media Showcase (expandido)
   media_showcase_title: string
   media_showcase_features: Array<{icon: string, text: string}>
-  showcase_image_1: string
+  showcase_images: string[] // Array de imagens
+  showcase_image_1: string // Mantido para compatibilidade
   showcase_image_2: string
   showcase_image_3: string
   showcase_image_4: string
@@ -122,6 +125,7 @@ export default function EditLandingPage() {
     hero_text_color: '#FFFFFF',
     hero_images: [],
     hero_banner: '',
+    hero_banners: [],
     // Timer
     timer_title: '⚡ Black Friday - Tempo Limitado!',
     timer_end_date: '',
@@ -145,7 +149,8 @@ export default function EditLandingPage() {
       { icon: '🎨', text: 'Troque pulseiras em segundos' },
       { icon: '📲', text: 'Compatível com Android e iPhone' },
     ],
-    showcase_image_1: '',
+    showcase_images: [],
+    showcase_image_1: '', // Mantido para compatibilidade
     showcase_image_2: '',
     showcase_image_3: '',
     showcase_image_4: '',
@@ -236,6 +241,7 @@ export default function EditLandingPage() {
           hero_text_color: savedSettings.hero_text_color || '#FFFFFF',
           hero_images: Array.isArray(savedSettings.hero_images) ? savedSettings.hero_images : [],
           hero_banner: savedSettings.hero_banner || '',
+          hero_banners: Array.isArray(savedSettings.hero_banners) ? savedSettings.hero_banners : [],
           // Timer
           timer_title: savedSettings.timer_title || '⚡ Black Friday - Tempo Limitado!',
           timer_end_date: savedSettings.timer_end_date 
@@ -263,6 +269,15 @@ export default function EditLandingPage() {
                 { icon: '🎨', text: 'Troque pulseiras em segundos' },
                 { icon: '📲', text: 'Compatível com Android e iPhone' },
               ],
+          // Converter showcase_image_1-4 para showcase_images se não existir
+          showcase_images: Array.isArray(savedSettings.showcase_images) && savedSettings.showcase_images.length > 0
+            ? savedSettings.showcase_images 
+            : [
+                savedSettings.showcase_image_1 || '',
+                savedSettings.showcase_image_2 || '',
+                savedSettings.showcase_image_3 || '',
+                savedSettings.showcase_image_4 || '',
+              ].filter(Boolean), // Remove strings vazias
           showcase_image_1: savedSettings.showcase_image_1 || '',
           showcase_image_2: savedSettings.showcase_image_2 || '',
           showcase_image_3: savedSettings.showcase_image_3 || '',
@@ -437,6 +452,61 @@ export default function EditLandingPage() {
           }
         />
 
+        {/* Logo do Site */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0 }}
+          className="bg-white rounded-lg shadow-md p-6 mb-6"
+        >
+          <h2 className="text-2xl font-bold mb-6">Logo do Site</h2>
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Logo da Loja
+            </label>
+            <p className="text-xs text-gray-500 mb-4">
+              📸 Logo que aparece no lugar de "Smart Time Prime" no header. Dimensões recomendadas: 120x48px.
+            </p>
+            <ImageUploader
+              value={(settings as any).site_logo || ''}
+              onChange={(url) => {
+                // Salvar logo separadamente em site_settings
+                const updateLogo = async () => {
+                  const supabase = createClient()
+                  const { data: existing } = await supabase
+                    .from('site_settings')
+                    .select('value')
+                    .eq('key', 'general')
+                    .single()
+
+                  if (existing?.value) {
+                    const currentValue = existing.value as any
+                    await supabase
+                      .from('site_settings')
+                      .update({
+                        value: { ...currentValue, site_logo: url },
+                        updated_at: new Date().toISOString(),
+                      })
+                      .eq('key', 'general')
+                  } else {
+                    await supabase
+                      .from('site_settings')
+                      .insert({
+                        key: 'general',
+                        value: { site_logo: url },
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                      })
+                  }
+                  toast.success('Logo atualizada!')
+                }
+                updateLogo()
+              }}
+              placeholder="Clique para fazer upload da logo"
+            />
+          </div>
+        </motion.div>
+
         {/* Form */}
         <div className="max-w-4xl space-y-6">
           {/* Hero Section */}
@@ -499,48 +569,39 @@ export default function EditLandingPage() {
                 placeholder="https://wa.me/5534984136291 ou link do grupo"
               />
 
-              {/* Banner Principal (1920x650) */}
+              {/* Banners Carrossel (1920x650) */}
               <div className="pt-4 border-t">
                 <label className="block text-sm font-medium mb-2">
-                  Banner Principal (1920x650)
+                  Banners Carrossel (1920x650)
                 </label>
                 <p className="text-xs text-gray-500 mb-4">
-                  📸 Banner que aparece acima do texto do início. Dimensões recomendadas: 1920x650px
+                  📸 Banners que aparecem acima do texto do início. Dimensões recomendadas: 1920x650px.
+                  <br />• 1 banner = estático
+                  <br />• Múltiplos banners = carrossel automático
                 </p>
-                <ImageUploader
-                  value={settings.hero_banner || ''}
-                  onChange={(url) => setSettings({ ...settings, hero_banner: url })}
-                  placeholder="Clique para fazer upload do banner (1920x650)"
+                <ArrayImageManager
+                  value={settings.hero_banners || []}
+                  onChange={(images: string[]) => setSettings({ ...settings, hero_banners: images })}
+                  label="Banners"
+                  placeholder="Clique para fazer upload de um banner (1920x650)"
                 />
               </div>
 
               {/* Hero Images */}
               <div className="pt-4 border-t">
                 <label className="block text-sm font-medium mb-2">
-                  Imagens de Fundo (até 4 imagens)
+                  Imagens de Fundo
                 </label>
                 <p className="text-xs text-gray-500 mb-4">
                   📸 Faça upload das imagens diretamente (Cloudinary). Recomendado: 1080x1080px
                 </p>
-                <div className="space-y-4">
-                  {[0, 1, 2, 3].map((idx) => (
-                    <div key={idx}>
-                      <label className="block text-xs text-gray-600 mb-1">
-                        Imagem {idx + 1} {idx === 0 && '(Principal)'}
-                      </label>
-                      <ImageUploader
-                        value={settings.hero_images[idx] || ''}
-                        onChange={(url) => {
-                          const newImages = [...settings.hero_images]
-                          newImages[idx] = url
-                          while (newImages.length < 4) newImages.push('')
-                          setSettings({ ...settings, hero_images: newImages.slice(0, 4) })
-                        }}
-                        placeholder={`Clique para fazer upload da imagem ${idx + 1}`}
-                      />
-                    </div>
-                  ))}
-                </div>
+                <ArrayImageManager
+                  value={settings.hero_images || []}
+                  onChange={(images: string[]) => setSettings({ ...settings, hero_images: images })}
+                  label="Imagens de Fundo"
+                  maxImages={4}
+                  placeholder="Clique para fazer upload de uma imagem"
+                />
               </div>
             </div>
           </motion.div>
@@ -659,59 +720,33 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-6">
-              {/* Imagem 1 */}
+              {/* Imagens do Carrossel */}
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Imagem 1
+                  Imagens do Carrossel
                   <span className="ml-2 text-xs text-gray-500 font-normal">
                     (Formato Instagram Post: 1080x1080px)
                   </span>
                 </label>
-                <ImageUploader
-                  value={settings.showcase_image_1}
-                  onChange={(url) => setSettings({ ...settings, showcase_image_1: url })}
-                />
-              </div>
-
-              {/* Imagem 2 */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Imagem 2
-                  <span className="ml-2 text-xs text-gray-500 font-normal">
-                    (Formato Instagram Post: 1080x1080px)
-                  </span>
-                </label>
-                <ImageUploader
-                  value={settings.showcase_image_2}
-                  onChange={(url) => setSettings({ ...settings, showcase_image_2: url })}
-                />
-              </div>
-
-              {/* Imagem 3 */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Imagem 3
-                  <span className="ml-2 text-xs text-gray-500 font-normal">
-                    (Formato Instagram Post: 1080x1080px)
-                  </span>
-                </label>
-                <ImageUploader
-                  value={settings.showcase_image_3}
-                  onChange={(url) => setSettings({ ...settings, showcase_image_3: url })}
-                />
-              </div>
-
-              {/* Imagem 4 */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Imagem 4
-                  <span className="ml-2 text-xs text-gray-500 font-normal">
-                    (Formato Instagram Post: 1080x1080px)
-                  </span>
-                </label>
-                <ImageUploader
-                  value={settings.showcase_image_4}
-                  onChange={(url) => setSettings({ ...settings, showcase_image_4: url })}
+                <p className="text-xs text-gray-500 mb-4">
+                  📸 Imagens que aparecem no carrossel ao lado do vídeo. Adicione quantas imagens quiser.
+                </p>
+                <ArrayImageManager
+                  value={settings.showcase_images || []}
+                  onChange={(images: string[]) => {
+                    // Atualizar showcase_images e manter compatibilidade com showcase_image_1-4
+                    const updatedSettings: LandingSettings = { 
+                      ...settings, 
+                      showcase_images: images,
+                      showcase_image_1: images[0] || '',
+                      showcase_image_2: images[1] || '',
+                      showcase_image_3: images[2] || '',
+                      showcase_image_4: images[3] || '',
+                    }
+                    setSettings(updatedSettings)
+                  }}
+                  label="Imagens do Carrossel"
+                  placeholder="Clique para fazer upload de uma imagem"
                 />
               </div>
 

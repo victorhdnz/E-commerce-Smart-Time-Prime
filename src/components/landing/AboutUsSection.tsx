@@ -42,9 +42,6 @@ export const AboutUsSection = ({
             <p className="text-lg md:text-xl text-gray-700 whitespace-pre-line leading-relaxed">
               {description}
             </p>
-            {location && (
-              <p className="mt-4 text-gray-600 font-semibold">📍 {location}</p>
-            )}
           </motion.div>
 
           {/* Imagem da Loja */}
@@ -73,11 +70,6 @@ export const AboutUsSection = ({
             )}
             <div className="mt-4 text-center">
               <p className="font-semibold text-gray-700">Nossa Loja</p>
-              {foundersNames && (
-                <p className="text-sm text-gray-600 mt-2">
-                  Fundadores: {foundersNames}
-                </p>
-              )}
             </div>
           </motion.div>
         </div>

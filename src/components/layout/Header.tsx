@@ -4,19 +4,39 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { ShoppingCart, Menu, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { Button } from '@/components/ui/Button'
 import { UserMenu } from './UserMenu'
 import { AuthDebug } from './AuthDebug'
+import { createClient } from '@/lib/supabase/client'
 
 export const Header = () => {
   const router = useRouter()
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [siteSettings, setSiteSettings] = useState<{ site_logo?: string } | null>(null)
   const { isAuthenticated, profile, loading } = useAuth()
   const { getItemCount } = useCart()
   const itemCount = getItemCount()
+
+  // Carregar logo do site
+  useEffect(() => {
+    const loadLogo = async () => {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'general')
+        .single()
+
+      if (data?.value && typeof data.value === 'object') {
+        setSiteSettings(data.value as { site_logo?: string })
+      }
+    }
+    loadLogo()
+  }, [])
 
 
 
@@ -70,8 +90,19 @@ export const Header = () => {
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold">Smart Time Prime</span>
+          <Link href="/" className="flex items-center h-12">
+            {siteSettings?.site_logo ? (
+              <Image
+                src={siteSettings.site_logo}
+                alt="Smart Time Prime"
+                width={120}
+                height={48}
+                className="h-full w-auto object-contain"
+                priority
+              />
+            ) : (
+              <span className="text-2xl font-bold">Smart Time Prime</span>
+            )}
           </Link>
 
           {/* Desktop Navigation */}

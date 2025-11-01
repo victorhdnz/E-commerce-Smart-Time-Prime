@@ -6,6 +6,7 @@ import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { BannerCarousel } from './BannerCarousel'
 
 interface HeroSectionProps {
   title?: string
@@ -20,6 +21,7 @@ interface HeroSectionProps {
   timerEndDate?: Date
   heroImages?: string[]
   heroBanner?: string
+  heroBanners?: string[] // Array de banners para carrossel
 }
 
 export const HeroSection = ({
@@ -35,6 +37,7 @@ export const HeroSection = ({
   timerEndDate,
   heroImages = [],
   heroBanner,
+  heroBanners = [],
 }: HeroSectionProps) => {
   // Cores fixas da empresa (preto e branco)
   const finalBackgroundColor = '#000000'
@@ -80,29 +83,19 @@ export const HeroSection = ({
 
     return () => clearInterval(timer)
   }, [timerEndDate])
+  // Determinar se usar carrossel ou banner único
+  const banners = heroBanners && heroBanners.length > 0 ? heroBanners : (heroBanner ? [heroBanner] : [])
+
   return (
     <section
       style={{ backgroundColor: finalBackgroundColor, color: finalTextColor }}
       className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden"
     >
-      {/* Banner acima do texto (1920x650) */}
-      {heroBanner && (
-        <motion.div
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="w-full relative"
-          style={{ aspectRatio: '1920/650', minHeight: '400px' }}
-        >
-          <Image
-            src={heroBanner}
-            alt="Banner Black Friday"
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
-        </motion.div>
+      {/* Banner carrossel acima do texto (1920x650) */}
+      {banners.length > 0 && (
+        <div className="w-full">
+          <BannerCarousel banners={banners} autoPlayInterval={5000} />
+        </div>
       )}
 
       {/* Background Pattern */}

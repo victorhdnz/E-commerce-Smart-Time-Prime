@@ -156,24 +156,25 @@ export const MediaShowcase = ({
                   </div>
                 )}
 
-                {/* Miniaturas */}
+                {/* Miniaturas - apenas se houver mais de 1 imagem */}
                 {images.length > 1 && (
                   <div className={`grid gap-2 mt-4 ${images.length <= 4 ? 'grid-cols-4' : 'grid-cols-4 overflow-x-auto pb-2'}`}>
                     {images.map((image, index) => (
                       <button
                         key={index}
                         onClick={() => setCurrentIndex(index)}
-                        className={`aspect-square rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
+                        className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
                           index === currentIndex
-                            ? 'border-accent scale-105'
-                            : 'border-transparent opacity-60 hover:opacity-100'
+                            ? 'border-white scale-105'
+                            : 'border-gray-600 opacity-60 hover:opacity-100'
                         }`}
                       >
                         <Image
                           src={image}
-                          alt={`Miniatura ${index + 1}`}
+                          alt={`Produto ${index + 1}`}
                           fill
                           className="object-cover"
+                          sizes="(max-width: 768px) 25vw, 25vw"
                         />
                       </button>
                     ))}

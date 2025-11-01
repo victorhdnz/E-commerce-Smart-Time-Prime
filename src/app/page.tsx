@@ -161,13 +161,22 @@ export default async function Home() {
   const timerBgColor = settings.timer_bg_color || layout?.timer_bg_color || '#000000'
   const timerTextColor = settings.timer_text_color || layout?.timer_text_color || '#FFFFFF'
 
-  // Imagens do carrossel do banco de dados - apenas imagens do Cloudinary
-  const showcaseImages = [
-    settings.showcase_image_1,
-    settings.showcase_image_2,
-    settings.showcase_image_3,
-    settings.showcase_image_4,
-  ].filter(Boolean) // Remove strings vazias, mantém apenas URLs válidas
+  // Imagens do carrossel do banco de dados - usar showcase_images se disponível, senão usar showcase_image_1-4
+  const showcaseImages = Array.isArray(settings.showcase_images) && settings.showcase_images.length > 0
+    ? settings.showcase_images.filter(Boolean)
+    : [
+        settings.showcase_image_1,
+        settings.showcase_image_2,
+        settings.showcase_image_3,
+        settings.showcase_image_4,
+      ].filter(Boolean) // Remove strings vazias, mantém apenas URLs válidas
+  
+  // Hero Banners - usar hero_banners se disponível, senão usar hero_banner
+  const heroBanners = Array.isArray(settings.hero_banners) && settings.hero_banners.length > 0
+    ? settings.hero_banners.filter(Boolean)
+    : settings.hero_banner
+      ? [settings.hero_banner]
+      : []
 
   // Hero Images
   const heroImages = Array.isArray(settings.hero_images) 
@@ -218,6 +227,7 @@ export default async function Home() {
         textColor={settings.hero_text_color || '#FFFFFF'}
         heroImages={heroImages}
         heroBanner={settings.hero_banner}
+        heroBanners={heroBanners}
         timerEndDate={timerEndDate}
       />
 
