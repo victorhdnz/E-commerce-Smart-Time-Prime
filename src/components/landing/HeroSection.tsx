@@ -193,28 +193,22 @@ export const HeroSection = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.8 }}
-              className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-lg md:text-xl"
+              className="flex flex-col items-center justify-center gap-4 text-base md:text-lg"
             >
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🔥</span>
-                <span>
+              <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                <span className="text-xl">🔥</span>
+                <span className="font-semibold">
                   {viewerCount} pessoas vendo agora
                 </span>
               </div>
               
               {timerEndDate && (
-                <>
-                  <span className="hidden md:inline">|</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">⏰</span>
-                    <span>
-                      Oferta termina em: {String(timeLeft.days).padStart(2, '0')}d{' '}
-                      {String(timeLeft.hours).padStart(2, '0')}h{' '}
-                      {String(timeLeft.minutes).padStart(2, '0')}m{' '}
-                      {String(timeLeft.seconds).padStart(2, '0')}s
-                    </span>
-                  </div>
-                </>
+                <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                  <span className="text-xl">⏰</span>
+                  <span className="font-semibold">
+                    Oferta termina em: <span className="font-mono text-white">{String(timeLeft.days).padStart(2, '0')}d {String(timeLeft.hours).padStart(2, '0')}h {String(timeLeft.minutes).padStart(2, '0')}m {String(timeLeft.seconds).padStart(2, '0')}s</span>
+                  </span>
+                </div>
               )}
             </motion.div>
           </motion.div>

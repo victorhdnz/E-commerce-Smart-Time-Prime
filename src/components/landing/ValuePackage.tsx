@@ -163,47 +163,55 @@ export const ValuePackage = ({
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-16 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl p-8 md:p-12 text-center shadow-2xl"
+          className="mt-16 bg-gradient-to-br from-red-600 via-red-700 to-red-800 text-white rounded-2xl p-8 md:p-12 text-center shadow-2xl border-2 border-red-900/30"
         >
-          <h3 className="text-3xl md:text-4xl font-bold mb-6">
+          <h3 className="text-3xl md:text-4xl font-bold mb-6 drop-shadow-lg">
             🔥 BLACK FRIDAY SMART TIME PRIME
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div>
-              <p className="text-2xl mb-2">{stockText}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <p className="text-lg md:text-xl font-semibold">{stockText}</p>
             </div>
-            <div>
-              <p className="text-2xl mb-2">{discountText}</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <p className="text-lg md:text-xl font-semibold">{discountText}</p>
             </div>
-            <div>
-              <p className="text-2xl mb-2">{promotionText}</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+              <p className="text-lg md:text-xl font-semibold">{promotionText}</p>
             </div>
           </div>
 
           {/* Cronômetro se houver endDate */}
           {timeLeft && (
-            <div className="bg-white/20 backdrop-blur-md rounded-lg p-6 mb-6 max-w-2xl mx-auto">
-              <p className="text-lg font-semibold mb-4">⏰ Termina em:</p>
-              <div className="flex items-center justify-center gap-4">
-                <div className="text-center">
-                  <div className="text-3xl font-bold">{String(timeLeft.days).padStart(2, '0')}</div>
-                  <div className="text-sm opacity-80">dias</div>
+            <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-xl p-8 mb-6 max-w-2xl mx-auto border border-gray-700 shadow-2xl">
+              <p className="text-lg font-bold text-white mb-6 text-center">⏰ Termina em:</p>
+              <div className="flex items-center justify-center gap-3 md:gap-4">
+                <div className="text-center bg-black/50 rounded-lg p-4 border border-gray-700 min-w-[70px]">
+                  <div className="text-4xl md:text-5xl font-bold text-white mb-1 font-mono tracking-tight">
+                    {String(timeLeft.days).padStart(2, '0')}
+                  </div>
+                  <div className="text-xs md:text-sm text-gray-300 font-medium uppercase tracking-wide">dias</div>
                 </div>
-                <div className="text-2xl font-bold">:</div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold">{String(timeLeft.hours).padStart(2, '0')}</div>
-                  <div className="text-sm opacity-80">horas</div>
+                <div className="text-3xl md:text-4xl font-bold text-red-500">:</div>
+                <div className="text-center bg-black/50 rounded-lg p-4 border border-gray-700 min-w-[70px]">
+                  <div className="text-4xl md:text-5xl font-bold text-white mb-1 font-mono tracking-tight">
+                    {String(timeLeft.hours).padStart(2, '0')}
+                  </div>
+                  <div className="text-xs md:text-sm text-gray-300 font-medium uppercase tracking-wide">horas</div>
                 </div>
-                <div className="text-2xl font-bold">:</div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold">{String(timeLeft.minutes).padStart(2, '0')}</div>
-                  <div className="text-sm opacity-80">min</div>
+                <div className="text-3xl md:text-4xl font-bold text-red-500">:</div>
+                <div className="text-center bg-black/50 rounded-lg p-4 border border-gray-700 min-w-[70px]">
+                  <div className="text-4xl md:text-5xl font-bold text-white mb-1 font-mono tracking-tight">
+                    {String(timeLeft.minutes).padStart(2, '0')}
+                  </div>
+                  <div className="text-xs md:text-sm text-gray-300 font-medium uppercase tracking-wide">min</div>
                 </div>
-                <div className="text-2xl font-bold">:</div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold">{String(timeLeft.seconds).padStart(2, '0')}</div>
-                  <div className="text-sm opacity-80">seg</div>
+                <div className="text-3xl md:text-4xl font-bold text-red-500">:</div>
+                <div className="text-center bg-black/50 rounded-lg p-4 border border-gray-700 min-w-[70px]">
+                  <div className="text-4xl md:text-5xl font-bold text-white mb-1 font-mono tracking-tight">
+                    {String(timeLeft.seconds).padStart(2, '0')}
+                  </div>
+                  <div className="text-xs md:text-sm text-gray-300 font-medium uppercase tracking-wide">seg</div>
                 </div>
               </div>
             </div>
