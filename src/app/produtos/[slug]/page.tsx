@@ -176,26 +176,9 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           {/* Price */}
           <div className="mb-6">
             {showPrice || isAuthenticated ? (
-              <>
-                {product.bling_price && product.bling_price > product.local_price && (
-                  <span className="text-2xl text-gray-500 line-through mr-3">
-                    {formatCurrency(product.bling_price)}
-                  </span>
-                )}
-                <span className="text-4xl font-bold">
-                  {formatCurrency(product.local_price)}
-                </span>
-                {product.bling_price && product.bling_price > product.local_price && (
-                  <div className="inline-block ml-3 px-3 py-1 bg-accent text-black rounded-full text-sm font-semibold">
-                    {Math.round(
-                      ((product.bling_price - product.local_price) /
-                        product.bling_price) *
-                        100
-                    )}
-                    % OFF
-                  </div>
-                )}
-              </>
+              <span className="text-4xl font-bold">
+                {formatCurrency(product.local_price)}
+              </span>
             ) : (
               <div>
                 <div className="text-2xl font-semibold text-gray-400 mb-2">

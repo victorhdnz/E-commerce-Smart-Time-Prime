@@ -103,11 +103,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         {/* Price */}
         <div className="flex items-center justify-between">
           <div>
-            {product.bling_price && product.bling_price > product.local_price && (
-              <span className="text-sm text-gray-500 line-through mr-2">
-                {formatCurrency(product.bling_price)}
-              </span>
-            )}
             <span className="text-xl font-bold">
               {formatCurrency(product.local_price)}
             </span>
