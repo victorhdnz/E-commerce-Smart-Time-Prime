@@ -7,7 +7,6 @@ interface AboutUsSectionProps {
   title?: string
   description?: string
   storeImage?: string
-  foundersImage?: string
   foundersNames?: string
   location?: string
 }
@@ -16,7 +15,6 @@ export const AboutUsSection = ({
   title = '🏪 SOBRE A SMART TIME PRIME',
   description = 'A Smart Time Prime é uma loja de tecnologia localizada em Uberlândia/MG, dentro do Shopping Planalto.\n\nSomos referência em smartwatches e acessórios tecnológicos, com atendimento humano, entrega rápida e garantia total.',
   storeImage,
-  foundersImage,
   foundersNames,
   location = 'Shopping Planalto, Uberlândia/MG',
 }: AboutUsSectionProps) => {
@@ -49,69 +47,39 @@ export const AboutUsSection = ({
             )}
           </motion.div>
 
-          {/* Imagens */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Imagem da Loja */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="relative"
-            >
-              {storeImage ? (
-                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
-                  <Image
-                    src={storeImage}
-                    alt="Loja Smart Time Prime"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl bg-gray-200 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-6xl mb-4">🏪</div>
-                    <p className="text-gray-600">Foto da loja</p>
-                  </div>
-                </div>
-              )}
-              <div className="mt-4 text-center">
-                <p className="font-semibold text-gray-700">Nossa Loja</p>
+          {/* Imagem da Loja */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="relative max-w-2xl mx-auto"
+          >
+            {storeImage ? (
+              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
+                <Image
+                  src={storeImage}
+                  alt="Loja Smart Time Prime"
+                  fill
+                  className="object-cover"
+                />
               </div>
-            </motion.div>
-
-            {/* Imagem dos Fundadores */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="relative"
-            >
-              {foundersImage ? (
-                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl">
-                  <Image
-                    src={foundersImage}
-                    alt="Fundadores Smart Time Prime"
-                    fill
-                    className="object-cover"
-                  />
+            ) : (
+              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl bg-gray-200 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-6xl mb-4">🏪</div>
+                  <p className="text-gray-600">Foto da loja</p>
                 </div>
-              ) : (
-                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl bg-gray-200 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-6xl mb-4">👥</div>
-                    <p className="text-gray-600">Foto dos fundadores</p>
-                  </div>
-                </div>
-              )}
-              <div className="mt-4 text-center">
-                <p className="font-semibold text-gray-700">Nossos Fundadores</p>
-                {foundersNames && (
-                  <p className="text-sm text-gray-600 mt-1">{foundersNames}</p>
-                )}
               </div>
-            </motion.div>
-          </div>
+            )}
+            <div className="mt-4 text-center">
+              <p className="font-semibold text-gray-700">Nossa Loja</p>
+              {foundersNames && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Fundadores: {foundersNames}
+                </p>
+              )}
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>

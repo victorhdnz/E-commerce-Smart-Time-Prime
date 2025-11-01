@@ -148,46 +148,6 @@ export const HeroSection = ({
               {subtitle}
             </motion.p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="mb-8"
-            >
-              {ctaLink && !ctaLink.startsWith('http') && !ctaLink.startsWith('https') && !ctaLink.startsWith('wa.me') ? (
-                <Link href={ctaLink}>
-                  <Button
-                    size="lg"
-                    variant={backgroundColor === '#000000' ? 'secondary' : 'primary'}
-                    className="group text-xl py-6 px-12"
-                  >
-                    {ctaText}
-                    <ChevronRight
-                      className="ml-2 group-hover:translate-x-1 transition-transform"
-                      size={24}
-                    />
-                  </Button>
-                </Link>
-              ) : (
-                <Button
-                  size="lg"
-                  variant={backgroundColor === '#000000' ? 'secondary' : 'primary'}
-                  className="group text-xl py-6 px-12"
-                  onClick={() => {
-                    if (ctaLink) {
-                      window.open(ctaLink, '_blank')
-                    }
-                  }}
-                >
-                  {ctaText}
-                  <ChevronRight
-                    className="ml-2 group-hover:translate-x-1 transition-transform"
-                    size={24}
-                  />
-                </Button>
-              )}
-            </motion.div>
-
             {/* Contador de Pessoas e Cronômetro */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}

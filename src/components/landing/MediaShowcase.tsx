@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 
@@ -31,12 +31,25 @@ export const MediaShowcase = ({
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const nextSlide = () => {
+    if (images.length === 0) return
     setCurrentIndex((prev) => (prev + 1) % images.length)
   }
 
   const prevSlide = () => {
+    if (images.length === 0) return
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
   }
+
+  // Auto-play do carrossel (opcional - cicla por todas as imagens)
+  useEffect(() => {
+    if (images.length <= 1) return
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length)
+    }, 4000) // Troca a cada 4 segundos
+
+    return () => clearInterval(interval)
+  }, [images.length])
 
   // Sempre renderizar a seção, mas mostrar placeholders se não houver conteúdo
 
@@ -137,12 +150,12 @@ export const MediaShowcase = ({
 
                 {/* Miniaturas */}
                 {images.length > 1 && (
-                  <div className="grid grid-cols-4 gap-2 mt-4">
-                    {images.slice(0, 4).map((image, index) => (
+                  <div className={`grid gap-2 mt-4 ${images.length <= 4 ? 'grid-cols-4' : 'grid-cols-4 overflow-x-auto pb-2'}`}>
+                    {images.map((image, index) => (
                       <button
                         key={index}
                         onClick={() => setCurrentIndex(index)}
-                        className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                        className={`aspect-square rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
                           index === currentIndex
                             ? 'border-accent scale-105'
                             : 'border-transparent opacity-60 hover:opacity-100'

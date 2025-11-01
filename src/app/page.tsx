@@ -270,7 +270,6 @@ export default async function Home() {
         title={settings.about_us_title}
         description={settings.about_us_description}
         storeImage={settings.about_us_store_image}
-        foundersImage={settings.about_us_founders_image}
         foundersNames={settings.about_us_founders_names}
         location={settings.about_us_location}
       />

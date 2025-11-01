@@ -548,32 +548,25 @@ export default function EditLandingPage() {
                 <label className="block text-sm font-medium mb-2">
                   Imagens de Fundo (até 4 imagens)
                 </label>
-                <div className="space-y-2">
+                <p className="text-xs text-gray-500 mb-4">
+                  📸 Faça upload das imagens diretamente (Cloudinary). Recomendado: 1080x1080px
+                </p>
+                <div className="space-y-4">
                   {[0, 1, 2, 3].map((idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <div className="flex-1">
-                        <Input
-                          value={settings.hero_images[idx] || ''}
-                          onChange={(e) => {
-                            const newImages = [...settings.hero_images]
-                            newImages[idx] = e.target.value
-                            while (newImages.length < 4) newImages.push('')
-                            setSettings({ ...settings, hero_images: newImages.slice(0, 4) })
-                          }}
-                          placeholder={`URL da imagem ${idx + 1} (opcional)`}
-                        />
-                      </div>
-                      {settings.hero_images[idx] && (
-                        <ImageUploader
-                          value={settings.hero_images[idx]}
-                          onChange={(url) => {
-                            const newImages = [...settings.hero_images]
-                            newImages[idx] = url
-                            while (newImages.length < 4) newImages.push('')
-                            setSettings({ ...settings, hero_images: newImages.slice(0, 4) })
-                          }}
-                        />
-                      )}
+                    <div key={idx}>
+                      <label className="block text-xs text-gray-600 mb-1">
+                        Imagem {idx + 1} {idx === 0 && '(Principal)'}
+                      </label>
+                      <ImageUploader
+                        value={settings.hero_images[idx] || ''}
+                        onChange={(url) => {
+                          const newImages = [...settings.hero_images]
+                          newImages[idx] = url
+                          while (newImages.length < 4) newImages.push('')
+                          setSettings({ ...settings, hero_images: newImages.slice(0, 4) })
+                        }}
+                        placeholder={`Clique para fazer upload da imagem ${idx + 1}`}
+                      />
                     </div>
                   ))}
                 </div>

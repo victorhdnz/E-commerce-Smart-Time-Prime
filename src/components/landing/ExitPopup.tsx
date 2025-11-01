@@ -29,12 +29,23 @@ export const ExitPopup = ({
   onClose,
 }: ExitPopupProps) => {
   const [show, setShow] = useState(false)
+  const [hasShown, setHasShown] = useState(false)
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
   })
+
+  // Verificar se o pop-up já foi exibido nesta sessão
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const alreadyShown = sessionStorage.getItem('exit_popup_shown')
+      if (alreadyShown === 'true') {
+        setHasShown(true)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -55,18 +66,27 @@ export const ExitPopup = ({
     calculateTimeLeft()
     const timer = setInterval(calculateTimeLeft, 1000)
 
-    // Detectar intenção de sair
+    // Detectar intenção de sair - apenas se ainda não foi exibido
     const handleMouseLeave = (e: MouseEvent) => {
       // Verificar se o mouse está saindo pela parte superior da tela
-      if (e.clientY <= 0 && !show) {
+      // E se o pop-up ainda não foi exibido nesta sessão
+      if (e.clientY <= 0 && !show && !hasShown) {
         setShow(true)
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('exit_popup_shown', 'true')
+          setHasShown(true)
+        }
       }
     }
 
-    // Detectar antes de fechar aba
+    // Detectar antes de fechar aba - apenas se ainda não foi exibido
     const handleBeforeUnload = () => {
-      if (!show) {
+      if (!show && !hasShown) {
         setShow(true)
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('exit_popup_shown', 'true')
+          setHasShown(true)
+        }
       }
     }
 
@@ -78,7 +98,7 @@ export const ExitPopup = ({
       document.removeEventListener('mouseleave', handleMouseLeave)
       window.removeEventListener('beforeunload', handleBeforeUnload)
     }
-  }, [endDate, show])
+  }, [endDate, show, hasShown])
 
   const handleClose = () => {
     setShow(false)
