@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const supabase = createClient()
     
-    // Testar conexão e buscar produtos
+    // Buscar todos os produtos ativos (sem limite)
     const { data: products, error } = await supabase
       .from('products')
       .select(`
@@ -14,7 +14,6 @@ export async function GET() {
       `)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
-      .limit(10)
 
     if (error) {
       console.error('Erro ao buscar produtos:', error)

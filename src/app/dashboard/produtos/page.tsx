@@ -43,17 +43,39 @@ export default function DashboardProductsPage() {
     }
   }, [isAuthenticated, isEditor, authLoading, router])
 
+  // Recarregar produtos quando a página receber foco (útil após criar/editar produto)
+  useEffect(() => {
+    if (!isAuthenticated || !isEditor) return
+    
+    const handleFocus = () => {
+      loadProducts()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [isAuthenticated, isEditor]) // eslint-disable-line react-hooks/exhaustive-deps
+
 
   const loadProducts = async () => {
     try {
+      setLoading(true)
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          colors:product_colors(*)
+        `)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
-      setProducts(data as Product[])
+      if (error) {
+        console.error('Erro ao carregar produtos:', error)
+        throw error
+      }
+      
+      console.log('✅ Produtos carregados no dashboard:', data?.length || 0)
+      setProducts(data as Product[] || [])
     } catch (error) {
+      console.error('Erro ao carregar produtos:', error)
       toast.error('Erro ao carregar produtos')
     } finally {
       setLoading(false)
