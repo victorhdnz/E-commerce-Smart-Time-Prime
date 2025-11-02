@@ -192,17 +192,9 @@ export default function DashboardClientsPage() {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
-                    {/* Avatar */}
+                    {/* Avatar - sempre usar ícone */}
                     <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                      {client.avatar_url ? (
-                        <img
-                          src={client.avatar_url}
-                          alt={client.full_name || 'Cliente'}
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                      ) : (
-                        <User size={32} className="text-gray-500" />
-                      )}
+                      <User size={32} className="text-gray-500" />
                     </div>
 
                     {/* Info */}

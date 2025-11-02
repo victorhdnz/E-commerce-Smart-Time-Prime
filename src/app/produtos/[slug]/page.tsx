@@ -11,11 +11,14 @@ import { createClient } from '@/lib/supabase/client'
 import { Product, ProductColor } from '@/types'
 import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useUserLocation } from '@/hooks/useUserLocation'
+import { getProductPrice } from '@/lib/utils/price'
 
 export default function ProductPage({ params }: { params: { slug: string } }) {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
   const { addItem } = useCart()
+  const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
 
   const [product, setProduct] = useState<Product | null>(null)
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(null)
@@ -24,12 +27,13 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const [loading, setLoading] = useState(true)
   const [showPrice, setShowPrice] = useState(false)
   const [gifts, setGifts] = useState<Product[]>([])
+  const [isFavorite, setIsFavorite] = useState(false)
 
   const supabase = createClient()
 
   useEffect(() => {
     loadProduct()
-  }, [params.slug])
+  }, [params.slug, isAuthenticated])
 
   const loadProduct = async () => {
     try {
@@ -66,6 +70,26 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
       if (giftsData && giftsData.length > 0) {
         setGifts(giftsData.map((g: any) => g.gift_product))
+      }
+
+      // Verificar se o produto está nos favoritos
+      if (isAuthenticated) {
+        try {
+          const user = await supabase.auth.getUser()
+          if (user.data.user) {
+            const { data: favoriteData } = await supabase
+              .from('favorites')
+              .select('id')
+              .eq('product_id', productData.id)
+              .eq('user_id', user.data.user.id)
+              .single()
+
+            setIsFavorite(!!favoriteData)
+          }
+        } catch (error) {
+          // Ignora erro se não encontrar favorito
+          setIsFavorite(false)
+        }
       }
     } catch (error) {
       console.error('Erro ao carregar produto:', error)
@@ -175,10 +199,26 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
           {/* Price */}
           <div className="mb-6">
-            {showPrice || isAuthenticated ? (
-              <span className="text-4xl font-bold">
-                {formatCurrency(product.local_price)}
-              </span>
+            {showPrice || (isAuthenticated && !needsAddress && !locationLoading) ? (
+              <div>
+                <span className="text-4xl font-bold">
+                  {formatCurrency(getProductPrice(product, isUberlandia))}
+                </span>
+                {isAuthenticated && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {isUberlandia ? '💚 Preço Local' : '🌐 Preço Nacional'}
+                  </p>
+                )}
+              </div>
+            ) : isAuthenticated && needsAddress ? (
+              <div>
+                <div className="text-2xl font-semibold text-gray-400 mb-2">
+                  Cadastre seu endereço para ver o preço
+                </div>
+                <Button onClick={() => router.push('/minha-conta/enderecos')} variant="outline" size="sm">
+                  Cadastrar Endereço
+                </Button>
+              </div>
             ) : (
               <div>
                 <div className="text-2xl font-semibold text-gray-400 mb-2">
@@ -269,10 +309,72 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               <ShoppingCart size={20} className="mr-2" />
               {product.stock === 0 ? 'Esgotado' : 'Adicionar ao Carrinho'}
             </Button>
-            <button className="w-14 h-14 rounded-lg border-2 border-gray-300 hover:border-black transition-colors flex items-center justify-center">
-              <Heart size={24} />
+            <button
+              onClick={async () => {
+                if (!isAuthenticated) {
+                  toast.error('Faça login para favoritar produtos')
+                  router.push('/login')
+                  return
+                }
+                try {
+                  const user = await supabase.auth.getUser()
+                  if (!user.data.user) return
+
+                  if (isFavorite) {
+                    // Remover dos favoritos
+                    const { error } = await supabase
+                      .from('favorites')
+                      .delete()
+                      .eq('product_id', product.id)
+                      .eq('user_id', user.data.user.id)
+
+                    if (error) throw error
+                    setIsFavorite(false)
+                    toast.success('Removido dos favoritos')
+                  } else {
+                    // Adicionar aos favoritos
+                    const { error } = await supabase
+                      .from('favorites')
+                      .insert({
+                        product_id: product.id,
+                        user_id: user.data.user.id,
+                      })
+
+                    if (error) throw error
+                    setIsFavorite(true)
+                    toast.success('Adicionado aos favoritos')
+                  }
+                } catch (error) {
+                  console.error('Erro ao favoritar:', error)
+                  toast.error('Erro ao favoritar produto')
+                }
+              }}
+              className={`w-14 h-14 rounded-lg border-2 transition-colors flex items-center justify-center ${
+                isFavorite
+                  ? 'border-red-500 bg-red-50 text-red-500'
+                  : 'border-gray-300 hover:border-black'
+              }`}
+              title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+            >
+              <Heart size={24} className={isFavorite ? 'fill-current' : ''} />
             </button>
-            <button className="w-14 h-14 rounded-lg border-2 border-gray-300 hover:border-black transition-colors flex items-center justify-center">
+            <button
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: product.name,
+                    text: product.short_description || product.description || '',
+                    url: window.location.href,
+                  }).catch(() => {})
+                } else {
+                  // Fallback: copiar para clipboard
+                  navigator.clipboard.writeText(window.location.href)
+                  toast.success('Link copiado para a área de transferência!')
+                }
+              }}
+              className="w-14 h-14 rounded-lg border-2 border-gray-300 hover:border-black transition-colors flex items-center justify-center"
+              title="Compartilhar produto"
+            >
               <Share2 size={24} />
             </button>
           </div>
@@ -285,20 +387,49 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           )}
 
           {/* Benefits */}
-          <div className="space-y-3 border-t pt-6">
-            <div className="flex items-center">
-              <Truck size={20} className="mr-3 flex-shrink-0" />
-              <span>Frete grátis para Uberlândia acima de R$ 200</span>
+          {product.benefits && (
+            <div className="space-y-3 border-t pt-6">
+              {product.benefits.free_shipping?.enabled && (
+                <div className="flex items-center">
+                  <Truck size={20} className="mr-3 flex-shrink-0" />
+                  <span>{product.benefits.free_shipping.text || 'Frete grátis para Uberlândia acima de R$ 200'}</span>
+                </div>
+              )}
+              {product.benefits.warranty?.enabled && (
+                <div className="flex items-center">
+                  <Shield size={20} className="mr-3 flex-shrink-0" />
+                  <span>{product.benefits.warranty.text || 'Garantia de 1 ano'}</span>
+                </div>
+              )}
+              {product.benefits.returns?.enabled && (
+                <div className="flex items-center">
+                  <RefreshCw size={20} className="mr-3 flex-shrink-0" />
+                  <span>{product.benefits.returns.text || 'Troca grátis em 7 dias'}</span>
+                </div>
+              )}
+              {product.benefits.gift?.enabled && (
+                <div className="flex items-center">
+                  <span className="text-xl mr-3 flex-shrink-0">🎁</span>
+                  <span>{product.benefits.gift.text || 'Brinde exclusivo incluído'}</span>
+                </div>
+              )}
             </div>
-            <div className="flex items-center">
-              <Shield size={20} className="mr-3 flex-shrink-0" />
-              <span>Garantia de 1 ano</span>
+          )}
+
+          {/* Specifications */}
+          {product.specifications && Array.isArray(product.specifications) && product.specifications.length > 0 && (
+            <div className="border-t pt-6 mt-6">
+              <h3 className="text-2xl font-bold mb-4">Especificações Técnicas</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {product.specifications.map((spec: any, index: number) => (
+                  <div key={index} className="flex gap-2">
+                    <span className="font-semibold text-gray-700">{spec.key}:</span>
+                    <span className="text-gray-600">{spec.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center">
-              <RefreshCw size={20} className="mr-3 flex-shrink-0" />
-              <span>Troca grátis em 7 dias</span>
-            </div>
-          </div>
+          )}
 
           {/* Description */}
           {product.description && (

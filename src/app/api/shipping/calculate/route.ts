@@ -143,16 +143,52 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json()
 
-    // Formatar resposta
-    const shippingOptions = data.map((option: any) => ({
-      id: option.id,
-      name: option.name,
-      price: option.price,
-      currency: option.currency || 'BRL',
-      delivery_time: option.delivery_time || option.delivery_range?.min || 0,
-      delivery_range: option.delivery_range,
-      company: option.company?.name || 'Desconhecida',
-    }))
+    // Verificar se o CEP é de Uberlândia (38400-000 até 38419-999)
+    const cepNum = parseInt(cep.replace(/\D/g, ''))
+    const isUberlandia = cepNum >= 38400000 && cepNum <= 38419999
+
+    // Se for Uberlândia, adicionar opção de entrega local fixa R$15
+    const shippingOptions: any[] = []
+    
+    if (isUberlandia) {
+      shippingOptions.push({
+        id: 'uberlandia-local',
+        name: 'Entrega Local Uberlândia',
+        price: 15.00,
+        currency: 'BRL',
+        delivery_time: 0.125, // 3 horas em dias (3/24)
+        delivery_range: { min: 0, max: 1 },
+        company: 'Smart Time Prime',
+        is_local: true,
+        description: 'Entrega em até 3 horas (pode ser mais rápido)',
+      })
+    }
+
+    // Adicionar opções do Melhor Envio (apenas as válidas)
+    if (Array.isArray(data)) {
+      data.forEach((option: any) => {
+        // Filtrar apenas opções válidas (com preço válido)
+        if (option.price && !isNaN(option.price) && option.price > 0) {
+          shippingOptions.push({
+            id: option.id || `me-${Date.now()}-${Math.random()}`,
+            name: option.name || 'Frete Padrão',
+            price: parseFloat(option.price),
+            currency: option.currency || 'BRL',
+            delivery_time: option.delivery_time || option.delivery_range?.min || 0,
+            delivery_range: option.delivery_range,
+            company: option.company?.name || 'Desconhecida',
+            is_local: false,
+          })
+        }
+      })
+    }
+
+    // Ordenar: local primeiro, depois por preço
+    shippingOptions.sort((a, b) => {
+      if (a.is_local) return -1
+      if (b.is_local) return 1
+      return a.price - b.price
+    })
 
     return NextResponse.json({ options: shippingOptions })
   } catch (error: any) {

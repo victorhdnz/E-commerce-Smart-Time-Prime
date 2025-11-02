@@ -18,6 +18,8 @@ export default function NovoProduct() {
   const supabase = createClient()
 
   const [loading, setLoading] = useState(false)
+  const [existingCategories, setExistingCategories] = useState<string[]>([])
+  const [showCategoryList, setShowCategoryList] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -29,12 +31,38 @@ export default function NovoProduct() {
     product_code: '',
     images: [] as string[],
     specifications: [] as { key: string; value: string }[],
+    benefits: {
+      free_shipping: { enabled: true, text: 'Frete grátis para Uberlândia acima de R$ 200' },
+      warranty: { enabled: true, text: 'Garantia de 1 ano' },
+      returns: { enabled: true, text: 'Troca grátis em 7 dias' },
+      gift: { enabled: false, text: '' },
+    },
     is_featured: false,
     is_active: true,
   })
 
   const [colors, setColors] = useState<{ name: string; hex: string; stock: number }[]>([])
   const [linkedGifts, setLinkedGifts] = useState<string[]>([])
+
+  // Carregar categorias existentes
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('category')
+          .not('category', 'is', null)
+
+        if (!error && data) {
+          const uniqueCategories = [...new Set(data.map((p: any) => p.category).filter(Boolean))] as string[]
+          setExistingCategories(uniqueCategories.sort())
+        }
+      } catch (error) {
+        console.error('Erro ao carregar categorias:', error)
+      }
+    }
+    loadCategories()
+  }, [])
 
   const handleAddImage = (url: string) => {
     setFormData(prev => ({
@@ -114,6 +142,8 @@ export default function NovoProduct() {
           slug: finalSlug,
           product_code: formData.product_code || null,
           images: formData.images.length > 0 ? formData.images : [],
+          specifications: formData.specifications.length > 0 ? formData.specifications : [],
+          benefits: formData.benefits,
           is_featured: formData.is_featured,
           is_active: formData.is_active,
         })
@@ -315,6 +345,193 @@ export default function NovoProduct() {
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Benefícios Editáveis */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold mb-6">Benefícios do Produto</h2>
+              
+              <div className="space-y-4">
+                {/* Frete Grátis */}
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 font-semibold">
+                      <input
+                        type="checkbox"
+                        checked={formData.benefits.free_shipping.enabled}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            benefits: {
+                              ...formData.benefits,
+                              free_shipping: {
+                                ...formData.benefits.free_shipping,
+                                enabled: e.target.checked,
+                              },
+                            },
+                          })
+                        }}
+                        className="w-4 h-4"
+                      />
+                      🚚 Frete Grátis
+                    </label>
+                  </div>
+                  {formData.benefits.free_shipping.enabled && (
+                    <Input
+                      value={formData.benefits.free_shipping.text}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          benefits: {
+                            ...formData.benefits,
+                            free_shipping: {
+                              ...formData.benefits.free_shipping,
+                              text: e.target.value,
+                            },
+                          },
+                        })
+                      }}
+                      placeholder="Ex: Frete grátis para Uberlândia acima de R$ 200"
+                      className="mt-2"
+                    />
+                  )}
+                </div>
+
+                {/* Garantia */}
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 font-semibold">
+                      <input
+                        type="checkbox"
+                        checked={formData.benefits.warranty.enabled}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            benefits: {
+                              ...formData.benefits,
+                              warranty: {
+                                ...formData.benefits.warranty,
+                                enabled: e.target.checked,
+                              },
+                            },
+                          })
+                        }}
+                        className="w-4 h-4"
+                      />
+                      🛡️ Garantia
+                    </label>
+                  </div>
+                  {formData.benefits.warranty.enabled && (
+                    <Input
+                      value={formData.benefits.warranty.text}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          benefits: {
+                            ...formData.benefits,
+                            warranty: {
+                              ...formData.benefits.warranty,
+                              text: e.target.value,
+                            },
+                          },
+                        })
+                      }}
+                      placeholder="Ex: Garantia de 1 ano"
+                      className="mt-2"
+                    />
+                  )}
+                </div>
+
+                {/* Troca */}
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 font-semibold">
+                      <input
+                        type="checkbox"
+                        checked={formData.benefits.returns.enabled}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            benefits: {
+                              ...formData.benefits,
+                              returns: {
+                                ...formData.benefits.returns,
+                                enabled: e.target.checked,
+                              },
+                            },
+                          })
+                        }}
+                        className="w-4 h-4"
+                      />
+                      🔄 Troca
+                    </label>
+                  </div>
+                  {formData.benefits.returns.enabled && (
+                    <Input
+                      value={formData.benefits.returns.text}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          benefits: {
+                            ...formData.benefits,
+                            returns: {
+                              ...formData.benefits.returns,
+                              text: e.target.value,
+                            },
+                          },
+                        })
+                      }}
+                      placeholder="Ex: Troca grátis em 7 dias"
+                      className="mt-2"
+                    />
+                  )}
+                </div>
+
+                {/* Brinde */}
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 font-semibold">
+                      <input
+                        type="checkbox"
+                        checked={formData.benefits.gift.enabled}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            benefits: {
+                              ...formData.benefits,
+                              gift: {
+                                ...formData.benefits.gift,
+                                enabled: e.target.checked,
+                              },
+                            },
+                          })
+                        }}
+                        className="w-4 h-4"
+                      />
+                      🎁 Brinde
+                    </label>
+                  </div>
+                  {formData.benefits.gift.enabled && (
+                    <Input
+                      value={formData.benefits.gift.text}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          benefits: {
+                            ...formData.benefits,
+                            gift: {
+                              ...formData.benefits.gift,
+                              text: e.target.value,
+                            },
+                          },
+                        })
+                      }}
+                      placeholder="Ex: Brinde exclusivo incluído"
+                      className="mt-2"
+                    />
+                  )}
+                </div>
               </div>
             </div>
 

@@ -18,6 +18,13 @@ export interface Product {
   length: number | null
   category: string | null
   tags: string[] | null
+  specifications?: Array<{ key: string; value: string }>
+  benefits?: {
+    free_shipping?: { enabled: boolean; text: string }
+    warranty?: { enabled: boolean; text: string }
+    returns?: { enabled: boolean; text: string }
+    gift?: { enabled: boolean; text: string }
+  }
   colors?: ProductColor[]
   gifts?: Product[]
   images?: string[]

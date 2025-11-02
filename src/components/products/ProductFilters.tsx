@@ -33,6 +33,7 @@ export const ProductFilters = ({ onFilterChange, categories }: ProductFiltersPro
     { value: 'name_asc', label: 'Nome A-Z' },
     { value: 'name_desc', label: 'Nome Z-A' },
     { value: 'newest', label: 'Mais Recentes' },
+    { value: 'favorites', label: 'Favoritos' },
   ]
 
   const priceRanges = [

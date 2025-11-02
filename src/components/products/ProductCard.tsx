@@ -8,6 +8,8 @@ import { ShoppingCart, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useCart } from '@/hooks/useCart'
 import toast from 'react-hot-toast'
+import { useUserLocation } from '@/hooks/useUserLocation'
+import { getProductPrice } from '@/lib/utils/price'
 
 interface ProductCardProps {
   product: Product
@@ -16,6 +18,7 @@ interface ProductCardProps {
 export const ProductCard = ({ product }: ProductCardProps) => {
   const mainImage = product.images?.[0] || product.colors?.[0]?.images[0]
   const { addItem } = useCart()
+  const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault() // Previne navegação do Link pai
@@ -104,8 +107,15 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <div className="flex items-center justify-between">
           <div>
             <span className="text-xl font-bold">
-              {formatCurrency(product.local_price)}
+              {needsAddress || locationLoading 
+                ? formatCurrency(product.national_price) 
+                : formatCurrency(getProductPrice(product, isUberlandia))}
             </span>
+            {!needsAddress && !locationLoading && (
+              <p className="text-xs text-gray-500">
+                {isUberlandia ? '💚 Local' : '🌐 Nacional'}
+              </p>
+            )}
           </div>
 
           <button

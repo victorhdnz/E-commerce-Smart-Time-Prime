@@ -890,7 +890,10 @@ export default function EditLandingPage() {
                 </label>
                 <VideoUploader
                   value={settings.showcase_video_url}
-                  onChange={(url) => setSettings({ ...settings, showcase_video_url: url })}
+                  onChange={(url) => {
+                    console.log('VideoUploader onChange:', url)
+                    setSettings((prev) => ({ ...prev, showcase_video_url: url }))
+                  }}
                   showMediaManager={false}
                 />
               </div>

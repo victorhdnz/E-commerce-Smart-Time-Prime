@@ -83,14 +83,7 @@ export function ShippingCalculator({
     // Formatar CEP (xxxxx-xxx)
     const formatted = value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')
     setCep(formatted)
-    
-    // Se CEP completo, calcular automaticamente após um pequeno delay
-    if (formatted.replace(/\D/g, '').length === 8) {
-      const timer = setTimeout(() => {
-        calculateShipping()
-      }, 500)
-      return () => clearTimeout(timer)
-    }
+    // Não calcular automaticamente - apenas quando clicar no botão
   }
 
   const handleSelectOption = (option: ShippingOption) => {
@@ -147,37 +140,52 @@ export function ShippingCalculator({
           <p className="text-sm font-medium text-gray-700">
             Opções de Entrega:
           </p>
-          {options.map((option) => (
-            <button
-              key={option.id}
-              onClick={() => handleSelectOption(option)}
-              className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
-                selected?.id === option.id
-                  ? 'border-black bg-gray-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Truck size={16} className="text-gray-600" />
-                    <span className="font-semibold">{option.name}</span>
+          <div className="max-h-96 overflow-y-auto space-y-2 pr-2">
+            {options
+              .filter(option => option.price && !isNaN(option.price) && option.price > 0)
+              .map((option) => (
+              <button
+                key={option.id}
+                onClick={() => handleSelectOption(option)}
+                className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
+                  selected?.id === option.id
+                    ? 'border-black bg-gray-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Truck size={16} className="text-gray-600" />
+                      <span className="font-semibold">{option.name}</span>
+                      {option.is_local && (
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                          Uberlândia
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-600">{option.company}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {option.is_local && option.description ? (
+                        <span className="font-semibold text-green-700">
+                          {option.description}
+                        </span>
+                      ) : option.delivery_range ? (
+                        `Entre ${option.delivery_range.min} e ${option.delivery_range.max} dias úteis`
+                      ) : (
+                        `Até ${option.delivery_time} dias úteis`
+                      )}
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-600">{option.company}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {option.delivery_range
-                      ? `Entre ${option.delivery_range.min} e ${option.delivery_range.max} dias úteis`
-                      : `Até ${option.delivery_time} dias úteis`}
-                  </p>
+                  <div className="text-right">
+                    <p className="font-bold text-lg">
+                      {formatCurrency(option.price || 0)}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-lg">
-                    {formatCurrency(option.price)}
-                  </p>
-                </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 

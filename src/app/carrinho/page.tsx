@@ -220,7 +220,7 @@ export default function CartPage() {
                     <span>Total</span>
                     <span>
                       {formatCurrency(
-                        getTotal() + (selectedShipping?.price || 0)
+                        (getTotal() || 0) + (selectedShipping?.price ? Number(selectedShipping.price) : 0)
                       )}
                     </span>
                   </div>
@@ -235,7 +235,7 @@ export default function CartPage() {
                 </Link>
 
                 <Link href="/produtos">
-                  <Button variant="outline" size="lg" className="w-full">
+                  <Button variant="outline" size="lg" className="w-full mt-3">
                     Continuar Comprando
                   </Button>
                 </Link>

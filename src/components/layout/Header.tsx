@@ -36,6 +36,10 @@ export const Header = () => {
       }
     }
     loadLogo()
+
+    // Recarregar logo a cada 5 segundos (para atualizar após mudanças no dashboard)
+    const interval = setInterval(loadLogo, 5000)
+    return () => clearInterval(interval)
   }, [])
 
 
@@ -90,14 +94,14 @@ export const Header = () => {
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 h-12">
+          <Link href="/" className="flex items-center gap-2 h-12">
             {siteSettings?.site_logo && (
               <Image
                 src={siteSettings.site_logo}
                 alt="Smart Time Prime"
-                width={48}
-                height={48}
-                className="h-12 w-auto object-contain"
+                width={24}
+                height={24}
+                className="h-6 w-auto object-contain"
                 priority
               />
             )}

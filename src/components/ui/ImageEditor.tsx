@@ -140,26 +140,26 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-white rounded-lg w-full max-w-4xl h-[95vh] sm:h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <div>
-            <h2 className="text-xl font-semibold">Editar e Recortar Imagem</h2>
-            <p className="text-xs text-gray-500 mt-1">
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b flex-shrink-0">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg sm:text-xl font-semibold">Editar e Recortar Imagem</h2>
+            <p className="text-xs text-gray-500 mt-1 hidden sm:block">
               📐 Arraste a imagem para posicionar • Ajuste o zoom e rotação • Dimensão final: <strong>1080 x 1080px</strong>
             </p>
           </div>
           <button
             onClick={onCancel}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 rounded-lg flex-shrink-0 ml-2"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Editor Area com React Easy Crop */}
-        <div className="flex-1 relative bg-gray-900 min-h-[500px] max-h-[70vh] w-full" style={{ height: '500px' }}>
+        <div className="flex-1 relative bg-gray-900 w-full overflow-hidden" style={{ minHeight: '250px' }}>
           {loading ? (
             <div className="flex items-center justify-center w-full h-full text-white">
               <p>Carregando imagem...</p>
@@ -203,11 +203,11 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
         </div>
 
         {/* Controls */}
-        <div className="border-t p-4 bg-white">
-          <div className="space-y-4">
+        <div className="border-t p-3 sm:p-4 bg-white flex-shrink-0 overflow-y-auto">
+          <div className="space-y-3 sm:space-y-4">
             {/* Zoom Control */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                 Zoom: {Math.round(zoom * 100)}%
               </label>
               <input
@@ -222,17 +222,18 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
             </div>
 
             {/* Rotation Controls */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setRotation((prev) => prev - 90)}
                 title="Rotacionar Esquerda"
+                className="text-xs sm:text-sm"
               >
-                <RotateCcw size={18} className="mr-2" />
-                -90°
+                <RotateCcw size={16} className="sm:mr-2" />
+                <span className="hidden sm:inline">-90°</span>
               </Button>
-              <div className="flex-1 text-center text-sm text-gray-600">
+              <div className="flex-1 text-center text-xs sm:text-sm text-gray-600">
                 Rotação: {rotation}°
               </div>
               <Button
@@ -240,19 +241,20 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
                 size="sm"
                 onClick={() => setRotation((prev) => prev + 90)}
                 title="Rotacionar Direita"
+                className="text-xs sm:text-sm"
               >
-                <RotateCw size={18} className="mr-2" />
-                +90°
+                <RotateCw size={16} className="sm:mr-2" />
+                <span className="hidden sm:inline">+90°</span>
               </Button>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2">
-              <Button variant="outline" onClick={onCancel}>
+            <div className="flex items-center justify-end gap-2 pt-2 pb-2 bg-white border-t sticky bottom-0 z-10">
+              <Button variant="outline" onClick={onCancel} size="sm" className="text-xs sm:text-sm">
                 Cancelar
               </Button>
-              <Button onClick={handleSave}>
-                <Check size={18} className="mr-2" />
+              <Button onClick={handleSave} size="sm" className="text-xs sm:text-sm">
+                <Check size={16} className="sm:mr-2" />
                 Salvar e Upload
               </Button>
             </div>

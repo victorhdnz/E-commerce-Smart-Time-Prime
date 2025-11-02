@@ -81,7 +81,14 @@ export default function EditProductPage({ params }: EditProductPageProps) {
           is_active: data.is_active ?? true,
           is_featured: data.is_featured ?? false,
           images: data.images || [],
-          colors: data.colors || []
+          colors: data.colors || [],
+          benefits: (data as any).benefits || {
+            free_shipping: { enabled: true, text: 'Frete grátis para Uberlândia acima de R$ 200' },
+            warranty: { enabled: true, text: 'Garantia de 1 ano' },
+            returns: { enabled: true, text: 'Troca grátis em 7 dias' },
+            gift: { enabled: false, text: '' },
+          },
+          specifications: (data as any).specifications || []
         })
       }
     } catch (error) {
@@ -112,6 +119,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         is_active: formData.is_active,
         is_featured: formData.is_featured,
         images: formData.images,
+        benefits: formData.benefits,
+        specifications: formData.specifications,
         updated_at: new Date().toISOString()
       }
 

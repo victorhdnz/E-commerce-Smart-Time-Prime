@@ -7,6 +7,7 @@ import { ProductCard } from '@/components/products/ProductCard'
 import { ProductFilters } from '@/components/products/ProductFilters'
 import { createClient } from '@/lib/supabase/client'
 import { Product } from '@/types'
+import { useAuth } from '@/hooks/useAuth'
 
 interface FilterState {
   categories: string[]
@@ -18,10 +19,12 @@ interface FilterState {
 export default function ProductsPage() {
   console.log('🎯 ProductsPage renderizado!')
   
+  const { isAuthenticated } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [categories, setCategories] = useState<string[]>([])
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([])
 
   const loadProducts = async () => {
     console.log('🚀 loadProducts executado!')
@@ -53,6 +56,26 @@ export default function ProductsPage() {
       const uniqueCategories = [...new Set(productsData.map((p: any) => p.category).filter(Boolean))] as string[]
       console.log('🏷️ Categorias encontradas:', uniqueCategories)
       setCategories(uniqueCategories)
+
+      // Carregar favoritos do usuário se autenticado
+      if (isAuthenticated) {
+        try {
+          const supabase = createClient()
+          const user = await supabase.auth.getUser()
+          if (user.data.user) {
+            const { data: favorites } = await supabase
+              .from('favorites')
+              .select('product_id')
+              .eq('user_id', user.data.user.id)
+
+            if (favorites) {
+              setFavoriteIds(favorites.map((f: any) => f.product_id))
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao carregar favoritos:', error)
+        }
+      }
 
     } catch (error) {
       console.error('❌ Erro na requisição:', error)
@@ -106,6 +129,13 @@ export default function ProductsPage() {
       case 'newest':
         filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         break
+      case 'favorites':
+        if (!isAuthenticated || favoriteIds.length === 0) {
+          filtered = []
+          break
+        }
+        filtered = filtered.filter((p) => favoriteIds.includes(p.id))
+        break
       case 'featured':
       default:
         filtered.sort((a, b) => {
@@ -122,7 +152,7 @@ export default function ProductsPage() {
   useEffect(() => {
     console.log('🚀 useEffect executado!')
     loadProducts()
-  }, [])
+  }, [isAuthenticated])
 
   if (loading) {
     return <PageLoadingSkeleton />

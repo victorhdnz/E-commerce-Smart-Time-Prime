@@ -25,6 +25,11 @@ export function VideoUploader({
   const [preview, setPreview] = useState<string | null>(value || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Atualizar preview quando value mudar externamente
+  useEffect(() => {
+    setPreview(value || null)
+  }, [value])
+
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -61,9 +66,14 @@ export function VideoUploader({
       }
 
       // Usar a URL do Cloudinary
-      setPreview(data.url)
-      onChange(data.url)
-      toast.success('Vídeo carregado com sucesso!')
+      const videoUrl = data.url || data.secure_url
+      if (videoUrl) {
+        setPreview(videoUrl)
+        onChange(videoUrl)
+        toast.success('Vídeo carregado com sucesso!')
+      } else {
+        throw new Error('URL do vídeo não retornada')
+      }
     } catch (error: any) {
       console.error('Erro no upload:', error)
       toast.error(error.message || 'Erro ao fazer upload do vídeo')
