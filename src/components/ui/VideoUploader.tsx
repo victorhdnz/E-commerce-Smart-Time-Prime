@@ -40,7 +40,7 @@ export function VideoUploader({
       return
     }
 
-    // Validar tamanho (máximo 100MB para upload direto)
+    // Validar tamanho (máximo 100MB)
     if (file.size > 100 * 1024 * 1024) {
       toast.error('O vídeo deve ter no máximo 100MB')
       return
@@ -49,55 +49,25 @@ export function VideoUploader({
     setUploading(true)
     
     try {
-      // Obter assinatura de upload do servidor
-      const signatureResponse = await fetch('/api/upload/signature', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          folder: 'videos',
-          resourceType: 'video',
-        }),
-      })
-
-      if (!signatureResponse.ok) {
-        const errorData = await signatureResponse.json()
-        throw new Error(errorData.error || 'Erro ao gerar assinatura de upload')
-      }
-
-      const { signature, timestamp, cloudName, apiKey } = await signatureResponse.json()
-
-      // Fazer upload direto para Cloudinary (sem passar pelo servidor Next.js)
+      // Fazer upload via Supabase Storage
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('api_key', apiKey)
-      formData.append('timestamp', timestamp.toString())
-      formData.append('signature', signature)
-      formData.append('folder', 'videos')
-      formData.append('resource_type', 'video')
-      // Transformações podem ser aplicadas via URL quando necessário
-      // Removendo eager transformations para evitar erro de formato
 
-      const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
-      
-      const uploadResponse = await fetch(uploadUrl, {
+      const uploadResponse = await fetch('/api/upload/video', {
         method: 'POST',
         body: formData,
       })
 
       if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text()
-        console.error('Erro no upload do Cloudinary:', errorText)
-        throw new Error(`Erro no upload: ${errorText.substring(0, 200)}`)
+        const errorData = await uploadResponse.json()
+        throw new Error(errorData.error || 'Erro ao fazer upload do vídeo')
       }
 
       const uploadData = await uploadResponse.json()
 
-      if (uploadData.secure_url || uploadData.url) {
-        const videoUrl = uploadData.secure_url || uploadData.url
-        setPreview(videoUrl)
-        onChange(videoUrl)
+      if (uploadData.success && uploadData.url) {
+        setPreview(uploadData.url)
+        onChange(uploadData.url)
         toast.success('Vídeo carregado com sucesso!')
       } else {
         throw new Error('URL do vídeo não retornada')
