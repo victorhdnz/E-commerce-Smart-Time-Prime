@@ -416,8 +416,13 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             <div className="mb-6">
               <h3 className="font-semibold mb-3">
                 Cor: {selectedColor?.color_name}
+                {selectedColor?.stock !== undefined && (
+                  <span className="ml-2 text-sm font-normal text-gray-600">
+                    ({selectedColor.stock} {selectedColor.stock === 1 ? 'unidade' : 'unidades'} em estoque)
+                  </span>
+                )}
               </h3>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3 mb-3">
                 {product.colors.map((color) => (
                   <button
                     key={color.id}
@@ -425,16 +430,27 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                       setSelectedColor(color)
                       setSelectedImage(0)
                     }}
-                    className={`w-12 h-12 rounded-full border-4 transition-all ${
+                    className={`relative w-12 h-12 rounded-full border-4 transition-all ${
                       selectedColor?.id === color.id
                         ? 'border-black scale-110'
                         : 'border-gray-300 hover:border-gray-400'
                     }`}
                     style={{ backgroundColor: color.color_hex }}
-                    title={color.color_name}
-                  />
+                    title={`${color.color_name}${color.stock !== undefined ? ` - ${color.stock} ${color.stock === 1 ? 'unidade' : 'unidades'}` : ''}`}
+                  >
+                    {color.stock !== undefined && color.stock < 5 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        !
+                      </span>
+                    )}
+                  </button>
                 ))}
               </div>
+              {selectedColor?.stock !== undefined && selectedColor.stock < 5 && (
+                <p className="text-sm text-orange-600">
+                  ⚠️ Apenas {selectedColor.stock} {selectedColor.stock === 1 ? 'unidade disponível' : 'unidades disponíveis'} nesta cor!
+                </p>
+              )}
             </div>
           )}
 

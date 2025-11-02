@@ -58,8 +58,22 @@ export function VideoUploader({
         body: formData,
       })
 
+      // Verificar se a resposta é JSON antes de tentar fazer parse
+      const contentType = uploadResponse.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        const textResponse = await uploadResponse.text()
+        console.error('Resposta não é JSON:', textResponse.substring(0, 200))
+        throw new Error('Resposta inválida do servidor. Verifique o console para mais detalhes.')
+      }
+
       if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json()
+        let errorData
+        try {
+          errorData = await uploadResponse.json()
+        } catch (e) {
+          const textResponse = await uploadResponse.text()
+          throw new Error(`Erro ${uploadResponse.status}: ${textResponse.substring(0, 200)}`)
+        }
         throw new Error(errorData.error || 'Erro ao fazer upload do vídeo')
       }
 

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/client'
+import { createServerClient } from '@/lib/supabase/server'
 
 export async function GET() {
   try {
-    const supabase = createClient()
+    const supabase = createServerClient()
     
     // Buscar todos os produtos ativos (sem limite)
     // Sem cache para garantir produtos atualizados
@@ -48,6 +48,12 @@ export async function GET() {
       count: normalizedProducts?.length || 0,
       products: normalizedProducts || [],
       message: normalizedProducts?.length ? 'Produtos encontrados' : 'Nenhum produto ativo encontrado'
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
     })
   } catch (error: any) {
     console.error('Erro na API de produtos:', error)

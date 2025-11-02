@@ -153,6 +153,34 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
       if (error) throw error
 
+      // Atualizar cores do produto
+      if (formData.colors.length > 0) {
+        // Deletar cores antigas
+        await supabase
+          .from('product_colors')
+          .delete()
+          .eq('product_id', params.id)
+
+        // Inserir cores atualizadas
+        const colorUpdates = formData.colors.map(color => ({
+          product_id: params.id,
+          color_name: color.color_name,
+          color_hex: color.color_hex,
+          stock: color.stock || 0,
+          is_active: color.is_active !== undefined ? color.is_active : true,
+          images: color.images || [],
+        }))
+
+        const { error: colorError } = await supabase
+          .from('product_colors')
+          .insert(colorUpdates)
+
+        if (colorError) {
+          console.error('Erro ao atualizar cores:', colorError)
+          toast.error('Produto atualizado, mas houve erro ao atualizar as cores')
+        }
+      }
+
       toast.success('Produto atualizado com sucesso!')
       router.push('/dashboard/produtos')
     } catch (error) {
@@ -604,18 +632,55 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
               <div className="space-y-3">
                 {formData.colors.map((color, index) => (
-                  <div key={color.id} className="flex items-center gap-4 p-3 border rounded-lg">
-                    <div
-                      className="w-8 h-8 rounded-full border-2 border-gray-300"
-                      style={{ backgroundColor: color.color_hex }}
+                  <div key={color.id} className="p-4 border rounded-lg space-y-3">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="w-8 h-8 rounded-full border-2 border-gray-300 flex-shrink-0"
+                        style={{ backgroundColor: color.color_hex }}
+                      />
+                      <Input
+                        label="Nome da Cor"
+                        value={color.color_name}
+                        onChange={(e) => {
+                          const newColors = [...formData.colors]
+                          newColors[index] = { ...newColors[index], color_name: e.target.value }
+                          setFormData({ ...formData, colors: newColors })
+                        }}
+                        placeholder="Nome da cor"
+                        className="flex-1"
+                      />
+                      <div className="flex-shrink-0">
+                        <label className="block text-sm font-medium mb-2">Cor</label>
+                        <input
+                          type="color"
+                          value={color.color_hex}
+                          onChange={(e) => {
+                            const newColors = [...formData.colors]
+                            newColors[index] = { ...newColors[index], color_hex: e.target.value }
+                            setFormData({ ...formData, colors: newColors })
+                          }}
+                          className="h-10 w-16 rounded border border-gray-300 cursor-pointer"
+                        />
+                      </div>
+                      <button
+                        onClick={() => handleColorRemove(index)}
+                        className="p-2 text-red-500 hover:text-red-700 self-end"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                    <Input
+                      label="Estoque desta Cor"
+                      type="number"
+                      value={color.stock?.toString() || '0'}
+                      onChange={(e) => {
+                        const newColors = [...formData.colors]
+                        newColors[index] = { ...newColors[index], stock: parseInt(e.target.value) || 0 }
+                        setFormData({ ...formData, colors: newColors })
+                      }}
+                      placeholder="0"
+                      className="max-w-xs"
                     />
-                    <span className="flex-1 font-medium">{color.color_name}</span>
-                    <button
-                      onClick={() => handleColorRemove(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 size={16} />
-                    </button>
                   </div>
                 ))}
                 

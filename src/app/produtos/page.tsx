@@ -36,7 +36,16 @@ export default function ProductsPage() {
       // Adicionar timestamp para evitar cache do navegador
       const response = await fetch(`/api/products?t=${Date.now()}`, {
         cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+        },
       })
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao carregar produtos: ${response.status}`)
+      }
+      
       const result = await response.json()
       
       console.log('📊 Resultado da API:', { 

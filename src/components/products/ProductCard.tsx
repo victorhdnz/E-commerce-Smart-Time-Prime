@@ -263,15 +263,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </div>,
           document.body
         )}
-
-        {/* Stock Status */}
-        {product.stock === 0 ? (
-          <p className="text-sm text-red-600 mt-2">Esgotado</p>
-        ) : product.stock < 5 ? (
-          <p className="text-sm text-orange-600 mt-2">
-            Apenas {product.stock} em estoque
-          </p>
-        ) : null}
       </div>
     </Card>
   )

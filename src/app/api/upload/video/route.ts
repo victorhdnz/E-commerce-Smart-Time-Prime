@@ -119,12 +119,22 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     console.error('Erro no upload de vídeo:', error)
+    
+    // Garantir que sempre retornamos JSON, mesmo em caso de erro não tratado
+    const errorMessage = error?.message || 'Erro ao fazer upload do vídeo'
+    
     return NextResponse.json(
       { 
-        error: error.message || 'Erro ao fazer upload do vídeo',
+        success: false,
+        error: errorMessage,
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }
     )
   }
 }
