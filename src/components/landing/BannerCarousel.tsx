@@ -18,15 +18,31 @@ export const BannerCarousel = ({
   const [showModal, setShowModal] = useState(false)
   const [modalAutoPlay, setModalAutoPlay] = useState(true)
 
+  // Resetar índice quando as imagens mudarem (antes do auto-play)
+  useEffect(() => {
+    if (banners.length > 0 && currentIndex >= banners.length) {
+      setCurrentIndex(0)
+    }
+  }, [banners.length, currentIndex])
+
   // Auto-play no banner principal (fora do modal)
   useEffect(() => {
-    if (banners.length <= 1 || showModal) return
+    // Só inicia auto-play se houver mais de 1 banner e modal estiver fechado
+    if (banners.length <= 1 || showModal) {
+      return
+    }
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % banners.length)
+      setCurrentIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % banners.length
+        return nextIndex
+      })
     }, autoPlayInterval)
 
-    return () => clearInterval(interval)
+    // Limpar intervalo quando componente desmontar ou dependências mudarem
+    return () => {
+      clearInterval(interval)
+    }
   }, [banners.length, autoPlayInterval, showModal])
 
   // Auto-play no modal
@@ -39,11 +55,6 @@ export const BannerCarousel = ({
 
     return () => clearInterval(interval)
   }, [showModal, banners.length, autoPlayInterval, modalAutoPlay])
-
-  // Resetar índice quando as imagens mudarem
-  useEffect(() => {
-    setCurrentIndex(0)
-  }, [banners])
 
   const nextBanner = () => {
     setModalAutoPlay(false) // Pausar auto-play quando usuário navegar manualmente

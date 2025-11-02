@@ -22,7 +22,6 @@ interface LandingSettings {
   hero_subtitle: string
   hero_badge_text: string
   hero_cta_text: string
-  hero_cta_link: string
   hero_bg_color: string
   hero_text_color: string
   hero_images: string[]
@@ -92,6 +91,18 @@ interface LandingSettings {
   social_proof_google_icon: boolean
   social_proof_allow_photos: boolean
   social_proof_testimonial_count: string
+  social_proof_reviews: Array<{
+    id: string
+    customer_name: string
+    comment: string
+    rating: number
+    photo?: string
+    google_review_link?: string
+  }>
+  
+  // WhatsApp Fixo (Botão Flutuante)
+  whatsapp_float_number: string
+  whatsapp_float_message: string
   
   // Contact Section
   contact_title: string
@@ -124,7 +135,6 @@ export default function EditLandingPage() {
     hero_subtitle: '',
     hero_badge_text: '',
     hero_cta_text: '',
-    hero_cta_link: '',
     hero_bg_color: '#000000',
     hero_text_color: '#FFFFFF',
     hero_images: [],
@@ -198,6 +208,35 @@ export default function EditLandingPage() {
     social_proof_google_icon: true,
     social_proof_allow_photos: true,
     social_proof_testimonial_count: '💬 Mais de 1.000 smartwatches entregues em Uberlândia.',
+    social_proof_reviews: [
+      {
+        id: '1',
+        customer_name: 'Maria C., Planalto',
+        comment: 'Chegou em menos de 1 dia! Atendimento excelente.',
+        rating: 5,
+        photo: '',
+        google_review_link: '',
+      },
+      {
+        id: '2',
+        customer_name: 'Juliana R., Santa Mônica',
+        comment: 'Comprei pro meu marido, ele amou.',
+        rating: 5,
+        photo: '',
+        google_review_link: '',
+      },
+      {
+        id: '3',
+        customer_name: 'Carlos S., Tibery',
+        comment: 'Produto top e suporte pelo WhatsApp super rápido.',
+        rating: 5,
+        photo: '',
+        google_review_link: '',
+      },
+    ],
+    // WhatsApp Fixo
+    whatsapp_float_number: '5534984136291',
+    whatsapp_float_message: 'Olá! Gostaria de saber mais sobre os produtos.',
     // Contact
     contact_title: 'Entre em Contato',
     contact_description: 'Estamos aqui para ajudar você!',
@@ -244,7 +283,6 @@ export default function EditLandingPage() {
           hero_subtitle: savedSettings.hero_subtitle || '',
           hero_badge_text: savedSettings.hero_badge_text || '',
           hero_cta_text: savedSettings.hero_cta_text || '',
-          hero_cta_link: savedSettings.hero_cta_link || '',
           hero_bg_color: savedSettings.hero_bg_color || '#000000',
           hero_text_color: savedSettings.hero_text_color || '#FFFFFF',
           hero_images: Array.isArray(savedSettings.hero_images) ? savedSettings.hero_images : [],
@@ -342,6 +380,37 @@ export default function EditLandingPage() {
           social_proof_google_icon: savedSettings.social_proof_google_icon !== undefined ? savedSettings.social_proof_google_icon : true,
           social_proof_allow_photos: savedSettings.social_proof_allow_photos !== undefined ? savedSettings.social_proof_allow_photos : true,
           social_proof_testimonial_count: savedSettings.social_proof_testimonial_count || '💬 Mais de 1.000 smartwatches entregues em Uberlândia.',
+          social_proof_reviews: Array.isArray(savedSettings.social_proof_reviews) && savedSettings.social_proof_reviews.length > 0
+            ? savedSettings.social_proof_reviews
+            : [
+                {
+                  id: '1',
+                  customer_name: 'Maria C., Planalto',
+                  comment: 'Chegou em menos de 1 dia! Atendimento excelente.',
+                  rating: 5,
+                  photo: '',
+                  google_review_link: '',
+                },
+                {
+                  id: '2',
+                  customer_name: 'Juliana R., Santa Mônica',
+                  comment: 'Comprei pro meu marido, ele amou.',
+                  rating: 5,
+                  photo: '',
+                  google_review_link: '',
+                },
+                {
+                  id: '3',
+                  customer_name: 'Carlos S., Tibery',
+                  comment: 'Produto top e suporte pelo WhatsApp super rápido.',
+                  rating: 5,
+                  photo: '',
+                  google_review_link: '',
+                },
+              ],
+          // WhatsApp Fixo
+          whatsapp_float_number: savedSettings.whatsapp_float_number || '5534984136291',
+          whatsapp_float_message: savedSettings.whatsapp_float_message || 'Olá! Gostaria de saber mais sobre os produtos.',
           // Contact
           contact_title: savedSettings.contact_title || 'Entre em Contato',
           contact_description: savedSettings.contact_description || 'Estamos aqui para ajudar você!',
@@ -635,15 +704,6 @@ export default function EditLandingPage() {
                 placeholder="💬 QUERO MEU SÉRIE 11 AGORA!"
               />
 
-              <Input
-                label="Link do Botão (WhatsApp ou grupo)"
-                value={settings.hero_cta_link}
-                onChange={(e) =>
-                  setSettings({ ...settings, hero_cta_link: e.target.value })
-                }
-                placeholder="https://wa.me/5534984136291 ou link do grupo"
-              />
-
               {/* Banners Carrossel (1920x650) */}
               <div className="pt-4 border-t">
                 <label className="block text-sm font-medium mb-2">
@@ -663,23 +723,6 @@ export default function EditLandingPage() {
                   aspectRatio={1920/650}
                   targetSize={{ width: 1920, height: 650 }}
                   recommendedDimensions="Banners: 1920 x 650px (Formato Horizontal/Banner)"
-                />
-              </div>
-
-              {/* Hero Images */}
-              <div className="pt-4 border-t">
-                <label className="block text-sm font-medium mb-2">
-                  Imagens de Fundo
-                </label>
-                <p className="text-xs text-gray-500 mb-4">
-                  📸 Faça upload das imagens diretamente (Cloudinary). Recomendado: 1080x1080px
-                </p>
-                <ArrayImageManager
-                  value={settings.hero_images || []}
-                  onChange={(images: string[]) => setSettings({ ...settings, hero_images: images })}
-                  label="Imagens de Fundo"
-                  maxImages={4}
-                  placeholder="Clique para fazer upload de uma imagem"
                 />
               </div>
             </div>
@@ -1133,6 +1176,42 @@ export default function EditLandingPage() {
             </div>
           </motion.div>
 
+          {/* WhatsApp Fixo (Botão Flutuante) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h2 className="text-2xl font-bold mb-6">💬 WhatsApp Fixo (Botão Flutuante)</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Configure o botão flutuante do WhatsApp que aparece fixo na tela.
+            </p>
+            
+            <div className="space-y-4">
+              <Input
+                label="Número do WhatsApp"
+                value={settings.whatsapp_float_number}
+                onChange={(e) =>
+                  setSettings({ ...settings, whatsapp_float_number: e.target.value })
+                }
+                placeholder="5534984136291"
+              />
+              <p className="text-xs text-gray-500 -mt-2">
+                Formato: 5534984136291 (sem espaços, com código do país e DDD)
+              </p>
+
+              <Input
+                label="Mensagem Padrão"
+                value={settings.whatsapp_float_message}
+                onChange={(e) =>
+                  setSettings({ ...settings, whatsapp_float_message: e.target.value })
+                }
+                placeholder="Olá! Gostaria de saber mais sobre os produtos."
+              />
+            </div>
+          </motion.div>
+
           {/* Social Proof Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1140,7 +1219,7 @@ export default function EditLandingPage() {
             transition={{ delay: 0.8 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Avaliações (Social Proof)</h2>
+            <h2 className="text-2xl font-bold mb-6">⭐ Avaliações (Social Proof)</h2>
             
             <div className="space-y-4">
               <Input
@@ -1186,6 +1265,133 @@ export default function EditLandingPage() {
                 }
                 placeholder="💬 Mais de 1.000 smartwatches entregues em Uberlândia."
               />
+
+              {/* Lista de Avaliações */}
+              <div className="pt-4 border-t">
+                <div className="flex items-center justify-between mb-4">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Avaliações dos Clientes
+                  </label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newReview = {
+                        id: Date.now().toString(),
+                        customer_name: '',
+                        comment: '',
+                        rating: 5,
+                        photo: '',
+                        google_review_link: '',
+                      }
+                      setSettings({
+                        ...settings,
+                        social_proof_reviews: [...(settings.social_proof_reviews || []), newReview]
+                      })
+                    }}
+                  >
+                    <Plus size={16} className="mr-2" />
+                    Adicionar Avaliação
+                  </Button>
+                </div>
+
+                <div className="space-y-4">
+                  {(settings.social_proof_reviews || []).map((review, index) => (
+                    <div key={review.id} className="border rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-gray-700">
+                          Avaliação {index + 1}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const newReviews = settings.social_proof_reviews?.filter((_, i) => i !== index) || []
+                            setSettings({ ...settings, social_proof_reviews: newReviews })
+                          }}
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Input
+                          label="Nome do Cliente"
+                          value={review.customer_name}
+                          onChange={(e) => {
+                            const newReviews = [...(settings.social_proof_reviews || [])]
+                            newReviews[index].customer_name = e.target.value
+                            setSettings({ ...settings, social_proof_reviews: newReviews })
+                          }}
+                          placeholder="Maria C., Planalto"
+                        />
+
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Avaliação (1-5)</label>
+                          <select
+                            value={review.rating}
+                            onChange={(e) => {
+                              const newReviews = [...(settings.social_proof_reviews || [])]
+                              newReviews[index].rating = parseInt(e.target.value)
+                              setSettings({ ...settings, social_proof_reviews: newReviews })
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                          >
+                            <option value={5}>5 ⭐⭐⭐⭐⭐</option>
+                            <option value={4}>4 ⭐⭐⭐⭐</option>
+                            <option value={3}>3 ⭐⭐⭐</option>
+                            <option value={2}>2 ⭐⭐</option>
+                            <option value={1}>1 ⭐</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium mb-2">Comentário</label>
+                        <textarea
+                          value={review.comment}
+                          onChange={(e) => {
+                            const newReviews = [...(settings.social_proof_reviews || [])]
+                            newReviews[index].comment = e.target.value
+                            setSettings({ ...settings, social_proof_reviews: newReviews })
+                          }}
+                          placeholder="Chegou em menos de 1 dia! Atendimento excelente."
+                          rows={3}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Foto do Cliente (opcional)</label>
+                          <ImageUploader
+                            value={review.photo || ''}
+                            onChange={(url) => {
+                              const newReviews = [...(settings.social_proof_reviews || [])]
+                              newReviews[index].photo = url
+                              setSettings({ ...settings, social_proof_reviews: newReviews })
+                            }}
+                            placeholder="Clique para fazer upload da foto"
+                          />
+                        </div>
+
+                        <Input
+                          label="Link da Avaliação no Google (opcional)"
+                          value={review.google_review_link || ''}
+                          onChange={(e) => {
+                            const newReviews = [...(settings.social_proof_reviews || [])]
+                            newReviews[index].google_review_link = e.target.value
+                            setSettings({ ...settings, social_proof_reviews: newReviews })
+                          }}
+                          placeholder="https://g.page/r/..."
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </motion.div>
 

@@ -9,6 +9,7 @@ import { ExitPopup } from '@/components/landing/ExitPopup'
 import { ValuePackage } from '@/components/landing/ValuePackage'
 import { StorySection } from '@/components/landing/StorySection'
 import { AboutUsSection } from '@/components/landing/AboutUsSection'
+import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
 import { createServerClient } from '@/lib/supabase/server'
 
 export const revalidate = 60 // Revalidar a cada 60 segundos
@@ -196,10 +197,35 @@ export default async function Home() {
     ? settings.value_package_items
     : []
 
+  // Converter avaliações do dashboard para o formato Review
+  const dashboardReviews = Array.isArray(settings.social_proof_reviews) && settings.social_proof_reviews.length > 0
+    ? settings.social_proof_reviews.map((r: any) => ({
+        id: r.id || Date.now().toString(),
+        customer_name: r.customer_name || '',
+        comment: r.comment || '',
+        rating: r.rating || 5,
+        product_id: '',
+        user_id: null,
+        is_approved: true,
+        created_at: new Date().toISOString(),
+        photo: r.photo || '',
+        google_review_link: r.google_review_link || '',
+      }))
+    : []
+
+  // Usar avaliações do dashboard se existirem, senão usar reviews do banco
+  const reviewsToUse = dashboardReviews.length > 0 ? dashboardReviews : (reviews || [])
+
   return (
     <div>
       {/* Auth Redirect Handler */}
       <AuthRedirect />
+      
+      {/* Botão Fixo do WhatsApp */}
+      <WhatsAppFloat 
+        phoneNumber={settings.whatsapp_float_number || '5534984136291'}
+        message={settings.whatsapp_float_message || 'Olá! Gostaria de saber mais sobre os produtos.'}
+      />
       
       {/* 1. Fixed Timer + Exit Popup (Elementos Persistentes) */}
       {timerEnabled && timerEndDate && (
@@ -225,7 +251,6 @@ export default async function Home() {
         subtitle={settings.hero_subtitle || '🚨 A BLACK FRIDAY CHEGOU!\nSmartwatch Série 11 com até 50% OFF + 4 BRINDES EXCLUSIVOS\n📦 Entrega em até 24h direto do Shopping Planalto – Uberlândia/MG'}
         badgeText={settings.hero_badge_text}
         ctaText={settings.hero_cta_text || '💬 QUERO MEU SÉRIE 11 AGORA!'}
-        ctaLink={settings.hero_cta_link}
         backgroundColor={settings.hero_bg_color || '#000000'}
         textColor={settings.hero_text_color || '#FFFFFF'}
         heroImages={heroImages}
@@ -257,7 +282,7 @@ export default async function Home() {
 
       {/* 5. Customer Reviews (Avaliações de Clientes) */}
       <SocialProof
-        reviews={reviews as any || []}
+        reviews={reviewsToUse as any}
         title={settings.social_proof_title}
         googleIcon={settings.social_proof_google_icon !== undefined ? settings.social_proof_google_icon : true}
         allowPhotos={settings.social_proof_allow_photos !== undefined ? settings.social_proof_allow_photos : true}
