@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react'
 import { Upload, X, Video as VideoIcon, Play } from 'lucide-react'
 import { Button } from './Button'
 import { MediaManager } from '@/components/dashboard/MediaManager'
+import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/hooks/useAuth'
 import toast from 'react-hot-toast'
 
 interface VideoUploaderProps {
@@ -22,8 +24,11 @@ export function VideoUploader({
   showMediaManager = true
 }: VideoUploaderProps) {
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [preview, setPreview] = useState<string | null>(value || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const supabase = createClient()
+  const { isAuthenticated, isEditor } = useAuth()
 
   // Atualizar preview quando value mudar externamente
   useEffect(() => {
@@ -46,51 +51,101 @@ export function VideoUploader({
       return
     }
 
+    // Verificar autenticação e permissões
+    if (!isAuthenticated) {
+      toast.error('Faça login para fazer upload de vídeos')
+      return
+    }
+
+    if (!isEditor) {
+      toast.error('Você não tem permissão para fazer upload de vídeos')
+      return
+    }
+
     setUploading(true)
+    setUploadProgress(0)
     
     try {
-      // Fazer upload via Supabase Storage
-      const formData = new FormData()
-      formData.append('file', file)
+      // Gerar nome único para o arquivo (sanitizado)
+      const sanitizedName = file.name
+        .replace(/[^a-zA-Z0-9.-]/g, '_')
+        .replace(/\s+/g, '_')
+        .toLowerCase()
+      
+      const fileExt = sanitizedName.split('.').pop() || 'mp4'
+      const validExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv']
+      const finalExt = validExtensions.includes(fileExt.toLowerCase()) ? fileExt.toLowerCase() : 'mp4'
+      
+      // Gerar nome único: timestamp + random + extensão
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${finalExt}`
+      const filePath = fileName
 
-      const uploadResponse = await fetch('/api/upload/video', {
-        method: 'POST',
-        body: formData,
-      })
-
-      // Verificar se a resposta é JSON antes de tentar fazer parse
-      const contentType = uploadResponse.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        const textResponse = await uploadResponse.text()
-        console.error('Resposta não é JSON:', textResponse.substring(0, 200))
-        throw new Error('Resposta inválida do servidor. Verifique o console para mais detalhes.')
+      // Verificar se o usuário tem permissão (verificar novamente do lado do cliente)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        throw new Error('Usuário não autenticado')
       }
 
-      if (!uploadResponse.ok) {
-        let errorData
-        try {
-          errorData = await uploadResponse.json()
-        } catch (e) {
-          const textResponse = await uploadResponse.text()
-          throw new Error(`Erro ${uploadResponse.status}: ${textResponse.substring(0, 200)}`)
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      if (profileError || !profile) {
+        throw new Error('Erro ao verificar permissões')
+      }
+
+      if (profile.role !== 'admin' && profile.role !== 'editor') {
+        throw new Error('Apenas administradores e editores podem fazer upload de vídeos')
+      }
+
+      // Fazer upload direto para Supabase Storage do lado do cliente
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('videos')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type || `video/${finalExt}`,
+        })
+
+      if (uploadError) {
+        console.error('Erro no upload do Supabase:', uploadError)
+        
+        let errorMessage = uploadError.message || 'Erro ao fazer upload do vídeo'
+        
+        // Tratar erros comuns
+        if (errorMessage.includes('pattern') || errorMessage.includes('match')) {
+          errorMessage = 'Formato de arquivo inválido. Verifique se o arquivo é um vídeo válido.'
+        } else if (errorMessage.includes('duplicate') || errorMessage.includes('exists')) {
+          errorMessage = 'Um arquivo com este nome já existe. Tente novamente.'
+        } else if (errorMessage.includes('413') || errorMessage.includes('too large')) {
+          errorMessage = 'Arquivo muito grande. Tamanho máximo: 100MB'
         }
-        throw new Error(errorData.error || 'Erro ao fazer upload do vídeo')
+        
+        throw new Error(errorMessage)
       }
 
-      const uploadData = await uploadResponse.json()
+      setUploadProgress(100)
 
-      if (uploadData.success && uploadData.url) {
-        setPreview(uploadData.url)
-        onChange(uploadData.url)
-        toast.success('Vídeo carregado com sucesso!')
-      } else {
-        throw new Error('URL do vídeo não retornada')
+      // Obter URL pública do vídeo
+      const { data: urlData } = supabase.storage
+        .from('videos')
+        .getPublicUrl(filePath)
+
+      if (!urlData?.publicUrl) {
+        throw new Error('Erro ao obter URL do vídeo')
       }
+
+      setPreview(urlData.publicUrl)
+      onChange(urlData.publicUrl)
+      toast.success('Vídeo carregado com sucesso!')
     } catch (error: any) {
       console.error('Erro no upload:', error)
       toast.error(error.message || 'Erro ao fazer upload do vídeo')
     } finally {
       setUploading(false)
+      setUploadProgress(0)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
@@ -146,7 +201,7 @@ export function VideoUploader({
               </p>
             </div>
             
-            <div className="flex gap-2 justify-center">
+            <div className="flex gap-2 justify-center flex-col items-center">
               <Button
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
@@ -156,6 +211,19 @@ export function VideoUploader({
                 <Upload size={16} className="mr-2" />
                 {uploading ? 'Carregando...' : 'Upload'}
               </Button>
+              {uploading && uploadProgress > 0 && (
+                <div className="w-full max-w-xs mt-2">
+                  <div className="bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1 text-center">
+                    {uploadProgress}% completo
+                  </p>
+                </div>
+              )}
               {showMediaManager && (
                 <MediaManager
                   onSelectMedia={handleMediaSelect}
