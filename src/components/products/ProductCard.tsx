@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Card } from '@/components/ui/Card'
 import { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
@@ -77,10 +78,13 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <div className="relative aspect-square overflow-hidden">
           {/* Image */}
           {mainImage ? (
-            <img
+            <Image
               src={mainImage}
               alt={product.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              fill
+              className="object-cover group-hover:scale-110 transition-transform duration-300"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+              priority={product.is_featured}
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center">

@@ -78,6 +78,20 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
       if (data) {
         setProduct(data as Product)
+        
+        // Garantir que o campo images seja sempre um array válido
+        let images = data.images || []
+        if (typeof images === 'string') {
+          try {
+            images = JSON.parse(images)
+          } catch (e) {
+            images = []
+          }
+        }
+        if (!Array.isArray(images)) {
+          images = []
+        }
+        
         setFormData({
           name: data.name || '',
           description: data.description || '',
@@ -88,7 +102,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
           product_code: (data as any).product_code || '',
           is_active: data.is_active ?? true,
           is_featured: data.is_featured ?? false,
-          images: data.images || [],
+          images: images,
           colors: data.colors || [],
           benefits: (data as any).benefits || {
             free_shipping: { enabled: true, text: 'Frete grátis para Uberlândia acima de R$ 200' },

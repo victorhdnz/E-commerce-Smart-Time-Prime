@@ -85,6 +85,18 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         return
       }
 
+      // Garantir que o campo images seja sempre um array válido
+      if (typeof productData.images === 'string') {
+        try {
+          productData.images = JSON.parse(productData.images)
+        } catch (e) {
+          productData.images = []
+        }
+      }
+      if (!Array.isArray(productData.images)) {
+        productData.images = []
+      }
+
       setProduct(productData as any)
 
       if (productData.colors && productData.colors.length > 0) {

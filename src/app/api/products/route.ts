@@ -24,11 +24,29 @@ export async function GET() {
       }, { status: 500 })
     }
 
+    // Garantir que o campo images seja sempre um array válido
+    const normalizedProducts = (products || []).map((product: any) => {
+      // Se images for string, parsear como JSON
+      if (typeof product.images === 'string') {
+        try {
+          product.images = JSON.parse(product.images)
+        } catch (e) {
+          // Se falhar o parse, usar array vazio
+          product.images = []
+        }
+      }
+      // Garantir que seja sempre um array
+      if (!Array.isArray(product.images)) {
+        product.images = []
+      }
+      return product
+    })
+
     return NextResponse.json({
       success: true,
-      count: products?.length || 0,
-      products: products || [],
-      message: products?.length ? 'Produtos encontrados' : 'Nenhum produto ativo encontrado'
+      count: normalizedProducts?.length || 0,
+      products: normalizedProducts || [],
+      message: normalizedProducts?.length ? 'Produtos encontrados' : 'Nenhum produto ativo encontrado'
     })
   } catch (error: any) {
     console.error('Erro na API de produtos:', error)
