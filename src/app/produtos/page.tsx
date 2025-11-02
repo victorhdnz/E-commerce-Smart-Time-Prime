@@ -32,7 +32,11 @@ export default function ProductsPage() {
       setLoading(true)
       console.log('📡 Fazendo requisição para API...')
       
-      const response = await fetch('/api/products')
+      // Usar cache: 'no-store' para garantir produtos atualizados
+      // Adicionar timestamp para evitar cache do navegador
+      const response = await fetch(`/api/products?t=${Date.now()}`, {
+        cache: 'no-store',
+      })
       const result = await response.json()
       
       console.log('📊 Resultado da API:', { 
@@ -114,6 +118,9 @@ export default function ProductsPage() {
 
     // Ordenar
     switch (filters.sortBy) {
+      case 'all':
+        // Mostrar todos os produtos sem ordenação especial (ordem padrão do banco)
+        break
       case 'price_asc':
         filtered.sort((a, b) => a.local_price - b.local_price)
         break
@@ -137,12 +144,14 @@ export default function ProductsPage() {
         filtered = filtered.filter((p) => favoriteIds.includes(p.id))
         break
       case 'featured':
-      default:
         filtered.sort((a, b) => {
           if (a.is_featured && !b.is_featured) return -1
           if (!a.is_featured && b.is_featured) return 1
           return 0
         })
+        break
+      default:
+        // Sem ordenação especial
         break
     }
 
@@ -153,6 +162,20 @@ export default function ProductsPage() {
     console.log('🚀 useEffect executado!')
     loadProducts()
   }, [isAuthenticated])
+
+  // Recarregar produtos quando a página receber foco (útil após criar produto)
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('📱 Página recebeu foco, recarregando produtos...')
+      loadProducts()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (loading) {
     return <PageLoadingSkeleton />

@@ -22,11 +22,12 @@ export const ProductFilters = ({ onFilterChange, categories }: ProductFiltersPro
   const [filters, setFilters] = useState<FilterState>({
     categories: [],
     priceRange: [0, 2000],
-    sortBy: 'featured',
+    sortBy: 'all',
     search: '',
   })
 
   const sortOptions = [
+    { value: 'all', label: 'Todos' },
     { value: 'featured', label: 'Em Destaque' },
     { value: 'price_asc', label: 'Menor Preço' },
     { value: 'price_desc', label: 'Maior Preço' },
@@ -75,7 +76,7 @@ export const ProductFilters = ({ onFilterChange, categories }: ProductFiltersPro
     const newFilters = {
       categories: [],
       priceRange: [0, 2000] as [number, number],
-      sortBy: 'featured',
+      sortBy: 'all',
       search: '',
     }
     setFilters(newFilters)

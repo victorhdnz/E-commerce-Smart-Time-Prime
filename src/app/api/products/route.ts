@@ -6,6 +6,7 @@ export async function GET() {
     const supabase = createClient()
     
     // Buscar todos os produtos ativos (sem limite)
+    // Sem cache para garantir produtos atualizados
     const { data: products, error } = await supabase
       .from('products')
       .select(`
