@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils/format'
 import { createClient } from '@/lib/supabase/client'
 import { Product, ProductColor } from '@/types'
+import Image from 'next/image'
 import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useUserLocation } from '@/hooks/useUserLocation'
@@ -179,13 +180,16 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             key={selectedImage}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4"
+            className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 relative"
           >
             {currentImage ? (
-              <img
+              <Image
                 src={currentImage}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority={selectedImage === 0}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-8xl">
@@ -201,17 +205,25 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-all relative ${
                     selectedImage === index
                       ? 'border-black'
                       : 'border-transparent'
                   }`}
                 >
-                  <img
-                    src={image}
-                    alt={`${product.name} ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                  {image ? (
+                    <Image
+                      src={image}
+                      alt={`${product.name} ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 25vw, 25vw"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-2xl bg-gray-100">
+                      ⌚
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -277,10 +289,20 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           {showAddressModal && (
             <div 
               className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-              onClick={() => setShowAddressModal(false)}
+              onMouseDown={(e) => {
+                // Prevenir fechamento acidental ao mover mouse
+                e.preventDefault()
+              }}
+              onClick={(e) => {
+                // Só fechar se clicar diretamente no overlay (não no modal)
+                if (e.target === e.currentTarget) {
+                  setShowAddressModal(false)
+                }
+              }}
             >
               <div
                 onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
                 className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative"
               >
                   <button

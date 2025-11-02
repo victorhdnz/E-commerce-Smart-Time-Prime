@@ -40,41 +40,68 @@ export function VideoUploader({
       return
     }
 
-    // Validar tamanho (máximo 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error('O vídeo deve ter no máximo 50MB')
+    // Validar tamanho (máximo 100MB para upload direto)
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error('O vídeo deve ter no máximo 100MB')
       return
     }
 
     setUploading(true)
     
     try {
-      // Fazer upload real para Cloudinary
+      // Obter assinatura de upload do servidor
+      const signatureResponse = await fetch('/api/upload/signature', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          folder: 'videos',
+          resourceType: 'video',
+        }),
+      })
+
+      if (!signatureResponse.ok) {
+        const errorData = await signatureResponse.json()
+        throw new Error(errorData.error || 'Erro ao gerar assinatura de upload')
+      }
+
+      const { signature, timestamp, cloudName, apiKey } = await signatureResponse.json()
+
+      // Fazer upload direto para Cloudinary (sem passar pelo servidor Next.js)
       const formData = new FormData()
       formData.append('file', file)
+      formData.append('api_key', apiKey)
+      formData.append('timestamp', timestamp.toString())
+      formData.append('signature', signature)
       formData.append('folder', 'videos')
+      formData.append('resource_type', 'video')
+      formData.append('eager', JSON.stringify([
+        { width: 1920, height: 1080, crop: 'limit', quality: 'auto' }, // Full HD
+        { width: 1280, height: 720, crop: 'limit', quality: 'auto' },   // HD
+        { width: 854, height: 480, crop: 'limit', quality: 'auto' }     // SD
+      ]))
+      formData.append('eager_async', 'false')
+      formData.append('fetch_format', 'auto')
+      formData.append('quality', 'auto')
 
-      const response = await fetch('/api/upload', {
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
+      
+      const uploadResponse = await fetch(uploadUrl, {
         method: 'POST',
         body: formData,
       })
 
-      // Verificar se a resposta é JSON válido
-      const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text()
-        throw new Error(`Erro no servidor: ${text.substring(0, 100)}`)
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text()
+        console.error('Erro no upload do Cloudinary:', errorText)
+        throw new Error(`Erro no upload: ${errorText.substring(0, 200)}`)
       }
 
-      const data = await response.json()
+      const uploadData = await uploadResponse.json()
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Erro ao fazer upload')
-      }
-
-      // Usar a URL do Cloudinary
-      const videoUrl = data.url || data.secure_url
-      if (videoUrl) {
+      if (uploadData.secure_url || uploadData.url) {
+        const videoUrl = uploadData.secure_url || uploadData.url
         setPreview(videoUrl)
         onChange(videoUrl)
         toast.success('Vídeo carregado com sucesso!')

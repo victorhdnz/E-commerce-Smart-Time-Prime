@@ -36,8 +36,50 @@ export const BannerCarousel = ({
     setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length)
   }
 
+  // Se não houver banners, retornar placeholder para modal funcionar
   if (!banners || banners.length === 0) {
-    return null
+    return (
+      <>
+        <div className="w-full relative cursor-pointer" style={{ aspectRatio: '1920/650', maxHeight: '400px' }} onClick={() => setShowModal(true)}>
+          <div className="w-full h-full bg-gray-800 rounded-lg flex items-center justify-center text-white text-lg">
+            Clique para adicionar banners no Dashboard
+          </div>
+        </div>
+        
+        {/* Modal mesmo sem banners */}
+        <AnimatePresence>
+          {showModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
+              onClick={() => setShowModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-6xl max-h-[90vh] flex flex-col items-center justify-center"
+              >
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="absolute top-4 right-4 z-20 bg-white/90 text-black p-2 rounded-full hover:bg-white transition-colors"
+                >
+                  <X size={24} />
+                </button>
+                <div className="text-white text-center p-8">
+                  <div className="text-6xl mb-4">📷</div>
+                  <p className="text-xl mb-2">Nenhum banner adicionado</p>
+                  <p className="text-gray-400">Adicione banners no Dashboard para visualizá-los aqui</p>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
+    )
   }
 
   // Se houver apenas 1 banner, exibir estático

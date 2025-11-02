@@ -678,26 +678,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Estoque:</span>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-lg font-bold px-3 py-1.5 rounded-lg ${
-                      parseInt(formData.stock) === 0 
-                        ? 'bg-red-100 text-red-700 border-2 border-red-300' 
-                        : parseInt(formData.stock) < 10
-                        ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-300'
-                        : 'bg-green-100 text-green-700 border-2 border-green-300'
-                    }`}>
-                      {formData.stock || 0} unidades
-                    </span>
-                    {parseInt(formData.stock) === 0 && (
-                      <span className="text-xs text-red-600 font-semibold">ESGOTADO</span>
-                    )}
-                    {parseInt(formData.stock) > 0 && parseInt(formData.stock) < 10 && (
-                      <span className="text-xs text-yellow-600 font-semibold">ESTOQUE BAIXO</span>
-                    )}
-                    {parseInt(formData.stock) >= 10 && (
-                      <span className="text-xs text-green-600 font-semibold">✓ EM ESTOQUE</span>
-                    )}
-                  </div>
+                  <span className="text-lg font-bold text-gray-900">
+                    {formData.stock || 0} unidades
+                  </span>
                 </div>
               </div>
 

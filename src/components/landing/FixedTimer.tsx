@@ -55,10 +55,10 @@ export const FixedTimer = ({
       initial={{ opacity: 0, scale: 0.8, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-      className="fixed z-40 bottom-24 md:bottom-28 right-4 md:right-6 left-1/2 md:left-auto transform md:transform-none -translate-x-1/2 md:translate-x-0"
+      className="fixed z-40 bottom-20 md:bottom-28 right-2 md:right-6 left-2 md:left-auto max-w-[calc(100vw-1rem)] md:max-w-none"
     >
       <motion.div
-        className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl shadow-2xl p-4 md:p-5 border-2 border-gray-700/50 backdrop-blur-md overflow-hidden"
+        className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-xl md:rounded-2xl shadow-2xl p-3 md:p-5 border-2 border-gray-700/50 backdrop-blur-md overflow-hidden w-full"
         whileHover={{ scale: 1.02 }}
         transition={{ duration: 0.2 }}
       >
@@ -93,17 +93,17 @@ export const FixedTimer = ({
             </motion.span>
             <span>Termina em:</span>
           </motion.div>
-          <div className="flex items-center gap-2 md:gap-2.5 justify-center">
+          <div className="flex items-center gap-1 md:gap-2.5 justify-center flex-wrap">
             {[
               { value: timeLeft.days, label: 'd' },
               { value: timeLeft.hours, label: 'h' },
               { value: timeLeft.minutes, label: 'm' },
               { value: timeLeft.seconds, label: 's' },
             ].map((item, index) => (
-              <div key={index} className="flex items-center gap-2 md:gap-2.5">
+              <div key={index} className="flex items-center gap-1 md:gap-2.5">
                 {index > 0 && (
                   <motion.span
-                    className="text-lg md:text-xl font-bold text-red-400 drop-shadow-lg"
+                    className="text-sm md:text-xl font-bold text-red-400 drop-shadow-lg"
                     animate={{ opacity: [0.5, 1, 0.5] }}
                     transition={{
                       duration: 1,
@@ -115,7 +115,7 @@ export const FixedTimer = ({
                   </motion.span>
                 )}
                 <motion.div
-                  className="text-center bg-gradient-to-br from-black via-gray-900 to-black rounded-xl px-3 md:px-4 py-2 md:py-2.5 border-2 border-white/20 min-w-[50px] md:min-w-[60px] shadow-xl overflow-hidden backdrop-blur-sm"
+                  className="text-center bg-gradient-to-br from-black via-gray-900 to-black rounded-lg md:rounded-xl px-2 md:px-4 py-1.5 md:py-2.5 border-2 border-white/20 min-w-[40px] md:min-w-[60px] max-w-[50px] md:max-w-none shadow-xl overflow-hidden backdrop-blur-sm"
                   whileHover={{ scale: 1.1, borderColor: "#ef4444" }}
                   animate={{
                     boxShadow: [
@@ -136,7 +136,7 @@ export const FixedTimer = ({
                   }}
                 >
                   <motion.div
-                    className="text-base md:text-2xl font-black text-white font-mono drop-shadow-lg leading-tight"
+                    className="text-xs md:text-2xl font-black text-white font-mono drop-shadow-lg leading-tight"
                     key={item.value}
                     initial={{ y: -10, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -144,7 +144,7 @@ export const FixedTimer = ({
                   >
                     {String(item.value).padStart(2, '0')}
                   </motion.div>
-                  <div className="text-[9px] md:text-[11px] text-gray-300 uppercase tracking-wider font-bold mt-1">
+                  <div className="text-[8px] md:text-[11px] text-gray-300 uppercase tracking-wider font-bold mt-0.5 md:mt-1">
                     {item.label}
                   </div>
                 </motion.div>

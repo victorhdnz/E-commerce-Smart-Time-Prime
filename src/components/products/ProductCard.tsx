@@ -201,10 +201,20 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         {showAddressModal && (
           <div 
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-            onClick={() => setShowAddressModal(false)}
+            onMouseDown={(e) => {
+              // Prevenir fechamento acidental ao mover mouse
+              e.preventDefault()
+            }}
+            onClick={(e) => {
+              // Só fechar se clicar diretamente no overlay (não no modal)
+              if (e.target === e.currentTarget) {
+                setShowAddressModal(false)
+              }
+            }}
           >
             <div
               onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
               className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative"
             >
                 <button
