@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils/format'
 import { createClient } from '@/lib/supabase/client'
 import { Product, ProductColor } from '@/types'
-import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { getProductPrice } from '@/lib/utils/price'
+import { Modal } from '@/components/ui/Modal'
 
 export default function ProductPage({ params }: { params: { slug: string } }) {
   const router = useRouter()
@@ -25,7 +26,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(true)
-  const [showPrice, setShowPrice] = useState(false)
+  const [showAddressModal, setShowAddressModal] = useState(false)
   const [gifts, setGifts] = useState<Product[]>([])
   const [isFavorite, setIsFavorite] = useState(false)
 
@@ -34,6 +35,24 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   useEffect(() => {
     loadProduct()
   }, [params.slug, isAuthenticated])
+
+  // Atualizar quando usuário cadastrar endereço (via evento customizado)
+  useEffect(() => {
+    const handleAddressRegistered = () => {
+      // Quando o endereço for cadastrado, recarregar a página para atualizar o preço
+      if (isAuthenticated) {
+        setTimeout(() => {
+          window.location.reload()
+        }, 500)
+      }
+    }
+    
+    window.addEventListener('addressRegistered', handleAddressRegistered)
+    
+    return () => {
+      window.removeEventListener('addressRegistered', handleAddressRegistered)
+    }
+  }, [isAuthenticated])
 
   const loadProduct = async () => {
     try {
@@ -122,7 +141,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       router.push('/login')
       return
     }
-    setShowPrice(true)
+    setShowAddressModal(true)
   }
 
   if (loading) {
@@ -199,37 +218,147 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
           {/* Price */}
           <div className="mb-6">
-            {showPrice || (isAuthenticated && !needsAddress && !locationLoading) ? (
-              <div>
-                <span className="text-4xl font-bold">
-                  {formatCurrency(getProductPrice(product, isUberlandia))}
-                </span>
-                {isAuthenticated && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    {isUberlandia ? '💚 Preço Local' : '🌐 Preço Nacional'}
-                  </p>
-                )}
-              </div>
-            ) : isAuthenticated && needsAddress ? (
-              <div>
-                <div className="text-2xl font-semibold text-gray-400 mb-2">
-                  Cadastre seu endereço para ver o preço
+            {needsAddress && !locationLoading && isAuthenticated ? (
+              <motion.button
+                onClick={handleUnlockPrice}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="relative cursor-pointer group w-full text-left p-4 rounded-xl bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 border-2 border-dashed border-blue-400 hover:border-blue-600 hover:shadow-lg transition-all duration-300"
+              >
+                {/* Preço embaçado com design intuitivo */}
+                <div className="flex items-center gap-4">
+                  <motion.div
+                    animate={{ 
+                      scale: [1, 1.15, 1],
+                      rotate: [0, 10, -10, 0]
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'easeInOut'
+                    }}
+                    className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-lg"
+                  >
+                    <MapPin size={32} className="text-white" />
+                  </motion.div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-5xl font-black text-gray-400 blur-md select-none">
+                        {formatCurrency(product.local_price || product.national_price)}
+                      </span>
+                      <motion.span
+                        animate={{ 
+                          scale: [1, 1.3, 1],
+                          opacity: [0.7, 1, 0.7]
+                        }}
+                        transition={{ 
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: 'easeInOut'
+                        }}
+                        className="text-3xl"
+                      >
+                        🔓
+                      </motion.span>
+                    </div>
+                    <p className="text-base font-bold text-blue-700 mb-1">
+                      Clique para revelar o preço baseado na sua localização
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      💡 Cadastre seu endereço para ver o preço correto
+                    </p>
+                  </div>
                 </div>
-                <Button onClick={() => router.push('/minha-conta/enderecos')} variant="outline" size="sm">
-                  Cadastrar Endereço
+                {/* Efeito de brilho animado */}
+                <motion.div
+                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  animate={{
+                    x: ['-100%', '200%'],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'linear',
+                    repeatDelay: 1
+                  }}
+                />
+              </motion.button>
+            ) : !isAuthenticated ? (
+              <div className="p-4 rounded-xl bg-gray-100 border-2 border-dashed border-gray-300">
+                <div className="text-4xl font-bold text-gray-400 blur-md select-none mb-2">
+                  {formatCurrency(product.local_price || product.national_price)}
+                </div>
+                <Button onClick={() => router.push('/login')} variant="outline" size="sm">
+                  Faça login para ver o preço
                 </Button>
               </div>
             ) : (
               <div>
-                <div className="text-2xl font-semibold text-gray-400 mb-2">
-                  Faça login para ver o preço
-                </div>
-                <Button onClick={handleUnlockPrice} variant="outline" size="sm">
-                  Ver Preço
-                </Button>
+                <span className="text-4xl font-bold">
+                  {locationLoading 
+                    ? 'Carregando...' 
+                    : formatCurrency(getProductPrice(product, isUberlandia))}
+                </span>
+                {!needsAddress && !locationLoading && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {isUberlandia ? '💚 Preço Local (Uberlândia)' : '🌐 Preço Nacional'}
+                  </p>
+                )}
               </div>
             )}
           </div>
+
+          {/* Modal para redirecionar para cadastro de endereço */}
+          <Modal
+            isOpen={showAddressModal}
+            onClose={() => setShowAddressModal(false)}
+            title="📍 Cadastre seu endereço"
+            size="md"
+          >
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MapPin size={32} className="text-blue-600" />
+                </div>
+                <p className="text-lg font-semibold mb-2">
+                  Para ver o preço, precisamos do seu endereço
+                </p>
+                <p className="text-gray-600">
+                  Cadastre seu endereço para visualizar o preço correto baseado na sua localização:
+                </p>
+                <ul className="mt-4 text-left space-y-2 text-gray-700 max-w-md mx-auto">
+                  <li className="flex items-center gap-2">
+                    <span className="text-green-600 font-bold">✓</span>
+                    <span><strong>Uberlândia/MG:</strong> Preço local especial</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-blue-600 font-bold">✓</span>
+                    <span><strong>Outras cidades:</strong> Preço nacional</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={() => {
+                    setShowAddressModal(false)
+                    router.push('/minha-conta/enderecos')
+                  }}
+                  className="flex-1"
+                  size="lg"
+                >
+                  <MapPin size={18} className="mr-2" />
+                  Cadastrar Endereço
+                </Button>
+                <Button
+                  onClick={() => setShowAddressModal(false)}
+                  variant="outline"
+                  size="lg"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </Modal>
 
           {/* Colors */}
           {product.colors && product.colors.length > 0 && (

@@ -83,8 +83,11 @@ export const HeroSection = ({
 
     return () => clearInterval(timer)
   }, [timerEndDate])
-  // Determinar se usar carrossel ou banner único
-  const banners = heroBanners && heroBanners.length > 0 ? heroBanners : (heroBanner ? [heroBanner] : [])
+  // Determinar se usar carrossel ou banner único - priorizar heroBanners (array)
+  // Se heroBanners tiver itens, usar apenas ele (ignorar heroBanner antigo)
+  const banners = heroBanners && heroBanners.length > 0 
+    ? heroBanners.filter(Boolean) 
+    : (heroBanner ? [heroBanner].filter(Boolean) : [])
 
   return (
     <section
@@ -173,20 +176,112 @@ export const HeroSection = ({
               transition={{ delay: 0.8, duration: 0.8 }}
               className="flex flex-col items-center justify-center gap-4 text-base md:text-lg"
             >
-              <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
-                <span className="text-xl">🔥</span>
-                <span className="font-semibold">
-                  {viewerCount} pessoas vendo agora
-                </span>
-              </div>
+              {/* Card de Pessoas Visualizando com Status */}
+              <motion.div
+                key={viewerCount}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                className="relative"
+              >
+                <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl backdrop-blur-md border-2 transition-all duration-300 ${
+                  viewerCount < 15
+                    ? 'bg-orange-500/20 border-orange-400/50'
+                    : viewerCount >= 20
+                    ? 'bg-red-500/20 border-red-400/50'
+                    : 'bg-green-500/20 border-green-400/50'
+                }`}>
+                  {/* Ícone de Fogo Animado */}
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      rotate: [0, 5, -5, 0],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'easeInOut'
+                    }}
+                    className="text-2xl"
+                  >
+                    🔥
+                  </motion.div>
+                  
+                  {/* Número de Pessoas */}
+                  <div className="flex items-center gap-2">
+                    <motion.span
+                      key={viewerCount}
+                      initial={{ y: -10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 300 }}
+                      className={`text-xl md:text-2xl font-black ${
+                        viewerCount < 15
+                          ? 'text-orange-300'
+                          : viewerCount >= 20
+                          ? 'text-red-300'
+                          : 'text-green-300'
+                      }`}
+                    >
+                      {viewerCount}
+                    </motion.span>
+                    <span className="text-sm md:text-base font-bold text-white">
+                      pessoas vendo agora
+                    </span>
+                  </div>
+                  
+                  {/* Badge de Status */}
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                      viewerCount < 15
+                        ? 'bg-orange-500/30 text-orange-200 border-orange-400/50'
+                        : viewerCount >= 20
+                        ? 'bg-red-500/30 text-red-200 border-red-400/50'
+                        : 'bg-green-500/30 text-green-200 border-green-400/50'
+                    }`}
+                  >
+                    {viewerCount < 15
+                      ? 'POPULAR'
+                      : viewerCount >= 20
+                      ? 'ALTA DEMANDA'
+                      : 'MUITA GENTE'}
+                  </motion.span>
+                </div>
+                
+                {/* Glow Effect */}
+                <motion.div
+                  className={`absolute inset-0 rounded-2xl blur-xl -z-10 ${
+                    viewerCount < 15
+                      ? 'bg-orange-500/30'
+                      : viewerCount >= 20
+                      ? 'bg-red-500/30'
+                      : 'bg-green-500/30'
+                  }`}
+                  animate={{
+                    opacity: [0.3, 0.6, 0.3],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'easeInOut'
+                  }}
+                />
+              </motion.div>
               
               {timerEndDate && (
-                <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1, duration: 0.6 }}
+                  className="flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20"
+                >
                   <span className="text-xl">⏰</span>
                   <span className="font-semibold">
                     Oferta termina em: <span className="font-mono text-white">{String(timeLeft.days).padStart(2, '0')}d {String(timeLeft.hours).padStart(2, '0')}h {String(timeLeft.minutes).padStart(2, '0')}m {String(timeLeft.seconds).padStart(2, '0')}s</span>
                   </span>
-                </div>
+                </motion.div>
               )}
             </motion.div>
           </motion.div>

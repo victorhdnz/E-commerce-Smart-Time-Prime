@@ -283,7 +283,13 @@ export default function MyAccountPage() {
             </Link>
 
             <div className="bg-white rounded-lg shadow-md p-6 text-center">
-              <CreditCard size={32} className="mx-auto mb-2 text-green-600" />
+              <div className="mx-auto mb-2 w-10 h-10 flex items-center justify-center text-green-600 bg-green-50 rounded-full">
+                {/* Ícone PIX - símbolo de pagamento instantâneo brasileiro */}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-8 h-8">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+              </div>
               <p className="text-3xl font-bold text-green-600">5%</p>
               <p className="text-gray-600">Desconto PIX</p>
             </div>

@@ -56,6 +56,56 @@ export async function POST(request: Request) {
 
     if (itemsError) throw itemsError
 
+    // Atualizar estoque dos produtos (baixa automática)
+    for (const item of items) {
+      if (!item.is_gift) {
+        // Buscar produto atual
+        const { data: product } = await supabase
+          .from('products')
+          .select('stock, id')
+          .eq('id', item.product_id)
+          .single()
+
+        if (product) {
+          const newStock = Math.max(0, (product.stock || 0) - item.quantity)
+          
+          // Atualizar estoque
+          await supabase
+            .from('products')
+            .update({ 
+              stock: newStock,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', item.product_id)
+
+          console.log(`Estoque atualizado: Produto ${item.product_id} - ${product.stock} → ${newStock} (venda de ${item.quantity} unidades)`)
+        }
+
+        // Se tiver cor, atualizar estoque da cor também
+        if (item.color_id) {
+          const { data: color } = await supabase
+            .from('product_colors')
+            .select('stock')
+            .eq('id', item.color_id)
+            .single()
+
+          if (color) {
+            const newColorStock = Math.max(0, (color.stock || 0) - item.quantity)
+            
+            await supabase
+              .from('product_colors')
+              .update({ 
+                stock: newColorStock,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', item.color_id)
+
+            console.log(`Estoque da cor atualizado: Cor ${item.color_id} - ${color.stock} → ${newColorStock} (venda de ${item.quantity} unidades)`)
+          }
+        }
+      }
+    }
+
     return NextResponse.json({
       success: true,
       order,

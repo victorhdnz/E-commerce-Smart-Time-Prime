@@ -14,6 +14,10 @@ interface ArrayImageManagerProps {
   label?: string
   placeholder?: string
   className?: string
+  cropType?: 'banner' | 'square' | 'custom' // Tipo de crop: banner = horizontal, square = Instagram, custom = livre
+  aspectRatio?: number // Razão de aspecto (1 = quadrado, 1920/650 = banner, etc)
+  targetSize?: { width: number; height: number } // Tamanho alvo final
+  recommendedDimensions?: string // Texto com dimensões recomendadas
 }
 
 export function ArrayImageManager({
@@ -24,6 +28,10 @@ export function ArrayImageManager({
   label = 'Imagens',
   placeholder = 'Clique para fazer upload de uma imagem',
   className = '',
+  cropType = 'square',
+  aspectRatio,
+  targetSize,
+  recommendedDimensions,
 }: ArrayImageManagerProps) {
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
 
@@ -157,6 +165,10 @@ export function ArrayImageManager({
             value={editingIndex < value.length ? value[editingIndex] : ''}
             onChange={handleImageChange}
             placeholder={placeholder}
+            cropType={cropType}
+            aspectRatio={aspectRatio}
+            targetSize={targetSize}
+            recommendedDimensions={recommendedDimensions}
           />
         </div>
       )}

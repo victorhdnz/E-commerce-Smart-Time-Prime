@@ -121,6 +121,9 @@ export default function MyAddressesPage() {
 
         if (error) throw error
         toast.success('Endereço atualizado')
+        
+        // Disparar evento customizado para atualizar páginas que usam useUserLocation
+        window.dispatchEvent(new CustomEvent('addressRegistered'))
       } else {
         const { error } = await supabase.from('addresses').insert({
           ...formData,
@@ -129,6 +132,9 @@ export default function MyAddressesPage() {
 
         if (error) throw error
         toast.success('Endereço adicionado')
+        
+        // Disparar evento customizado para atualizar páginas que usam useUserLocation
+        window.dispatchEvent(new CustomEvent('addressRegistered'))
       }
 
       setIsModalOpen(false)
@@ -176,6 +182,10 @@ export default function MyAddressesPage() {
 
       if (error) throw error
       toast.success('Endereço padrão atualizado')
+      
+      // Disparar evento customizado para atualizar páginas que usam useUserLocation
+      window.dispatchEvent(new CustomEvent('addressRegistered'))
+      
       loadAddresses(profile.id)
     } catch (error) {
       console.error('Erro ao definir endereço padrão:', error)

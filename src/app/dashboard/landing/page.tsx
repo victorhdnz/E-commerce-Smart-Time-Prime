@@ -740,6 +740,10 @@ export default function EditLandingPage() {
                   onChange={(images: string[]) => setSettings({ ...settings, hero_banners: images })}
                   label="Banners"
                   placeholder="Clique para fazer upload de um banner (1920x650)"
+                  cropType="banner"
+                  aspectRatio={1920/650}
+                  targetSize={{ width: 1920, height: 650 }}
+                  recommendedDimensions="Banners: 1920 x 650px (Formato Horizontal/Banner)"
                 />
               </div>
 
@@ -903,6 +907,10 @@ export default function EditLandingPage() {
                   }}
                   label="Imagens do Carrossel"
                   placeholder="Clique para fazer upload de uma imagem"
+                  cropType="square"
+                  aspectRatio={1}
+                  targetSize={{ width: 1080, height: 1080 }}
+                  recommendedDimensions="Imagens: 1080 x 1080px (Formato Instagram Post)"
                 />
               </div>
 
@@ -916,8 +924,67 @@ export default function EditLandingPage() {
                 </label>
                 <VideoUploader
                   value={settings.showcase_video_url}
-                  onChange={(url) => {
+                  onChange={async (url) => {
                     console.log('VideoUploader onChange:', url)
+                    // Salvar vídeo diretamente no banco ao mudar
+                    try {
+                      const supabase = createClient()
+                      const { data: existing } = await supabase
+                        .from('site_settings')
+                        .select('value')
+                        .eq('key', 'general')
+                        .single()
+
+                      if (existing?.value) {
+                        let currentValue = existing.value
+                        if (typeof existing.value === 'string') {
+                          try {
+                            currentValue = JSON.parse(existing.value)
+                          } catch (e) {
+                            currentValue = {}
+                          }
+                        }
+                        
+                        const updatedValue = typeof currentValue === 'object' && currentValue !== null
+                          ? { ...currentValue, showcase_video_url: url }
+                          : { showcase_video_url: url }
+                        
+                        const { error } = await supabase
+                          .from('site_settings')
+                          .update({
+                            value: updatedValue,
+                            updated_at: new Date().toISOString(),
+                          })
+                          .eq('key', 'general')
+                        
+                        if (error) {
+                          console.error('Erro ao salvar vídeo:', error)
+                          toast.error('Erro ao salvar vídeo')
+                        } else {
+                          toast.success('Vídeo salvo!')
+                        }
+                      } else {
+                        const { error } = await supabase
+                          .from('site_settings')
+                          .insert({
+                            key: 'general',
+                            value: { showcase_video_url: url },
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString(),
+                          })
+                        
+                        if (error) {
+                          console.error('Erro ao salvar vídeo:', error)
+                          toast.error('Erro ao salvar vídeo')
+                        } else {
+                          toast.success('Vídeo salvo!')
+                        }
+                      }
+                    } catch (error) {
+                      console.error('Erro ao salvar vídeo:', error)
+                      toast.error('Erro ao salvar vídeo')
+                    }
+                    
                     setSettings((prev) => ({ ...prev, showcase_video_url: url }))
                   }}
                   showMediaManager={false}

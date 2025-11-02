@@ -175,38 +175,46 @@ export const ValuePackage = ({
               {items.map((item, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.15, type: 'spring', stiffness: 100 }}
-                  whileHover={{ x: 10, scale: 1.02 }}
-                  className="flex items-center justify-between p-5 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 group"
+                  initial={{ opacity: 0, x: -50, scale: 0.9 }}
+                  whileInView={{ opacity: 1, x: 0, scale: 1 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ 
+                    delay: index * 0.1, 
+                    type: 'spring', 
+                    stiffness: 120,
+                    damping: 12
+                  }}
+                  whileHover={{ x: 8, scale: 1.03, boxShadow: "0 10px 30px rgba(0,0,0,0.15)" }}
+                  className="flex items-center justify-between p-5 bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-200 group backdrop-blur-sm"
                 >
-                  <div className="flex items-center gap-4">
-                    <motion.span 
-                      className="text-3xl"
+                  <div className="flex items-center gap-4 flex-1">
+                    <motion.div
+                      className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg"
                       animate={{ 
-                        scale: [1, 1.2, 1],
+                        scale: [1, 1.15, 1],
+                        rotate: [0, 5, -5, 0],
                       }}
                       transition={{ 
-                        duration: 0.5,
-                        delay: index * 0.2,
+                        duration: 2,
+                        delay: index * 0.3,
                         repeat: Infinity,
-                        repeatDelay: 3
+                        repeatDelay: 4,
+                        ease: "easeInOut"
                       }}
                     >
-                      ✅
-                    </motion.span>
+                      <span className="text-2xl">✓</span>
+                    </motion.div>
                     <span className="text-lg md:text-xl font-bold text-gray-900 group-hover:text-black transition-colors">
                       {item.name}
                     </span>
                   </div>
                   <motion.span 
-                    className="text-lg font-bold text-gray-700 px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
+                    className="text-lg font-bold text-gray-800 px-5 py-2.5 bg-gradient-to-br from-yellow-50 via-gray-50 to-gray-100 rounded-xl border-2 border-gray-300 shadow-sm min-w-[100px] text-center"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ delay: index * 0.15 + 0.2 }}
+                    transition={{ delay: index * 0.1 + 0.3, type: 'spring', stiffness: 200 }}
+                    whileHover={{ scale: 1.1, borderColor: "#fbbf24" }}
                   >
                     {item.price || '-'}
                   </motion.span>

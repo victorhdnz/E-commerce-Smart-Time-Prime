@@ -13,6 +13,10 @@ interface ImageUploaderProps {
   placeholder?: string
   className?: string
   showMediaManager?: boolean
+  cropType?: 'banner' | 'square' | 'custom' // Tipo de crop: banner = horizontal, square = Instagram, custom = livre
+  aspectRatio?: number // Razão de aspecto (1 = quadrado, 1920/650 = banner, etc)
+  targetSize?: { width: number; height: number } // Tamanho alvo final
+  recommendedDimensions?: string // Texto com dimensões recomendadas
 }
 
 export function ImageUploader({ 
@@ -20,7 +24,11 @@ export function ImageUploader({
   onChange, 
   placeholder = "Clique para fazer upload de uma imagem",
   className = "",
-  showMediaManager = true
+  showMediaManager = true,
+  cropType = 'square',
+  aspectRatio,
+  targetSize,
+  recommendedDimensions
 }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(value || null)
@@ -116,14 +124,16 @@ export function ImageUploader({
             <p className="text-gray-600 mb-4">{placeholder}</p>
             
             {/* Recomendação de Dimensões */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-              <p className="text-sm font-medium text-blue-900 mb-1">
-                📐 Dimensões Recomendadas
-              </p>
-              <p className="text-xs text-blue-700">
-                <strong>Imagens:</strong> 1080 x 1080px (Formato Instagram Post)
-              </p>
-            </div>
+            {recommendedDimensions && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <p className="text-sm font-medium text-blue-900 mb-1">
+                  📐 Dimensões Recomendadas
+                </p>
+                <p className="text-xs text-blue-700">
+                  {recommendedDimensions}
+                </p>
+              </div>
+            )}
             
             <div className="flex gap-2 justify-center">
               <Button
@@ -152,6 +162,9 @@ export function ImageUploader({
           file={selectedFile}
           onSave={handleEditorSave}
           onCancel={handleEditorCancel}
+          cropType={cropType}
+          aspectRatio={aspectRatio}
+          targetSize={targetSize}
         />
       )}
     </div>

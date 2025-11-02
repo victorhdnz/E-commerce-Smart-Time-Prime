@@ -52,46 +52,107 @@ export const FixedTimer = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 20 }}
       className="fixed z-40 bottom-24 md:bottom-28 right-4 md:right-6 left-1/2 md:left-auto transform md:transform-none -translate-x-1/2 md:translate-x-0"
     >
-      <div
-        className="bg-gradient-to-br from-gray-900 via-gray-900 to-black rounded-xl shadow-2xl p-3 md:p-4 border-2 border-gray-600 backdrop-blur-sm"
+      <motion.div
+        className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-2xl shadow-2xl p-4 md:p-5 border-2 border-gray-700/50 backdrop-blur-md overflow-hidden"
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.2 }}
       >
-        <div className="text-xs md:text-sm font-bold mb-2 text-center text-white drop-shadow-lg">
-          ⏰ Termina em:
+        {/* Animated background glow */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-orange-500/20 to-red-500/20"
+          animate={{
+            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: 'linear'
+          }}
+          style={{
+            backgroundSize: '200% 200%',
+          }}
+        />
+        
+        <div className="relative z-10">
+          <motion.div 
+            className="text-xs md:text-sm font-bold mb-3 text-center text-white drop-shadow-lg flex items-center justify-center gap-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <motion.span
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+            >
+              ⏰
+            </motion.span>
+            <span>Termina em:</span>
+          </motion.div>
+          <div className="flex items-center gap-2 md:gap-2.5 justify-center">
+            {[
+              { value: timeLeft.days, label: 'd' },
+              { value: timeLeft.hours, label: 'h' },
+              { value: timeLeft.minutes, label: 'm' },
+              { value: timeLeft.seconds, label: 's' },
+            ].map((item, index) => (
+              <div key={index} className="flex items-center gap-2 md:gap-2.5">
+                {index > 0 && (
+                  <motion.span
+                    className="text-lg md:text-xl font-bold text-red-400 drop-shadow-lg"
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      delay: index * 0.1
+                    }}
+                  >
+                    :
+                  </motion.span>
+                )}
+                <motion.div
+                  className="text-center bg-gradient-to-br from-black via-gray-900 to-black rounded-xl px-3 md:px-4 py-2 md:py-2.5 border-2 border-white/20 min-w-[50px] md:min-w-[60px] shadow-xl overflow-hidden backdrop-blur-sm"
+                  whileHover={{ scale: 1.1, borderColor: "#ef4444" }}
+                  animate={{
+                    boxShadow: [
+                      '0 4px 15px rgba(0,0,0,0.3)',
+                      '0 4px 25px rgba(239,68,68,0.4)',
+                      '0 4px 15px rgba(0,0,0,0.3)',
+                    ],
+                  }}
+                  transition={{
+                    boxShadow: {
+                      duration: 2,
+                      repeat: Infinity,
+                      delay: index * 0.2
+                    },
+                    scale: {
+                      duration: 0.2
+                    }
+                  }}
+                >
+                  <motion.div
+                    className="text-base md:text-2xl font-black text-white font-mono drop-shadow-lg leading-tight"
+                    key={item.value}
+                    initial={{ y: -10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  >
+                    {String(item.value).padStart(2, '0')}
+                  </motion.div>
+                  <div className="text-[9px] md:text-[11px] text-gray-300 uppercase tracking-wider font-bold mt-1">
+                    {item.label}
+                  </div>
+                </motion.div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-1 md:gap-1.5 justify-center">
-          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1 md:py-1.5 border-2 border-white/30 min-w-[45px] md:min-w-[55px] max-w-[50px] md:max-w-[60px] shadow-lg overflow-hidden">
-            <div className="text-sm md:text-xl font-bold text-white font-mono drop-shadow-md leading-tight truncate">
-              {String(timeLeft.days).padStart(2, '0')}
-            </div>
-            <div className="text-[8px] md:text-[10px] text-gray-200 uppercase tracking-wide font-semibold truncate">d</div>
-          </div>
-          <div className="text-xs md:text-lg font-bold text-red-500 drop-shadow-lg">:</div>
-          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1 md:py-1.5 border-2 border-white/30 min-w-[45px] md:min-w-[55px] max-w-[50px] md:max-w-[60px] shadow-lg overflow-hidden">
-            <div className="text-sm md:text-xl font-bold text-white font-mono drop-shadow-md leading-tight truncate">
-              {String(timeLeft.hours).padStart(2, '0')}
-            </div>
-            <div className="text-[8px] md:text-[10px] text-gray-200 uppercase tracking-wide font-semibold truncate">h</div>
-          </div>
-          <div className="text-xs md:text-lg font-bold text-red-500 drop-shadow-lg">:</div>
-          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1 md:py-1.5 border-2 border-white/30 min-w-[45px] md:min-w-[55px] max-w-[50px] md:max-w-[60px] shadow-lg overflow-hidden">
-            <div className="text-sm md:text-xl font-bold text-white font-mono drop-shadow-md leading-tight truncate">
-              {String(timeLeft.minutes).padStart(2, '0')}
-            </div>
-            <div className="text-[8px] md:text-[10px] text-gray-200 uppercase tracking-wide font-semibold truncate">m</div>
-          </div>
-          <div className="text-xs md:text-lg font-bold text-red-500 drop-shadow-lg">:</div>
-          <div className="text-center bg-black rounded-lg px-2 md:px-3 py-1 md:py-1.5 border-2 border-white/30 min-w-[45px] md:min-w-[55px] max-w-[50px] md:max-w-[60px] shadow-lg overflow-hidden">
-            <div className="text-sm md:text-xl font-bold text-white font-mono drop-shadow-md leading-tight truncate">
-              {String(timeLeft.seconds).padStart(2, '0')}
-            </div>
-            <div className="text-[8px] md:text-[10px] text-gray-200 uppercase tracking-wide font-semibold truncate">s</div>
-          </div>
-        </div>
-      </div>
+      </motion.div>
     </motion.div>
   )
 }

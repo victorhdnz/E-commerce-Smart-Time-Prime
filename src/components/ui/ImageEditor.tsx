@@ -12,9 +12,19 @@ interface ImageEditorProps {
   file: File
   onSave: (url: string) => void
   onCancel: () => void
+  aspectRatio?: number // Razão de aspecto (1 = quadrado Instagram, 1920/650 = banner horizontal, etc)
+  cropType?: 'banner' | 'square' | 'custom' // Tipo de crop: banner = horizontal, square = Instagram, custom = livre
+  targetSize?: { width: number; height: number } // Tamanho alvo final (ex: { width: 1920, height: 650 } para banner)
 }
 
-export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
+export function ImageEditor({ 
+  file, 
+  onSave, 
+  onCancel,
+  aspectRatio,
+  cropType = 'square',
+  targetSize
+}: ImageEditorProps) {
   const [imageSrc, setImageSrc] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [crop, setCrop] = useState({ x: 0, y: 0 })
@@ -67,19 +77,33 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
       throw new Error('Erro ao criar contexto do canvas')
     }
 
-    // Dimensão final recomendada (Instagram Post: 1080x1080)
-    const targetSize = 1080
+    // Determinar tamanho alvo baseado no tipo de crop
+    let finalWidth: number
+    let finalHeight: number
+    
+    if (targetSize) {
+      finalWidth = targetSize.width
+      finalHeight = targetSize.height
+    } else if (cropType === 'banner') {
+      // Banner padrão: 1920x650
+      finalWidth = 1920
+      finalHeight = 650
+    } else {
+      // Instagram padrão: 1080x1080
+      finalWidth = 1080
+      finalHeight = 1080
+    }
 
     // Tamanho da área de crop
     const scaleX = image.naturalWidth / image.width
     const scaleY = image.naturalHeight / image.height
 
-    canvas.width = targetSize
-    canvas.height = targetSize
+    canvas.width = finalWidth
+    canvas.height = finalHeight
 
-    ctx.translate(targetSize / 2, targetSize / 2)
+    ctx.translate(finalWidth / 2, finalHeight / 2)
     ctx.rotate((rotation * Math.PI) / 180)
-    ctx.translate(-targetSize / 2, -targetSize / 2)
+    ctx.translate(-finalWidth / 2, -finalHeight / 2)
 
     ctx.drawImage(
       image,
@@ -89,8 +113,8 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
       pixelCrop.height * scaleY,
       0,
       0,
-      targetSize,
-      targetSize
+      finalWidth,
+      finalHeight
     )
 
     return new Promise((resolve) => {
@@ -171,7 +195,7 @@ export function ImageEditor({ file, onSave, onCancel }: ImageEditorProps) {
                 crop={crop}
                 zoom={zoom}
                 rotation={rotation}
-                aspect={1}
+                aspect={aspectRatio || (cropType === 'banner' ? 1920/650 : cropType === 'square' ? 1 : undefined)}
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onRotationChange={setRotation}
