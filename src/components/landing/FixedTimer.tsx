@@ -55,7 +55,7 @@ export const FixedTimer = ({
       initial={{ opacity: 0, scale: 0.8, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-      className="fixed z-40 bottom-20 md:bottom-28 right-2 md:right-6"
+      className="fixed z-40 bottom-32 md:bottom-28 right-2 md:right-6"
     >
       <motion.div
         className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-xl md:rounded-2xl shadow-2xl p-2 md:p-5 border-2 border-gray-700/50 backdrop-blur-md overflow-hidden w-auto"

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
 import { createClient } from '@/lib/supabase/client'
 import { Product, ProductColor } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
@@ -148,20 +149,10 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     }
   }
 
-  const handleImageAdd = () => {
-    const url = prompt('Digite a URL da imagem:')
-    if (url && url.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, url.trim()]
-      }))
-    }
-  }
-
-  const handleImageRemove = (index: number) => {
+  const handleImagesChange = (images: string[]) => {
     setFormData(prev => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: images
     }))
   }
 
@@ -328,39 +319,18 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
             {/* Imagens */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Imagens</h2>
-                <Button variant="outline" onClick={handleImageAdd}>
-                  <Plus size={18} className="mr-2" />
-                  Adicionar Imagem
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {formData.images.map((image, index) => (
-                  <div key={index} className="relative group">
-                    <div className="aspect-square bg-gray-200 rounded-lg overflow-hidden">
-                      <img
-                        src={image}
-                        alt={`Produto ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <button
-                      onClick={() => handleImageRemove(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
-                
-                {formData.images.length === 0 && (
-                  <div className="col-span-full text-center py-8 text-gray-500">
-                    Nenhuma imagem adicionada
-                  </div>
-                )}
-              </div>
+              <h2 className="text-2xl font-bold mb-6">Imagens do Produto</h2>
+              <ArrayImageManager
+                value={formData.images}
+                onChange={handleImagesChange}
+                maxImages={10}
+                label="Imagens"
+                placeholder="Clique para fazer upload de uma imagem"
+                cropType="square"
+                aspectRatio={1}
+                targetSize={{ width: 1080, height: 1080 }}
+                recommendedDimensions="Imagens: 1080 x 1080px (Formato Quadrado)"
+              />
             </div>
 
             {/* Benefícios Editáveis */}

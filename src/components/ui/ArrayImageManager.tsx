@@ -96,7 +96,16 @@ export function ArrayImageManager({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
           {value.map((image, index) => (
             <div key={index} className="relative group">
-              <div className="aspect-square bg-gray-200 rounded-lg overflow-hidden">
+              <div 
+                className="bg-gray-200 rounded-lg overflow-hidden"
+                style={{
+                  aspectRatio: cropType === 'banner' && aspectRatio 
+                    ? aspectRatio 
+                    : cropType === 'banner' 
+                      ? 1920/650 
+                      : 1 // square por padrão
+                }}
+              >
                 {image ? (
                   <Image
                     src={image}

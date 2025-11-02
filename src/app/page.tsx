@@ -251,11 +251,7 @@ export default async function Home() {
         salePrice={settings.value_package_sale_price}
         deliveryText={settings.value_package_delivery_text}
         buttonText={settings.value_package_button_text}
-        whatsappGroupLink={settings.value_package_whatsapp_group_link}
-        whatsappNumber={settings.value_package_whatsapp_number}
         stockText={settings.value_package_stock_text}
-        discountText={settings.value_package_discount_text}
-        promotionText={settings.value_package_promotion_text}
         endDate={timerEnabled ? timerEndDate : undefined}
       />
 

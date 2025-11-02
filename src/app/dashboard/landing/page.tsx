@@ -1111,48 +1111,12 @@ export default function EditLandingPage() {
               />
 
               <Input
-                label="Link do Grupo WhatsApp (opcional)"
-                value={settings.value_package_whatsapp_group_link}
-                onChange={(e) =>
-                  setSettings({ ...settings, value_package_whatsapp_group_link: e.target.value })
-                }
-                placeholder="https://chat.whatsapp.com/..."
-              />
-
-              <Input
-                label="Número WhatsApp (fallback)"
-                value={settings.value_package_whatsapp_number}
-                onChange={(e) =>
-                  setSettings({ ...settings, value_package_whatsapp_number: e.target.value })
-                }
-                placeholder="5534984136291"
-              />
-
-              <Input
                 label="Texto de Estoque"
                 value={settings.value_package_stock_text}
                 onChange={(e) =>
                   setSettings({ ...settings, value_package_stock_text: e.target.value })
                 }
                 placeholder="📦 Estoque limitado"
-              />
-
-              <Input
-                label="Texto de Desconto"
-                value={settings.value_package_discount_text}
-                onChange={(e) =>
-                  setSettings({ ...settings, value_package_discount_text: e.target.value })
-                }
-                placeholder="🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!"
-              />
-
-              <Input
-                label="Texto de Promoção"
-                value={settings.value_package_promotion_text}
-                onChange={(e) =>
-                  setSettings({ ...settings, value_package_promotion_text: e.target.value })
-                }
-                placeholder="🕒 Promoção válida enquanto durar o estoque."
               />
             </div>
           </motion.div>

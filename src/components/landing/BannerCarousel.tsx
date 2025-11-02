@@ -16,37 +16,65 @@ export const BannerCarousel = ({
 }: BannerCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [showModal, setShowModal] = useState(false)
+  const [modalAutoPlay, setModalAutoPlay] = useState(true)
 
-  // Auto-play apenas se houver mais de 1 banner
+  // Auto-play no banner principal (fora do modal)
   useEffect(() => {
-    if (banners.length <= 1) return
+    if (banners.length <= 1 || showModal) return
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % banners.length)
     }, autoPlayInterval)
 
     return () => clearInterval(interval)
-  }, [banners.length, autoPlayInterval])
+  }, [banners.length, autoPlayInterval, showModal])
+
+  // Auto-play no modal
+  useEffect(() => {
+    if (!showModal || banners.length <= 1 || !modalAutoPlay) return
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % banners.length)
+    }, autoPlayInterval)
+
+    return () => clearInterval(interval)
+  }, [showModal, banners.length, autoPlayInterval, modalAutoPlay])
+
+  // Resetar índice quando as imagens mudarem
+  useEffect(() => {
+    setCurrentIndex(0)
+  }, [banners])
 
   const nextBanner = () => {
+    setModalAutoPlay(false) // Pausar auto-play quando usuário navegar manualmente
     setCurrentIndex((prev) => (prev + 1) % banners.length)
+    setTimeout(() => setModalAutoPlay(true), 5000) // Retomar após 5s
   }
 
   const prevBanner = () => {
+    setModalAutoPlay(false) // Pausar auto-play quando usuário navegar manualmente
     setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length)
+    setTimeout(() => setModalAutoPlay(true), 5000) // Retomar após 5s
   }
 
-  // Se não houver banners, retornar placeholder para modal funcionar
+  // Se não houver banners, retornar placeholder com modal pronto
   if (!banners || banners.length === 0) {
     return (
       <>
-        <div className="w-full relative cursor-pointer" style={{ aspectRatio: '1920/650', maxHeight: '400px' }} onClick={() => setShowModal(true)}>
-          <div className="w-full h-full bg-gray-800 rounded-lg flex items-center justify-center text-white text-lg">
-            Clique para adicionar banners no Dashboard
+        {/* Banner placeholder - clique abre modal */}
+        <div 
+          className="w-full relative cursor-pointer group" 
+          style={{ aspectRatio: '1920/650', maxHeight: '400px' }}
+          onClick={() => setShowModal(true)}
+        >
+          <div className="w-full h-full bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-lg flex flex-col items-center justify-center text-white border-2 border-dashed border-gray-700 hover:border-gray-600 transition-colors">
+            <div className="text-6xl mb-4">📷</div>
+            <p className="text-xl font-bold mb-2">Adicione banners no Dashboard</p>
+            <p className="text-gray-400 text-sm">Formato: 1920 x 650px (Banner Horizontal)</p>
           </div>
         </div>
         
-        {/* Modal mesmo sem banners */}
+        {/* Modal carcaça - estilo MediaShowcase */}
         <AnimatePresence>
           {showModal && (
             <motion.div
@@ -61,18 +89,30 @@ export const BannerCarousel = ({
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="relative w-full max-w-6xl max-h-[90vh] flex flex-col items-center justify-center"
+                className="relative w-full max-w-7xl max-h-[90vh] flex flex-col"
               >
+                {/* Botão Fechar */}
                 <button
                   onClick={() => setShowModal(false)}
                   className="absolute top-4 right-4 z-20 bg-white/90 text-black p-2 rounded-full hover:bg-white transition-colors"
                 >
                   <X size={24} />
                 </button>
-                <div className="text-white text-center p-8">
-                  <div className="text-6xl mb-4">📷</div>
-                  <p className="text-xl mb-2">Nenhum banner adicionado</p>
-                  <p className="text-gray-400">Adicione banners no Dashboard para visualizá-los aqui</p>
+
+                {/* Banner Principal no Modal */}
+                <div className="relative w-full" style={{ aspectRatio: '1920/650', maxHeight: '70vh' }}>
+                  <div className="w-full h-full bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-lg flex flex-col items-center justify-center text-white">
+                    <div className="text-6xl mb-4">📷</div>
+                    <p className="text-xl font-bold mb-2">Nenhum banner adicionado</p>
+                    <p className="text-gray-400">Adicione banners no Dashboard para visualizá-los aqui</p>
+                  </div>
+                </div>
+
+                {/* Thumbnails (placeholder vazio) */}
+                <div className="flex gap-2 mt-4 overflow-x-auto pb-2 justify-center">
+                  <div className="flex items-center justify-center w-32 h-16 bg-gray-800 rounded-lg border-2 border-dashed border-gray-700 text-gray-500 text-xs">
+                    Sem thumbnails
+                  </div>
                 </div>
               </motion.div>
             </motion.div>
@@ -82,19 +122,76 @@ export const BannerCarousel = ({
     )
   }
 
-  // Se houver apenas 1 banner, exibir estático
+  // Se houver apenas 1 banner, exibir com modal funcional
   if (banners.length === 1) {
     return (
-      <div className="w-full relative" style={{ aspectRatio: '1920/650', maxHeight: '400px' }}>
-        <Image
-          src={banners[0]}
-          alt="Banner"
-          fill
-          className="object-cover"
-          priority
-          sizes="100vw"
-        />
-      </div>
+      <>
+        <div 
+          className="w-full relative cursor-pointer" 
+          style={{ aspectRatio: '1920/650', maxHeight: '400px' }}
+          onClick={() => setShowModal(true)}
+        >
+          <Image
+            src={banners[0]}
+            alt="Banner"
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+          />
+        </div>
+
+        {/* Modal mesmo com 1 banner */}
+        <AnimatePresence>
+          {showModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
+              onClick={() => setShowModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-7xl max-h-[90vh] flex flex-col"
+              >
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="absolute top-4 right-4 z-20 bg-white/90 text-black p-2 rounded-full hover:bg-white transition-colors"
+                >
+                  <X size={24} />
+                </button>
+                <div className="relative w-full" style={{ aspectRatio: '1920/650', maxHeight: '70vh' }}>
+                  <Image
+                    src={banners[0]}
+                    alt="Banner"
+                    fill
+                    className="object-contain"
+                    sizes="100vw"
+                  />
+                </div>
+                <div className="flex gap-2 mt-4 overflow-x-auto pb-2 justify-center">
+                  <div
+                    className="relative flex-shrink-0 rounded-lg overflow-hidden border-2 border-white"
+                    style={{ aspectRatio: '1920/650', width: '120px' }}
+                  >
+                    <Image
+                      src={banners[0]}
+                      alt="Banner"
+                      fill
+                      className="object-cover"
+                      sizes="120px"
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
     )
   }
 
@@ -169,7 +266,7 @@ export const BannerCarousel = ({
         </div>
       </div>
 
-      {/* Modal Full Screen - Estilo MediaShowcase */}
+      {/* Modal Full Screen - Estilo MediaShowcase com Auto-play */}
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -184,7 +281,7 @@ export const BannerCarousel = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-6xl max-h-[90vh] flex flex-col"
+              className="relative w-full max-w-7xl max-h-[90vh] flex flex-col"
             >
               {/* Botão Fechar */}
               <button
@@ -194,15 +291,15 @@ export const BannerCarousel = ({
                 <X size={24} />
               </button>
 
-              {/* Banner Principal no Modal */}
+              {/* Banner Principal no Modal com Auto-play */}
               <div className="relative w-full" style={{ aspectRatio: '1920/650', maxHeight: '70vh' }}>
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentIndex}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -50 }}
+                    transition={{ duration: 0.5 }}
                     className="absolute inset-0"
                   >
                     <Image
@@ -221,7 +318,7 @@ export const BannerCarousel = ({
                     e.stopPropagation()
                     prevBanner()
                   }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 text-black p-3 rounded-full hover:bg-white transition-opacity z-10"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 text-black p-3 rounded-full hover:bg-white transition-opacity z-10 shadow-lg"
                 >
                   <ChevronLeft size={24} />
                 </button>
@@ -230,10 +327,31 @@ export const BannerCarousel = ({
                     e.stopPropagation()
                     nextBanner()
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 text-black p-3 rounded-full hover:bg-white transition-opacity z-10"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 text-black p-3 rounded-full hover:bg-white transition-opacity z-10 shadow-lg"
                 >
                   <ChevronRight size={24} />
                 </button>
+
+                {/* Indicadores no Modal */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                  {banners.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setModalAutoPlay(false)
+                        setCurrentIndex(index)
+                        setTimeout(() => setModalAutoPlay(true), 5000)
+                      }}
+                      className={`h-2 rounded-full transition-all ${
+                        index === currentIndex
+                          ? 'w-8 bg-white'
+                          : 'w-2 bg-white/50 hover:bg-white/75'
+                      }`}
+                      aria-label={`Ir para banner ${index + 1}`}
+                    />
+                  ))}
+                </div>
               </div>
 
               {/* Thumbnails */}
@@ -243,11 +361,13 @@ export const BannerCarousel = ({
                     key={index}
                     onClick={(e) => {
                       e.stopPropagation()
+                      setModalAutoPlay(false)
                       setCurrentIndex(index)
+                      setTimeout(() => setModalAutoPlay(true), 5000)
                     }}
                     className={`relative flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
                       index === currentIndex
-                        ? 'border-white scale-105'
+                        ? 'border-white scale-105 opacity-100'
                         : 'border-gray-600 opacity-60 hover:opacity-100'
                     }`}
                     style={{ aspectRatio: '1920/650', width: '120px' }}

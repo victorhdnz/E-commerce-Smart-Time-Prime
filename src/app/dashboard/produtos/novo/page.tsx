@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { ImageUploader } from '@/components/ui/ImageUploader'
+import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -64,17 +64,10 @@ export default function NovoProduct() {
     loadCategories()
   }, [])
 
-  const handleAddImage = (url: string) => {
+  const handleImagesChange = (images: string[]) => {
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, url]
-    }))
-  }
-
-  const handleRemoveImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: images
     }))
   }
 
@@ -274,35 +267,16 @@ export default function NovoProduct() {
             {/* Imagens */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold mb-6">Imagens do Produto</h2>
-              
-              {/* Imagens adicionadas */}
-              {formData.images.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  {formData.images.map((img, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={img}
-                        alt={`Produto ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <button
-                        onClick={() => handleRemoveImage(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                      {index === 0 && (
-                        <span className="absolute bottom-2 left-2 bg-black text-white text-xs px-2 py-1 rounded">
-                          Principal
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <ImageUploader
-                onChange={handleAddImage}
+              <ArrayImageManager
+                value={formData.images}
+                onChange={handleImagesChange}
+                maxImages={10}
+                label="Imagens"
+                placeholder="Clique para fazer upload de uma imagem"
+                cropType="square"
+                aspectRatio={1}
+                targetSize={{ width: 1080, height: 1080 }}
+                recommendedDimensions="Imagens: 1080 x 1080px (Formato Quadrado)"
               />
             </div>
 

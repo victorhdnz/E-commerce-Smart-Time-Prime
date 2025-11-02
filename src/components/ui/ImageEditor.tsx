@@ -195,7 +195,15 @@ export function ImageEditor({
                 crop={crop}
                 zoom={zoom}
                 rotation={rotation}
-                aspect={aspectRatio || (cropType === 'banner' ? 1920/650 : cropType === 'square' ? 1 : undefined)}
+                aspect={
+                  aspectRatio !== undefined 
+                    ? aspectRatio 
+                    : cropType === 'banner' 
+                      ? 1920/650 
+                      : cropType === 'square' 
+                        ? 1 
+                        : undefined
+                }
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onRotationChange={setRotation}
