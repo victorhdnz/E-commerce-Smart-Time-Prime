@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
+import { useUserLocation } from '@/hooks/useUserLocation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { FadeInSection } from '@/components/ui/FadeInSection'
@@ -16,6 +17,7 @@ import { MapPin, CreditCard, Truck } from 'lucide-react'
 export default function CheckoutPage() {
   const router = useRouter()
   const { isAuthenticated, profile, loading: authLoading } = useAuth()
+  const { needsAddress, loading: locationLoading } = useUserLocation()
   const { items, getTotal, clearCart } = useCart()
 
   const [step, setStep] = useState(1)
@@ -36,14 +38,21 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     // Aguardar o carregamento da autenticação completar antes de verificar
-    if (authLoading) return
+    if (authLoading || locationLoading) return
     
     // Se não está autenticado após o loading completar, redirecionar com returnUrl
     if (!isAuthenticated) {
       const returnUrl = encodeURIComponent('/checkout')
       router.push(`/login?returnUrl=${returnUrl}`)
+      return
     }
-  }, [isAuthenticated, authLoading, router])
+
+    // Se não tem endereço cadastrado, redirecionar para cadastro de endereço
+    if (needsAddress) {
+      toast.error('É necessário cadastrar um endereço para finalizar a compra')
+      router.push('/minha-conta/enderecos')
+    }
+  }, [isAuthenticated, authLoading, needsAddress, locationLoading, router])
 
   useEffect(() => {
     if (items.length === 0) {
@@ -140,7 +149,7 @@ export default function CheckoutPage() {
     }
   }
 
-  if (authLoading || items.length === 0) {
+  if (authLoading || locationLoading || items.length === 0 || needsAddress) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>

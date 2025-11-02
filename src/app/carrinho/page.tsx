@@ -2,13 +2,18 @@
 
 import { useState } from 'react'
 import { useCart } from '@/hooks/useCart'
+import { useAuth } from '@/hooks/useAuth'
+import { useUserLocation } from '@/hooks/useUserLocation'
 import { Button } from '@/components/ui/Button'
 import { FadeInSection } from '@/components/ui/FadeInSection'
 import { ShippingCalculator } from '@/components/shipping/ShippingCalculator'
 import { formatCurrency } from '@/lib/utils/format'
-import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
+import { getProductPrice } from '@/lib/utils/price'
+import { Trash2, Plus, Minus, ShoppingBag, Eye, MapPin } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 
 interface ShippingOption {
   id: string
@@ -24,8 +29,12 @@ interface ShippingOption {
 }
 
 export default function CartPage() {
+  const router = useRouter()
+  const { isAuthenticated } = useAuth()
+  const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
   const { items, removeItem, updateQuantity, getTotal, clearCart } = useCart()
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null)
+  const [showAddressModal, setShowAddressModal] = useState(false)
 
   if (items.length === 0) {
     return (
@@ -125,9 +134,32 @@ export default function CartPage() {
                           GRÁTIS
                         </p>
                       </>
+                    ) : needsAddress && !locationLoading ? (
+                      <button
+                        onClick={() => {
+                          if (!isAuthenticated) {
+                            toast.error('Faça login para ver o preço')
+                            router.push('/login')
+                            return
+                          }
+                          setShowAddressModal(true)
+                        }}
+                        className="relative cursor-pointer group text-left"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Eye size={18} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
+                          <span className="text-lg font-bold text-gray-400 blur-sm select-none">
+                            {formatCurrency(item.product.local_price * item.quantity)}
+                          </span>
+                          <MapPin size={14} className="text-gray-400" />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Clique para revelar o preço
+                        </p>
+                      </button>
                     ) : (
                       <p className="text-lg font-bold">
-                        {formatCurrency(item.product.local_price * item.quantity)}
+                        {formatCurrency((getProductPrice(item.product, isUberlandia) * item.quantity))}
                       </p>
                     )}
                   </div>
@@ -203,7 +235,34 @@ export default function CartPage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold">{formatCurrency(getTotal())}</span>
+                  {needsAddress && !locationLoading ? (
+                    <button
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          toast.error('Faça login para ver o preço')
+                          router.push('/login')
+                          return
+                        }
+                        setShowAddressModal(true)
+                      }}
+                      className="relative cursor-pointer group text-right"
+                    >
+                      <div className="flex items-center gap-2 justify-end">
+                        <Eye size={16} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
+                        <span className="font-semibold text-gray-400 blur-sm select-none">
+                          {formatCurrency(getTotal())}
+                        </span>
+                        <MapPin size={12} className="text-gray-400" />
+                      </div>
+                    </button>
+                  ) : (
+                    <span className="font-semibold">
+                      {formatCurrency(items.reduce((total, item) => {
+                        if (item.is_gift) return total
+                        return total + (getProductPrice(item.product, isUberlandia) * item.quantity)
+                      }, 0))}
+                    </span>
+                  )}
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Frete</span>
@@ -218,21 +277,73 @@ export default function CartPage() {
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-xl font-bold">
                     <span>Total</span>
-                    <span>
-                      {formatCurrency(
-                        (getTotal() || 0) + (selectedShipping?.price ? Number(selectedShipping.price) : 0)
-                      )}
-                    </span>
+                    {needsAddress && !locationLoading ? (
+                      <button
+                        onClick={() => {
+                          if (!isAuthenticated) {
+                            toast.error('Faça login para ver o preço')
+                            router.push('/login')
+                            return
+                          }
+                          setShowAddressModal(true)
+                        }}
+                        className="relative cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Eye size={18} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
+                          <span className="text-gray-400 blur-md select-none">
+                            {formatCurrency(
+                              (items.reduce((total, item) => {
+                                if (item.is_gift) return total
+                                return total + (getProductPrice(item.product, isUberlandia) * item.quantity)
+                              }, 0)) + (selectedShipping?.price ? Number(selectedShipping.price) : 0)
+                            )}
+                          </span>
+                          <MapPin size={14} className="text-gray-400" />
+                        </div>
+                      </button>
+                    ) : (
+                      <span>
+                        {formatCurrency(
+                          (items.reduce((total, item) => {
+                            if (item.is_gift) return total
+                            return total + (getProductPrice(item.product, isUberlandia) * item.quantity)
+                          }, 0)) + (selectedShipping?.price ? Number(selectedShipping.price) : 0)
+                        )}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <Link href="/checkout">
-                  <Button size="lg" className="w-full">
-                    Finalizar Compra
-                  </Button>
-                </Link>
+                {needsAddress && !locationLoading ? (
+                  <>
+                    <Button 
+                      size="lg" 
+                      className="w-full"
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          toast.error('Faça login para finalizar a compra')
+                          router.push('/login')
+                          return
+                        }
+                        setShowAddressModal(true)
+                      }}
+                    >
+                      Cadastrar Endereço para Finalizar
+                    </Button>
+                    <p className="text-xs text-center text-gray-600">
+                      É necessário cadastrar um endereço para visualizar preços e finalizar a compra
+                    </p>
+                  </>
+                ) : (
+                  <Link href="/checkout">
+                    <Button size="lg" className="w-full">
+                      Finalizar Compra
+                    </Button>
+                  </Link>
+                )}
 
                 <Link href="/produtos">
                   <Button variant="outline" size="lg" className="w-full mt-3">
@@ -249,6 +360,67 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal para cadastro de endereço */}
+      {showAddressModal && (
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowAddressModal(false)
+            }
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-in fade-in zoom-in duration-200"
+          >
+            <button
+              onClick={() => setShowAddressModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+              aria-label="Fechar"
+            >
+              ✕
+            </button>
+            
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                <MapPin size={40} className="text-blue-600" />
+              </div>
+              
+              <div>
+                <h2 className="text-2xl font-bold mb-2">
+                  Cadastre seu endereço
+                </h2>
+                <p className="text-gray-600">
+                  Para visualizar os preços dos produtos e finalizar sua compra, precisamos do seu endereço
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={() => {
+                    setShowAddressModal(false)
+                    router.push('/minha-conta/enderecos')
+                  }}
+                  className="flex-1"
+                  size="lg"
+                >
+                  <MapPin size={18} className="mr-2" />
+                  Cadastrar Endereço
+                </Button>
+                <Button
+                  onClick={() => setShowAddressModal(false)}
+                  variant="outline"
+                  size="lg"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </FadeInSection>
   )
 }
