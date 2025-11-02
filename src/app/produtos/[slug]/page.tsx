@@ -67,6 +67,31 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     }
   }, [showAddressModal])
 
+  // Resetar selectedImage se estiver fora do range - DEVE estar no topo com outros hooks
+  useEffect(() => {
+    if (!product) return
+    
+    // Calcular imagens aqui dentro para garantir que sempre seja um array válido
+    let productImages: string[] = []
+    if (product.images) {
+      if (typeof product.images === 'string') {
+        try {
+          productImages = JSON.parse(product.images)
+        } catch (e) {
+          productImages = []
+        }
+      } else if (Array.isArray(product.images)) {
+        productImages = product.images
+      }
+    }
+    
+    const images = (productImages.length > 0 ? productImages : selectedColor?.images) || []
+    
+    if (images.length > 0 && selectedImage >= images.length) {
+      setSelectedImage(0)
+    }
+  }, [product, selectedColor, selectedImage])
+
   const loadProduct = async () => {
     try {
       // Carregar produto
@@ -173,14 +198,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     setShowAddressModal(true)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
-      </div>
-    )
-  }
-
   // Garantir que product.images seja sempre um array válido e preparar imagens
   const productImages = product ? (() => {
     let images = product.images || []
@@ -201,12 +218,13 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const images = (productImages.length > 0 ? productImages : selectedColor?.images) || []
   const currentImage = images[selectedImage] || images[0] || ''
 
-  // Resetar selectedImage se estiver fora do range
-  useEffect(() => {
-    if (selectedImage >= images.length && images.length > 0) {
-      setSelectedImage(0)
-    }
-  }, [images.length, selectedImage])
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+      </div>
+    )
+  }
 
   if (!product) return null
 
