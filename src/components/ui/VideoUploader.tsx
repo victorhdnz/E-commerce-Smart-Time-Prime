@@ -76,14 +76,8 @@ export function VideoUploader({
       formData.append('signature', signature)
       formData.append('folder', 'videos')
       formData.append('resource_type', 'video')
-      formData.append('eager', JSON.stringify([
-        { width: 1920, height: 1080, crop: 'limit', quality: 'auto' }, // Full HD
-        { width: 1280, height: 720, crop: 'limit', quality: 'auto' },   // HD
-        { width: 854, height: 480, crop: 'limit', quality: 'auto' }     // SD
-      ]))
-      formData.append('eager_async', 'false')
-      formData.append('fetch_format', 'auto')
-      formData.append('quality', 'auto')
+      // Transformações podem ser aplicadas via URL quando necessário
+      // Removendo eager transformations para evitar erro de formato
 
       const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
       

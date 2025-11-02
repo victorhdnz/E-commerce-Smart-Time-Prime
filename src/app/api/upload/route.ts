@@ -105,17 +105,13 @@ export async function POST(request: NextRequest) {
       ]
       uploadOptions.allowed_formats = ALLOWED_IMAGE_FORMATS
     } else {
-      // Para vídeos, usar eager transformations para gerar múltiplas versões (conforme documentação)
+      // Para vídeos, configurações básicas de upload
+      // Transformações podem ser aplicadas via URL quando necessário
       uploadOptions.resource_type = 'video'
-      // Gerar versões para diferentes plataformas durante o upload
-      uploadOptions.eager = [
-        { width: 1920, height: 1080, crop: 'limit', quality: 'auto' }, // Full HD
-        { width: 1280, height: 720, crop: 'limit', quality: 'auto' },   // HD
-        { width: 854, height: 480, crop: 'limit', quality: 'auto' }     // SD
-      ]
-      uploadOptions.eager_async = false // Aguardar todas as transformações completarem
       uploadOptions.fetch_format = 'auto' // Formato automático otimizado
       uploadOptions.quality = 'auto' // Qualidade automática
+      // Removendo eager transformations para evitar erro de formato
+      // Se necessário, aplicar transformações via URL: /video/upload/w_1920,h_1080,c_limit,q_auto/
     }
 
     // Upload para Cloudinary usando upload_stream

@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
     // Gerar timestamp
     const timestamp = Math.round(new Date().getTime() / 1000)
 
-    // Parâmetros para assinatura
-    const params = {
+    // Parâmetros para assinatura (sem eager para evitar problemas de formato)
+    const params: Record<string, string | number> = {
       folder: folder,
       timestamp: timestamp,
       resource_type: resourceType,
