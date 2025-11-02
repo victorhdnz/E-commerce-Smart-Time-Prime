@@ -86,16 +86,20 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       }
 
       // Garantir que o campo images seja sempre um array válido
-      if (typeof productData.images === 'string') {
+      let images = productData.images || []
+      if (typeof images === 'string') {
         try {
-          productData.images = JSON.parse(productData.images)
+          images = JSON.parse(images)
         } catch (e) {
-          productData.images = []
+          images = []
         }
       }
-      if (!Array.isArray(productData.images)) {
-        productData.images = []
+      if (!Array.isArray(images)) {
+        images = []
       }
+      
+      // Garantir que productData.images seja um array válido
+      productData.images = images
 
       setProduct(productData as any)
 
@@ -177,10 +181,34 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     )
   }
 
-  if (!product) return null
+  // Garantir que product.images seja sempre um array válido e preparar imagens
+  const productImages = product ? (() => {
+    let images = product.images || []
+    if (typeof images === 'string') {
+      try {
+        images = JSON.parse(images)
+      } catch (e) {
+        images = []
+      }
+    }
+    if (!Array.isArray(images)) {
+      images = []
+    }
+    return images
+  })() : []
 
-  const images = selectedColor?.images || product.images || []
-  const currentImage = images[selectedImage] || ''
+  // Usar imagens do produto (se existir), caso contrário usar imagens da cor selecionada
+  const images = (productImages.length > 0 ? productImages : selectedColor?.images) || []
+  const currentImage = images[selectedImage] || images[0] || ''
+
+  // Resetar selectedImage se estiver fora do range
+  useEffect(() => {
+    if (selectedImage >= images.length && images.length > 0) {
+      setSelectedImage(0)
+    }
+  }, [images.length, selectedImage])
+
+  if (!product) return null
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -211,16 +239,16 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           </motion.div>
 
           {/* Thumbnails */}
-          {images.length > 1 && (
-            <div className="grid grid-cols-4 gap-4">
+          {images.length > 0 && (
+            <div className={`grid gap-4 ${images.length === 1 ? 'grid-cols-1' : images.length <= 4 ? 'grid-cols-4' : 'grid-cols-5'}`}>
               {images.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 transition-all relative ${
                     selectedImage === index
-                      ? 'border-black'
-                      : 'border-transparent'
+                      ? 'border-black scale-105'
+                      : 'border-transparent hover:border-gray-400'
                   }`}
                 >
                   {image ? (
@@ -235,6 +263,11 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                     <div className="w-full h-full flex items-center justify-center text-2xl bg-gray-100">
                       ⌚
                     </div>
+                  )}
+                  {index === 0 && (
+                    <span className="absolute top-1 left-1 bg-black text-white text-xs px-1.5 py-0.5 rounded">
+                      Principal
+                    </span>
                   )}
                 </button>
               ))}
