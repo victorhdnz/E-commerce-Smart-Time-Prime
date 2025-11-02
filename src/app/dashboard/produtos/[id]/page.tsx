@@ -34,7 +34,14 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     is_active: true,
     is_featured: false,
     images: [] as string[],
-    colors: [] as ProductColor[]
+    colors: [] as ProductColor[],
+    benefits: {
+      free_shipping: { enabled: true, text: 'Frete grátis para Uberlândia acima de R$ 200' },
+      warranty: { enabled: true, text: 'Garantia de 1 ano' },
+      returns: { enabled: true, text: 'Troca grátis em 7 dias' },
+      gift: { enabled: false, text: '' },
+    },
+    specifications: [] as { key: string; value: string }[]
   })
 
   const supabase = createClient()
@@ -352,6 +359,251 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                   <div className="col-span-full text-center py-8 text-gray-500">
                     Nenhuma imagem adicionada
                   </div>
+                )}
+              </div>
+            </div>
+
+            {/* Benefícios Editáveis */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold mb-6">Benefícios do Produto</h2>
+              
+              <div className="space-y-4">
+                {/* Frete Grátis */}
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 font-semibold">
+                      <input
+                        type="checkbox"
+                        checked={formData.benefits.free_shipping.enabled}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            benefits: {
+                              ...formData.benefits,
+                              free_shipping: {
+                                ...formData.benefits.free_shipping,
+                                enabled: e.target.checked,
+                              },
+                            },
+                          })
+                        }}
+                        className="w-4 h-4"
+                      />
+                      🚚 Frete Grátis
+                    </label>
+                  </div>
+                  {formData.benefits.free_shipping.enabled && (
+                    <Input
+                      value={formData.benefits.free_shipping.text}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          benefits: {
+                            ...formData.benefits,
+                            free_shipping: {
+                              ...formData.benefits.free_shipping,
+                              text: e.target.value,
+                            },
+                          },
+                        })
+                      }}
+                      placeholder="Ex: Frete grátis para Uberlândia acima de R$ 200"
+                      className="mt-2"
+                    />
+                  )}
+                </div>
+
+                {/* Garantia */}
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 font-semibold">
+                      <input
+                        type="checkbox"
+                        checked={formData.benefits.warranty.enabled}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            benefits: {
+                              ...formData.benefits,
+                              warranty: {
+                                ...formData.benefits.warranty,
+                                enabled: e.target.checked,
+                              },
+                            },
+                          })
+                        }}
+                        className="w-4 h-4"
+                      />
+                      🛡️ Garantia
+                    </label>
+                  </div>
+                  {formData.benefits.warranty.enabled && (
+                    <Input
+                      value={formData.benefits.warranty.text}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          benefits: {
+                            ...formData.benefits,
+                            warranty: {
+                              ...formData.benefits.warranty,
+                              text: e.target.value,
+                            },
+                          },
+                        })
+                      }}
+                      placeholder="Ex: Garantia de 1 ano"
+                      className="mt-2"
+                    />
+                  )}
+                </div>
+
+                {/* Troca */}
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 font-semibold">
+                      <input
+                        type="checkbox"
+                        checked={formData.benefits.returns.enabled}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            benefits: {
+                              ...formData.benefits,
+                              returns: {
+                                ...formData.benefits.returns,
+                                enabled: e.target.checked,
+                              },
+                            },
+                          })
+                        }}
+                        className="w-4 h-4"
+                      />
+                      🔄 Troca
+                    </label>
+                  </div>
+                  {formData.benefits.returns.enabled && (
+                    <Input
+                      value={formData.benefits.returns.text}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          benefits: {
+                            ...formData.benefits,
+                            returns: {
+                              ...formData.benefits.returns,
+                              text: e.target.value,
+                            },
+                          },
+                        })
+                      }}
+                      placeholder="Ex: Troca grátis em 7 dias"
+                      className="mt-2"
+                    />
+                  )}
+                </div>
+
+                {/* Brinde */}
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center gap-2 font-semibold">
+                      <input
+                        type="checkbox"
+                        checked={formData.benefits.gift.enabled}
+                        onChange={(e) => {
+                          setFormData({
+                            ...formData,
+                            benefits: {
+                              ...formData.benefits,
+                              gift: {
+                                ...formData.benefits.gift,
+                                enabled: e.target.checked,
+                              },
+                            },
+                          })
+                        }}
+                        className="w-4 h-4"
+                      />
+                      🎁 Brinde
+                    </label>
+                  </div>
+                  {formData.benefits.gift.enabled && (
+                    <Input
+                      value={formData.benefits.gift.text}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          benefits: {
+                            ...formData.benefits,
+                            gift: {
+                              ...formData.benefits.gift,
+                              text: e.target.value,
+                            },
+                          },
+                        })
+                      }}
+                      placeholder="Ex: Brinde exclusivo incluído"
+                      className="mt-2"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Especificações Técnicas */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Especificações Técnicas</h2>
+                <Button
+                  onClick={() => {
+                    setFormData({
+                      ...formData,
+                      specifications: [...formData.specifications, { key: '', value: '' }],
+                    })
+                  }}
+                  size="sm"
+                >
+                  <Plus size={16} className="mr-2" />
+                  Adicionar
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {formData.specifications.map((spec, index) => (
+                  <div key={index} className="flex gap-3">
+                    <Input
+                      placeholder="Característica"
+                      value={spec.key}
+                      onChange={(e) => {
+                        const newSpecs = [...formData.specifications]
+                        newSpecs[index].key = e.target.value
+                        setFormData({ ...formData, specifications: newSpecs })
+                      }}
+                    />
+                    <Input
+                      placeholder="Valor"
+                      value={spec.value}
+                      onChange={(e) => {
+                        const newSpecs = [...formData.specifications]
+                        newSpecs[index].value = e.target.value
+                        setFormData({ ...formData, specifications: newSpecs })
+                      }}
+                    />
+                    <button
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          specifications: formData.specifications.filter((_, i) => i !== index),
+                        })
+                      }}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+                {formData.specifications.length === 0 && (
+                  <p className="text-center text-gray-500 py-4">Nenhuma especificação adicionada</p>
                 )}
               </div>
             </div>

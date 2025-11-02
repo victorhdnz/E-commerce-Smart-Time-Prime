@@ -31,7 +31,8 @@ interface ClientAddress {
   neighborhood: string
   city: string
   state: string
-  zipcode: string
+  zipcode?: string
+  cep?: string
   is_default: boolean
 }
 
@@ -76,18 +77,26 @@ export default function DashboardClientsPage() {
       const clientsWithDetails = await Promise.all(
         (profiles || []).map(async (profile) => {
           // Buscar endereços - selecionar apenas campos necessários
-          const { data: addresses } = await supabase
+          const { data: addresses, error: addressesError } = await supabase
             .from('addresses')
             .select('id, street, number, complement, neighborhood, city, state, cep, is_default')
             .eq('user_id', profile.id)
             .order('is_default', { ascending: false })
 
+          if (addressesError) {
+            console.error(`Erro ao buscar endereços para cliente ${profile.id}:`, addressesError)
+          }
+
           // Buscar pedidos
-          const { data: orders } = await supabase
+          const { data: orders, error: ordersError } = await supabase
             .from('orders')
             .select('id, total, status, created_at')
             .eq('user_id', profile.id)
             .order('created_at', { ascending: false })
+
+          if (ordersError) {
+            console.error(`Erro ao buscar pedidos para cliente ${profile.id}:`, ordersError)
+          }
 
           // Mapear endereços para incluir zipcode (usar cep como zipcode) e recipient_name (usar full_name do perfil)
           const mappedAddresses = (addresses || []).map((addr: any) => ({
@@ -95,6 +104,8 @@ export default function DashboardClientsPage() {
             zipcode: addr.cep || '',
             recipient_name: profile.full_name || 'N/A',
           }))
+
+          console.log(`Cliente ${profile.email}: ${mappedAddresses.length} endereço(s) encontrado(s)`)
 
           return {
             ...profile,
@@ -220,28 +231,43 @@ export default function DashboardClientsPage() {
                       </div>
 
                       {/* Addresses */}
-                      {client.addresses && client.addresses.length > 0 && (
+                      {client.addresses && client.addresses.length > 0 ? (
                         <div className="mb-3">
                           <h4 className="text-sm font-semibold mb-2 flex items-center gap-1">
                             <MapPin size={14} />
-                            Endereços:
+                            Endereços ({client.addresses.length}):
                           </h4>
                           <div className="space-y-1">
                             {client.addresses.map((addr) => (
                               <div
                                 key={addr.id}
-                                className="text-sm text-gray-600 bg-gray-50 p-2 rounded"
+                                className="text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-200"
                               >
-                                {addr.recipient_name} - {addr.street}, {addr.number}
-                                {addr.complement && `, ${addr.complement}`} - {addr.neighborhood}, {addr.city}/{addr.state} - CEP: {addr.zipcode}
-                                {addr.is_default && (
-                                  <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
-                                    Padrão
-                                  </span>
-                                )}
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <p className="font-medium mb-1">{addr.recipient_name}</p>
+                                    <p className="text-xs">
+                                      {addr.street}, {addr.number}
+                                      {addr.complement && `, ${addr.complement}`}
+                                    </p>
+                                    <p className="text-xs">
+                                      {addr.neighborhood} - {addr.city}/{addr.state}
+                                    </p>
+                                    <p className="text-xs font-semibold">CEP: {addr.zipcode || addr.cep || 'Não informado'}</p>
+                                  </div>
+                                  {addr.is_default && (
+                                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded whitespace-nowrap">
+                                      Padrão
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             ))}
                           </div>
+                        </div>
+                      ) : (
+                        <div className="mb-3">
+                          <p className="text-xs text-gray-400 italic">Nenhum endereço cadastrado</p>
                         </div>
                       )}
 
@@ -364,7 +390,7 @@ export default function DashboardClientsPage() {
                           <p className="text-sm text-gray-600">
                             {addr.neighborhood} - {addr.city}/{addr.state}
                           </p>
-                          <p className="text-sm text-gray-600">CEP: {addr.zipcode}</p>
+                          <p className="text-sm text-gray-600 font-semibold">CEP: {addr.zipcode || addr.cep || 'Não informado'}</p>
                         </div>
                       ))}
                     </div>
