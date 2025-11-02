@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Upload, X, Video as VideoIcon, Play } from 'lucide-react'
 import { Button } from './Button'
 import { MediaManager } from '@/components/dashboard/MediaManager'
