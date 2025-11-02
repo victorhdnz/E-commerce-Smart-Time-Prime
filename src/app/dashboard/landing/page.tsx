@@ -511,16 +511,36 @@ export default function EditLandingPage() {
                     .single()
 
                   if (existing?.value) {
-                    const currentValue = existing.value as any
-                    await supabase
+                    // Se value é uma string JSON, fazer parse antes de atualizar
+                    let currentValue = existing.value
+                    if (typeof existing.value === 'string') {
+                      try {
+                        currentValue = JSON.parse(existing.value)
+                      } catch (e) {
+                        currentValue = {}
+                      }
+                    }
+                    
+                    // Garantir que é um objeto antes de fazer spread
+                    const updatedValue = typeof currentValue === 'object' && currentValue !== null
+                      ? { ...currentValue, site_logo: url }
+                      : { site_logo: url }
+                    
+                    const { error } = await supabase
                       .from('site_settings')
                       .update({
-                        value: { ...currentValue, site_logo: url },
+                        value: updatedValue,
                         updated_at: new Date().toISOString(),
                       })
                       .eq('key', 'general')
+                    
+                    if (error) {
+                      console.error('Erro ao atualizar logo:', error)
+                      toast.error('Erro ao salvar logo')
+                      return
+                    }
                   } else {
-                    await supabase
+                    const { error } = await supabase
                       .from('site_settings')
                       .insert({
                         key: 'general',
@@ -528,6 +548,12 @@ export default function EditLandingPage() {
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString(),
                       })
+                    
+                    if (error) {
+                      console.error('Erro ao inserir logo:', error)
+                      toast.error('Erro ao salvar logo')
+                      return
+                    }
                   }
                   toast.success('Logo atualizada!')
                 }

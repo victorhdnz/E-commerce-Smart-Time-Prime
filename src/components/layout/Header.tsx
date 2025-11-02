@@ -24,15 +24,37 @@ export const Header = () => {
   // Carregar logo do site
   useEffect(() => {
     const loadLogo = async () => {
-      const supabase = createClient()
-      const { data } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'general')
-        .single()
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'general')
+          .single()
 
-      if (data?.value && typeof data.value === 'object') {
-        setSiteSettings(data.value as { site_logo?: string })
+        if (error) {
+          console.error('Erro ao carregar logo:', error)
+          return
+        }
+
+        if (data?.value) {
+          // Se value é uma string JSON, fazer parse
+          let parsedValue = data.value
+          if (typeof data.value === 'string') {
+            try {
+              parsedValue = JSON.parse(data.value)
+            } catch (e) {
+              // Se não for JSON válido, usar como objeto vazio
+              parsedValue = {}
+            }
+          }
+          
+          if (parsedValue && typeof parsedValue === 'object') {
+            setSiteSettings(parsedValue as { site_logo?: string })
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar logo:', error)
       }
     }
     loadLogo()
@@ -47,7 +69,7 @@ export const Header = () => {
   const navigation = [
     { name: 'Início', href: '/' },
     { name: 'Produtos', href: '/produtos' },
-    { name: 'Sobre', href: '#sobre' },
+    { name: 'Sobre', href: '#about-us' },
     { name: 'Contato', href: '#contato' },
   ]
 
@@ -94,14 +116,14 @@ export const Header = () => {
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 h-12">
+          <Link href="/" className="flex items-center gap-4 h-16">
             {siteSettings?.site_logo && (
               <Image
                 src={siteSettings.site_logo}
                 alt="Smart Time Prime"
-                width={24}
-                height={24}
-                className="h-6 w-auto object-contain"
+                width={60}
+                height={48}
+                className="h-12 w-auto object-contain"
                 priority
               />
             )}

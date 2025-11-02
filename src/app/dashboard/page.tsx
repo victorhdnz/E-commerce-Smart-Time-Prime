@@ -130,7 +130,7 @@ export default function DashboardPage() {
         supabase
           .from('profiles')
           .select('id')
-          .eq('role', 'customer'),
+          .order('created_at', { ascending: false }),
       ])
 
       // Calcular estatísticas

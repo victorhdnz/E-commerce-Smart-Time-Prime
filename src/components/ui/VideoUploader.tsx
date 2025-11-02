@@ -59,6 +59,13 @@ export function VideoUploader({
         body: formData,
       })
 
+      // Verificar se a resposta é JSON válido
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text()
+        throw new Error(`Erro no servidor: ${text.substring(0, 100)}`)
+      }
+
       const data = await response.json()
 
       if (!response.ok || !data.success) {
