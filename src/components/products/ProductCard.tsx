@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
@@ -12,7 +13,6 @@ import { useCart } from '@/hooks/useCart'
 import toast from 'react-hot-toast'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { getProductPrice } from '@/lib/utils/price'
-import { Modal } from '@/components/ui/Modal'
 import { useAuth } from '@/hooks/useAuth'
 
 interface ProductCardProps {
@@ -197,14 +197,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </button>
         </div>
 
-        {/* Modal simplificado para redirecionar para cadastro de endereço */}
-        {showAddressModal && (
+        {/* Modal simplificado para redirecionar para cadastro de endereço - usando portal */}
+        {typeof window !== 'undefined' && showAddressModal && createPortal(
           <div 
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-            onMouseDown={(e) => {
-              // Prevenir fechamento acidental ao mover mouse
-              e.preventDefault()
-            }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             onClick={(e) => {
               // Só fechar se clicar diretamente no overlay (não no modal)
               if (e.target === e.currentTarget) {
@@ -214,54 +210,55 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative"
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-in fade-in zoom-in duration-200"
             >
-                <button
-                  onClick={() => setShowAddressModal(false)}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
-                >
-                  ✕
-                </button>
+              <button
+                onClick={() => setShowAddressModal(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                aria-label="Fechar"
+              >
+                ✕
+              </button>
+              
+              <div className="text-center space-y-6">
+                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                  <MapPin size={40} className="text-blue-600" />
+                </div>
                 
-                <div className="text-center space-y-6">
-                  <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                    <MapPin size={40} className="text-blue-600" />
-                  </div>
-                  
-                  <div>
-                    <h2 className="text-2xl font-bold mb-2">
-                      Cadastre seu endereço
-                    </h2>
-                    <p className="text-gray-600">
-                      Para visualizar o preço do produto, precisamos do seu endereço
-                    </p>
-                  </div>
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">
+                    Cadastre seu endereço
+                  </h2>
+                  <p className="text-gray-600">
+                    Para visualizar o preço do produto, precisamos do seu endereço
+                  </p>
+                </div>
 
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      onClick={() => {
-                        setShowAddressModal(false)
-                        router.push('/minha-conta/enderecos')
-                      }}
-                      className="flex-1"
-                      size="lg"
-                    >
-                      <MapPin size={18} className="mr-2" />
-                      Cadastrar Endereço
-                    </Button>
-                    <Button
-                      onClick={() => setShowAddressModal(false)}
-                      variant="outline"
-                      size="lg"
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    onClick={() => {
+                      setShowAddressModal(false)
+                      router.push('/minha-conta/enderecos')
+                    }}
+                    className="flex-1"
+                    size="lg"
+                  >
+                    <MapPin size={18} className="mr-2" />
+                    Cadastrar Endereço
+                  </Button>
+                  <Button
+                    onClick={() => setShowAddressModal(false)}
+                    variant="outline"
+                    size="lg"
+                  >
+                    Cancelar
+                  </Button>
                 </div>
               </div>
             </div>
-          )}
+          </div>,
+          document.body
+        )}
 
         {/* Stock Status */}
         {product.stock === 0 ? (
