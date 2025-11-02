@@ -42,7 +42,7 @@ export const BannerCarousel = ({
   // Se houver apenas 1 banner, exibir estático
   if (banners.length === 1) {
     return (
-      <div className="w-full relative" style={{ aspectRatio: '1920/650', minHeight: '300px' }}>
+      <div className="w-full relative" style={{ aspectRatio: '1920/650', maxHeight: '400px' }}>
         <Image
           src={banners[0]}
           alt="Banner"
@@ -57,7 +57,7 @@ export const BannerCarousel = ({
 
   // Se houver múltiplos banners, exibir carrossel
   return (
-    <div className="relative w-full group" style={{ aspectRatio: '1920/650', minHeight: '300px' }}>
+    <div className="relative w-full group" style={{ aspectRatio: '1920/650', maxHeight: '400px' }}>
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}

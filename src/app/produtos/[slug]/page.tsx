@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { Button } from '@/components/ui/Button'
@@ -219,70 +219,21 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           {/* Price */}
           <div className="mb-6">
             {needsAddress && !locationLoading && isAuthenticated ? (
-              <motion.button
+              <button
                 onClick={handleUnlockPrice}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="relative cursor-pointer group w-full text-left p-4 rounded-xl bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 border-2 border-dashed border-blue-400 hover:border-blue-600 hover:shadow-lg transition-all duration-300"
+                className="relative cursor-pointer group w-full text-left"
               >
-                {/* Preço embaçado com design intuitivo */}
-                <div className="flex items-center gap-4">
-                  <motion.div
-                    animate={{ 
-                      scale: [1, 1.15, 1],
-                      rotate: [0, 10, -10, 0]
-                    }}
-                    transition={{ 
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: 'easeInOut'
-                    }}
-                    className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-lg"
-                  >
-                    <MapPin size={32} className="text-white" />
-                  </motion.div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-5xl font-black text-gray-400 blur-md select-none">
-                        {formatCurrency(product.local_price || product.national_price)}
-                      </span>
-                      <motion.span
-                        animate={{ 
-                          scale: [1, 1.3, 1],
-                          opacity: [0.7, 1, 0.7]
-                        }}
-                        transition={{ 
-                          duration: 1.5,
-                          repeat: Infinity,
-                          ease: 'easeInOut'
-                        }}
-                        className="text-3xl"
-                      >
-                        🔓
-                      </motion.span>
-                    </div>
-                    <p className="text-base font-bold text-blue-700 mb-1">
-                      Clique para revelar o preço baseado na sua localização
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      💡 Cadastre seu endereço para ver o preço correto
-                    </p>
-                  </div>
+                {/* Preço embaçado simples - sem aviso bugado */}
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-4xl font-bold text-gray-400 blur-md select-none">
+                    {formatCurrency(product.local_price || product.national_price)}
+                  </span>
+                  <MapPin size={24} className="text-gray-400" />
                 </div>
-                {/* Efeito de brilho animado */}
-                <motion.div
-                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                  animate={{
-                    x: ['-100%', '200%'],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: 'linear',
-                    repeatDelay: 1
-                  }}
-                />
-              </motion.button>
+                <p className="text-sm text-gray-500">
+                  Clique para ver o preço
+                </p>
+              </button>
             ) : !isAuthenticated ? (
               <div className="p-4 rounded-xl bg-gray-100 border-2 border-dashed border-gray-300">
                 <div className="text-4xl font-bold text-gray-400 blur-md select-none mb-2">
@@ -308,57 +259,67 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             )}
           </div>
 
-          {/* Modal para redirecionar para cadastro de endereço */}
-          <Modal
-            isOpen={showAddressModal}
-            onClose={() => setShowAddressModal(false)}
-            title="📍 Cadastre seu endereço"
-            size="md"
-          >
-            <div className="space-y-4">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MapPin size={32} className="text-blue-600" />
-                </div>
-                <p className="text-lg font-semibold mb-2">
-                  Para ver o preço, precisamos do seu endereço
-                </p>
-                <p className="text-gray-600">
-                  Cadastre seu endereço para visualizar o preço correto baseado na sua localização:
-                </p>
-                <ul className="mt-4 text-left space-y-2 text-gray-700 max-w-md mx-auto">
-                  <li className="flex items-center gap-2">
-                    <span className="text-green-600 font-bold">✓</span>
-                    <span><strong>Uberlândia/MG:</strong> Preço local especial</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-blue-600 font-bold">✓</span>
-                    <span><strong>Outras cidades:</strong> Preço nacional</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="flex gap-3 pt-4">
-                <Button
-                  onClick={() => {
-                    setShowAddressModal(false)
-                    router.push('/minha-conta/enderecos')
-                  }}
-                  className="flex-1"
-                  size="lg"
+          {/* Modal simplificado para redirecionar para cadastro de endereço */}
+          <AnimatePresence>
+            {showAddressModal && (
+              <div 
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+                onClick={() => setShowAddressModal(false)}
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative"
                 >
-                  <MapPin size={18} className="mr-2" />
-                  Cadastrar Endereço
-                </Button>
-                <Button
-                  onClick={() => setShowAddressModal(false)}
-                  variant="outline"
-                  size="lg"
-                >
-                  Cancelar
-                </Button>
+                  <button
+                    onClick={() => setShowAddressModal(false)}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                  >
+                    ✕
+                  </button>
+                  
+                  <div className="text-center space-y-6">
+                    <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                      <MapPin size={40} className="text-blue-600" />
+                    </div>
+                    
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2">
+                        Cadastre seu endereço
+                      </h2>
+                      <p className="text-gray-600">
+                        Para visualizar o preço do produto, precisamos do seu endereço
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        onClick={() => {
+                          setShowAddressModal(false)
+                          router.push('/minha-conta/enderecos')
+                        }}
+                        className="flex-1"
+                        size="lg"
+                      >
+                        <MapPin size={18} className="mr-2" />
+                        Cadastrar Endereço
+                      </Button>
+                      <Button
+                        onClick={() => setShowAddressModal(false)}
+                        variant="outline"
+                        size="lg"
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
-            </div>
-          </Modal>
+            )}
+          </AnimatePresence>
 
           {/* Colors */}
           {product.colors && product.colors.length > 0 && (

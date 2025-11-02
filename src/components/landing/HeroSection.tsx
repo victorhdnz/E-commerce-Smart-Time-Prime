@@ -92,11 +92,11 @@ export const HeroSection = ({
   return (
     <section
       style={{ backgroundColor: finalBackgroundColor, color: finalTextColor }}
-      className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden"
+      className="relative flex flex-col items-center justify-center overflow-hidden"
     >
-      {/* Banner carrossel acima do texto (1920x650) */}
+      {/* Banner carrossel acima do texto (1920x650) - altura reduzida */}
       {banners.length > 0 && (
-        <div className="w-full">
+        <div className="w-full max-h-[400px] md:max-h-[500px]">
           <BannerCarousel banners={banners} autoPlayInterval={5000} />
         </div>
       )}
