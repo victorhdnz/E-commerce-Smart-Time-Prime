@@ -56,24 +56,48 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    // Gerar nome único para o arquivo
-    const fileExt = file.name.split('.').pop() || 'mp4'
-    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`
-    const filePath = fileName // O bucket já é 'videos', não precisa do prefixo
+    // Gerar nome único para o arquivo (sanitizado)
+    // Remover caracteres especiais e espaços do nome do arquivo original
+    const sanitizedName = file.name
+      .replace(/[^a-zA-Z0-9.-]/g, '_') // Substituir caracteres inválidos por underscore
+      .replace(/\s+/g, '_') // Substituir espaços por underscore
+      .toLowerCase()
+    
+    const fileExt = sanitizedName.split('.').pop() || 'mp4'
+    // Validar extensão de vídeo
+    const validExtensions = ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv']
+    const finalExt = validExtensions.includes(fileExt.toLowerCase()) ? fileExt.toLowerCase() : 'mp4'
+    
+    // Gerar nome único: timestamp + random + extensão (apenas caracteres alfanuméricos e underscore)
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${finalExt}`
+    const filePath = fileName
 
-    // Fazer upload para Supabase Storage
+    // Fazer upload para Supabase Storage usando o File diretamente
+    // O Supabase Storage aceita File, Blob ou ArrayBuffer
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('videos')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false,
-        contentType: file.type,
+        contentType: file.type || `video/${finalExt}`,
       })
 
     if (uploadError) {
       console.error('Erro no upload do Supabase:', uploadError)
+      
+      // Mensagens de erro mais específicas
+      let errorMessage = uploadError.message || 'Erro ao fazer upload do vídeo'
+      
+      // Tratar erros comuns
+      if (errorMessage.includes('pattern') || errorMessage.includes('match')) {
+        errorMessage = 'Formato de arquivo inválido. Verifique se o arquivo é um vídeo válido.'
+      } else if (errorMessage.includes('duplicate') || errorMessage.includes('exists')) {
+        errorMessage = 'Um arquivo com este nome já existe. Tente novamente.'
+      }
+      
       return NextResponse.json({ 
-        error: uploadError.message || 'Erro ao fazer upload do vídeo' 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? JSON.stringify(uploadError, null, 2) : undefined
       }, { status: 500 })
     }
 
