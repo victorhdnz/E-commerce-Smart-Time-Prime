@@ -161,15 +161,16 @@ export function ArrayImageManager({
               Cancelar
             </Button>
           </div>
-          <ImageUploader
-            value={editingIndex < value.length ? value[editingIndex] : ''}
-            onChange={handleImageChange}
-            placeholder={placeholder}
-            cropType={cropType}
-            aspectRatio={aspectRatio}
-            targetSize={targetSize}
-            recommendedDimensions={recommendedDimensions}
-          />
+              <ImageUploader
+                value={editingIndex < value.length ? value[editingIndex] : ''}
+                onChange={handleImageChange}
+                placeholder={placeholder}
+                cropType={cropType}
+                aspectRatio={aspectRatio}
+                targetSize={targetSize}
+                recommendedDimensions={recommendedDimensions}
+                showMediaManager={false}
+              />
         </div>
       )}
 

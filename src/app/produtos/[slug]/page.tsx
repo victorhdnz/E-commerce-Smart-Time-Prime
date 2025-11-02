@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils/format'
 import { createClient } from '@/lib/supabase/client'
 import { Product, ProductColor } from '@/types'
-import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { getProductPrice } from '@/lib/utils/price'
@@ -53,6 +53,18 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       window.removeEventListener('addressRegistered', handleAddressRegistered)
     }
   }, [isAuthenticated])
+
+  // Controlar body overflow quando modal abrir/fechar
+  useEffect(() => {
+    if (showAddressModal) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [showAddressModal])
 
   const loadProduct = async () => {
     try {
@@ -223,15 +235,16 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 onClick={handleUnlockPrice}
                 className="relative cursor-pointer group w-full text-left"
               >
-                {/* Preço embaçado simples - sem aviso bugado */}
+                {/* Preço embaçado com olho */}
                 <div className="flex items-center gap-3 mb-2">
+                  <Eye size={32} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
                   <span className="text-4xl font-bold text-gray-400 blur-md select-none">
                     {formatCurrency(product.local_price || product.national_price)}
                   </span>
                   <MapPin size={24} className="text-gray-400" />
                 </div>
                 <p className="text-sm text-gray-500">
-                  Clique para ver o preço
+                  Clique para revelar o preço
                 </p>
               </button>
             ) : !isAuthenticated ? (
@@ -245,6 +258,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               </div>
             ) : (
               <div>
+                {/* Preço revelado - sem olho */}
                 <span className="text-4xl font-bold">
                   {locationLoading 
                     ? 'Carregando...' 
@@ -260,20 +274,15 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           </div>
 
           {/* Modal simplificado para redirecionar para cadastro de endereço */}
-          <AnimatePresence>
-            {showAddressModal && (
-              <div 
-                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-                onClick={() => setShowAddressModal(false)}
+          {showAddressModal && (
+            <div 
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+              onClick={() => setShowAddressModal(false)}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative"
               >
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2 }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative"
-                >
                   <button
                     onClick={() => setShowAddressModal(false)}
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
@@ -316,10 +325,9 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                       </Button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               </div>
             )}
-          </AnimatePresence>
 
           {/* Colors */}
           {product.colors && product.colors.length > 0 && (

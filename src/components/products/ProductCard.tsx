@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
 import { Card } from '@/components/ui/Card'
 import { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
@@ -45,6 +44,18 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       window.removeEventListener('addressRegistered', handleAddressRegistered)
     }
   }, [isAuthenticated])
+
+  // Controlar body overflow quando modal abrir/fechar
+  useEffect(() => {
+    if (showAddressModal) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [showAddressModal])
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault() // Previne navegação do Link pai
@@ -145,24 +156,28 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 }}
                 className="relative cursor-pointer group w-full text-left"
               >
-                {/* Preço embaçado simples - sem aviso bugado */}
+                {/* Preço embaçado com olho */}
                 <div className="flex items-center gap-2">
+                  <Eye size={20} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
                   <span className="text-xl font-bold text-gray-400 blur-sm select-none">
                     {formatCurrency(product.local_price || product.national_price)}
                   </span>
                   <MapPin size={16} className="text-gray-400" />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Clique para ver o preço
+                  Clique para revelar o preço
                 </p>
               </button>
             ) : (
               <div>
-                <span className="text-xl font-bold">
-                  {locationLoading 
-                    ? 'Carregando...' 
-                    : formatCurrency(getProductPrice(product, isUberlandia))}
-                </span>
+                {/* Preço revelado - sem olho */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold">
+                    {locationLoading 
+                      ? 'Carregando...' 
+                      : formatCurrency(getProductPrice(product, isUberlandia))}
+                  </span>
+                </div>
                 {!needsAddress && !locationLoading && (
                   <p className="text-xs text-gray-500 mt-1">
                     {isUberlandia ? '💚 Preço Local (Uberlândia)' : '🌐 Preço Nacional'}
@@ -183,17 +198,15 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* Modal simplificado para redirecionar para cadastro de endereço */}
-        <AnimatePresence>
-          {showAddressModal && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative"
-              >
+        {showAddressModal && (
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={() => setShowAddressModal(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative"
+            >
                 <button
                   onClick={() => setShowAddressModal(false)}
                   className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
@@ -236,10 +249,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                     </Button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
           )}
-        </AnimatePresence>
 
         {/* Stock Status */}
         {product.stock === 0 ? (
