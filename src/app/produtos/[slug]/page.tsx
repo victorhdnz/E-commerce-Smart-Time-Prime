@@ -11,7 +11,7 @@ import { formatCurrency } from '@/lib/utils/format'
 import { createClient } from '@/lib/supabase/client'
 import { Product, ProductColor } from '@/types'
 import Image from 'next/image'
-import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin, Eye } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { getProductPrice } from '@/lib/utils/price'
@@ -28,6 +28,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(true)
   const [showAddressModal, setShowAddressModal] = useState(false)
+  const [showImageModal, setShowImageModal] = useState(false)
   const [gifts, setGifts] = useState<Product[]>([])
   const [isFavorite, setIsFavorite] = useState(false)
 
@@ -57,7 +58,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
   // Controlar body overflow quando modal abrir/fechar
   useEffect(() => {
-    if (showAddressModal) {
+    if (showAddressModal || showImageModal) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = 'unset'
@@ -65,7 +66,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     return () => {
       document.body.style.overflow = 'unset'
     }
-  }, [showAddressModal])
+  }, [showAddressModal, showImageModal])
 
   // Resetar selectedImage se estiver fora do range - DEVE estar no topo com outros hooks
   useEffect(() => {
@@ -238,17 +239,23 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             key={selectedImage}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 relative"
+            className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 relative cursor-pointer group"
+            onClick={() => images.length > 0 && setShowImageModal(true)}
           >
             {currentImage ? (
-              <Image
-                src={currentImage}
-                alt={product.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority={selectedImage === 0}
-              />
+              <>
+                <Image
+                  src={currentImage}
+                  alt={product.name}
+                  fill
+                  className="object-cover group-hover:opacity-90 transition-opacity"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority={selectedImage === 0}
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity flex items-center justify-center">
+                  <Eye size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-8xl">
                 ⌚
@@ -256,9 +263,9 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             )}
           </motion.div>
 
-          {/* Thumbnails */}
-          {images.length > 0 && (
-            <div className={`grid gap-4 ${images.length === 1 ? 'grid-cols-1' : images.length <= 4 ? 'grid-cols-4' : 'grid-cols-5'}`}>
+          {/* Thumbnails - só mostrar se houver mais de 1 imagem */}
+          {images.length > 1 && (
+            <div className={`grid gap-4 ${images.length <= 4 ? 'grid-cols-4' : 'grid-cols-5'}`}>
               {images.map((image, index) => (
                 <button
                   key={index}
@@ -347,6 +354,123 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               </div>
             )}
           </div>
+
+          {/* Modal de Visualização de Imagem */}
+          {typeof window !== 'undefined' && showImageModal && images.length > 0 && createPortal(
+            <div 
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4"
+              onClick={() => setShowImageModal(false)}
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-7xl max-h-[90vh] flex flex-col"
+              >
+                {/* Botão Fechar */}
+                <button
+                  onClick={() => setShowImageModal(false)}
+                  className="absolute top-4 right-4 z-20 bg-white/90 text-black p-2 rounded-full hover:bg-white transition-colors"
+                  aria-label="Fechar"
+                >
+                  <X size={24} />
+                </button>
+
+                {/* Navegação Anterior */}
+                {images.length > 1 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1))
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 text-black p-2 rounded-full hover:bg-white transition-colors"
+                    aria-label="Imagem anterior"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                )}
+
+                {/* Navegação Próxima */}
+                {images.length > 1 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1))
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/90 text-black p-2 rounded-full hover:bg-white transition-colors"
+                    aria-label="Próxima imagem"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                )}
+
+                {/* Imagem Principal */}
+                <div className="relative w-full flex-1 flex items-center justify-center" style={{ minHeight: '60vh' }}>
+                  <motion.div
+                    key={selectedImage}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="relative w-full h-full max-h-[80vh] flex items-center justify-center"
+                  >
+                    {currentImage ? (
+                      <Image
+                        src={currentImage}
+                        alt={`${product.name} ${selectedImage + 1}`}
+                        fill
+                        className="object-contain"
+                        sizes="100vw"
+                        priority
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-8xl text-white">
+                        ⌚
+                      </div>
+                    )}
+                  </motion.div>
+                </div>
+
+                {/* Thumbnails no Modal - só mostrar se houver mais de 1 imagem */}
+                {images.length > 1 && (
+                  <div className="flex gap-2 mt-4 overflow-x-auto pb-2 justify-center">
+                    {images.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedImage(index)
+                        }}
+                        className={`relative flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
+                          selectedImage === index
+                            ? 'border-white scale-110'
+                            : 'border-white/50 hover:border-white/80'
+                        }`}
+                        style={{ aspectRatio: '1/1', width: '80px' }}
+                      >
+                        {image ? (
+                          <Image
+                            src={image}
+                            alt={`${product.name} ${index + 1}`}
+                            fill
+                            className="object-cover"
+                            sizes="80px"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xl bg-gray-800">
+                            ⌚
+                          </div>
+                        )}
+                        {index === 0 && (
+                          <span className="absolute top-1 left-1 bg-black/80 text-white text-xs px-1 py-0.5 rounded">
+                            Principal
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>,
+            document.body
+          )}
 
           {/* Modal simplificado para redirecionar para cadastro de endereço - usando portal */}
           {typeof window !== 'undefined' && showAddressModal && createPortal(
