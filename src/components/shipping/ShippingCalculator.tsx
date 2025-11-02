@@ -19,6 +19,8 @@ interface ShippingOption {
     max: number
   }
   company: string
+  is_local?: boolean
+  description?: string
 }
 
 interface ShippingCalculatorProps {
