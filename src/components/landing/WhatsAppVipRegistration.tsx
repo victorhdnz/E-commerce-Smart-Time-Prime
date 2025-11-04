@@ -59,9 +59,40 @@ export function WhatsAppVipRegistration({ whatsappGroupLink }: WhatsAppVipRegist
       setSuccess(true)
       
       // Redirecionar para o grupo do WhatsApp após um pequeno delay
+      // Usar método que abre direto no app WhatsApp
       if (groupLink) {
         setTimeout(() => {
-          window.open(groupLink, '_blank')
+          // Função para abrir grupo no WhatsApp
+          const enterGroup = (link: string) => {
+            // Verificar se é mobile
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+            
+            if (isMobile) {
+              // Para mobile, tentar abrir direto no app WhatsApp
+              // Se o link contém chat.whatsapp.com, usar o formato que abre no app
+              if (link.includes('chat.whatsapp.com')) {
+                // Tentar usar o método que abre direto no app
+                window.location.href = link
+                // Fallback: se não abrir no app em 1 segundo, abrir no navegador
+                setTimeout(() => {
+                  window.open(link, '_blank')
+                }, 1000)
+              } else {
+                window.open(link, '_blank')
+              }
+            } else {
+              // Para desktop, abrir em nova aba
+              window.open(link, '_blank')
+            }
+          }
+          
+          // Tentar usar função enterGroup se disponível
+          if (typeof window !== 'undefined' && (window as any).enterGroup) {
+            (window as any).enterGroup(groupLink)
+          } else {
+            // Usar função customizada
+            enterGroup(groupLink)
+          }
         }, 500)
       }
     } catch (error: any) {

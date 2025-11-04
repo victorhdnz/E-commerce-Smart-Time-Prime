@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useCart } from '@/hooks/useCart'
+import { useUserLocation } from '@/hooks/useUserLocation'
 import { formatCurrency } from '@/lib/utils/format'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Loader2, Truck, MapPin } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 interface ShippingOption {
   id: string
@@ -32,7 +34,9 @@ export function ShippingCalculator({
   onShippingSelected,
   selectedShipping,
 }: ShippingCalculatorProps) {
+  const router = useRouter()
   const { items } = useCart()
+  const { userAddress, needsAddress } = useUserLocation()
   const [cep, setCep] = useState('')
   const [loading, setLoading] = useState(false)
   const [options, setOptions] = useState<ShippingOption[]>([])
@@ -40,9 +44,20 @@ export function ShippingCalculator({
     selectedShipping || null
   )
 
-  const calculateShipping = async () => {
-    if (!cep || cep.replace(/\D/g, '').length !== 8) {
-      toast.error('CEP inválido')
+  // Preencher CEP automaticamente se houver endereço cadastrado
+  useEffect(() => {
+    if (userAddress?.cep && !cep) {
+      const formattedCEP = userAddress.cep.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')
+      setCep(formattedCEP)
+      // Calcular frete automaticamente
+      setTimeout(() => {
+        calculateShippingWithCEP(formattedCEP)
+      }, 500)
+    }
+  }, [userAddress])
+
+  const calculateShippingWithCEP = async (cepValue: string) => {
+    if (!cepValue || cepValue.replace(/\D/g, '').length !== 8) {
       return
     }
 
@@ -54,7 +69,7 @@ export function ShippingCalculator({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          cep: cep.replace(/\D/g, ''),
+          cep: cepValue.replace(/\D/g, ''),
           items: items,
         }),
       })
@@ -79,6 +94,14 @@ export function ShippingCalculator({
     } finally {
       setLoading(false)
     }
+  }
+
+  const calculateShipping = async () => {
+    if (!cep || cep.replace(/\D/g, '').length !== 8) {
+      toast.error('CEP inválido')
+      return
+    }
+    await calculateShippingWithCEP(cep)
   }
 
   const handleCepChange = (value: string) => {
@@ -106,6 +129,22 @@ export function ShippingCalculator({
           <MapPin className="inline mr-2" size={16} />
           Calcular Frete
         </label>
+        {needsAddress && (
+          <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800 mb-2">
+              Cadastre um endereço para calcular o frete automaticamente
+            </p>
+            <Button
+              onClick={() => router.push('/minha-conta/enderecos')}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              <MapPin size={16} className="mr-2" />
+              Cadastrar Endereço
+            </Button>
+          </div>
+        )}
         <div className="flex gap-2">
           <Input
             value={cep}

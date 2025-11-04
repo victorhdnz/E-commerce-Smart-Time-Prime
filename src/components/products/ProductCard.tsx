@@ -8,9 +8,10 @@ import Image from 'next/image'
 import { Card } from '@/components/ui/Card'
 import { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
-import { ShoppingCart, Eye, MapPin } from 'lucide-react'
+import { ShoppingCart, Eye, MapPin, GitCompare } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useCart } from '@/hooks/useCart'
+import { useProductComparison } from '@/hooks/useProductComparison'
 import toast from 'react-hot-toast'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { getProductPrice } from '@/lib/utils/price'
@@ -24,9 +25,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const router = useRouter()
   const mainImage = product.images?.[0] || product.colors?.[0]?.images[0]
   const { addItem } = useCart()
+  const { addProduct, products, canAddMore } = useProductComparison()
   const { isAuthenticated } = useAuth()
   const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
   const [showAddressModal, setShowAddressModal] = useState(false)
+  const isInComparison = products.some(p => p.id === product.id)
 
   // Atualizar quando usuário cadastrar endereço (via evento customizado)
   useEffect(() => {
@@ -191,14 +194,42 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             )}
           </div>
 
-          <button
-            onClick={handleAddToCart}
-            disabled={product.stock === 0}
-            className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all hover:scale-110 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            title={product.stock === 0 ? 'Produto esgotado' : 'Adicionar ao carrinho'}
-          >
-            <ShoppingCart size={20} />
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (isInComparison) {
+                  toast.info('Produto já está na comparação')
+                  router.push('/comparar')
+                  return
+                }
+                if (!canAddMore()) {
+                  toast.error('Você pode comparar até 4 produtos. Limpe a comparação atual ou remova algum produto.')
+                  return
+                }
+                addProduct(product)
+                toast.success('Produto adicionado à comparação!')
+              }}
+              disabled={!canAddMore() && !isInComparison}
+              className={`p-2 rounded-full transition-all hover:scale-110 disabled:bg-gray-400 disabled:cursor-not-allowed ${
+                isInComparison 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-gray-700 text-white hover:bg-gray-600'
+              }`}
+              title={isInComparison ? 'Ver comparação' : canAddMore() ? 'Adicionar à comparação' : 'Limite de comparação atingido'}
+            >
+              <GitCompare size={18} />
+            </button>
+            <button
+              onClick={handleAddToCart}
+              disabled={product.stock === 0}
+              className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all hover:scale-110 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              title={product.stock === 0 ? 'Produto esgotado' : 'Adicionar ao carrinho'}
+            >
+              <ShoppingCart size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Modal simplificado para redirecionar para cadastro de endereço - usando portal */}

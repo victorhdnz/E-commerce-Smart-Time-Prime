@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { createClient } from '@/lib/supabase/client'
 import { Address } from '@/types'
+import { fetchCEP } from '@/lib/utils/cep'
 import toast from 'react-hot-toast'
 import { Plus, Edit, Trash2, MapPin, User, Package, LogOut } from 'lucide-react'
 import Link from 'next/link'
@@ -422,7 +423,28 @@ export default function MyAddressesPage() {
           <Input
             label="CEP"
             value={formData.cep}
-            onChange={(e) => setFormData({ ...formData, cep: e.target.value })}
+            onChange={async (e) => {
+              const value = e.target.value
+              // Formatar CEP (xxxxx-xxx)
+              const formatted = value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')
+              setFormData({ ...formData, cep: formatted })
+              
+              // Buscar CEP automaticamente quando tiver 8 dígitos
+              if (formatted.replace(/\D/g, '').length === 8) {
+                const cepData = await fetchCEP(formatted)
+                if (cepData) {
+                  setFormData({
+                    ...formData,
+                    cep: formatted,
+                    street: cepData.street,
+                    neighborhood: cepData.neighborhood,
+                    city: cepData.city,
+                    state: cepData.state,
+                  })
+                  toast.success('Endereço preenchido automaticamente!')
+                }
+              }
+            }}
             placeholder="Ex: 38400-000"
             maxLength={9}
           />

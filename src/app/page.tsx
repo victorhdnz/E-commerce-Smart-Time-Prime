@@ -246,73 +246,89 @@ export default async function Home() {
       )}
 
       {/* 2. Hero Section (Banner de Abertura) */}
-      <HeroSection 
-        title={settings.hero_title || '🖤 SMART TIME PRIME — BLACK FRIDAY UBERLÂNDIA'}
-        subtitle={settings.hero_subtitle || '🚨 A BLACK FRIDAY CHEGOU!\nSmartwatch Série 11 com até 50% OFF + 4 BRINDES EXCLUSIVOS\n📦 Entrega em até 24h direto do Shopping Planalto – Uberlândia/MG'}
-        badgeText={settings.hero_badge_text}
-        ctaText={settings.hero_cta_text || '💬 QUERO MEU SÉRIE 11 AGORA!'}
-        backgroundColor={settings.hero_bg_color || '#000000'}
-        textColor={settings.hero_text_color || '#FFFFFF'}
-        heroImages={heroImages}
-        heroBanner={settings.hero_banner}
-        heroBanners={heroBanners}
-        timerEndDate={timerEnabled ? timerEndDate : undefined}
-      />
+      {settings.section_hero_visible !== false && (
+        <HeroSection 
+          title={settings.hero_title || '🖤 SMART TIME PRIME — BLACK FRIDAY UBERLÂNDIA'}
+          subtitle={settings.hero_subtitle || '🚨 A BLACK FRIDAY CHEGOU!\nSmartwatch Série 11 com até 50% OFF + 4 BRINDES EXCLUSIVOS\n📦 Entrega em até 24h direto do Shopping Planalto – Uberlândia/MG'}
+          badgeText={settings.hero_badge_text}
+          ctaText={settings.hero_cta_text || '💬 QUERO MEU SÉRIE 11 AGORA!'}
+          backgroundColor={settings.hero_bg_color || '#000000'}
+          textColor={settings.hero_text_color || '#FFFFFF'}
+          heroImages={heroImages}
+          heroBanner={settings.hero_banner}
+          heroBanners={heroBanners}
+          timerEndDate={timerEnabled ? timerEndDate : undefined}
+        />
+      )}
 
       {/* 3. Product Photos and Video (Fotos e Vídeo do Produto) */}
-      <MediaShowcase 
-        title={settings.media_showcase_title || '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO'}
-        images={showcaseImages}
-        videoUrl={settings.showcase_video_url || ""}
-        features={mediaFeatures}
-      />
+      {settings.section_media_showcase_visible !== false && (
+        <MediaShowcase 
+          title={settings.media_showcase_title || '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO'}
+          images={showcaseImages}
+          videoUrl={settings.showcase_video_url || ""}
+          features={mediaFeatures}
+        />
+      )}
 
       {/* 4. Value Package (Pacote de Valor - Oferta + Benefícios) */}
-      <ValuePackage
-        title={settings.value_package_title}
-        image={settings.value_package_image}
-        items={valuePackageItems}
-        totalPrice={settings.value_package_total_price}
-        salePrice={settings.value_package_sale_price}
-        deliveryText={settings.value_package_delivery_text}
-        buttonText={settings.value_package_button_text}
-        stockText={settings.value_package_stock_text}
-        endDate={timerEnabled ? timerEndDate : undefined}
-      />
+      {settings.section_value_package_visible !== false && (
+        <ValuePackage
+          title={settings.value_package_title}
+          image={settings.value_package_image}
+          items={valuePackageItems}
+          totalPrice={settings.value_package_total_price}
+          salePrice={settings.value_package_sale_price}
+          deliveryText={settings.value_package_delivery_text}
+          buttonText={settings.value_package_button_text}
+          buttonLink={settings.value_package_button_link}
+          stockText={settings.value_package_stock_text}
+          endDate={timerEnabled ? timerEndDate : undefined}
+        />
+      )}
 
       {/* 5. Customer Reviews (Avaliações de Clientes) */}
-      <SocialProof
-        reviews={reviewsToUse as any}
-        title={settings.social_proof_title}
-        googleIcon={settings.social_proof_google_icon !== undefined ? settings.social_proof_google_icon : true}
-        allowPhotos={settings.social_proof_allow_photos !== undefined ? settings.social_proof_allow_photos : true}
-        testimonialCount={settings.social_proof_testimonial_count}
-      />
+      {settings.section_social_proof_visible !== false && (
+        <SocialProof
+          reviews={reviewsToUse as any}
+          title={settings.social_proof_title}
+          googleIcon={settings.social_proof_google_icon !== undefined ? settings.social_proof_google_icon : true}
+          allowPhotos={settings.social_proof_allow_photos !== undefined ? settings.social_proof_allow_photos : true}
+          testimonialCount={settings.social_proof_testimonial_count}
+        />
+      )}
 
       {/* 6. Story (História) */}
-      <StorySection
-        title={settings.story_title}
-        content={settings.story_content}
-        images={settings.story_images}
-        image={settings.story_image} // Fallback para compatibilidade
-        foundersNames={settings.story_founders_names}
-      />
+      {settings.section_story_visible !== false && (
+        <StorySection
+          title={settings.story_title}
+          content={settings.story_content}
+          images={settings.story_images}
+          image={settings.story_image} // Fallback para compatibilidade
+          foundersNames={settings.story_founders_names}
+        />
+      )}
 
       {/* 7. WhatsApp Group (Grupo do WhatsApp) */}
-      <WhatsAppVipRegistration whatsappGroupLink={whatsappVipLink} />
+      {settings.section_whatsapp_vip_visible !== false && (
+        <WhatsAppVipRegistration whatsappGroupLink={whatsappVipLink} />
+      )}
 
       {/* 8. About Us (Quem Somos - apresentação da loja) */}
-      <AboutUsSection
-        title={settings.about_us_title}
-        description={settings.about_us_description}
-        storeImages={settings.about_us_store_images}
-        storeImage={settings.about_us_store_image} // Fallback para compatibilidade
-        foundersNames={settings.about_us_founders_names}
-        location={settings.about_us_location}
-      />
+      {settings.section_about_us_visible !== false && (
+        <AboutUsSection
+          title={settings.about_us_title}
+          description={settings.about_us_description}
+          storeImages={settings.about_us_store_images}
+          storeImage={settings.about_us_store_image} // Fallback para compatibilidade
+          foundersNames={settings.about_us_founders_names}
+          location={settings.about_us_location}
+        />
+      )}
 
       {/* 9. Footer (Rodapé) - Manter seção de contato existente */}
-      <section id="contato" className="py-20 bg-gray-50">
+      {settings.section_contact_visible !== false && (
+        <section id="contato" className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -393,7 +409,8 @@ export default async function Home() {
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      )}
 
       {/* FAQ Section */}
       <FAQSection faqs={faqsToShow as any} />

@@ -64,6 +64,7 @@ interface LandingSettings {
   value_package_sale_price: string
   value_package_delivery_text: string
   value_package_button_text: string
+  value_package_button_link: string // Novo campo para link de redirecionamento
   value_package_whatsapp_group_link: string
   value_package_whatsapp_number: string
   value_package_stock_text: string
@@ -107,6 +108,26 @@ interface LandingSettings {
   // Contact Section
   contact_title: string
   contact_description: string
+  
+    // Controles de visibilidade das seções
+  section_hero_visible: boolean
+  section_media_showcase_visible: boolean
+  section_value_package_visible: boolean
+  section_social_proof_visible: boolean
+  section_story_visible: boolean
+  section_whatsapp_vip_visible: boolean
+  section_about_us_visible: boolean
+  section_contact_visible: boolean
+  
+  // Section visibility defaults (novos campos)
+  section_hero_visible_default: boolean
+  section_media_showcase_visible_default: boolean
+  section_value_package_visible_default: boolean
+  section_social_proof_visible_default: boolean
+  section_story_visible_default: boolean
+  section_whatsapp_vip_visible_default: boolean
+  section_about_us_visible_default: boolean
+  section_contact_visible_default: boolean
   
   // About antigo (compatibilidade)
   about_title: string
@@ -184,6 +205,7 @@ export default function EditLandingPage() {
     value_package_sale_price: 'R$ 299',
     value_package_delivery_text: '📍 Entrega em até 24h para Uberlândia',
     value_package_button_text: '💬 GARANTIR MEU DESCONTO AGORA!',
+    value_package_button_link: '', // Novo campo para link de redirecionamento
     value_package_whatsapp_group_link: '',
     value_package_whatsapp_number: '5534984136291',
     value_package_stock_text: '📦 Estoque limitado',
@@ -240,6 +262,24 @@ export default function EditLandingPage() {
     // Contact
     contact_title: 'Entre em Contato',
     contact_description: 'Estamos aqui para ajudar você!',
+    // Controles de visibilidade das seções (padrão: todas visíveis)
+    section_hero_visible: true,
+    section_media_showcase_visible: true,
+    section_value_package_visible: true,
+    section_social_proof_visible: true,
+    section_story_visible: true,
+    section_whatsapp_vip_visible: true,
+    section_about_us_visible: true,
+    section_contact_visible: true,
+    // Section visibility defaults (novos campos)
+    section_hero_visible_default: true,
+    section_media_showcase_visible_default: true,
+    section_value_package_visible_default: true,
+    section_social_proof_visible_default: true,
+    section_story_visible_default: true,
+    section_whatsapp_vip_visible_default: true,
+    section_about_us_visible_default: true,
+    section_contact_visible_default: true,
     // About antigo
     about_title: '',
     about_description: '',
@@ -356,6 +396,7 @@ export default function EditLandingPage() {
           value_package_sale_price: savedSettings.value_package_sale_price || 'R$ 299',
           value_package_delivery_text: savedSettings.value_package_delivery_text || '📍 Entrega em até 24h para Uberlândia',
           value_package_button_text: savedSettings.value_package_button_text || '💬 GARANTIR MEU DESCONTO AGORA!',
+          value_package_button_link: savedSettings.value_package_button_link || '',
           value_package_whatsapp_group_link: savedSettings.value_package_whatsapp_group_link || '',
           value_package_whatsapp_number: savedSettings.value_package_whatsapp_number || '5534984136291',
           value_package_stock_text: savedSettings.value_package_stock_text || '📦 Estoque limitado',
@@ -1073,6 +1114,16 @@ export default function EditLandingPage() {
               />
 
               <Input
+                label="Link de Redirecionamento do Botão (opcional)"
+                value={settings.value_package_button_link}
+                onChange={(e) =>
+                  setSettings({ ...settings, value_package_button_link: e.target.value })
+                }
+                placeholder="Ex: /produtos ou /produtos/relogio-smartwatch"
+                helperText="Deixe vazio para manter comportamento padrão (scroll para WhatsApp VIP)"
+              />
+
+              <Input
                 label="Texto de Estoque"
                 value={settings.value_package_stock_text}
                 onChange={(e) =>
@@ -1209,6 +1260,44 @@ export default function EditLandingPage() {
                 }
                 placeholder="Olá! Gostaria de saber mais sobre os produtos."
               />
+            </div>
+          </motion.div>
+
+          {/* Controles de Visibilidade das Seções */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.75 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h2 className="text-2xl font-bold mb-6">👁️ Visibilidade das Seções</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Controle quais seções da página inicial devem ser exibidas.
+            </p>
+            
+            <div className="space-y-3">
+              {[
+                { key: 'section_hero_visible', label: 'Hero (Banner de Abertura)' },
+                { key: 'section_media_showcase_visible', label: 'Fotos e Vídeo do Produto' },
+                { key: 'section_value_package_visible', label: 'Você Leva Tudo Isso' },
+                { key: 'section_social_proof_visible', label: 'Avaliações de Clientes' },
+                { key: 'section_story_visible', label: 'Nossa História' },
+                { key: 'section_whatsapp_vip_visible', label: 'Grupo VIP do WhatsApp' },
+                { key: 'section_about_us_visible', label: 'Sobre a Smart Time Prime' },
+                { key: 'section_contact_visible', label: 'Contato' },
+              ].map((section) => (
+                <label key={section.key} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50">
+                  <input
+                    type="checkbox"
+                    checked={(settings as any)[section.key] ?? true}
+                    onChange={(e) =>
+                      setSettings({ ...settings, [section.key]: e.target.checked } as any)
+                    }
+                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                  />
+                  <span className="text-sm font-medium">{section.label}</span>
+                </label>
+              ))}
             </div>
           </motion.div>
 

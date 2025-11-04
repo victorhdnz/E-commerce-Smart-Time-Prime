@@ -11,15 +11,17 @@ import { formatCurrency } from '@/lib/utils/format'
 import { createClient } from '@/lib/supabase/client'
 import { Product, ProductColor } from '@/types'
 import Image from 'next/image'
-import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin, Eye, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin, Eye, X, ChevronLeft, ChevronRight, GitCompare } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useUserLocation } from '@/hooks/useUserLocation'
+import { useProductComparison } from '@/hooks/useProductComparison'
 import { getProductPrice } from '@/lib/utils/price'
 
 export default function ProductPage({ params }: { params: { slug: string } }) {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
   const { addItem } = useCart()
+  const { addProduct, products, canAddMore } = useProductComparison()
   const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
 
   const [product, setProduct] = useState<Product | null>(null)
@@ -180,6 +182,12 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     }
 
     if (!product) return
+
+    // Verificar se o produto tem cores e se uma cor foi selecionada
+    if (product.colors && product.colors.length > 0 && !selectedColor) {
+      toast.error('Por favor, selecione uma cor antes de adicionar ao carrinho')
+      return
+    }
 
     addItem(product, selectedColor || undefined, quantity)
 
@@ -628,6 +636,27 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             >
               <ShoppingCart size={20} className="mr-2" />
               {product.stock === 0 ? 'Esgotado' : 'Adicionar ao Carrinho'}
+            </Button>
+            <Button
+              onClick={() => {
+                if (products.some(p => p.id === product.id)) {
+                  toast.info('Produto já está na comparação')
+                  router.push('/comparar')
+                  return
+                }
+                if (!canAddMore()) {
+                  toast.error('Você pode comparar até 4 produtos. Limpe a comparação atual ou remova algum produto.')
+                  return
+                }
+                addProduct(product)
+                toast.success('Produto adicionado à comparação!')
+              }}
+              disabled={!canAddMore() && !products.some(p => p.id === product.id)}
+              variant="outline"
+              size="lg"
+            >
+              <GitCompare size={20} className="mr-2" />
+              {products.some(p => p.id === product.id) ? 'Na Comparação' : 'Comparar'}
             </Button>
             <button
               onClick={async () => {

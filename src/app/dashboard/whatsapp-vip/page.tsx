@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
+import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
-import { MessageCircle, User, Mail, Phone, Calendar, ExternalLink } from 'lucide-react'
+import { MessageCircle, User, Mail, Phone, Calendar, ExternalLink, Download } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 
@@ -56,6 +57,30 @@ export default function DashboardWhatsAppVipPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleExportCSV = () => {
+    const csv = [
+      ['Nome', 'E-mail', 'Telefone', 'Data de Cadastro'].join(','),
+      ...registrations.map(reg => [
+        `"${reg.name}"`,
+        `"${reg.email}"`,
+        `"${reg.phone}"`,
+        new Date(reg.created_at).toLocaleDateString('pt-BR'),
+      ].join(',')),
+    ].join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `grupo_vip_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    toast.success('CSV exportado com sucesso!')
   }
 
   const loadWhatsAppLink = async () => {
@@ -154,6 +179,14 @@ export default function DashboardWhatsAppVipPage() {
               {whatsappGroupLink ? 'Editar Link' : 'Adicionar Link'}
             </button>
           </div>
+          {registrations.length > 0 && (
+            <div className="border-t pt-4 mt-4">
+              <Button onClick={handleExportCSV} variant="outline" className="w-full">
+                <Download size={18} className="mr-2" />
+                Exportar CSV dos Registros
+              </Button>
+            </div>
+          )}
         </motion.div>
 
         {/* Estatísticas */}

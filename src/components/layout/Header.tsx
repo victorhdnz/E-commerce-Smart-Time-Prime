@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { ShoppingCart, Menu, X } from 'lucide-react'
+import { ShoppingCart, Menu, X, GitCompare } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
+import { useProductComparison } from '@/hooks/useProductComparison'
 import { Button } from '@/components/ui/Button'
 import { UserMenu } from './UserMenu'
 import { AuthDebug } from './AuthDebug'
@@ -19,7 +20,9 @@ export const Header = () => {
   const [siteSettings, setSiteSettings] = useState<{ site_logo?: string } | null>(null)
   const { isAuthenticated, profile, loading } = useAuth()
   const { getItemCount } = useCart()
+  const { products } = useProductComparison()
   const itemCount = getItemCount()
+  const comparisonCount = products.length
 
   // Carregar logo do site
   useEffect(() => {
@@ -146,6 +149,19 @@ export const Header = () => {
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
+            {/* Comparison Icon */}
+            <Link
+              href="/comparar"
+              className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <GitCompare size={24} />
+              {comparisonCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-black text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                  {comparisonCount}
+                </span>
+              )}
+            </Link>
+            
             {/* Cart */}
             <Link
               href="/carrinho"

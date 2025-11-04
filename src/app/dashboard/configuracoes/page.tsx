@@ -18,6 +18,7 @@ interface SiteConfig {
   contact_email: string
   contact_phone: string
   contact_whatsapp: string
+  contact_maps_link: string
   instagram_url: string
   facebook_url: string
   address_street: string
@@ -39,6 +40,7 @@ export default function ConfiguracoesPage() {
     contact_email: 'contato@smarttimeprime.com.br',
     contact_phone: '+55 34 8413-6291',
     contact_whatsapp: '+55 34 8413-6291',
+    contact_maps_link: '',
     instagram_url: 'https://www.instagram.com/smarttimeprime',
     facebook_url: 'https://www.facebook.com/smarttimeprime/',
     address_street: 'Av. Imbaúba, 1676 - Loja 1046',
@@ -73,6 +75,7 @@ export default function ConfiguracoesPage() {
           contact_email: data.contact_email || config.contact_email,
           contact_phone: data.contact_phone || config.contact_phone,
           contact_whatsapp: data.contact_whatsapp || config.contact_whatsapp,
+          contact_maps_link: data.contact_maps_link || config.contact_maps_link,
           instagram_url: data.instagram_url || config.instagram_url,
           facebook_url: data.facebook_url || config.facebook_url,
           address_street: data.address_street || config.address_street,
@@ -91,20 +94,45 @@ export default function ConfiguracoesPage() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      const { error } = await supabase
+      // Verificar se existe registro com id=1
+      const { data: existingData, error: checkError } = await supabase
         .from('site_settings')
-        .update({
-          ...config,
-          updated_at: new Date().toISOString(),
-        })
+        .select('id')
         .eq('id', 1)
+        .maybeSingle()
 
-      if (error) throw error
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError
+      }
+
+      if (existingData) {
+        // Atualizar registro existente
+        const { error } = await supabase
+          .from('site_settings')
+          .update({
+            ...config,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', 1)
+
+        if (error) throw error
+      } else {
+        // Criar novo registro
+        const { error } = await supabase
+          .from('site_settings')
+          .insert({
+            id: 1,
+            ...config,
+            updated_at: new Date().toISOString(),
+          })
+
+        if (error) throw error
+      }
 
       toast.success('Configurações salvas com sucesso!')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar configurações:', error)
-      toast.error('Erro ao salvar configurações')
+      toast.error(error.message || 'Erro ao salvar configurações')
     } finally {
       setSaving(false)
     }
@@ -209,6 +237,16 @@ export default function ConfiguracoesPage() {
                   setConfig({ ...config, contact_whatsapp: e.target.value })
                 }
                 placeholder="+55 34 8413-6291"
+              />
+
+              <Input
+                label="Link do Google Maps"
+                value={config.contact_maps_link}
+                onChange={(e) =>
+                  setConfig({ ...config, contact_maps_link: e.target.value })
+                }
+                placeholder="https://maps.google.com/..."
+                helperText="Link do Google Maps para a localização da loja"
               />
             </div>
           </motion.div>

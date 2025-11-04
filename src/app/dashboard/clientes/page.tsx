@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils/format'
 import { formatDateTime } from '@/lib/utils/format'
 import { BackButton } from '@/components/ui/BackButton'
-import { User, MapPin, Package, Mail, Phone, Search, Eye } from 'lucide-react'
+import { User, MapPin, Package, Mail, Phone, Search, Eye, Download } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface ClientProfile {
@@ -144,6 +144,38 @@ export default function DashboardClientsPage() {
     setFilteredClients(filtered)
   }, [searchTerm, clients])
 
+  const handleExportCSV = () => {
+    const csv = [
+      ['Nome', 'E-mail', 'Telefone', 'Data de Cadastro', 'Endereço Padrão', 'Total de Pedidos'].join(','),
+      ...filteredClients.map(client => {
+        const defaultAddress = client.addresses?.find(a => a.is_default)
+        const addressStr = defaultAddress 
+          ? `"${defaultAddress.street}, ${defaultAddress.number} - ${defaultAddress.neighborhood}, ${defaultAddress.city}/${defaultAddress.state}"`
+          : 'Não cadastrado'
+        return [
+          `"${client.full_name || 'N/A'}"`,
+          `"${client.email}"`,
+          `"${client.phone || 'N/A'}"`,
+          new Date(client.created_at).toLocaleDateString('pt-BR'),
+          addressStr,
+          (client.orders?.length || 0).toString(),
+        ].join(',')
+      }),
+    ].join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `clientes_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    toast.success('CSV exportado com sucesso!')
+  }
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -166,6 +198,12 @@ export default function DashboardClientsPage() {
               Visualize informações de perfis, endereços e compras dos clientes
             </p>
           </div>
+          {filteredClients.length > 0 && (
+            <Button onClick={handleExportCSV} variant="outline">
+              <Download size={18} className="mr-2" />
+              Exportar CSV
+            </Button>
+          )}
         </div>
 
         {/* Search */}

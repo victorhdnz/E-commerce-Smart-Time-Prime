@@ -18,7 +18,7 @@ interface ProductFiltersProps {
 }
 
 export const ProductFilters = ({ onFilterChange, categories }: ProductFiltersProps) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(true)
   const [filters, setFilters] = useState<FilterState>({
     categories: [],
     priceRange: [0, 2000],
