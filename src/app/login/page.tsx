@@ -121,11 +121,11 @@ export default function LoginPage() {
         <div className="text-center text-sm text-gray-600 mt-6">
           <p>
             Ao continuar, você concorda com nossos{' '}
-            <a href="/termos-uso" className="text-black hover:underline">
+            <a href="/termos?termo=termos-uso" className="text-black hover:underline">
               Termos de Uso
             </a>{' '}
             e{' '}
-            <a href="/politica-privacidade" className="text-black hover:underline">
+            <a href="/termos?termo=politica-privacidade" className="text-black hover:underline">
               Política de Privacidade
             </a>
           </p>

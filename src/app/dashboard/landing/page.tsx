@@ -831,7 +831,7 @@ export default function EditLandingPage() {
                   }
                   className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
                 />
-                <span className="text-sm font-medium">Ocultar seção</span>
+                <span className="text-sm font-medium">Ativar Seção</span>
               </label>
             </div>
             
@@ -947,7 +947,7 @@ export default function EditLandingPage() {
                   }
                   className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
                 />
-                <span className="text-sm font-medium">Ocultar seção</span>
+                <span className="text-sm font-medium">Ativar Seção</span>
               </label>
             </div>
             
@@ -996,7 +996,7 @@ export default function EditLandingPage() {
                   }
                   className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
                 />
-                <span className="text-sm font-medium">Ocultar seção</span>
+                <span className="text-sm font-medium">Ativar Seção</span>
               </label>
             </div>
             <p className="text-sm text-gray-600 mb-6">
@@ -1225,7 +1225,7 @@ export default function EditLandingPage() {
                   }
                   className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
                 />
-                <span className="text-sm font-medium">Ocultar seção</span>
+                <span className="text-sm font-medium">Ativar Seção</span>
               </label>
             </div>
             
@@ -1405,7 +1405,7 @@ export default function EditLandingPage() {
                   }
                   className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
                 />
-                <span className="text-sm font-medium">Ocultar seção</span>
+                <span className="text-sm font-medium">Ativar Seção</span>
               </label>
             </div>
             
@@ -1493,7 +1493,7 @@ export default function EditLandingPage() {
                   }
                   className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
                 />
-                <span className="text-sm font-medium">Ocultar seção</span>
+                <span className="text-sm font-medium">Ativar Seção</span>
               </label>
             </div>
             
@@ -1879,7 +1879,7 @@ export default function EditLandingPage() {
                   }
                   className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
                 />
-                <span className="text-sm font-medium">Ocultar seção</span>
+                <span className="text-sm font-medium">Ativar Seção</span>
               </label>
             </div>
             

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { FileText, Shield, Truck, RotateCcw, Loader2, ChevronRight } from 'lucide-react'
 import { FadeInSection } from '@/components/ui/FadeInSection'
@@ -30,10 +31,18 @@ const getIcon = (iconName: string) => {
 }
 
 export default function TermosPage() {
+  const searchParams = useSearchParams()
   const [terms, setTerms] = useState<Term[]>([])
   const [selectedTerm, setSelectedTerm] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+
+  const handleTermSelect = (termKey: string) => {
+    setSelectedTerm(termKey)
+    // Atualizar URL sem recarregar a página
+    const newUrl = `/termos?termo=${termKey}`
+    window.history.pushState({}, '', newUrl)
+  }
 
   useEffect(() => {
     const loadTerms = async () => {
@@ -51,8 +60,22 @@ export default function TermosPage() {
 
         if (data && data.length > 0) {
           setTerms(data as Term[])
-          // Selecionar o primeiro termo automaticamente
-          setSelectedTerm(data[0].key)
+          
+          // Verificar se há um parâmetro de query para selecionar um termo específico
+          const termFromQuery = searchParams.get('termo')
+          if (termFromQuery) {
+            // Verificar se o termo existe na lista
+            const termExists = data.find(t => t.key === termFromQuery)
+            if (termExists) {
+              setSelectedTerm(termFromQuery)
+            } else {
+              // Se não encontrar, usar o primeiro termo
+              setSelectedTerm(data[0].key)
+            }
+          } else {
+            // Selecionar o primeiro termo automaticamente
+            setSelectedTerm(data[0].key)
+          }
         } else {
           setTerms([])
         }
@@ -65,7 +88,7 @@ export default function TermosPage() {
     }
 
     loadTerms()
-  }, [])
+  }, [searchParams])
 
   if (loading) {
     return (
@@ -124,7 +147,7 @@ export default function TermosPage() {
                     return (
                       <button
                         key={term.id}
-                        onClick={() => setSelectedTerm(term.key)}
+                        onClick={() => handleTermSelect(term.key)}
                         className={`w-full text-left p-3 rounded-lg transition-all duration-200 flex items-center gap-3 ${
                           isActive
                             ? 'bg-black text-white shadow-lg'

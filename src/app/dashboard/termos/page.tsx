@@ -184,7 +184,15 @@ export default function DashboardTermsPage() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [showNewTermModal, setShowNewTermModal] = useState(false)
-  const [newTerm, setNewTerm] = useState({ title: '', key: '', icon: 'file-text' })
+  const [newTerm, setNewTerm] = useState({ title: '', icon: 'file-text' })
+  const [newTermSections, setNewTermSections] = useState<TermSection[]>([
+    {
+      id: `section-${Date.now()}-0`,
+      title: 'Primeira Seção',
+      content: '',
+      level: 2
+    }
+  ])
 
   useEffect(() => {
     if (!authLoading) {
@@ -333,8 +341,44 @@ export default function DashboardTermsPage() {
           }
         }
       } else {
+        // Verificar se todos os termos padrão existem
+        const existingKeys = data.map(t => t.key)
+        const missingTerms = TERMS_CONFIG.filter(config => !existingKeys.includes(config.key))
+        
+        if (missingTerms.length > 0) {
+          // Inserir termos faltantes
+          const termsToInsert = missingTerms.map(config => ({
+            key: config.key,
+            title: config.title,
+            content: config.defaultContent,
+            icon: config.icon,
+          }))
+
+          const { error: insertError } = await supabase
+            .from('site_terms')
+            .insert(termsToInsert)
+
+          if (insertError && insertError.code !== '42P01') {
+            console.error('Erro ao criar termos faltantes:', insertError)
+          } else {
+            // Recarregar termos após inserir os faltantes
+            const { data: updatedData } = await supabase
+              .from('site_terms')
+              .select('*')
+              .order('key')
+            
+            setTerms(updatedData as Term[] || data)
+            if (updatedData && updatedData.length > 0 && !selectedTerm) {
+              setSelectedTerm(updatedData[0].key)
+            } else if (data.length > 0 && !selectedTerm) {
+              setSelectedTerm(data[0].key)
+            }
+            return // Sair aqui para evitar duplicar o código abaixo
+          }
+        }
+        
         setTerms(data as Term[])
-        if (data.length > 0) {
+        if (data.length > 0 && !selectedTerm) {
           setSelectedTerm(data[0].key)
         }
       }
@@ -410,54 +454,89 @@ export default function DashboardTermsPage() {
     ))
   }
 
+  const buildContentFromNewTermSections = (sections: TermSection[], title: string): string => {
+    let content = `# ${title}\n\n`
+
+    sections.forEach((section) => {
+      const prefix = '#'.repeat(section.level)
+      content += `${prefix} ${section.title}\n\n`
+      
+      if (section.content.trim()) {
+        content += `${section.content.trim()}\n\n`
+      }
+    })
+
+    return content.trim()
+  }
+
   const handleCreateNewTerm = async () => {
-    if (!newTerm.title || !newTerm.key) {
-      toast.error('Preencha o título e a chave do termo')
+    if (!newTerm.title || newTerm.title.trim() === '') {
+      toast.error('Preencha o título do termo')
       return
     }
 
     try {
       setSaving(true)
-      const key = slugify(newTerm.key) || newTerm.key.toLowerCase().replace(/\s+/g, '-')
+      // Gerar chave automaticamente a partir do título
+      const key = slugify(newTerm.title)
+      
+      if (!key || key.length === 0) {
+        toast.error('O título precisa ter pelo menos um caractere válido')
+        return
+      }
       
       // Verificar se já existe
-      const { data: existing } = await supabase
+      const { data: existing, error: checkError } = await supabase
         .from('site_terms')
         .select('key')
         .eq('key', key)
         .maybeSingle()
 
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError
+      }
+
       if (existing) {
-        toast.error('Já existe um termo com esta chave')
+        toast.error('Já existe um termo com este título. Tente outro título.')
         return
       }
 
-      const defaultContent = `# ${newTerm.title}\n\n## 1. Primeira Seção\n\nConteúdo da primeira seção aqui.`
+      // Construir conteúdo a partir das seções criadas
+      const content = buildContentFromNewTermSections(newTermSections, newTerm.title)
 
       const { error } = await supabase
         .from('site_terms')
         .insert({
           key,
-          title: newTerm.title,
-          content: defaultContent,
+          title: newTerm.title.trim(),
+          content,
           icon: newTerm.icon,
         })
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro detalhado ao criar termo:', error)
+        throw error
+      }
 
       toast.success('Termo criado com sucesso!')
       setShowNewTermModal(false)
-      setNewTerm({ title: '', key: '', icon: 'file-text' })
+      setNewTerm({ title: '', icon: 'file-text' })
+      setNewTermSections([{
+        id: `section-${Date.now()}-0`,
+        title: 'Primeira Seção',
+        content: '',
+        level: 2
+      }])
       await loadTerms()
       // Aguardar um pouco para garantir que o termo foi carregado
       setTimeout(() => {
         setSelectedTerm(key)
-        // Parsear as seções do conteúdo padrão
-        parseSections(defaultContent)
+        // Parsear as seções do conteúdo criado
+        parseSections(content)
       }, 300)
     } catch (error: any) {
       console.error('Erro ao criar termo:', error)
-      toast.error('Erro ao criar termo')
+      toast.error(error.message || 'Erro ao criar termo. Verifique o console para mais detalhes.')
     } finally {
       setSaving(false)
     }
@@ -695,7 +774,7 @@ export default function DashboardTermsPage() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative"
+              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 relative"
             >
               <button
                 onClick={() => setShowNewTermModal(false)}
@@ -710,24 +789,9 @@ export default function DashboardTermsPage() {
                 <Input
                   label="Título do Termo *"
                   value={newTerm.title}
-                  onChange={(e) => {
-                    setNewTerm({ ...newTerm, title: e.target.value })
-                    if (!newTerm.key) {
-                      setNewTerm({ ...newTerm, title: e.target.value, key: slugify(e.target.value) })
-                    }
-                  }}
-                  placeholder="Ex: Política de Troca"
+                  onChange={(e) => setNewTerm({ ...newTerm, title: e.target.value })}
+                  placeholder="Ex: Política de Reembolso"
                 />
-
-                <Input
-                  label="Chave (URL) *"
-                  value={newTerm.key}
-                  onChange={(e) => setNewTerm({ ...newTerm, key: slugify(e.target.value) || e.target.value })}
-                  placeholder="Ex: politica-troca"
-                />
-                <p className="text-xs text-gray-500 -mt-2">
-                  Chave usada na URL (será convertida automaticamente)
-                </p>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Ícone</label>
@@ -743,13 +807,109 @@ export default function DashboardTermsPage() {
                   </select>
                 </div>
 
+                <div className="border-t pt-4 mt-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold">Seções do Termo</h3>
+                    <Button 
+                      onClick={() => {
+                        const newSection: TermSection = {
+                          id: `section-${Date.now()}`,
+                          title: 'Nova Seção',
+                          content: '',
+                          level: 2
+                        }
+                        setNewTermSections([...newTermSections, newSection])
+                      }} 
+                      size="sm" 
+                      variant="outline"
+                    >
+                      <Plus size={16} className="mr-2" />
+                      Adicionar Seção
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4 max-h-[400px] overflow-y-auto">
+                    {newTermSections.map((section, index) => (
+                      <div
+                        key={section.id}
+                        className="border rounded-lg p-4 bg-gray-50"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2 flex-1">
+                            <select
+                              value={section.level}
+                              onChange={(e) => {
+                                const updated = newTermSections.map(s => 
+                                  s.id === section.id ? { ...s, level: parseInt(e.target.value) } : s
+                                )
+                                setNewTermSections(updated)
+                              }}
+                              className="text-xs border rounded px-2 py-1"
+                            >
+                              <option value={1}>Título Principal (#)</option>
+                              <option value={2}>Seção (##)</option>
+                              <option value={3}>Subseção (###)</option>
+                            </select>
+                            <Input
+                              value={section.title}
+                              onChange={(e) => {
+                                const updated = newTermSections.map(s => 
+                                  s.id === section.id ? { ...s, title: e.target.value } : s
+                                )
+                                setNewTermSections(updated)
+                              }}
+                              placeholder="Título da seção"
+                              className="flex-1"
+                            />
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (newTermSections.length > 1) {
+                                setNewTermSections(newTermSections.filter(s => s.id !== section.id))
+                              } else {
+                                toast.error('É necessário ter pelo menos uma seção')
+                              }
+                            }}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Remover seção"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+
+                        <textarea
+                          value={section.content}
+                          onChange={(e) => {
+                            const updated = newTermSections.map(s => 
+                              s.id === section.id ? { ...s, content: e.target.value } : s
+                            )
+                            setNewTermSections(updated)
+                          }}
+                          placeholder="Conteúdo da seção (suporta Markdown: listas com -, negrito com **texto**)..."
+                          rows={4}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-sm"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="flex gap-3 pt-4">
                   <Button onClick={handleCreateNewTerm} isLoading={saving} className="flex-1" size="lg">
                     <Plus size={18} className="mr-2" />
                     Criar Termo
                   </Button>
                   <Button
-                    onClick={() => setShowNewTermModal(false)}
+                    onClick={() => {
+                      setShowNewTermModal(false)
+                      setNewTerm({ title: '', icon: 'file-text' })
+                      setNewTermSections([{
+                        id: `section-${Date.now()}-0`,
+                        title: 'Primeira Seção',
+                        content: '',
+                        level: 2
+                      }])
+                    }}
                     variant="outline"
                     size="lg"
                   >
