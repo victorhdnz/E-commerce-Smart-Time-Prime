@@ -65,9 +65,7 @@ interface LandingSettings {
   value_package_delivery_text: string
   value_package_button_text: string
   value_package_button_link: string // Novo campo para link de redirecionamento
-  value_package_whatsapp_group_link: string
   value_package_whatsapp_number: string
-  value_package_stock_text: string
   value_package_discount_text: string
   value_package_promotion_text: string
   
@@ -244,9 +242,7 @@ export default function EditLandingPage() {
     value_package_delivery_text: '📍 Entrega em até 24h para Uberlândia',
     value_package_button_text: '💬 GARANTIR MEU DESCONTO AGORA!',
     value_package_button_link: '', // Novo campo para link de redirecionamento
-    value_package_whatsapp_group_link: '',
     value_package_whatsapp_number: '5534984136291',
-    value_package_stock_text: '📦 Estoque limitado',
     value_package_discount_text: '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
     value_package_promotion_text: '🕒 Promoção válida enquanto durar o estoque.',
     // Story
@@ -467,9 +463,7 @@ export default function EditLandingPage() {
           value_package_delivery_text: savedSettings.value_package_delivery_text || '📍 Entrega em até 24h para Uberlândia',
           value_package_button_text: savedSettings.value_package_button_text || '💬 GARANTIR MEU DESCONTO AGORA!',
           value_package_button_link: savedSettings.value_package_button_link || '',
-          value_package_whatsapp_group_link: savedSettings.value_package_whatsapp_group_link || '',
           value_package_whatsapp_number: savedSettings.value_package_whatsapp_number || '5534984136291',
-          value_package_stock_text: savedSettings.value_package_stock_text || '📦 Estoque limitado',
           value_package_discount_text: savedSettings.value_package_discount_text || '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
           value_package_promotion_text: savedSettings.value_package_promotion_text || '🕒 Promoção válida enquanto durar o estoque.',
           // Story
@@ -1373,17 +1367,8 @@ export default function EditLandingPage() {
                 placeholder="Ex: /produtos ou /produtos/relogio-smartwatch"
               />
               <p className="text-xs text-gray-500 -mt-2">
-                Deixe vazio para manter comportamento padrão (scroll para WhatsApp VIP)
+                Deixe vazio para manter comportamento padrão (scroll para WhatsApp VIP). Pode ser um link interno (ex: /produtos) ou externo (ex: https://chat.whatsapp.com/...)
               </p>
-
-              <Input
-                label="Texto de Estoque"
-                value={settings.value_package_stock_text}
-                onChange={(e) =>
-                  setSettings({ ...settings, value_package_stock_text: e.target.value })
-                }
-                placeholder="📦 Estoque limitado"
-              />
             </div>
           </motion.div>
 

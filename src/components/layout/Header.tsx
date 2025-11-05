@@ -17,7 +17,7 @@ export const Header = () => {
   const router = useRouter()
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [siteSettings, setSiteSettings] = useState<{ site_logo?: string } | null>(null)
+  const [siteSettings, setSiteSettings] = useState<{ site_logo?: string; site_name?: string } | null>(null)
   const { isAuthenticated, profile, loading } = useAuth()
   const { getItemCount } = useCart()
   const { products } = useProductComparison()
@@ -131,7 +131,7 @@ export const Header = () => {
                 priority
               />
             )}
-            <span className="text-2xl font-bold">Smart Time Prime</span>
+            <span className="text-2xl font-bold">{siteSettings?.site_name || 'Smart Time Prime'}</span>
           </Link>
 
           {/* Desktop Navigation */}

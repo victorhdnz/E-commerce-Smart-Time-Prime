@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
+import { createClient } from '@/lib/supabase/client'
 
 interface StorySectionProps {
   title?: string
@@ -30,6 +31,32 @@ export const StorySection = ({
     images: true,
   },
 }: StorySectionProps) => {
+  const [siteName, setSiteName] = useState<string>('Smart Time Prime')
+
+  useEffect(() => {
+    const loadSiteName = async () => {
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('site_name')
+          .limit(1)
+          .maybeSingle()
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Erro ao carregar nome do site:', error)
+          return
+        }
+
+        if (data?.site_name) {
+          setSiteName(data.site_name)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar nome do site:', error)
+      }
+    }
+    loadSiteName()
+  }, [])
   // Usar images se disponível, senão usar image como fallback
   const displayImages = images && images.length > 0 
     ? images 
@@ -98,7 +125,7 @@ export const StorySection = ({
                 <p className="text-lg font-semibold text-gray-900">
                   {foundersNames}
                 </p>
-                <p className="text-sm text-gray-600 mt-1">Fundadores da Smart Time Prime</p>
+                <p className="text-sm text-gray-600 mt-1">Fundadores da {siteName}</p>
               </div>
             )}
             </motion.div>

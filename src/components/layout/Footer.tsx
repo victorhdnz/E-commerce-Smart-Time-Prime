@@ -2,9 +2,49 @@
 
 import Link from 'next/link'
 import { Instagram, Facebook, Mail, Phone } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear()
+  const [siteSettings, setSiteSettings] = useState<{
+    site_name?: string
+    footer_text?: string
+    copyright_text?: string
+    instagram_url?: string
+    facebook_url?: string
+    address_street?: string
+    address_city?: string
+    address_state?: string
+    address_zip?: string
+    contact_phone?: string
+    contact_email?: string
+  } | null>(null)
+
+  useEffect(() => {
+    const loadSiteSettings = async () => {
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('site_name, footer_text, copyright_text, instagram_url, facebook_url, address_street, address_city, address_state, address_zip, contact_phone, contact_email')
+          .limit(1)
+          .maybeSingle()
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Erro ao carregar configurações:', error)
+          return
+        }
+
+        if (data) {
+          setSiteSettings(data)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar configurações:', error)
+      }
+    }
+    loadSiteSettings()
+  }, [])
 
   return (
     <footer className="bg-black text-white mt-0">
@@ -12,9 +52,9 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-x-12 gap-y-8">
           {/* Brand */}
           <div>
-            <h3 className="text-2xl font-bold mb-4">Smart Time Prime</h3>
+            <h3 className="text-2xl font-bold mb-4">{siteSettings?.site_name || 'Smart Time Prime'}</h3>
             <p className="text-gray-400 mb-4">
-              Produtos de qualidade com design moderno e elegante.
+              {siteSettings?.footer_text || 'Produtos de qualidade com design moderno e elegante.'}
             </p>
             <div className="text-gray-400 text-sm space-y-1">
               <p className="flex items-start gap-2">
@@ -23,9 +63,9 @@ export const Footer = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 <span>
-                  Av. Imbaúba, 1676<br />
-                  Chácaras Tubalina e Quartel<br />
-                  Uberlândia - MG, 38413-108
+                  {siteSettings?.address_street || 'Av. Imbaúba, 1676'}<br />
+                  {siteSettings?.address_city && siteSettings?.address_state && `${siteSettings.address_city} - ${siteSettings.address_state}`}<br />
+                  {siteSettings?.address_zip || '38413-108'}
                 </span>
               </p>
             </div>
@@ -91,42 +131,46 @@ export const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-center space-x-2 text-gray-400">
                 <Phone size={18} />
-                <a href="https://wa.me/5534984136291" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
-                  (34) 98413-6291
+                <a href={`https://wa.me/${siteSettings?.contact_phone?.replace(/\D/g, '') || '5534984136291'}`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                  {siteSettings?.contact_phone || '(34) 98413-6291'}
                 </a>
               </li>
               <li className="flex items-center space-x-2 text-gray-400">
                 <Mail size={18} />
-                <a href="mailto:contato@smarttimeprime.com.br" className="hover:text-white transition-colors">
-                  contato@smarttimeprime.com.br
+                <a href={`mailto:${siteSettings?.contact_email || 'contato@smarttimeprime.com.br'}`} className="hover:text-white transition-colors">
+                  {siteSettings?.contact_email || 'contato@smarttimeprime.com.br'}
                 </a>
               </li>
             </ul>
 
             <div className="flex space-x-4 mt-6">
-              <a
-                href="https://www.instagram.com/smarttimeprime"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-              >
-                <Instagram size={20} />
-              </a>
-              <a
-                href="https://www.facebook.com/smarttimeprime/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-              >
-                <Facebook size={20} />
-              </a>
+              {siteSettings?.instagram_url && (
+                <a
+                  href={siteSettings.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                >
+                  <Instagram size={20} />
+                </a>
+              )}
+              {siteSettings?.facebook_url && (
+                <a
+                  href={siteSettings.facebook_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                >
+                  <Facebook size={20} />
+                </a>
+              )}
             </div>
           </div>
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
           <p>
-            © {currentYear} Smart Time Prime. Todos os direitos reservados.
+            © {currentYear} {siteSettings?.site_name || 'Smart Time Prime'}. {siteSettings?.copyright_text || 'Todos os direitos reservados.'}
           </p>
         </div>
       </div>

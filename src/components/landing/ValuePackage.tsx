@@ -18,9 +18,7 @@ interface ValuePackageProps {
   deliveryText?: string
   buttonText?: string
   buttonLink?: string // Novo campo para link de redirecionamento
-  whatsappGroupLink?: string
   whatsappNumber?: string
-  stockText?: string
   discountText?: string
   promotionText?: string
   endDate?: Date
@@ -55,9 +53,7 @@ export const ValuePackage = ({
   deliveryText = '📍 Entrega em até 24h para Uberlândia',
   buttonText = '💬 GARANTIR MEU DESCONTO AGORA!',
   buttonLink, // Novo campo para link de redirecionamento
-  whatsappGroupLink,
   whatsappNumber = '5534984136291',
-  stockText = '📦 Estoque limitado',
   discountText = '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
   promotionText = '🕒 Promoção válida enquanto durar o estoque.',
   endDate,
@@ -101,10 +97,20 @@ export const ValuePackage = ({
   }, [endDate])
 
   const handleClick = () => {
-    if (whatsappGroupLink) {
-      window.open(whatsappGroupLink, '_blank')
+    if (buttonLink) {
+      // Se é um link interno, usar Link do Next.js
+      if (buttonLink.startsWith('/')) {
+        window.location.href = buttonLink
+      } else {
+        // Se é um link externo, abrir em nova aba
+        window.open(buttonLink, '_blank')
+      }
     } else {
-      window.open(`https://wa.me/${whatsappNumber}`, '_blank')
+      // Comportamento padrão: scroll para WhatsApp VIP
+      const whatsappSection = document.getElementById('whatsapp-vip')
+      if (whatsappSection) {
+        whatsappSection.scrollIntoView({ behavior: 'smooth' })
+      }
     }
   }
 
@@ -322,31 +328,14 @@ export const ValuePackage = ({
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    {buttonLink ? (
-                      <Link href={buttonLink}>
-                        <Button
-                          size="lg"
-                          variant="secondary"
-                          className="w-full text-base md:text-lg font-bold py-3 md:py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 hover:from-yellow-300 hover:via-yellow-400 hover:to-yellow-300 text-black shadow-lg hover:shadow-yellow-500/30 transition-all duration-300 border border-yellow-300/50 rounded-xl"
-                        >
-                          {buttonText}
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Button
-                        onClick={() => {
-                          const element = document.getElementById('whatsapp-vip')
-                          if (element) {
-                            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                          }
-                        }}
-                        size="lg"
+                    <Button
+                      onClick={handleClick}
+                      size="lg"
                         variant="secondary"
                         className="w-full text-base md:text-lg font-bold py-3 md:py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 hover:from-yellow-300 hover:via-yellow-400 hover:to-yellow-300 text-black shadow-lg hover:shadow-yellow-500/30 transition-all duration-300 border border-yellow-300/50 rounded-xl"
                       >
                         {buttonText}
                       </Button>
-                    )}
                   </motion.div>
                 )}
               </div>

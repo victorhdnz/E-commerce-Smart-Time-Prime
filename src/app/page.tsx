@@ -296,7 +296,6 @@ export default async function Home() {
           deliveryText={settings.value_package_delivery_text}
           buttonText={settings.value_package_button_text}
           buttonLink={settings.value_package_button_link}
-          stockText={settings.value_package_stock_text}
           endDate={timerEnabled ? timerEndDate : undefined}
           elementVisibility={{
             title: settings.value_package_title_visible !== false,
