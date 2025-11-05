@@ -185,7 +185,7 @@ export const HeroSection = ({
                 transition={{ delay: 0.4, duration: 0.8 }}
                 className="text-lg md:text-xl lg:text-2xl mb-8 opacity-90 whitespace-pre-line"
               >
-                {subtitle}
+                {subtitle?.replace(/Garantir agora#####/gi, '').replace(/#####/g, '').trim()}
               </motion.p>
             )}
 

@@ -2,17 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { FileText, Shield, Truck, RotateCcw, Loader2 } from 'lucide-react'
+import { FileText, Shield, Truck, RotateCcw, Loader2, ChevronRight } from 'lucide-react'
 import { FadeInSection } from '@/components/ui/FadeInSection'
 import { createClient } from '@/lib/supabase/client'
+import { TermsContent } from '@/components/ui/TermsContent'
 
 interface Term {
   id: string
   key: string
   title: string
-  description?: string
   icon: string
-  href: string
 }
 
 const getIcon = (iconName: string) => {
@@ -30,13 +29,9 @@ const getIcon = (iconName: string) => {
   }
 }
 
-const getColor = (index: number) => {
-  const colors = ['bg-blue-500', 'bg-gray-700', 'bg-green-500', 'bg-orange-500', 'bg-purple-500', 'bg-red-500']
-  return colors[index % colors.length]
-}
-
 export default function TermosPage() {
   const [terms, setTerms] = useState<Term[]>([])
+  const [selectedTerm, setSelectedTerm] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
@@ -50,27 +45,14 @@ export default function TermosPage() {
 
         if (error) {
           console.error('Erro ao carregar termos:', error)
-          // Se não encontrar termos, usar os padrão
           setTerms([])
           return
         }
 
         if (data && data.length > 0) {
-          // Mapear termos padrão para suas rotas estáticas, outros para rota dinâmica
-          const defaultKeys = ['politica-privacidade', 'termos-uso', 'politica-entrega', 'trocas-devolucoes']
-          
-          const formattedTerms: Term[] = data.map((term: any, index: number) => {
-            const isDefault = defaultKeys.includes(term.key)
-            return {
-              id: term.id,
-              key: term.key,
-              title: term.title,
-              description: `Leia nossos ${term.title.toLowerCase()}`,
-              icon: term.icon || 'file-text',
-              href: isDefault ? `/${term.key}` : `/termos/${term.key}`,
-            }
-          })
-          setTerms(formattedTerms)
+          setTerms(data as Term[])
+          // Selecionar o primeiro termo automaticamente
+          setSelectedTerm(data[0].key)
         } else {
           setTerms([])
         }
@@ -89,7 +71,7 @@ export default function TermosPage() {
     return (
       <FadeInSection>
         <div className="min-h-screen bg-white py-20">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <div className="text-center">
               <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-400" />
               <p className="text-gray-600">Carregando termos...</p>
@@ -104,7 +86,7 @@ export default function TermosPage() {
     return (
       <FadeInSection>
         <div className="min-h-screen bg-white py-20">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">Termos e Políticas</h1>
               <div className="w-24 h-1 bg-black mx-auto mb-6" />
@@ -121,8 +103,8 @@ export default function TermosPage() {
   return (
     <FadeInSection>
       <div className="min-h-screen bg-white py-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <div className="text-center mb-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Termos e Políticas</h1>
             <div className="w-24 h-1 bg-black mx-auto mb-6" />
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
@@ -130,42 +112,49 @@ export default function TermosPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {terms.map((term, index) => {
-              const Icon = getIcon(term.icon)
-              const color = getColor(index)
-              return (
-                <Link
-                  key={term.id}
-                  href={term.href}
-                  className="group bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-black hover:shadow-lg transition-all duration-300"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`${color} p-3 rounded-lg group-hover:scale-110 transition-transform`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h2 className="text-xl font-bold mb-2 group-hover:text-black transition-colors">
-                        {term.title}
-                      </h2>
-                      <p className="text-gray-600 text-sm mb-4">
-                        {term.description}
-                      </p>
-                      <span className="text-sm font-medium text-black group-hover:underline">
-                        Ler mais →
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Sidebar lateral com lista de termos */}
+            <aside className="lg:w-64 flex-shrink-0">
+              <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sticky top-4">
+                <h3 className="font-bold text-lg mb-4">Termos Disponíveis</h3>
+                <nav className="space-y-2">
+                  {terms.map((term) => {
+                    const Icon = getIcon(term.icon)
+                    const isActive = selectedTerm === term.key
+                    return (
+                      <button
+                        key={term.id}
+                        onClick={() => setSelectedTerm(term.key)}
+                        className={`w-full text-left p-3 rounded-lg transition-all duration-200 flex items-center gap-3 ${
+                          isActive
+                            ? 'bg-black text-white shadow-lg'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700 hover:shadow-md'
+                        }`}
+                      >
+                        <Icon className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium text-sm flex-1">{term.title}</span>
+                        {isActive && <ChevronRight className="w-4 h-4" />}
+                      </button>
+                    )
+                  })}
+                </nav>
+              </div>
+            </aside>
 
-          <div className="mt-12 text-center">
-            <p className="text-gray-500 text-sm">
-              Ao utilizar nosso site, você concorda com nossos termos e políticas.
-              Em caso de dúvidas, entre em contato conosco.
-            </p>
+            {/* Conteúdo do termo selecionado */}
+            <main className="flex-1">
+              {selectedTerm ? (
+                <TermsContent
+                  termKey={selectedTerm}
+                  defaultTitle={terms.find(t => t.key === selectedTerm)?.title || 'Termo'}
+                  defaultContent={`# ${terms.find(t => t.key === selectedTerm)?.title || 'Termo'}\n\nConteúdo do termo aqui.`}
+                />
+              ) : (
+                <div className="bg-white border-2 border-gray-200 rounded-xl p-8 text-center">
+                  <p className="text-gray-600">Selecione um termo para visualizar</p>
+                </div>
+              )}
+            </main>
           </div>
         </div>
       </div>

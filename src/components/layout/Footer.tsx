@@ -76,34 +76,10 @@ export const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="/politica-privacidade"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  href="/termos"
+                  className="text-gray-400 hover:text-white transition-colors font-medium"
                 >
-                  Política de Privacidade
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/termos-uso"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Termos de Uso
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/politica-entrega"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Política de Entrega
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/trocas-devolucoes"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Trocas e Devoluções
+                  Termos
                 </Link>
               </li>
             </ul>

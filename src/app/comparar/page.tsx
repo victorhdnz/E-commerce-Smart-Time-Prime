@@ -67,7 +67,8 @@ export default function ComparePage() {
 
   useEffect(() => {
     loadComparisonFields()
-  }, [products])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products.length, products.map(p => p.id).join(',')])
 
   const handleRemoveProduct = (productId: string) => {
     removeProduct(productId)
@@ -84,14 +85,6 @@ export default function ComparePage() {
     }
     addItem(product, undefined, 1)
     toast.success('Produto adicionado ao carrinho!')
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
-      </div>
-    )
   }
 
   // Carregar produtos e categorias
@@ -151,6 +144,15 @@ export default function ComparePage() {
   const filteredProducts = selectedCategory
     ? allProducts.filter(p => p.category === selectedCategory)
     : allProducts
+
+  // Renderização condicional APÓS todos os hooks
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+      </div>
+    )
+  }
 
   if (products.length === 0) {
     return (

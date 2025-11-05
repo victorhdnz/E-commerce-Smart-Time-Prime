@@ -114,10 +114,10 @@ export const MediaShowcase = ({
           </motion.div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
+        <div className={`grid grid-cols-1 ${elementVisibility.images && elementVisibility.video ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-8 items-center max-w-5xl mx-auto`}>
           {/* Carrossel de Imagens - 1 coluna */}
           {elementVisibility.images && (
-            <div className="lg:col-span-1">
+            <div className={elementVisibility.video ? 'lg:col-span-1' : 'lg:col-span-1 max-w-2xl mx-auto'}>
               {images.length > 0 ? (
               <div className="relative group z-0">
                 {/* Imagem Principal */}
@@ -210,7 +210,7 @@ export const MediaShowcase = ({
 
           {/* Vídeo Vertical (Reels) */}
           {elementVisibility.video && (
-            <div>
+            <div className={elementVisibility.images ? '' : 'lg:col-span-1 max-w-sm mx-auto'}>
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}

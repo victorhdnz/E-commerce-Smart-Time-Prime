@@ -61,12 +61,16 @@ export default function ConfiguracoesPage() {
 
   const loadConfig = async () => {
     try {
+      // Buscar primeiro registro (sem usar .single() para evitar erro se não houver)
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
-        .single()
+        .limit(1)
+        .maybeSingle()
 
-      if (error) throw error
+      if (error && error.code !== 'PGRST116') {
+        throw error
+      }
 
       if (data) {
         setConfig({
@@ -94,11 +98,11 @@ export default function ConfiguracoesPage() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      // Verificar se existe registro com id=1
+      // Buscar primeiro registro existente (se houver)
       const { data: existingData, error: checkError } = await supabase
         .from('site_settings')
         .select('id')
-        .eq('id', 1)
+        .limit(1)
         .maybeSingle()
 
       if (checkError && checkError.code !== 'PGRST116') {
@@ -106,22 +110,21 @@ export default function ConfiguracoesPage() {
       }
 
       if (existingData) {
-        // Atualizar registro existente
+        // Atualizar registro existente usando o ID encontrado
         const { error } = await supabase
           .from('site_settings')
           .update({
             ...config,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', 1)
+          .eq('id', existingData.id)
 
         if (error) throw error
       } else {
-        // Criar novo registro
+        // Criar novo registro (sem especificar id - deixar UUID gerar automaticamente)
         const { error } = await supabase
           .from('site_settings')
           .insert({
-            id: 1,
             ...config,
             updated_at: new Date().toISOString(),
           })

@@ -448,8 +448,13 @@ export default function DashboardTermsPage() {
       toast.success('Termo criado com sucesso!')
       setShowNewTermModal(false)
       setNewTerm({ title: '', key: '', icon: 'file-text' })
-      loadTerms()
-      setSelectedTerm(key)
+      await loadTerms()
+      // Aguardar um pouco para garantir que o termo foi carregado
+      setTimeout(() => {
+        setSelectedTerm(key)
+        // Parsear as seções do conteúdo padrão
+        parseSections(defaultContent)
+      }, 300)
     } catch (error: any) {
       console.error('Erro ao criar termo:', error)
       toast.error('Erro ao criar termo')

@@ -81,13 +81,14 @@ export const StorySection = ({
           </motion.div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+        <div className={`grid grid-cols-1 ${elementVisibility.content && elementVisibility.images ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-12 items-center max-w-6xl mx-auto`}>
           {/* Texto */}
           {elementVisibility.content && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
+              className={!elementVisibility.images ? 'lg:col-span-1 max-w-2xl mx-auto' : ''}
             >
               <div className="text-lg md:text-xl text-gray-700 whitespace-pre-line leading-relaxed">
                 {content}
@@ -109,7 +110,7 @@ export const StorySection = ({
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="relative"
+            className={`relative ${!elementVisibility.content ? 'lg:col-span-1 max-w-2xl mx-auto' : ''}`}
           >
             {displayImages.length > 0 ? (
               <div className="relative group z-0">

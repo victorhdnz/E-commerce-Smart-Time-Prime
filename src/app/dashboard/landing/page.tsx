@@ -820,9 +820,49 @@ export default function EditLandingPage() {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Seção Principal (Hero)</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Seção Principal (Hero)</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.section_hero_visible ?? true}
+                  onChange={(e) =>
+                    setSettings({ ...settings, section_hero_visible: e.target.checked })
+                  }
+                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                />
+                <span className="text-sm font-medium">Ocultar seção</span>
+              </label>
+            </div>
             
             <div className="space-y-4">
+              {/* Checkboxes de visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'hero_banner_visible', label: 'Banner' },
+                    { key: 'hero_badge_visible', label: 'Badge' },
+                    { key: 'hero_title_visible', label: 'Título' },
+                    { key: 'hero_subtitle_visible', label: 'Subtítulo' },
+                    { key: 'hero_timer_visible', label: 'Cronômetro' },
+                    { key: 'hero_cta_visible', label: 'Botão CTA' },
+                  ].map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <Input
                 label="Título Principal"
                 value={settings.hero_title}
@@ -896,7 +936,20 @@ export default function EditLandingPage() {
             transition={{ delay: 0.9 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Seção de Contato (Footer)</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Seção de Contato (Footer)</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.section_contact_visible ?? true}
+                  onChange={(e) =>
+                    setSettings({ ...settings, section_contact_visible: e.target.checked })
+                  }
+                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                />
+                <span className="text-sm font-medium">Ocultar seção</span>
+              </label>
+            </div>
             
             <div className="space-y-4">
               <Input
@@ -932,12 +985,50 @@ export default function EditLandingPage() {
             transition={{ delay: 0.4 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Galeria de Destaques</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Galeria de Destaques</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.section_media_showcase_visible ?? true}
+                  onChange={(e) =>
+                    setSettings({ ...settings, section_media_showcase_visible: e.target.checked })
+                  }
+                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                />
+                <span className="text-sm font-medium">Ocultar seção</span>
+              </label>
+            </div>
             <p className="text-sm text-gray-600 mb-6">
               📸 Envie imagens no formato Instagram Post (1080x1080px) para o carrossel + 1 vídeo vertical tipo Reels
             </p>
             
             <div className="space-y-4 mb-6">
+              {/* Checkboxes de visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'media_showcase_title_visible', label: 'Título' },
+                    { key: 'media_showcase_features_visible', label: 'Características' },
+                    { key: 'media_showcase_images_visible', label: 'Imagens' },
+                    { key: 'media_showcase_video_visible', label: 'Vídeo' },
+                  ].map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <Input
                 label="Título da Seção"
                 value={settings.media_showcase_title}
@@ -1123,9 +1214,49 @@ export default function EditLandingPage() {
             transition={{ delay: 0.5 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Pacote de Valor</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Pacote de Valor</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.section_value_package_visible ?? true}
+                  onChange={(e) =>
+                    setSettings({ ...settings, section_value_package_visible: e.target.checked })
+                  }
+                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                />
+                <span className="text-sm font-medium">Ocultar seção</span>
+              </label>
+            </div>
             
             <div className="space-y-4">
+              {/* Checkboxes de visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'value_package_title_visible', label: 'Título' },
+                    { key: 'value_package_image_visible', label: 'Imagem' },
+                    { key: 'value_package_items_visible', label: 'Lista de Itens' },
+                    { key: 'value_package_prices_visible', label: 'Preços' },
+                    { key: 'value_package_timer_visible', label: 'Cronômetro' },
+                    { key: 'value_package_button_visible', label: 'Botão' },
+                  ].map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <Input
                 label="Título"
                 value={settings.value_package_title}
@@ -1263,9 +1394,46 @@ export default function EditLandingPage() {
             transition={{ delay: 0.6 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Nossa História</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Nossa História</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.section_story_visible ?? true}
+                  onChange={(e) =>
+                    setSettings({ ...settings, section_story_visible: e.target.checked })
+                  }
+                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                />
+                <span className="text-sm font-medium">Ocultar seção</span>
+              </label>
+            </div>
             
             <div className="space-y-4">
+              {/* Checkboxes de visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'story_title_visible', label: 'Título' },
+                    { key: 'story_content_visible', label: 'Conteúdo' },
+                    { key: 'story_images_visible', label: 'Imagens' },
+                  ].map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <Input
                 label="Título"
                 value={settings.story_title}
@@ -1314,9 +1482,47 @@ export default function EditLandingPage() {
             transition={{ delay: 0.7 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Quem Somos</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">Quem Somos</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.section_about_us_visible ?? true}
+                  onChange={(e) =>
+                    setSettings({ ...settings, section_about_us_visible: e.target.checked })
+                  }
+                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                />
+                <span className="text-sm font-medium">Ocultar seção</span>
+              </label>
+            </div>
             
             <div className="space-y-4">
+              {/* Checkboxes de visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'about_us_title_visible', label: 'Título' },
+                    { key: 'about_us_description_visible', label: 'Descrição' },
+                    { key: 'about_us_images_visible', label: 'Imagens' },
+                    { key: 'about_us_location_visible', label: 'Localização' },
+                  ].map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <Input
                 label="Título"
                 value={settings.about_us_title}
@@ -1662,9 +1868,45 @@ export default function EditLandingPage() {
             transition={{ delay: 0.8 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">⭐ Avaliações (Social Proof)</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">⭐ Avaliações (Social Proof)</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.section_social_proof_visible ?? true}
+                  onChange={(e) =>
+                    setSettings({ ...settings, section_social_proof_visible: e.target.checked })
+                  }
+                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                />
+                <span className="text-sm font-medium">Ocultar seção</span>
+              </label>
+            </div>
             
             <div className="space-y-4">
+              {/* Checkboxes de visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'social_proof_title_visible', label: 'Título' },
+                    { key: 'social_proof_reviews_visible', label: 'Avaliações' },
+                  ].map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <Input
                 label="Título"
                 value={settings.social_proof_title}

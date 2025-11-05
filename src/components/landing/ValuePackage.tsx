@@ -144,7 +144,7 @@ export const ValuePackage = ({
           </motion.div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
+        <div className={`grid grid-cols-1 ${elementVisibility.image ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-16 items-center max-w-7xl mx-auto`}>
           {/* Imagem */}
           {elementVisibility.image && (
             <motion.div
@@ -190,7 +190,7 @@ export const ValuePackage = ({
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-            className="space-y-8"
+            className={`space-y-8 ${!elementVisibility.image ? 'lg:col-span-1 max-w-2xl mx-auto' : ''}`}
           >
             {/* Lista de itens */}
             {elementVisibility.items && (
