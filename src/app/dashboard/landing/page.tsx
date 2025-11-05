@@ -455,6 +455,24 @@ export default function EditLandingPage() {
           // Contact
           contact_title: savedSettings.contact_title || 'Entre em Contato',
           contact_description: savedSettings.contact_description || 'Estamos aqui para ajudar você!',
+          // Controles de visibilidade das seções
+          section_hero_visible: savedSettings.section_hero_visible !== undefined ? savedSettings.section_hero_visible : true,
+          section_media_showcase_visible: savedSettings.section_media_showcase_visible !== undefined ? savedSettings.section_media_showcase_visible : true,
+          section_value_package_visible: savedSettings.section_value_package_visible !== undefined ? savedSettings.section_value_package_visible : true,
+          section_social_proof_visible: savedSettings.section_social_proof_visible !== undefined ? savedSettings.section_social_proof_visible : true,
+          section_story_visible: savedSettings.section_story_visible !== undefined ? savedSettings.section_story_visible : true,
+          section_whatsapp_vip_visible: savedSettings.section_whatsapp_vip_visible !== undefined ? savedSettings.section_whatsapp_vip_visible : true,
+          section_about_us_visible: savedSettings.section_about_us_visible !== undefined ? savedSettings.section_about_us_visible : true,
+          section_contact_visible: savedSettings.section_contact_visible !== undefined ? savedSettings.section_contact_visible : true,
+          // Section visibility defaults (novos campos)
+          section_hero_visible_default: savedSettings.section_hero_visible_default !== undefined ? savedSettings.section_hero_visible_default : true,
+          section_media_showcase_visible_default: savedSettings.section_media_showcase_visible_default !== undefined ? savedSettings.section_media_showcase_visible_default : true,
+          section_value_package_visible_default: savedSettings.section_value_package_visible_default !== undefined ? savedSettings.section_value_package_visible_default : true,
+          section_social_proof_visible_default: savedSettings.section_social_proof_visible_default !== undefined ? savedSettings.section_social_proof_visible_default : true,
+          section_story_visible_default: savedSettings.section_story_visible_default !== undefined ? savedSettings.section_story_visible_default : true,
+          section_whatsapp_vip_visible_default: savedSettings.section_whatsapp_vip_visible_default !== undefined ? savedSettings.section_whatsapp_vip_visible_default : true,
+          section_about_us_visible_default: savedSettings.section_about_us_visible_default !== undefined ? savedSettings.section_about_us_visible_default : true,
+          section_contact_visible_default: savedSettings.section_contact_visible_default !== undefined ? savedSettings.section_contact_visible_default : true,
           // About antigo (compatibilidade)
           about_title: savedSettings.about_title || savedSettings.about_us_title || '',
           about_description: savedSettings.about_description || savedSettings.about_us_description || '',
