@@ -246,8 +246,10 @@ export default function ConfiguracoesPage() {
                   setConfig({ ...config, contact_maps_link: e.target.value })
                 }
                 placeholder="https://maps.google.com/..."
-                helperText="Link do Google Maps para a localização da loja"
               />
+              <p className="text-xs text-gray-500 -mt-2">
+                Link do Google Maps para a localização da loja
+              </p>
             </div>
           </motion.div>
 
