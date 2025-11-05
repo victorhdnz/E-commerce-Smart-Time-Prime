@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '@/hooks/useCart'
 import { useAuth } from '@/hooks/useAuth'
 import { useUserLocation } from '@/hooks/useUserLocation'
@@ -9,11 +9,13 @@ import { FadeInSection } from '@/components/ui/FadeInSection'
 import { ShippingCalculator } from '@/components/shipping/ShippingCalculator'
 import { formatCurrency } from '@/lib/utils/format'
 import { getProductPrice } from '@/lib/utils/price'
-import { Trash2, Plus, Minus, ShoppingBag, Eye, MapPin } from 'lucide-react'
+import { Trash2, Plus, Minus, ShoppingBag, Eye, MapPin, Package } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
+import Image from 'next/image'
+import { createClient } from '@/lib/supabase/client'
 
 interface ShippingOption {
   id: string
@@ -35,6 +37,67 @@ export default function CartPage() {
   const { items, removeItem, updateQuantity, getTotal, clearCart } = useCart()
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null)
   const [showAddressModal, setShowAddressModal] = useState(false)
+  const [comboDataMap, setComboDataMap] = useState<Record<string, {
+    combo: any
+    items: Array<{ product: any; quantity: number }>
+  }>>({})
+  const supabase = createClient()
+
+  // Carregar dados dos combos quando houver produtos de categoria "Combos"
+  useEffect(() => {
+    const loadComboData = async () => {
+      const comboItems = items.filter(item => item.product.category === 'Combos')
+      
+      if (comboItems.length === 0) {
+        setComboDataMap({})
+        return
+      }
+
+      const newComboDataMap: Record<string, {
+        combo: any
+        items: Array<{ product: any; quantity: number }>
+      }> = {}
+
+      await Promise.all(
+        comboItems.map(async (item) => {
+          try {
+            const { data: comboData, error } = await supabase
+              .from('product_combos')
+              .select(`
+                *,
+                combo_items (
+                  id,
+                  product_id,
+                  quantity,
+                  product:products (id, name, local_price, national_price, images)
+                )
+              `)
+              .eq('slug', item.product.slug)
+              .eq('is_active', true)
+              .maybeSingle()
+
+            if (!error && comboData && comboData.combo_items) {
+              const comboItems = comboData.combo_items.map((comboItem: any) => ({
+                product: comboItem.product,
+                quantity: comboItem.quantity
+              }))
+              
+              newComboDataMap[item.product.id] = {
+                combo: comboData,
+                items: comboItems
+              }
+            }
+          } catch (error) {
+            console.error('Erro ao carregar dados do combo:', error)
+          }
+        })
+      )
+
+      setComboDataMap(newComboDataMap)
+    }
+
+    loadComboData()
+  }, [items])
 
   if (items.length === 0) {
     return (
@@ -65,19 +128,65 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {items.map((item) => (
+            {items.map((item) => {
+              const isCombo = item.product.category === 'Combos'
+              const comboData = comboDataMap[item.product.id]
+              const comboItems = comboData?.items || []
+              
+              return (
               <motion.div
                 key={`${item.product.id}-${item.color?.id}-${item.is_gift}`}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 className={`rounded-lg shadow-md p-4 flex gap-4 ${
-                  item.is_gift ? 'bg-green-50 border-2 border-green-200' : 'bg-white'
+                  item.is_gift ? 'bg-green-50 border-2 border-green-200' : 
+                  isCombo ? 'bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200' : 
+                  'bg-white'
                 }`}
               >
                 {/* Image */}
                 <div className="w-24 h-24 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 relative">
-                  {item.color?.images[0] || item.product.images?.[0] ? (
+                  {isCombo && comboItems.length > 0 ? (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 p-1 flex items-center justify-center">
+                      <div className="grid grid-cols-2 gap-0.5 w-full h-full">
+                        {comboItems.slice(0, 4).map((comboItem, idx) => {
+                          const itemImage = Array.isArray(comboItem.product.images) 
+                            ? comboItem.product.images[0] 
+                            : typeof comboItem.product.images === 'string'
+                              ? comboItem.product.images
+                              : null
+                          return (
+                            <div key={idx} className="relative bg-white rounded overflow-hidden border border-gray-200">
+                              {itemImage ? (
+                                <Image
+                                  src={itemImage}
+                                  alt={comboItem.product.name}
+                                  fill
+                                  className="object-cover"
+                                  sizes="48px"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                  <span className="text-xs">⌚</span>
+                                </div>
+                              )}
+                              {comboItem.quantity > 1 && (
+                                <div className="absolute top-0 right-0 bg-black/70 text-white text-[10px] px-0.5 py-0 rounded">
+                                  {comboItem.quantity}x
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                      {comboItems.length > 4 && (
+                        <div className="absolute bottom-0 right-0 bg-black/70 text-white text-[10px] px-1 py-0.5 rounded">
+                          +{comboItems.length - 4}
+                        </div>
+                      )}
+                    </div>
+                  ) : item.color?.images[0] || item.product.images?.[0] ? (
                     <img
                       src={item.color?.images[0] || item.product.images?.[0]}
                       alt={item.product.name}
@@ -93,19 +202,69 @@ export default function CartPage() {
                       BRINDE
                     </div>
                   )}
+                  {isCombo && (
+                    <div className="absolute top-1 left-1 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs px-2 py-1 rounded font-semibold flex items-center gap-1">
+                      <Package size={12} />
+                      Combo
+                    </div>
+                  )}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1">
                   <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="font-semibold text-lg mb-1">
-                        {item.product.name}
-                      </h3>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-lg">
+                          {item.product.name}
+                        </h3>
+                        {isCombo && (
+                          <span className="inline-flex items-center gap-1 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+                            <Package size={12} />
+                            Combo
+                          </span>
+                        )}
+                      </div>
                       {item.color && (
                         <p className="text-sm text-gray-600">
                           Cor: {item.color.color_name}
                         </p>
+                      )}
+                      {isCombo && comboItems.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Package size={14} className="text-green-600" />
+                            <span className="text-xs font-semibold text-green-600">Produtos incluídos:</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {comboItems.slice(0, 3).map((comboItem, idx) => (
+                              <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                {comboItem.quantity > 1 && `${comboItem.quantity}x `}{comboItem.product.name}
+                              </span>
+                            ))}
+                            {comboItems.length > 3 && (
+                              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                                +{comboItems.length - 3} mais
+                              </span>
+                            )}
+                          </div>
+                          {comboData?.combo && (
+                            <div className="mt-2 p-2 bg-white rounded border border-green-300">
+                              <div className="text-xs space-y-1">
+                                {comboData.combo.discount_percentage > 0 && (
+                                  <p className="text-green-700 font-semibold">
+                                    💰 Desconto: {comboData.combo.discount_percentage}% OFF
+                                  </p>
+                                )}
+                                {comboData.combo.discount_amount > 0 && (
+                                  <p className="text-green-700 font-semibold">
+                                    💰 Desconto: {formatCurrency(comboData.combo.discount_amount)}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>

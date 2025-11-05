@@ -76,9 +76,7 @@ export default function ComparePage() {
 
   const handleRemoveProduct = (productId: string) => {
     removeProduct(productId)
-    if (products.length === 1) {
-      router.push('/produtos')
-    }
+    // Remover redirecionamento - manter na página de comparação mesmo quando vazio
   }
 
   const handleAddToCart = (product: Product) => {
