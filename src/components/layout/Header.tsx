@@ -24,46 +24,36 @@ export const Header = () => {
   const itemCount = getItemCount()
   const comparisonCount = products.length
 
-  // Carregar logo do site
+  // Carregar logo e nome do site
   useEffect(() => {
-    const loadLogo = async () => {
+    const loadSiteSettings = async () => {
       try {
         const supabase = createClient()
         const { data, error } = await supabase
           .from('site_settings')
-          .select('value')
-          .eq('key', 'general')
-          .single()
+          .select('site_logo, site_name')
+          .limit(1)
+          .maybeSingle()
 
-        if (error) {
-          console.error('Erro ao carregar logo:', error)
+        if (error && error.code !== 'PGRST116') {
+          console.error('Erro ao carregar configurações:', error)
           return
         }
 
-        if (data?.value) {
-          // Se value é uma string JSON, fazer parse
-          let parsedValue = data.value
-          if (typeof data.value === 'string') {
-            try {
-              parsedValue = JSON.parse(data.value)
-            } catch (e) {
-              // Se não for JSON válido, usar como objeto vazio
-              parsedValue = {}
-            }
-          }
-          
-          if (parsedValue && typeof parsedValue === 'object') {
-            setSiteSettings(parsedValue as { site_logo?: string })
-          }
+        if (data) {
+          setSiteSettings({
+            site_logo: data.site_logo || undefined,
+            site_name: data.site_name || 'Smart Time Prime',
+          })
         }
       } catch (error) {
-        console.error('Erro ao carregar logo:', error)
+        console.error('Erro ao carregar configurações:', error)
       }
     }
-    loadLogo()
+    loadSiteSettings()
 
-    // Recarregar logo a cada 5 segundos (para atualizar após mudanças no dashboard)
-    const interval = setInterval(loadLogo, 5000)
+    // Recarregar configurações a cada 5 segundos (para atualizar após mudanças no dashboard)
+    const interval = setInterval(loadSiteSettings, 5000)
     return () => clearInterval(interval)
   }, [])
 

@@ -44,7 +44,7 @@ export default function ConfiguracoesPage() {
     contact_email: 'contato@smarttimeprime.com.br',
     contact_phone: '+55 34 8413-6291',
     contact_whatsapp: '+55 34 8413-6291',
-    contact_maps_link: '',
+    contact_maps_link: 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6',
     instagram_url: 'https://www.instagram.com/smarttimeprime',
     facebook_url: 'https://www.facebook.com/smarttimeprime/',
     address_street: 'Av. Imbaúba, 1676 - Loja 1046',

@@ -21,6 +21,7 @@ async function getPageData() {
     // Buscar tudo em paralelo (sem timeout para não causar lentidão)
     const results = await Promise.allSettled([
       supabase.from('site_settings').select('*').eq('key', 'general').maybeSingle(),
+      supabase.from('site_settings').select('contact_maps_link').limit(1).maybeSingle(), // Buscar link do Google Maps
       supabase.from('products').select('*, colors:product_colors(*)').eq('is_featured', true).eq('is_active', true).limit(8),
       supabase.from('reviews').select('*').eq('is_approved', true).order('created_at', { ascending: false }).limit(6),
       supabase.from('faqs').select('*').eq('is_active', true).order('order_position', { ascending: true }),
@@ -37,7 +38,7 @@ async function getPageData() {
       supabase.from('site_settings').select('value').eq('key', 'whatsapp_vip_group_link').maybeSingle(),
     ])
 
-    const [settingsResult, productsResult, reviewsResult, faqsResult, layoutResult, combosResult, whatsappLinkResult] = results
+    const [settingsResult, mapsLinkResult, productsResult, reviewsResult, faqsResult, layoutResult, combosResult, whatsappLinkResult] = results
 
     // Extrair link do WhatsApp (pode vir do banco ou usar o padrão do código)
     const whatsappLinkData = whatsappLinkResult.status === 'fulfilled' ? whatsappLinkResult.value.data : null
@@ -61,6 +62,10 @@ async function getPageData() {
     // Se não tiver link no banco, usar o padrão do componente
     // O componente já tem o link hardcoded como fallback
 
+    // Extrair link do Google Maps
+    const mapsLinkData = mapsLinkResult.status === 'fulfilled' ? mapsLinkResult.value.data : null
+    const mapsLink = mapsLinkData?.contact_maps_link || 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6'
+
     return {
       siteSettings: settingsResult.status === 'fulfilled' ? settingsResult.value.data : null,
       products: productsResult.status === 'fulfilled' ? productsResult.value.data || [] : [],
@@ -69,6 +74,7 @@ async function getPageData() {
       activeLayout: layoutResult.status === 'fulfilled' ? layoutResult.value.data : null,
       combos: combosResult.status === 'fulfilled' ? combosResult.value.data || [] : [],
       whatsappVipLink: whatsappLink,
+      mapsLink: mapsLink,
     }
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
@@ -85,7 +91,7 @@ async function getPageData() {
 }
 
 export default async function Home() {
-  const { siteSettings, products, reviews, faqs, activeLayout, combos, whatsappVipLink } = await getPageData()
+  const { siteSettings, products, reviews, faqs, activeLayout, combos, whatsappVipLink, mapsLink } = await getPageData()
 
   // Extrair configurações do formato key-value
   const settings = siteSettings?.value || {}
@@ -435,7 +441,7 @@ export default async function Home() {
               <p className="text-gray-700 text-sm font-medium">Uberlândia - MG</p>
               <p className="text-gray-600 text-xs">CEP: 38413-108</p>
               <a 
-                href="https://maps.app.goo.gl/sj7F35h9fJ86T7By6" 
+                href={mapsLink || 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6'} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-block mt-3 text-red-500 hover:text-red-600 font-semibold text-xs"
