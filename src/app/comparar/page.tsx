@@ -403,10 +403,17 @@ export default function ComparePage() {
               </tr>
             </thead>
           <tbody>
-            {comparisonFields.map((field) => (
-              <tr key={field} className="border-b hover:bg-gray-50">
-                <td className="p-2 sm:p-4 font-semibold sticky left-0 bg-white z-10 text-xs sm:text-base">
-                  {field}
+            {comparisonFields.map((field, index) => (
+              <tr 
+                key={field} 
+                className={`border-b transition-colors ${
+                  index % 2 === 0 
+                    ? 'bg-white hover:bg-gray-50/50' 
+                    : 'bg-gray-50/30 hover:bg-gray-50/70'
+                }`}
+              >
+                <td className="p-2 sm:p-4 font-semibold sticky left-0 bg-white z-10 text-xs sm:text-base border-r border-gray-200">
+                  <span className="text-gray-800">{field}</span>
                 </td>
                 {products.map((product) => {
                   let value: string | number | React.ReactNode = '—'
@@ -430,7 +437,7 @@ export default function ComparePage() {
                             }}
                             className="relative cursor-pointer group"
                           >
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-center gap-2">
                               <Eye size={16} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
                               <span className="text-gray-400 blur-sm select-none">
                                 {formatCurrency(product.local_price || product.national_price)}
@@ -457,32 +464,34 @@ export default function ComparePage() {
                         
                         if (isRating) {
                           value = (
-                            <div className="flex items-center justify-center gap-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  size={16}
-                                  className={
-                                    star <= rating
-                                      ? 'fill-yellow-400 text-yellow-400'
-                                      : 'fill-gray-300 text-gray-300'
-                                  }
-                                />
-                              ))}
-                              <span className="ml-2 text-sm text-gray-600">{rating}/5</span>
+                            <div className="flex items-center justify-center gap-1.5 py-1">
+                              <div className="flex items-center gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    size={18}
+                                    className={
+                                      star <= rating
+                                        ? 'fill-yellow-400 text-yellow-400 drop-shadow-sm'
+                                        : 'fill-gray-200 text-gray-200'
+                                    }
+                                  />
+                                ))}
+                              </div>
+                              <span className="ml-1.5 text-sm font-semibold text-gray-700">{rating}/5</span>
                             </div>
                           )
                         } else {
-                          value = spec.value
+                          value = <span className="text-gray-700 break-words">{spec.value}</span>
                         }
                       }
                       break
                   }
                   
                   return (
-                    <td key={product.id} className="p-2 sm:p-4 text-center text-xs sm:text-base">
+                    <td key={product.id} className="p-2 sm:p-4 text-center text-xs sm:text-base bg-transparent">
                       {typeof value === 'string' || typeof value === 'number' ? (
-                        <span className="text-gray-700 break-words">{value}</span>
+                        <span className="text-gray-700 break-words font-medium">{value}</span>
                       ) : (
                         value
                       )}
