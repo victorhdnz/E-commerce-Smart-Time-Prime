@@ -119,21 +119,35 @@ export const Header = () => {
     <header className="sticky top-0 z-30 bg-white shadow-sm">
       <AuthDebug />
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-2 sm:gap-4">
+        <div className="flex items-center justify-between h-20 gap-1 sm:gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-1.5 sm:gap-3 h-16 min-w-0 flex-1 overflow-hidden">
+          <Link href="/" className="flex items-center gap-1 sm:gap-3 h-full min-w-0 flex-1 max-w-full">
             {siteLogo && (
               <Image
                 src={siteLogo}
                 alt={siteName}
                 width={60}
                 height={48}
-                className="h-7 sm:h-12 w-auto object-contain flex-shrink-0"
+                className="h-6 sm:h-12 w-auto object-contain flex-shrink-0"
                 priority
-                sizes="(max-width: 640px) 28px, 48px"
+                sizes="(max-width: 640px) 24px, 48px"
               />
             )}
-            <span className="text-xs sm:text-2xl font-bold leading-tight break-words line-clamp-2 min-w-0" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{siteName}</span>
+            <span 
+              className="text-[10px] xs:text-[11px] sm:text-2xl font-bold leading-tight break-words whitespace-normal min-w-0 flex-1" 
+              style={{ 
+                wordBreak: 'break-word', 
+                overflowWrap: 'break-word',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                maxHeight: '2.4em',
+                lineHeight: '1.2em'
+              }}
+            >
+              {siteName}
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -151,15 +165,15 @@ export const Header = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-1 sm:space-x-4 flex-shrink-0">
             {/* Comparison Icon */}
             <Link
               href="/comparar"
-              className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="relative p-1 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <GitCompare size={24} />
+              <GitCompare size={18} className="sm:w-6 sm:h-6" />
               {comparisonCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-black text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-black text-white text-[10px] sm:text-xs w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full">
                   {comparisonCount}
                 </span>
               )}
@@ -168,11 +182,11 @@ export const Header = () => {
             {/* Cart */}
             <Link
               href="/carrinho"
-              className="relative p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="relative p-1 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <ShoppingCart size={24} />
+              <ShoppingCart size={18} className="sm:w-6 sm:h-6" />
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-black text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-black text-white text-[10px] sm:text-xs w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full">
                   {itemCount}
                 </span>
               )}
@@ -190,9 +204,9 @@ export const Header = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="md:hidden p-1 sm:p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
             >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {mobileMenuOpen ? <X size={18} className="sm:w-6 sm:h-6" /> : <Menu size={18} className="sm:w-6 sm:h-6" />}
             </button>
           </div>
         </div>
