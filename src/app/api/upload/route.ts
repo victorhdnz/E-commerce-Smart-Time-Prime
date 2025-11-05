@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File
     const folder = formData.get('folder') as string || 'smart-time-prime'
     const isBanner = formData.get('isBanner') === 'true'
+    const preserveTransparency = formData.get('preserveTransparency') === 'true'
 
     if (!file) {
       return NextResponse.json({ error: 'Nenhum arquivo enviado' }, { status: 400 })
@@ -100,18 +101,42 @@ export async function POST(request: NextRequest) {
 
     // Aplicar transformações para imagens
     if (!isVideo) {
+      // Detectar se é PNG/WebP (formato com transparência)
+      const fileName = file.name.toLowerCase()
+      const isTransparentFormat = preserveTransparency || 
+                                  fileName.endsWith('.png') || 
+                                  fileName.endsWith('.webp') || 
+                                  fileName.endsWith('.gif') ||
+                                  file.type === 'image/png' ||
+                                  file.type === 'image/webp' ||
+                                  file.type === 'image/gif'
+      
       // Para banners grandes (1920x650), não aplicar nenhuma transformação para manter qualidade máxima
       if (isBanner) {
         // Para banners, não aplicar transformações - manter tamanho e qualidade original
         // O Cloudinary manterá a imagem no tamanho original sem compressão
-        uploadOptions.allowed_formats = ALLOWED_IMAGE_FORMATS
+        if (isTransparentFormat) {
+          uploadOptions.allowed_formats = ['png', 'webp', 'gif'] // Preservar formatos com transparência
+        } else {
+          uploadOptions.allowed_formats = ALLOWED_IMAGE_FORMATS
+        }
       } else {
         // Para imagens menores, aplicar limitação padrão
-        uploadOptions.transformation = [
-          { width: 800, height: 600, crop: 'limit' }, // Limitar tamanho mas manter proporção
-          { quality: 'auto:good' } // Otimização automática de qualidade
-        ]
-        uploadOptions.allowed_formats = ALLOWED_IMAGE_FORMATS
+        if (isTransparentFormat) {
+          // Para imagens com transparência, usar PNG e preservar transparência
+          uploadOptions.transformation = [
+            { width: 800, height: 600, crop: 'limit' }, // Limitar tamanho mas manter proporção
+            { format: 'png' } // Forçar PNG para preservar transparência
+          ]
+          uploadOptions.allowed_formats = ['png', 'webp', 'gif'] // Preservar formatos com transparência
+        } else {
+          // Para imagens sem transparência, usar JPEG com compressão
+          uploadOptions.transformation = [
+            { width: 800, height: 600, crop: 'limit' }, // Limitar tamanho mas manter proporção
+            { quality: 'auto:good' } // Otimização automática de qualidade
+          ]
+          uploadOptions.allowed_formats = ALLOWED_IMAGE_FORMATS
+        }
       }
     } else {
       // Para vídeos, configurações básicas de upload

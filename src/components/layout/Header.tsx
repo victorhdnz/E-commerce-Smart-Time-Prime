@@ -119,21 +119,21 @@ export const Header = () => {
     <header className="sticky top-0 z-30 bg-white shadow-sm">
       <AuthDebug />
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-20 gap-2 sm:gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-4 h-16 flex-shrink-0 min-w-0">
+          <Link href="/" className="flex items-center gap-1.5 sm:gap-3 h-16 min-w-0 flex-1 overflow-hidden">
             {siteLogo && (
               <Image
                 src={siteLogo}
                 alt={siteName}
                 width={60}
                 height={48}
-                className="h-8 sm:h-12 w-auto object-contain flex-shrink-0"
+                className="h-7 sm:h-12 w-auto object-contain flex-shrink-0"
                 priority
-                sizes="(max-width: 640px) 32px, 48px"
+                sizes="(max-width: 640px) 28px, 48px"
               />
             )}
-            <span className="text-lg sm:text-2xl font-bold truncate max-w-[150px] sm:max-w-none">{siteName}</span>
+            <span className="text-xs sm:text-2xl font-bold leading-tight break-words line-clamp-2 min-w-0" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{siteName}</span>
           </Link>
 
           {/* Desktop Navigation */}

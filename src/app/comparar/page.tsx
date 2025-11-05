@@ -350,11 +350,11 @@ export default function ComparePage() {
           <table className="w-full min-w-[800px]">
             <thead>
               <tr className="border-b">
-                <th className="p-2 sm:p-4 text-left font-bold sticky left-0 bg-white z-10 min-w-[150px] sm:min-w-[200px]">
-                  <span className="text-sm sm:text-base">Característica</span>
+                <th className="px-2 py-2 sm:px-3 sm:py-3 text-left font-bold sticky left-0 bg-white z-10 min-w-[120px] sm:min-w-[150px]">
+                  <span className="text-xs sm:text-sm">Característica</span>
                 </th>
                 {products.map((product) => (
-                  <th key={product.id} className="p-2 sm:p-4 text-center min-w-[200px] sm:min-w-[250px]">
+                  <th key={product.id} className="px-2 py-2 sm:px-3 sm:py-3 text-center min-w-[150px] sm:min-w-[200px]">
                     <div className="flex flex-col items-center gap-2 sm:gap-3">
                       <button
                         onClick={() => handleRemoveProduct(product.id)}
@@ -411,9 +411,10 @@ export default function ComparePage() {
                     ? 'bg-white hover:bg-gray-50/50' 
                     : 'bg-gray-50/30 hover:bg-gray-50/70'
                 }`}
+                style={{ height: 'auto' }}
               >
-                <td className="p-2 sm:p-4 font-semibold sticky left-0 bg-white z-10 text-xs sm:text-base border-r border-gray-200">
-                  <span className="text-gray-800">{field}</span>
+                <td className="px-2 py-1.5 sm:px-3 sm:py-2 font-semibold sticky left-0 bg-white z-10 text-xs sm:text-sm border-r border-gray-200 align-top">
+                  <span className="text-gray-800 break-words inline-block" style={{ wordBreak: 'break-word' }}>{field}</span>
                 </td>
                 {products.map((product) => {
                   let value: string | number | React.ReactNode = '—'
@@ -489,9 +490,9 @@ export default function ComparePage() {
                   }
                   
                   return (
-                    <td key={product.id} className="p-2 sm:p-4 text-center text-xs sm:text-base bg-transparent">
+                    <td key={product.id} className="px-2 py-1.5 sm:px-3 sm:py-2 text-center text-xs sm:text-sm bg-transparent align-top">
                       {typeof value === 'string' || typeof value === 'number' ? (
-                        <span className="text-gray-700 break-words font-medium">{value}</span>
+                        <span className="text-gray-700 break-words font-medium inline-block" style={{ wordBreak: 'break-word' }}>{value}</span>
                       ) : (
                         value
                       )}

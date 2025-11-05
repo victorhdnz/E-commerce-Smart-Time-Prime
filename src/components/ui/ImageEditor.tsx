@@ -71,7 +71,7 @@ export function ImageEditor({
   ): Promise<Blob> => {
     const image = await createImage(imageSrc)
     const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
 
     if (!ctx) {
       throw new Error('Erro ao criar contexto do canvas')
@@ -101,6 +101,9 @@ export function ImageEditor({
     canvas.width = finalWidth
     canvas.height = finalHeight
 
+    // Limpar canvas com fundo transparente
+    ctx.clearRect(0, 0, finalWidth, finalHeight)
+
     ctx.translate(finalWidth / 2, finalHeight / 2)
     ctx.rotate((rotation * Math.PI) / 180)
     ctx.translate(-finalWidth / 2, -finalHeight / 2)
@@ -117,15 +120,56 @@ export function ImageEditor({
       finalHeight
     )
 
-    return new Promise((resolve) => {
-      // Usar qualidade maior para banners (1920x650) para manter nitidez
-      const quality = (targetSize && targetSize.width >= 1920) || cropType === 'banner' ? 0.95 : 0.9
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          throw new Error('Erro ao processar imagem')
+    // Detectar se a imagem tem transparência
+    const hasTransparency = (() => {
+      try {
+        const imageData = ctx.getImageData(0, 0, finalWidth, finalHeight)
+        const data = imageData.data
+        
+        // Verificar se há pixels com alpha < 255 (transparência)
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i] < 255) {
+            return true
+          }
         }
-        resolve(blob)
-      }, 'image/jpeg', quality)
+        return false
+      } catch (e) {
+        // Se houver erro, assumir que pode ter transparência
+        return true
+      }
+    })()
+
+    // Detectar tipo original do arquivo
+    const originalType = file.type.toLowerCase()
+    const supportsTransparency = originalType === 'image/png' || 
+                                  originalType === 'image/webp' || 
+                                  originalType === 'image/gif' ||
+                                  file.name.toLowerCase().endsWith('.png') ||
+                                  file.name.toLowerCase().endsWith('.webp') ||
+                                  file.name.toLowerCase().endsWith('.gif')
+
+    // Usar PNG se a imagem original suporta transparência OU se detectamos transparência
+    const usePNG = supportsTransparency || hasTransparency
+
+    return new Promise((resolve) => {
+      if (usePNG) {
+        // Usar PNG para preservar transparência
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            throw new Error('Erro ao processar imagem')
+          }
+          resolve(blob)
+        }, 'image/png')
+      } else {
+        // Usar JPEG para imagens sem transparência (melhor compressão)
+        const quality = (targetSize && targetSize.width >= 1920) || cropType === 'banner' ? 0.95 : 0.9
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            throw new Error('Erro ao processar imagem')
+          }
+          resolve(blob)
+        }, 'image/jpeg', quality)
+      }
     })
   }
 
@@ -143,11 +187,39 @@ export function ImageEditor({
       )
 
       const formData = new FormData()
-      formData.append('file', croppedImage, file.name)
+      // Preservar extensão original se for PNG/WebP para manter transparência
+      const originalName = file.name.toLowerCase()
+      const originalType = file.type.toLowerCase()
+      const isTransparentFormat = originalName.endsWith('.png') || 
+                                   originalName.endsWith('.webp') || 
+                                   originalName.endsWith('.gif') ||
+                                   originalType === 'image/png' ||
+                                   originalType === 'image/webp' ||
+                                   originalType === 'image/gif'
+      
+      // Determinar nome do arquivo com extensão correta baseado no tipo do blob
+      let fileName = file.name
+      if (croppedImage.type === 'image/png') {
+        // Se o blob é PNG, usar extensão .png
+        if (!originalName.endsWith('.png')) {
+          fileName = file.name.replace(/\.[^/.]+$/, '') + '.png'
+        }
+      } else if (croppedImage.type === 'image/jpeg') {
+        // Se o blob é JPEG, usar extensão .jpg
+        if (!originalName.endsWith('.jpg') && !originalName.endsWith('.jpeg')) {
+          fileName = file.name.replace(/\.[^/.]+$/, '') + '.jpg'
+        }
+      }
+      
+      formData.append('file', croppedImage, fileName)
       formData.append('folder', 'images')
       // Passar informação sobre tipo de imagem para API ajustar qualidade
       if (targetSize && targetSize.width >= 1920) {
         formData.append('isBanner', 'true')
+      }
+      // Passar informação se é logo (para preservar transparência na API também)
+      if (isTransparentFormat || croppedImage.type === 'image/png') {
+        formData.append('preserveTransparency', 'true')
       }
 
       const response = await fetch('/api/upload', {
