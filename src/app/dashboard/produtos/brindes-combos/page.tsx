@@ -428,6 +428,8 @@ export default function BrindesECombosPage() {
       description: '',
       discount_percentage: 0,
       discount_amount: 0,
+      local_price: '',
+      national_price: '',
       items: []
     })
     setEditingCombo(null)
