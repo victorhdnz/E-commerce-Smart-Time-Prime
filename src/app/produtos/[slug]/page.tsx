@@ -801,15 +801,16 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-4 mb-6">
+          <div className="flex flex-wrap gap-2 sm:gap-4 mb-6">
             <Button
-              size="lg"
-              className="flex-1"
+              size="sm"
+              className="flex-1 sm:flex-initial min-w-[140px] sm:min-w-0 text-xs sm:text-base"
               onClick={handleAddToCart}
               disabled={product.stock === 0}
             >
-              <ShoppingCart size={20} className="mr-2" />
-              {product.stock === 0 ? 'Esgotado' : 'Adicionar ao Carrinho'}
+              <ShoppingCart size={16} className="sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{product.stock === 0 ? 'Esgotado' : 'Adicionar ao Carrinho'}</span>
+              <span className="sm:hidden">{product.stock === 0 ? 'Esgotado' : 'Adicionar'}</span>
             </Button>
             <Button
               onClick={() => {
@@ -844,10 +845,12 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               }}
               disabled={!canAddMore() && !products.some(p => p.id === product.id)}
               variant="outline"
-              size="lg"
+              size="sm"
+              className="flex-1 sm:flex-initial min-w-[120px] sm:min-w-0 text-xs sm:text-base"
             >
-              <GitCompare size={20} className="mr-2" />
-              {products.some(p => p.id === product.id) ? 'Na Comparação' : 'Comparar'}
+              <GitCompare size={16} className="sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">{products.some(p => p.id === product.id) ? 'Na Comparação' : 'Comparar'}</span>
+              <span className="sm:hidden">{products.some(p => p.id === product.id) ? 'Na Comparação' : 'Comparar'}</span>
             </Button>
             <button
               onClick={async () => {
@@ -889,14 +892,14 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                   toast.error('Erro ao favoritar produto')
                 }
               }}
-              className={`w-14 h-14 rounded-lg border-2 transition-colors flex items-center justify-center ${
+              className={`w-10 h-10 sm:w-14 sm:h-14 rounded-lg border-2 transition-colors flex items-center justify-center flex-shrink-0 ${
                 isFavorite
                   ? 'border-red-500 bg-red-50 text-red-500'
                   : 'border-gray-300 hover:border-black'
               }`}
               title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
             >
-              <Heart size={24} className={isFavorite ? 'fill-current' : ''} />
+              <Heart size={18} className={`sm:w-6 sm:h-6 ${isFavorite ? 'fill-current' : ''}`} />
             </button>
             <button
               onClick={() => {
@@ -912,10 +915,10 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                   toast.success('Link copiado para a área de transferência!')
                 }
               }}
-              className="w-14 h-14 rounded-lg border-2 border-gray-300 hover:border-black transition-colors flex items-center justify-center"
+              className="w-10 h-10 sm:w-14 sm:h-14 rounded-lg border-2 border-gray-300 hover:border-black transition-colors flex items-center justify-center flex-shrink-0"
               title="Compartilhar produto"
             >
-              <Share2 size={24} />
+              <Share2 size={18} className="sm:w-6 sm:h-6" />
             </button>
           </div>
 
