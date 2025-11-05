@@ -191,10 +191,8 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
     addItem(product, selectedColor || undefined, quantity)
 
-    // Adicionar brindes automaticamente
-    gifts.forEach((gift) => {
-      addItem(gift, undefined, 1)
-    })
+    // Os brindes são adicionados automaticamente pelo hook useCart
+    // Não precisamos adicionar manualmente aqui para evitar duplicação
 
     toast.success('Produto adicionado ao carrinho!')
   }
@@ -247,8 +245,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             key={selectedImage}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 relative cursor-pointer group"
-            onClick={() => images.length > 0 && setShowImageModal(true)}
+            className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 relative"
           >
             {currentImage ? (
               <>
@@ -256,13 +253,29 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                   src={currentImage}
                   alt={product.name}
                   fill
-                  className="object-cover group-hover:opacity-90 transition-opacity"
+                  className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
                   priority={selectedImage === 0}
                 />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity flex items-center justify-center">
-                  <Eye size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+                {/* Setas de navegação - só mostrar se houver mais de 1 imagem */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setSelectedImage(selectedImage === 0 ? images.length - 1 : selectedImage - 1)}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-black p-2 rounded-full hover:bg-white transition-colors shadow-lg"
+                      aria-label="Imagem anterior"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={() => setSelectedImage(selectedImage === images.length - 1 ? 0 : selectedImage + 1)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 text-black p-2 rounded-full hover:bg-white transition-colors shadow-lg"
+                      aria-label="Próxima imagem"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </>
+                )}
               </>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-8xl">

@@ -197,33 +197,51 @@ export default function DashboardSalesPage() {
     }
   }
 
+  const escapeCSVField = (field: any): string => {
+    if (field === null || field === undefined) return ''
+    const str = String(field)
+    // Se contém vírgula, aspas ou quebra de linha, precisa ser escapado
+    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+      // Escapar aspas duplicando-as e envolver em aspas
+      return `"${str.replace(/"/g, '""')}"`
+    }
+    return str
+  }
+
   const handleExportCSV = () => {
-    const csv = [
-      ['Data', 'Número', 'Cliente', 'Total', 'Status', 'Origem', 'Localidade'].join(','),
-      ...salesData.orders.map(order => {
-        const date = new Date(order.data).toLocaleDateString('pt-BR')
-        const location = order.origem === 'site' && order.endereco
-          ? (() => {
-              const addr = typeof order.endereco === 'string' 
-                ? JSON.parse(order.endereco) 
-                : order.endereco
-              return `${addr.city || ''}/${addr.state || ''}`.trim() || 'Não informado'
-            })()
-          : (order.cliente?.cidade ? `${order.cliente.cidade}/${order.cliente.uf || ''}` : 'Não informado')
-        
-        return [
-          date,
-          order.numero || '',
-          order.cliente?.nome || 'Cliente',
-          order.total?.toFixed(2) || '0.00',
-          order.situacao || order.status || '',
-          order.origem || 'site',
-          location,
-        ].join(',')
-      }),
+    // Cabeçalho com separador ponto-e-vírgula (padrão brasileiro)
+    const headers = ['Data', 'Número', 'Cliente', 'Total', 'Status', 'Origem', 'Localidade']
+    const rows = salesData.orders.map(order => {
+      const date = new Date(order.data).toLocaleDateString('pt-BR')
+      const location = order.origem === 'site' && order.endereco
+        ? (() => {
+            const addr = typeof order.endereco === 'string' 
+              ? JSON.parse(order.endereco) 
+              : order.endereco
+            return `${addr.city || ''}/${addr.state || ''}`.trim() || 'Não informado'
+          })()
+        : (order.cliente?.cidade ? `${order.cliente.cidade}/${order.cliente.uf || ''}` : 'Não informado')
+      
+      return [
+        escapeCSVField(date),
+        escapeCSVField(order.numero || ''),
+        escapeCSVField(order.cliente?.nome || 'Cliente'),
+        order.total?.toFixed(2).replace('.', ',') || '0,00',
+        escapeCSVField(order.situacao || order.status || ''),
+        escapeCSVField(order.origem || 'site'),
+        escapeCSVField(location),
+      ]
+    })
+
+    // Criar CSV com separador ponto-e-vírgula
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map(row => row.join(';')),
     ].join('\n')
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    // Adicionar BOM UTF-8 para compatibilidade com planilhas e editores
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)

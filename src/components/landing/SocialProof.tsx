@@ -11,6 +11,10 @@ interface SocialProofProps {
   googleIcon?: boolean
   allowPhotos?: boolean
   testimonialCount?: string
+  elementVisibility?: {
+    title?: boolean
+    reviews?: boolean
+  }
 }
 
 export const SocialProof = ({
@@ -19,6 +23,10 @@ export const SocialProof = ({
   googleIcon = true,
   allowPhotos = true,
   testimonialCount = '💬 Mais de 1.000 smartwatches entregues em Uberlândia.',
+  elementVisibility = {
+    title: true,
+    reviews: true,
+  },
 }: SocialProofProps) => {
   // Avaliações padrão (Uberlândia)
   const defaultReviews: Review[] = [
@@ -63,21 +71,24 @@ export const SocialProof = ({
   return (
     <section className="py-20 bg-black text-white overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">{title}</h2>
-          {testimonialCount && (
-            <p className="text-gray-400 text-lg mb-2">{testimonialCount}</p>
-          )}
-          <div className="w-24 h-1 bg-accent mx-auto mt-6" />
-        </motion.div>
+        {elementVisibility.title && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold text-center mb-4">{title}</h2>
+            {testimonialCount && (
+              <p className="text-gray-400 text-lg mb-2">{testimonialCount}</p>
+            )}
+            <div className="w-24 h-1 bg-accent mx-auto mt-6" />
+          </motion.div>
+        )}
 
         {/* Carrossel Infinito */}
-        <div className="relative overflow-hidden">
+        {elementVisibility.reviews && (
+          <div className="relative overflow-hidden">
           {/* Gradiente Esquerda - apenas borda */}
           <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
           

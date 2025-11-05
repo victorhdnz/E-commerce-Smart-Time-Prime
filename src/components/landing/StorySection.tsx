@@ -11,6 +11,11 @@ interface StorySectionProps {
   images?: string[] // Array de imagens
   image?: string // Mantido para compatibilidade
   foundersNames?: string
+  elementVisibility?: {
+    title?: boolean
+    content?: boolean
+    images?: boolean
+  }
 }
 
 export const StorySection = ({
@@ -19,6 +24,11 @@ export const StorySection = ({
   images,
   image, // Compatibilidade com versão antiga
   foundersNames,
+  elementVisibility = {
+    title: true,
+    content: true,
+    images: true,
+  },
 }: StorySectionProps) => {
   // Usar images se disponível, senão usar image como fallback
   const displayImages = images && images.length > 0 
@@ -59,26 +69,29 @@ export const StorySection = ({
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">{title}</h2>
-          <div className="w-24 h-1 bg-black mx-auto" />
-        </motion.div>
+        {elementVisibility.title && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">{title}</h2>
+            <div className="w-24 h-1 bg-black mx-auto" />
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
           {/* Texto */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-          >
-            <div className="text-lg md:text-xl text-gray-700 whitespace-pre-line leading-relaxed">
-              {content}
-            </div>
+          {elementVisibility.content && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <div className="text-lg md:text-xl text-gray-700 whitespace-pre-line leading-relaxed">
+                {content}
+              </div>
             {foundersNames && (
               <div className="mt-6 pt-6 border-t border-gray-300">
                 <p className="text-lg font-semibold text-gray-900">
@@ -87,10 +100,12 @@ export const StorySection = ({
                 <p className="text-sm text-gray-600 mt-1">Fundadores da Smart Time Prime</p>
               </div>
             )}
-          </motion.div>
+            </motion.div>
+          )}
 
           {/* Carrossel de Imagens - Estilo Modal */}
-          <motion.div
+          {elementVisibility.images && (
+            <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -180,7 +195,8 @@ export const StorySection = ({
                 </div>
               </div>
             )}
-          </motion.div>
+            </motion.div>
+          )}
         </div>
       </div>
     </section>

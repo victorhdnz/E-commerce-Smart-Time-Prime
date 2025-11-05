@@ -193,30 +193,38 @@ export default function ProductsPage() {
   return (
     <FadeInSection>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Nossos Produtos</h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Descubra nossa coleção exclusiva de relógios premium
           </p>
         </div>
 
-        <ProductFilters 
-          onFilterChange={handleFilterChange}
-          categories={categories}
-        />
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Filtros na lateral esquerda */}
+          <aside className="lg:w-64 flex-shrink-0">
+            <ProductFilters 
+              onFilterChange={handleFilterChange}
+              categories={categories}
+            />
+          </aside>
 
-        {filteredProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-xl text-gray-600">Nenhum produto encontrado.</p>
-            <p className="text-gray-500 mt-2">Tente ajustar os filtros ou buscar por outros termos.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
+          {/* Produtos */}
+          <main className="flex-1">
+            {filteredProducts.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-xl text-gray-600">Nenhum produto encontrado.</p>
+                <p className="text-gray-500 mt-2">Tente ajustar os filtros ou buscar por outros termos.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </main>
+        </div>
       </div>
     </FadeInSection>
   )

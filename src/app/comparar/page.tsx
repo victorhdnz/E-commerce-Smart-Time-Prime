@@ -3,31 +3,35 @@
 import { useEffect, useState } from 'react'
 import { useProductComparison } from '@/hooks/useProductComparison'
 import { useUserLocation } from '@/hooks/useUserLocation'
+import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils/format'
 import { getProductPrice } from '@/lib/utils/price'
 import { Product } from '@/types'
 import Image from 'next/image'
-import { X, ShoppingCart, Eye, Check, XCircle } from 'lucide-react'
+import { X, ShoppingCart, Eye, Check, XCircle, MapPin, GitCompare } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { createPortal } from 'react-dom'
 import toast from 'react-hot-toast'
 import { useCart } from '@/hooks/useCart'
 import { createClient } from '@/lib/supabase/client'
 
 export default function ComparePage() {
   const router = useRouter()
-  const { products, removeProduct, clearComparison } = useProductComparison()
-  const { isUberlandia } = useUserLocation()
+  const { isAuthenticated } = useAuth()
+  const { products, removeProduct, clearComparison, addProduct, canAddMore } = useProductComparison()
+  const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
   const { addItem } = useCart()
   const [comparisonFields, setComparisonFields] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
+  const [showAddressModal, setShowAddressModal] = useState(false)
+  const [allProducts, setAllProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<string[]>([])
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [showProductSelector, setShowProductSelector] = useState(false)
   const supabase = createClient()
-
-  useEffect(() => {
-    loadComparisonFields()
-  }, [])
 
   const loadComparisonFields = async () => {
     try {
@@ -85,17 +89,143 @@ export default function ComparePage() {
     )
   }
 
+  // Carregar produtos e categorias
+  useEffect(() => {
+    const loadProductsAndCategories = async () => {
+      try {
+        const { data: productsData, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_active', true)
+          .order('name')
+
+        if (error) throw error
+
+        if (productsData) {
+          setAllProducts(productsData as Product[])
+          const uniqueCategories = [...new Set(productsData.map((p: any) => p.category).filter(Boolean))] as string[]
+          setCategories(uniqueCategories.sort())
+        }
+      } catch (error) {
+        console.error('Erro ao carregar produtos:', error)
+        toast.error('Erro ao carregar produtos')
+      }
+    }
+
+    loadProductsAndCategories()
+  }, [])
+
+  const handleAddProductToComparison = (product: Product) => {
+    // Verificar se produtos já na comparação são da mesma categoria
+    if (products.length > 0) {
+      const firstProductCategory = products[0].category
+      if (product.category !== firstProductCategory) {
+        toast.error('Você só pode comparar produtos da mesma categoria')
+        return
+      }
+    }
+
+    if (!canAddMore()) {
+      toast.error('Você pode comparar até 4 produtos. Limpe a comparação atual ou remova algum produto.')
+      return
+    }
+
+    if (products.some(p => p.id === product.id)) {
+      toast('Produto já está na comparação')
+      return
+    }
+
+    addProduct(product)
+    toast.success('Produto adicionado à comparação!')
+    setShowProductSelector(false)
+  }
+
+  const filteredProducts = selectedCategory
+    ? allProducts.filter(p => p.category === selectedCategory)
+    : allProducts
+
   if (products.length === 0) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center">
+        <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Comparar Produtos</h1>
           <p className="text-gray-600 mb-8">
-            Você ainda não selecionou produtos para comparar
+            Selecione produtos para comparar suas características lado a lado
           </p>
-          <Link href="/produtos">
-            <Button size="lg">Ver Produtos</Button>
-          </Link>
+        </div>
+
+        {/* Seletor de categoria e produtos */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4">Selecione uma categoria</h2>
+          <div className="flex flex-wrap gap-3 mb-6">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-4 py-2 rounded-lg border transition-colors ${
+                selectedCategory === null
+                  ? 'bg-black text-white border-black'
+                  : 'bg-white text-black border-gray-300 hover:border-black'
+              }`}
+            >
+              Todas
+            </button>
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-lg border transition-colors ${
+                  selectedCategory === category
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-black border-gray-300 hover:border-black'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          {selectedCategory && (
+            <p className="text-sm text-gray-600 mb-4">
+              Produtos da categoria: <strong>{selectedCategory}</strong>
+            </p>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="border rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => handleAddProductToComparison(product)}
+              >
+                <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
+                  {product.images?.[0] ? (
+                    <Image
+                      src={product.images[0]}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-4xl">
+                      ⌚
+                    </div>
+                  )}
+                </div>
+                <h3 className="font-semibold mb-1">{product.name}</h3>
+                <p className="text-sm text-gray-600">{product.category}</p>
+                <Button
+                  size="sm"
+                  className="w-full mt-3"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleAddProductToComparison(product)
+                  }}
+                >
+                  <GitCompare size={16} className="mr-2" />
+                  Adicionar
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -106,14 +236,89 @@ export default function ComparePage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">Comparar Produtos</h1>
         <div className="flex gap-3">
+          <Button onClick={() => setShowProductSelector(!showProductSelector)} variant="outline">
+            <GitCompare size={16} className="mr-2" />
+            {showProductSelector ? 'Fechar Seleção' : 'Adicionar Produtos'}
+          </Button>
           <Button onClick={clearComparison} variant="outline">
             Limpar Comparação
           </Button>
-          <Link href="/produtos">
-            <Button variant="outline">Adicionar Mais Produtos</Button>
-          </Link>
         </div>
       </div>
+
+      {/* Seletor de produtos */}
+      {showProductSelector && (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-xl font-bold mb-4">Selecione produtos para comparar</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            {products.length > 0 && (
+              <>Você só pode comparar produtos da categoria <strong>{products[0].category}</strong></>
+            )}
+          </p>
+          <div className="flex flex-wrap gap-3 mb-6">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-4 py-2 rounded-lg border transition-colors ${
+                selectedCategory === null
+                  ? 'bg-black text-white border-black'
+                  : 'bg-white text-black border-gray-300 hover:border-black'
+              }`}
+            >
+              Todas
+            </button>
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-lg border transition-colors ${
+                  selectedCategory === category
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-black border-gray-300 hover:border-black'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredProducts
+              .filter(p => !products.some(prod => prod.id === p.id))
+              .map((product) => (
+                <div
+                  key={product.id}
+                  className="border rounded-lg p-4 hover:shadow-lg transition-shadow"
+                >
+                  <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-3">
+                    {product.images?.[0] ? (
+                      <Image
+                        src={product.images[0]}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-4xl">
+                        ⌚
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-semibold mb-1">{product.name}</h3>
+                  <p className="text-sm text-gray-600 mb-3">{product.category}</p>
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    onClick={() => handleAddProductToComparison(product)}
+                    disabled={!canAddMore() || (products.length > 0 && product.category !== products[0].category)}
+                  >
+                    <GitCompare size={16} className="mr-2" />
+                    Adicionar
+                  </Button>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-lg shadow-md overflow-x-auto">
         <table className="w-full min-w-[800px]">
@@ -180,7 +385,31 @@ export default function ComparePage() {
                       value = product.name
                       break
                     case 'Preço':
-                      value = formatCurrency(getProductPrice(product, isUberlandia))
+                      // Mostrar preço embaçado se não tiver endereço
+                      if (needsAddress && !locationLoading) {
+                        value = (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              if (!isAuthenticated) {
+                                router.push('/login')
+                                return
+                              }
+                              setShowAddressModal(true)
+                            }}
+                            className="relative cursor-pointer group"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Eye size={16} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
+                              <span className="text-gray-400 blur-sm select-none">
+                                {formatCurrency(product.local_price || product.national_price)}
+                              </span>
+                            </div>
+                          </button>
+                        )
+                      } else {
+                        value = formatCurrency(getProductPrice(product, isUberlandia))
+                      }
                       break
                     case 'Categoria':
                       value = product.category || '—'
@@ -212,6 +441,68 @@ export default function ComparePage() {
           </tbody>
         </table>
       </div>
+
+      {/* Modal para cadastrar endereço */}
+      {typeof window !== 'undefined' && showAddressModal && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowAddressModal(false)
+            }
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-in fade-in zoom-in duration-200"
+          >
+            <button
+              onClick={() => setShowAddressModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+              aria-label="Fechar"
+            >
+              ✕
+            </button>
+            
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                <MapPin size={40} className="text-blue-600" />
+              </div>
+              
+              <div>
+                <h2 className="text-2xl font-bold mb-2">
+                  Cadastre seu endereço
+                </h2>
+                <p className="text-gray-600">
+                  Para visualizar o preço do produto, precisamos do seu endereço
+                </p>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={() => {
+                    setShowAddressModal(false)
+                    router.push('/minha-conta/enderecos')
+                  }}
+                  className="flex-1"
+                  size="lg"
+                >
+                  <MapPin size={18} className="mr-2" />
+                  Cadastrar Endereço
+                </Button>
+                <Button
+                  onClick={() => setShowAddressModal(false)}
+                  variant="outline"
+                  size="lg"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }

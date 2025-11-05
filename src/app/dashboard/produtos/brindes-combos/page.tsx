@@ -11,7 +11,7 @@ import { ArrowLeft, Plus, Gift, Package, Trash2, Link as LinkIcon, Edit, Star, E
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
-import { formatCurrency } from '@/lib/utils/format'
+import { formatCurrency, slugify } from '@/lib/utils/format'
 
 interface Product {
   id: string
@@ -233,9 +233,13 @@ export default function BrindesECombosPage() {
     try {
       const finalPrice = calculateComboPrice()
       
+      // Gerar slug do nome do combo
+      const slug = slugify(comboForm.name) || `combo-${Date.now()}`
+      
       let comboData = {
         name: comboForm.name,
         description: comboForm.description,
+        slug: slug,
         discount_percentage: comboForm.discount_percentage,
         discount_amount: comboForm.discount_amount,
         final_price: finalPrice,

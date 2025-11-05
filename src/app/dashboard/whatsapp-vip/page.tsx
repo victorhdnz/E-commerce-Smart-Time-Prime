@@ -59,18 +59,36 @@ export default function DashboardWhatsAppVipPage() {
     }
   }
 
+  const escapeCSVField = (field: any): string => {
+    if (field === null || field === undefined) return ''
+    const str = String(field)
+    // Se contém vírgula, aspas ou quebra de linha, precisa ser escapado
+    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+      // Escapar aspas duplicando-as e envolver em aspas
+      return `"${str.replace(/"/g, '""')}"`
+    }
+    return str
+  }
+
   const handleExportCSV = () => {
-    const csv = [
-      ['Nome', 'E-mail', 'Telefone', 'Data de Cadastro'].join(','),
-      ...registrations.map(reg => [
-        `"${reg.name}"`,
-        `"${reg.email}"`,
-        `"${reg.phone}"`,
-        new Date(reg.created_at).toLocaleDateString('pt-BR'),
-      ].join(',')),
+    // Cabeçalho com separador ponto-e-vírgula (padrão brasileiro)
+    const headers = ['Nome', 'E-mail', 'Telefone', 'Data de Cadastro']
+    const rows = registrations.map(reg => [
+      escapeCSVField(reg.name || ''),
+      escapeCSVField(reg.email || ''),
+      escapeCSVField(reg.phone || ''),
+      new Date(reg.created_at).toLocaleDateString('pt-BR'),
+    ])
+
+    // Criar CSV com separador ponto-e-vírgula
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map(row => row.join(';')),
     ].join('\n')
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    // Adicionar BOM UTF-8 para compatibilidade com planilhas e editores
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)

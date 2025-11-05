@@ -13,6 +13,12 @@ interface MediaShowcaseProps {
     icon: string
     text: string
   }>
+  elementVisibility?: {
+    title?: boolean
+    features?: boolean
+    images?: boolean
+    video?: boolean
+  }
 }
 
 export const MediaShowcase = ({
@@ -27,6 +33,12 @@ export const MediaShowcase = ({
     { icon: '🎨', text: 'Troque pulseiras em segundos' },
     { icon: '📲', text: 'Compatível com Android e iPhone' },
   ],
+  elementVisibility = {
+    title: true,
+    features: true,
+    images: true,
+    video: true,
+  },
 }: MediaShowcaseProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -64,20 +76,22 @@ export const MediaShowcase = ({
   return (
     <section className="py-12 bg-black text-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            {title}
-          </h2>
-          <div className="w-24 h-1 bg-accent mx-auto" />
-        </motion.div>
+        {elementVisibility.title && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+              {title}
+            </h2>
+            <div className="w-24 h-1 bg-accent mx-auto" />
+          </motion.div>
+        )}
 
         {/* Features Grid */}
-        {features && features.length > 0 && (
+        {elementVisibility.features && features && features.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -102,8 +116,9 @@ export const MediaShowcase = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
           {/* Carrossel de Imagens - 1 coluna */}
-          <div className="lg:col-span-1">
-            {images.length > 0 ? (
+          {elementVisibility.images && (
+            <div className="lg:col-span-1">
+              {images.length > 0 ? (
               <div className="relative group z-0">
                 {/* Imagem Principal */}
                 <div className="relative aspect-square bg-gray-900 rounded-lg overflow-hidden z-0">
@@ -190,16 +205,18 @@ export const MediaShowcase = ({
                 </p>
               </div>
             )}
-          </div>
+            </div>
+          )}
 
           {/* Vídeo Vertical (Reels) */}
-          <div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="sticky top-24 max-w-sm mx-auto"
-            >
+          {elementVisibility.video && (
+            <div>
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="sticky top-24 max-w-sm mx-auto"
+              >
               <div className="bg-gradient-to-br from-accent/20 to-transparent p-1 rounded-2xl">
                 <div className="bg-black rounded-xl overflow-hidden">
                   {videoUrl ? (
@@ -243,8 +260,9 @@ export const MediaShowcase = ({
                   🔥 Confira nossos lançamentos
                 </p>
               </div>
-            </motion.div>
-          </div>
+              </motion.div>
+            </div>
+          )}
         </div>
       </div>
     </section>

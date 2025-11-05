@@ -144,26 +144,44 @@ export default function DashboardClientsPage() {
     setFilteredClients(filtered)
   }, [searchTerm, clients])
 
+  const escapeCSVField = (field: any): string => {
+    if (field === null || field === undefined) return ''
+    const str = String(field)
+    // Se contém vírgula, aspas ou quebra de linha, precisa ser escapado
+    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+      // Escapar aspas duplicando-as e envolver em aspas
+      return `"${str.replace(/"/g, '""')}"`
+    }
+    return str
+  }
+
   const handleExportCSV = () => {
-    const csv = [
-      ['Nome', 'E-mail', 'Telefone', 'Data de Cadastro', 'Endereço Padrão', 'Total de Pedidos'].join(','),
-      ...filteredClients.map(client => {
-        const defaultAddress = client.addresses?.find(a => a.is_default)
-        const addressStr = defaultAddress 
-          ? `"${defaultAddress.street}, ${defaultAddress.number} - ${defaultAddress.neighborhood}, ${defaultAddress.city}/${defaultAddress.state}"`
-          : 'Não cadastrado'
-        return [
-          `"${client.full_name || 'N/A'}"`,
-          `"${client.email}"`,
-          `"${client.phone || 'N/A'}"`,
-          new Date(client.created_at).toLocaleDateString('pt-BR'),
-          addressStr,
-          (client.orders?.length || 0).toString(),
-        ].join(',')
-      }),
+    // Cabeçalho com separador ponto-e-vírgula (padrão brasileiro)
+    const headers = ['Nome', 'E-mail', 'Telefone', 'Data de Cadastro', 'Endereço Padrão', 'Total de Pedidos']
+    const rows = filteredClients.map(client => {
+      const defaultAddress = client.addresses?.find(a => a.is_default)
+      const addressStr = defaultAddress 
+        ? `${defaultAddress.street}, ${defaultAddress.number} - ${defaultAddress.neighborhood}, ${defaultAddress.city}/${defaultAddress.state}`
+        : 'Não cadastrado'
+      return [
+        escapeCSVField(client.full_name || 'N/A'),
+        escapeCSVField(client.email || ''),
+        escapeCSVField(client.phone || 'N/A'),
+        new Date(client.created_at).toLocaleDateString('pt-BR'),
+        escapeCSVField(addressStr),
+        (client.orders?.length || 0).toString(),
+      ]
+    })
+
+    // Criar CSV com separador ponto-e-vírgula
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map(row => row.join(';')),
     ].join('\n')
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    // Adicionar BOM UTF-8 para compatibilidade com planilhas e editores
+    const BOM = '\uFEFF'
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)

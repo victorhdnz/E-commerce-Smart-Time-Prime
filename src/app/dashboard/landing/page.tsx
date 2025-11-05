@@ -119,6 +119,44 @@ interface LandingSettings {
   section_about_us_visible: boolean
   section_contact_visible: boolean
   
+  // Controles de visibilidade de elementos individuais
+  // Hero Section
+  hero_badge_visible: boolean
+  hero_title_visible: boolean
+  hero_subtitle_visible: boolean
+  hero_cta_visible: boolean
+  hero_timer_visible: boolean
+  hero_banner_visible: boolean
+  
+  // Media Showcase Section
+  media_showcase_title_visible: boolean
+  media_showcase_features_visible: boolean
+  media_showcase_images_visible: boolean
+  media_showcase_video_visible: boolean
+  
+  // Value Package Section
+  value_package_title_visible: boolean
+  value_package_image_visible: boolean
+  value_package_items_visible: boolean
+  value_package_prices_visible: boolean
+  value_package_button_visible: boolean
+  value_package_timer_visible: boolean
+  
+  // Social Proof Section
+  social_proof_title_visible: boolean
+  social_proof_reviews_visible: boolean
+  
+  // Story Section
+  story_title_visible: boolean
+  story_content_visible: boolean
+  story_images_visible: boolean
+  
+  // About Us Section
+  about_us_title_visible: boolean
+  about_us_description_visible: boolean
+  about_us_images_visible: boolean
+  about_us_location_visible: boolean
+  
   // Section visibility defaults (novos campos)
   section_hero_visible_default: boolean
   section_media_showcase_visible_default: boolean
@@ -280,6 +318,38 @@ export default function EditLandingPage() {
     section_whatsapp_vip_visible_default: true,
     section_about_us_visible_default: true,
     section_contact_visible_default: true,
+    // Controles de visibilidade de elementos individuais (padrão: todos visíveis)
+    // Hero Section
+    hero_badge_visible: true,
+    hero_title_visible: true,
+    hero_subtitle_visible: true,
+    hero_cta_visible: true,
+    hero_timer_visible: true,
+    hero_banner_visible: true,
+    // Media Showcase Section
+    media_showcase_title_visible: true,
+    media_showcase_features_visible: true,
+    media_showcase_images_visible: true,
+    media_showcase_video_visible: true,
+    // Value Package Section
+    value_package_title_visible: true,
+    value_package_image_visible: true,
+    value_package_items_visible: true,
+    value_package_prices_visible: true,
+    value_package_button_visible: true,
+    value_package_timer_visible: true,
+    // Social Proof Section
+    social_proof_title_visible: true,
+    social_proof_reviews_visible: true,
+    // Story Section
+    story_title_visible: true,
+    story_content_visible: true,
+    story_images_visible: true,
+    // About Us Section
+    about_us_title_visible: true,
+    about_us_description_visible: true,
+    about_us_images_visible: true,
+    about_us_location_visible: true,
     // About antigo
     about_title: '',
     about_description: '',
@@ -473,6 +543,38 @@ export default function EditLandingPage() {
           section_whatsapp_vip_visible_default: savedSettings.section_whatsapp_vip_visible_default !== undefined ? savedSettings.section_whatsapp_vip_visible_default : true,
           section_about_us_visible_default: savedSettings.section_about_us_visible_default !== undefined ? savedSettings.section_about_us_visible_default : true,
           section_contact_visible_default: savedSettings.section_contact_visible_default !== undefined ? savedSettings.section_contact_visible_default : true,
+          // Controles de visibilidade de elementos individuais
+          // Hero Section
+          hero_badge_visible: savedSettings.hero_badge_visible !== undefined ? savedSettings.hero_badge_visible : true,
+          hero_title_visible: savedSettings.hero_title_visible !== undefined ? savedSettings.hero_title_visible : true,
+          hero_subtitle_visible: savedSettings.hero_subtitle_visible !== undefined ? savedSettings.hero_subtitle_visible : true,
+          hero_cta_visible: savedSettings.hero_cta_visible !== undefined ? savedSettings.hero_cta_visible : true,
+          hero_timer_visible: savedSettings.hero_timer_visible !== undefined ? savedSettings.hero_timer_visible : true,
+          hero_banner_visible: savedSettings.hero_banner_visible !== undefined ? savedSettings.hero_banner_visible : true,
+          // Media Showcase Section
+          media_showcase_title_visible: savedSettings.media_showcase_title_visible !== undefined ? savedSettings.media_showcase_title_visible : true,
+          media_showcase_features_visible: savedSettings.media_showcase_features_visible !== undefined ? savedSettings.media_showcase_features_visible : true,
+          media_showcase_images_visible: savedSettings.media_showcase_images_visible !== undefined ? savedSettings.media_showcase_images_visible : true,
+          media_showcase_video_visible: savedSettings.media_showcase_video_visible !== undefined ? savedSettings.media_showcase_video_visible : true,
+          // Value Package Section
+          value_package_title_visible: savedSettings.value_package_title_visible !== undefined ? savedSettings.value_package_title_visible : true,
+          value_package_image_visible: savedSettings.value_package_image_visible !== undefined ? savedSettings.value_package_image_visible : true,
+          value_package_items_visible: savedSettings.value_package_items_visible !== undefined ? savedSettings.value_package_items_visible : true,
+          value_package_prices_visible: savedSettings.value_package_prices_visible !== undefined ? savedSettings.value_package_prices_visible : true,
+          value_package_button_visible: savedSettings.value_package_button_visible !== undefined ? savedSettings.value_package_button_visible : true,
+          value_package_timer_visible: savedSettings.value_package_timer_visible !== undefined ? savedSettings.value_package_timer_visible : true,
+          // Social Proof Section
+          social_proof_title_visible: savedSettings.social_proof_title_visible !== undefined ? savedSettings.social_proof_title_visible : true,
+          social_proof_reviews_visible: savedSettings.social_proof_reviews_visible !== undefined ? savedSettings.social_proof_reviews_visible : true,
+          // Story Section
+          story_title_visible: savedSettings.story_title_visible !== undefined ? savedSettings.story_title_visible : true,
+          story_content_visible: savedSettings.story_content_visible !== undefined ? savedSettings.story_content_visible : true,
+          story_images_visible: savedSettings.story_images_visible !== undefined ? savedSettings.story_images_visible : true,
+          // About Us Section
+          about_us_title_visible: savedSettings.about_us_title_visible !== undefined ? savedSettings.about_us_title_visible : true,
+          about_us_description_visible: savedSettings.about_us_description_visible !== undefined ? savedSettings.about_us_description_visible : true,
+          about_us_images_visible: savedSettings.about_us_images_visible !== undefined ? savedSettings.about_us_images_visible : true,
+          about_us_location_visible: savedSettings.about_us_location_visible !== undefined ? savedSettings.about_us_location_visible : true,
           // About antigo (compatibilidade)
           about_title: savedSettings.about_title || savedSettings.about_us_title || '',
           about_description: savedSettings.about_description || savedSettings.about_us_description || '',
@@ -1295,29 +1397,249 @@ export default function EditLandingPage() {
               Controle quais seções da página inicial devem ser exibidas.
             </p>
             
-            <div className="space-y-3">
-              {[
-                { key: 'section_hero_visible', label: 'Hero (Banner de Abertura)' },
-                { key: 'section_media_showcase_visible', label: 'Fotos e Vídeo do Produto' },
-                { key: 'section_value_package_visible', label: 'Você Leva Tudo Isso' },
-                { key: 'section_social_proof_visible', label: 'Avaliações de Clientes' },
-                { key: 'section_story_visible', label: 'Nossa História' },
-                { key: 'section_whatsapp_vip_visible', label: 'Grupo VIP do WhatsApp' },
-                { key: 'section_about_us_visible', label: 'Sobre a Smart Time Prime' },
-                { key: 'section_contact_visible', label: 'Contato' },
-              ].map((section) => (
-                <label key={section.key} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50">
+            <div className="space-y-4">
+              {/* Hero Section */}
+              <div className="border rounded-lg p-4">
+                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
                   <input
                     type="checkbox"
-                    checked={(settings as any)[section.key] ?? true}
+                    checked={settings.section_hero_visible ?? true}
                     onChange={(e) =>
-                      setSettings({ ...settings, [section.key]: e.target.checked } as any)
+                      setSettings({ ...settings, section_hero_visible: e.target.checked })
                     }
                     className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
                   />
-                  <span className="text-sm font-medium">{section.label}</span>
+                  <span className="text-sm font-bold">Hero (Banner de Abertura)</span>
                 </label>
-              ))}
+                {settings.section_hero_visible && (
+                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
+                    {[
+                      { key: 'hero_banner_visible', label: 'Banner' },
+                      { key: 'hero_badge_visible', label: 'Badge' },
+                      { key: 'hero_title_visible', label: 'Título' },
+                      { key: 'hero_subtitle_visible', label: 'Subtítulo' },
+                      { key: 'hero_timer_visible', label: 'Cronômetro' },
+                      { key: 'hero_cta_visible', label: 'Botão CTA' },
+                    ].map((element) => (
+                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={(settings as any)[element.key] ?? true}
+                          onChange={(e) =>
+                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                          }
+                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                        />
+                        <span>{element.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Media Showcase Section */}
+              <div className="border rounded-lg p-4">
+                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
+                  <input
+                    type="checkbox"
+                    checked={settings.section_media_showcase_visible ?? true}
+                    onChange={(e) =>
+                      setSettings({ ...settings, section_media_showcase_visible: e.target.checked })
+                    }
+                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                  />
+                  <span className="text-sm font-bold">Fotos e Vídeo do Produto</span>
+                </label>
+                {settings.section_media_showcase_visible && (
+                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
+                    {[
+                      { key: 'media_showcase_title_visible', label: 'Título' },
+                      { key: 'media_showcase_features_visible', label: 'Características' },
+                      { key: 'media_showcase_images_visible', label: 'Imagens' },
+                      { key: 'media_showcase_video_visible', label: 'Vídeo' },
+                    ].map((element) => (
+                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={(settings as any)[element.key] ?? true}
+                          onChange={(e) =>
+                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                          }
+                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                        />
+                        <span>{element.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Value Package Section */}
+              <div className="border rounded-lg p-4">
+                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
+                  <input
+                    type="checkbox"
+                    checked={settings.section_value_package_visible ?? true}
+                    onChange={(e) =>
+                      setSettings({ ...settings, section_value_package_visible: e.target.checked })
+                    }
+                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                  />
+                  <span className="text-sm font-bold">Você Leva Tudo Isso</span>
+                </label>
+                {settings.section_value_package_visible && (
+                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
+                    {[
+                      { key: 'value_package_title_visible', label: 'Título' },
+                      { key: 'value_package_image_visible', label: 'Imagem' },
+                      { key: 'value_package_items_visible', label: 'Lista de Itens' },
+                      { key: 'value_package_prices_visible', label: 'Preços' },
+                      { key: 'value_package_timer_visible', label: 'Cronômetro' },
+                      { key: 'value_package_button_visible', label: 'Botão' },
+                    ].map((element) => (
+                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={(settings as any)[element.key] ?? true}
+                          onChange={(e) =>
+                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                          }
+                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                        />
+                        <span>{element.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Social Proof Section */}
+              <div className="border rounded-lg p-4">
+                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
+                  <input
+                    type="checkbox"
+                    checked={settings.section_social_proof_visible ?? true}
+                    onChange={(e) =>
+                      setSettings({ ...settings, section_social_proof_visible: e.target.checked })
+                    }
+                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                  />
+                  <span className="text-sm font-bold">Avaliações de Clientes</span>
+                </label>
+                {settings.section_social_proof_visible && (
+                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
+                    {[
+                      { key: 'social_proof_title_visible', label: 'Título' },
+                      { key: 'social_proof_reviews_visible', label: 'Avaliações' },
+                    ].map((element) => (
+                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={(settings as any)[element.key] ?? true}
+                          onChange={(e) =>
+                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                          }
+                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                        />
+                        <span>{element.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Story Section */}
+              <div className="border rounded-lg p-4">
+                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
+                  <input
+                    type="checkbox"
+                    checked={settings.section_story_visible ?? true}
+                    onChange={(e) =>
+                      setSettings({ ...settings, section_story_visible: e.target.checked })
+                    }
+                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                  />
+                  <span className="text-sm font-bold">Nossa História</span>
+                </label>
+                {settings.section_story_visible && (
+                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
+                    {[
+                      { key: 'story_title_visible', label: 'Título' },
+                      { key: 'story_content_visible', label: 'Conteúdo' },
+                      { key: 'story_images_visible', label: 'Imagens' },
+                    ].map((element) => (
+                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={(settings as any)[element.key] ?? true}
+                          onChange={(e) =>
+                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                          }
+                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                        />
+                        <span>{element.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* About Us Section */}
+              <div className="border rounded-lg p-4">
+                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
+                  <input
+                    type="checkbox"
+                    checked={settings.section_about_us_visible ?? true}
+                    onChange={(e) =>
+                      setSettings({ ...settings, section_about_us_visible: e.target.checked })
+                    }
+                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                  />
+                  <span className="text-sm font-bold">Sobre a Smart Time Prime</span>
+                </label>
+                {settings.section_about_us_visible && (
+                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
+                    {[
+                      { key: 'about_us_title_visible', label: 'Título' },
+                      { key: 'about_us_description_visible', label: 'Descrição' },
+                      { key: 'about_us_images_visible', label: 'Imagens' },
+                      { key: 'about_us_location_visible', label: 'Localização' },
+                    ].map((element) => (
+                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={(settings as any)[element.key] ?? true}
+                          onChange={(e) =>
+                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                          }
+                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                        />
+                        <span>{element.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Outras seções simples */}
+              <div className="space-y-2">
+                {[
+                  { key: 'section_whatsapp_vip_visible', label: 'Grupo VIP do WhatsApp' },
+                  { key: 'section_contact_visible', label: 'Contato' },
+                ].map((section) => (
+                  <label key={section.key} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50">
+                    <input
+                      type="checkbox"
+                      checked={(settings as any)[section.key] ?? true}
+                      onChange={(e) =>
+                        setSettings({ ...settings, [section.key]: e.target.checked } as any)
+                      }
+                      className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                    />
+                    <span className="text-sm font-medium">{section.label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </motion.div>
 

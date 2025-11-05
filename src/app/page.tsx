@@ -258,6 +258,14 @@ export default async function Home() {
           heroBanner={settings.hero_banner}
           heroBanners={heroBanners}
           timerEndDate={timerEnabled ? timerEndDate : undefined}
+          elementVisibility={{
+            banner: settings.hero_banner_visible !== false,
+            badge: settings.hero_badge_visible !== false,
+            title: settings.hero_title_visible !== false,
+            subtitle: settings.hero_subtitle_visible !== false,
+            timer: settings.hero_timer_visible !== false,
+            cta: settings.hero_cta_visible !== false,
+          }}
         />
       )}
 
@@ -268,6 +276,12 @@ export default async function Home() {
           images={showcaseImages}
           videoUrl={settings.showcase_video_url || ""}
           features={mediaFeatures}
+          elementVisibility={{
+            title: settings.media_showcase_title_visible !== false,
+            features: settings.media_showcase_features_visible !== false,
+            images: settings.media_showcase_images_visible !== false,
+            video: settings.media_showcase_video_visible !== false,
+          }}
         />
       )}
 
@@ -284,6 +298,14 @@ export default async function Home() {
           buttonLink={settings.value_package_button_link}
           stockText={settings.value_package_stock_text}
           endDate={timerEnabled ? timerEndDate : undefined}
+          elementVisibility={{
+            title: settings.value_package_title_visible !== false,
+            image: settings.value_package_image_visible !== false,
+            items: settings.value_package_items_visible !== false,
+            prices: settings.value_package_prices_visible !== false,
+            timer: settings.value_package_timer_visible !== false,
+            button: settings.value_package_button_visible !== false,
+          }}
         />
       )}
 
@@ -295,6 +317,10 @@ export default async function Home() {
           googleIcon={settings.social_proof_google_icon !== undefined ? settings.social_proof_google_icon : true}
           allowPhotos={settings.social_proof_allow_photos !== undefined ? settings.social_proof_allow_photos : true}
           testimonialCount={settings.social_proof_testimonial_count}
+          elementVisibility={{
+            title: settings.social_proof_title_visible !== false,
+            reviews: settings.social_proof_reviews_visible !== false,
+          }}
         />
       )}
 
@@ -306,6 +332,11 @@ export default async function Home() {
           images={settings.story_images}
           image={settings.story_image} // Fallback para compatibilidade
           foundersNames={settings.story_founders_names}
+          elementVisibility={{
+            title: settings.story_title_visible !== false,
+            content: settings.story_content_visible !== false,
+            images: settings.story_images_visible !== false,
+          }}
         />
       )}
 
@@ -323,6 +354,12 @@ export default async function Home() {
           storeImage={settings.about_us_store_image} // Fallback para compatibilidade
           foundersNames={settings.about_us_founders_names}
           location={settings.about_us_location}
+          elementVisibility={{
+            title: settings.about_us_title_visible !== false,
+            description: settings.about_us_description_visible !== false,
+            images: settings.about_us_images_visible !== false,
+            location: settings.about_us_location_visible !== false,
+          }}
         />
       )}
 

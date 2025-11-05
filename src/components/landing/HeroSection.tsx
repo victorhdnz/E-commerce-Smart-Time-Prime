@@ -22,6 +22,14 @@ interface HeroSectionProps {
   heroImages?: string[]
   heroBanner?: string
   heroBanners?: string[] // Array de banners para carrossel
+  elementVisibility?: {
+    banner?: boolean
+    badge?: boolean
+    title?: boolean
+    subtitle?: boolean
+    timer?: boolean
+    cta?: boolean
+  }
 }
 
 export const HeroSection = ({
@@ -38,6 +46,14 @@ export const HeroSection = ({
   heroImages = [],
   heroBanner,
   heroBanners = [],
+  elementVisibility = {
+    banner: true,
+    badge: true,
+    title: true,
+    subtitle: true,
+    timer: true,
+    cta: true,
+  },
 }: HeroSectionProps) => {
   // Cores fixas da empresa (preto e branco)
   const finalBackgroundColor = '#000000'
@@ -95,7 +111,7 @@ export const HeroSection = ({
       className="relative flex flex-col items-center justify-center overflow-hidden"
     >
       {/* Banner carrossel acima do texto (1920x650) - altura reduzida */}
-      {banners.length > 0 && (
+      {elementVisibility.banner && banners.length > 0 && (
         <div className="w-full max-h-[400px] md:max-h-[500px]">
           <BannerCarousel banners={banners} autoPlayInterval={5000} />
         </div>
@@ -140,7 +156,7 @@ export const HeroSection = ({
             className="text-center max-w-5xl"
           >
             {/* Badge */}
-            {badgeText && (
+            {elementVisibility.badge && badgeText && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -151,23 +167,27 @@ export const HeroSection = ({
               </motion.div>
             )}
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.8 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
-            >
-              {title}
-            </motion.h1>
+            {elementVisibility.title && (
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.8 }}
+                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
+              >
+                {title}
+              </motion.h1>
+            )}
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-lg md:text-xl lg:text-2xl mb-8 opacity-90 whitespace-pre-line"
-            >
-              {subtitle}
-            </motion.p>
+            {elementVisibility.subtitle && (
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.8 }}
+                className="text-lg md:text-xl lg:text-2xl mb-8 opacity-90 whitespace-pre-line"
+              >
+                {subtitle}
+              </motion.p>
+            )}
 
             {/* Contador de Pessoas e Cronômetro */}
             <motion.div
@@ -270,7 +290,7 @@ export const HeroSection = ({
                 />
               </motion.div>
               
-              {timerEndDate && (
+              {elementVisibility.timer && timerEndDate && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -284,6 +304,28 @@ export const HeroSection = ({
                 </motion.div>
               )}
             </motion.div>
+
+            {/* CTA Button */}
+            {elementVisibility.cta && ctaText && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2, duration: 0.8 }}
+                className="mt-8"
+              >
+                {ctaLink ? (
+                  <Link href={ctaLink}>
+                    <Button size="lg" className="text-lg px-8 py-4">
+                      {ctaText}
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button size="lg" className="text-lg px-8 py-4">
+                    {ctaText}
+                  </Button>
+                )}
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </div>

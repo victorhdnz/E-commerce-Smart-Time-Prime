@@ -24,6 +24,14 @@ interface ValuePackageProps {
   discountText?: string
   promotionText?: string
   endDate?: Date
+  elementVisibility?: {
+    title?: boolean
+    image?: boolean
+    items?: boolean
+    prices?: boolean
+    timer?: boolean
+    button?: boolean
+  }
 }
 
 interface TimeLeft {
@@ -53,6 +61,14 @@ export const ValuePackage = ({
   discountText = '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
   promotionText = '🕒 Promoção válida enquanto durar o estoque.',
   endDate,
+  elementVisibility = {
+    title: true,
+    image: true,
+    items: true,
+    prices: true,
+    timer: true,
+    button: true,
+  },
 }: ValuePackageProps) => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null)
 
@@ -101,34 +117,37 @@ export const ValuePackage = ({
       </div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="text-center mb-16"
-        >
-          <motion.h2 
-            className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-black via-gray-800 to-black bg-clip-text text-transparent"
-            initial={{ scale: 0.9 }}
-            whileInView={{ scale: 1 }}
+        {elementVisibility.title && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="text-center mb-16"
           >
-            {title}
-          </motion.h2>
-          <motion.div 
-            className="w-32 h-1.5 bg-gradient-to-r from-transparent via-black to-transparent mx-auto rounded-full"
-            initial={{ width: 0 }}
-            whileInView={{ width: 128 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          />
-        </motion.div>
+            <motion.h2 
+              className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-black via-gray-800 to-black bg-clip-text text-transparent"
+              initial={{ scale: 0.9 }}
+              whileInView={{ scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              {title}
+            </motion.h2>
+            <motion.div 
+              className="w-32 h-1.5 bg-gradient-to-r from-transparent via-black to-transparent mx-auto rounded-full"
+              initial={{ width: 0 }}
+              whileInView={{ width: 128 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+            />
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
           {/* Imagem */}
-          <motion.div
+          {elementVisibility.image && (
+            <motion.div
             initial={{ opacity: 0, x: -50, scale: 0.9 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
             viewport={{ once: true }}
@@ -162,7 +181,8 @@ export const ValuePackage = ({
             )}
             {/* Decorative glow */}
             <div className="absolute -inset-4 bg-gradient-to-r from-yellow-400/20 to-red-400/20 rounded-3xl blur-2xl -z-10"></div>
-          </motion.div>
+            </motion.div>
+          )}
 
           {/* Conteúdo */}
           <motion.div
@@ -173,8 +193,9 @@ export const ValuePackage = ({
             className="space-y-8"
           >
             {/* Lista de itens */}
-            <div className="space-y-4">
-              {items.map((item, index) => (
+            {elementVisibility.items && (
+              <div className="space-y-4">
+                {items.map((item, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -50, scale: 0.9 }}
@@ -221,11 +242,13 @@ export const ValuePackage = ({
                     {item.price || '-'}
                   </motion.span>
                 </motion.div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* Preço */}
-            <motion.div 
+            {elementVisibility.prices && (
+              <motion.div 
               className="relative bg-gradient-to-br from-black via-gray-900 to-black text-white rounded-3xl p-8 md:p-10 text-center shadow-2xl border-2 border-white/10 overflow-hidden"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -267,40 +290,67 @@ export const ValuePackage = ({
                   {deliveryText}
                 </motion.p>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.8 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {buttonLink ? (
-                    <Link href={buttonLink}>
+                {/* Timer */}
+                {elementVisibility.timer && timeLeft && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.75 }}
+                    className="mb-6"
+                  >
+                    <div className="bg-red-500/20 border border-red-400/50 rounded-xl p-4 text-center">
+                      <p className="text-white font-bold text-lg mb-2">⏰ Oferta termina em:</p>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="font-mono text-2xl font-black">{String(timeLeft.days).padStart(2, '0')}d</span>
+                        <span className="text-xl">:</span>
+                        <span className="font-mono text-2xl font-black">{String(timeLeft.hours).padStart(2, '0')}h</span>
+                        <span className="text-xl">:</span>
+                        <span className="font-mono text-2xl font-black">{String(timeLeft.minutes).padStart(2, '0')}m</span>
+                        <span className="text-xl">:</span>
+                        <span className="font-mono text-2xl font-black">{String(timeLeft.seconds).padStart(2, '0')}s</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Button */}
+                {elementVisibility.button && buttonText && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.8 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {buttonLink ? (
+                      <Link href={buttonLink}>
+                        <Button
+                          size="lg"
+                          variant="secondary"
+                          className="w-full text-base md:text-lg font-bold py-3 md:py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 hover:from-yellow-300 hover:via-yellow-400 hover:to-yellow-300 text-black shadow-lg hover:shadow-yellow-500/30 transition-all duration-300 border border-yellow-300/50 rounded-xl"
+                        >
+                          {buttonText}
+                        </Button>
+                      </Link>
+                    ) : (
                       <Button
+                        onClick={() => {
+                          const element = document.getElementById('whatsapp-vip')
+                          if (element) {
+                            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                          }
+                        }}
                         size="lg"
                         variant="secondary"
                         className="w-full text-base md:text-lg font-bold py-3 md:py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 hover:from-yellow-300 hover:via-yellow-400 hover:to-yellow-300 text-black shadow-lg hover:shadow-yellow-500/30 transition-all duration-300 border border-yellow-300/50 rounded-xl"
                       >
                         {buttonText}
                       </Button>
-                    </Link>
-                  ) : (
-                    <Button
-                      onClick={() => {
-                        const element = document.getElementById('whatsapp-vip')
-                        if (element) {
-                          element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                        }
-                      }}
-                      size="lg"
-                      variant="secondary"
-                      className="w-full text-base md:text-lg font-bold py-3 md:py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 hover:from-yellow-300 hover:via-yellow-400 hover:to-yellow-300 text-black shadow-lg hover:shadow-yellow-500/30 transition-all duration-300 border border-yellow-300/50 rounded-xl"
-                    >
-                      {buttonText}
-                    </Button>
-                  )}
-                </motion.div>
+                    )}
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           </motion.div>

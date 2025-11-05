@@ -12,6 +12,12 @@ interface AboutUsSectionProps {
   storeImage?: string // Mantido para compatibilidade
   foundersNames?: string
   location?: string
+  elementVisibility?: {
+    title?: boolean
+    description?: boolean
+    images?: boolean
+    location?: boolean
+  }
 }
 
 export const AboutUsSection = ({
@@ -21,6 +27,12 @@ export const AboutUsSection = ({
   storeImage, // Compatibilidade com versão antiga
   foundersNames,
   location = 'Shopping Planalto, Uberlândia/MG',
+  elementVisibility = {
+    title: true,
+    description: true,
+    images: true,
+    location: true,
+  },
 }: AboutUsSectionProps) => {
   // Usar storeImages se disponível, senão usar storeImage como fallback
   const images = storeImages && storeImages.length > 0 
@@ -61,31 +73,36 @@ export const AboutUsSection = ({
   return (
     <section id="about-us" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">{title}</h2>
-          <div className="w-24 h-1 bg-black mx-auto" />
-        </motion.div>
-
-        <div className="max-w-4xl mx-auto">
-          {/* Descrição */}
+        {elementVisibility.title && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <p className="text-lg md:text-xl text-gray-700 whitespace-pre-line leading-relaxed">
-              {description}
-            </p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">{title}</h2>
+            <div className="w-24 h-1 bg-black mx-auto" />
           </motion.div>
+        )}
+
+        <div className="max-w-4xl mx-auto">
+          {/* Descrição */}
+          {elementVisibility.description && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <p className="text-lg md:text-xl text-gray-700 whitespace-pre-line leading-relaxed">
+                {description}
+              </p>
+            </motion.div>
+          )}
 
           {/* Carrossel de Imagens - Estilo Modal */}
-          <motion.div
+          {elementVisibility.images && (
+            <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -175,7 +192,23 @@ export const AboutUsSection = ({
                 </div>
               </div>
             )}
-          </motion.div>
+            </motion.div>
+          )}
+
+          {/* Localização */}
+          {elementVisibility.location && location && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mt-12"
+            >
+              <div className="inline-flex items-center gap-3 bg-white rounded-full px-6 py-3 shadow-md border border-gray-200">
+                <span className="text-2xl">📍</span>
+                <p className="text-lg font-semibold text-gray-900">{location}</p>
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     </section>
