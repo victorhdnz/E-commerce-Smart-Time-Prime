@@ -253,16 +253,28 @@ export default function ComparePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">Comparar Produtos</h1>
-        <div className="flex gap-3">
-          <Button onClick={() => setShowProductSelector(!showProductSelector)} variant="outline">
-            <GitCompare size={16} className="mr-2" />
-            {showProductSelector ? 'Fechar Seleção' : 'Adicionar Produtos'}
+    <div className="container mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-12">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-4 sm:mb-8">
+        <h1 className="text-xl sm:text-4xl font-bold">Comparar Produtos</h1>
+        <div className="flex gap-2 sm:gap-3 flex-wrap">
+          <Button 
+            onClick={() => setShowProductSelector(!showProductSelector)} 
+            variant="outline"
+            size="sm"
+            className="text-xs sm:text-base"
+          >
+            <GitCompare size={14} className="sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">{showProductSelector ? 'Fechar Seleção' : 'Adicionar Produtos'}</span>
+            <span className="sm:hidden">{showProductSelector ? 'Fechar' : 'Adicionar'}</span>
           </Button>
-          <Button onClick={clearComparison} variant="outline">
-            Limpar Comparação
+          <Button 
+            onClick={clearComparison} 
+            variant="outline"
+            size="sm"
+            className="text-xs sm:text-base"
+          >
+            <span className="hidden sm:inline">Limpar Comparação</span>
+            <span className="sm:hidden">Limpar</span>
           </Button>
         </div>
       </div>
@@ -345,44 +357,44 @@ export default function ComparePage() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-md overflow-x-auto -mx-4 sm:mx-0">
-        <div className="px-4 sm:px-0">
-          <table className="w-full min-w-[800px]">
+      <div className="bg-white rounded-lg shadow-md overflow-x-auto -mx-2 sm:-mx-4 sm:mx-0">
+        <div className="px-2 sm:px-4 sm:px-0">
+          <table className="w-full min-w-[600px] sm:min-w-[800px]">
             <thead>
               <tr className="border-b">
-                <th className="px-2 py-2 sm:px-3 sm:py-3 text-left font-bold sticky left-0 bg-white z-10 min-w-[120px] sm:min-w-[150px]">
-                  <span className="text-xs sm:text-sm">Característica</span>
+                <th className="px-1.5 py-1.5 sm:px-3 sm:py-3 text-left font-bold sticky left-0 bg-white z-10 min-w-[100px] sm:min-w-[150px]">
+                  <span className="text-[10px] sm:text-sm">Característica</span>
                 </th>
                 {products.map((product) => (
-                  <th key={product.id} className="px-2 py-2 sm:px-3 sm:py-3 text-center min-w-[150px] sm:min-w-[200px]">
-                    <div className="flex flex-col items-center gap-2 sm:gap-3">
+                  <th key={product.id} className="px-1.5 py-1.5 sm:px-3 sm:py-3 text-center min-w-[120px] sm:min-w-[200px]">
+                    <div className="flex flex-col items-center gap-1 sm:gap-3">
                       <button
                         onClick={() => handleRemoveProduct(product.id)}
-                        className="ml-auto text-gray-400 hover:text-red-600 transition-colors"
+                        className="ml-auto text-gray-400 hover:text-red-600 transition-colors mb-0.5"
                         aria-label="Remover produto"
                       >
-                        <X size={18} className="sm:w-5 sm:h-5" />
+                        <X size={14} className="sm:w-5 sm:h-5" />
                       </button>
-                      <div className="relative w-20 h-20 sm:w-32 sm:h-32 bg-gray-100 rounded-lg overflow-hidden">
+                      <div className="relative w-12 h-12 sm:w-32 sm:h-32 bg-gray-100 rounded-lg overflow-hidden">
                         {product.images?.[0] ? (
                           <Image
                             src={product.images[0]}
                             alt={product.name}
                             fill
                             className="object-cover"
-                            sizes="(max-width: 640px) 80px, 128px"
+                            sizes="(max-width: 640px) 48px, 128px"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-2xl sm:text-4xl">
+                          <div className="w-full h-full flex items-center justify-center text-lg sm:text-4xl">
                             ⌚
                           </div>
                         )}
                       </div>
-                      <h3 className="font-bold text-xs sm:text-lg text-center px-1">{product.name}</h3>
-                      <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 w-full">
-                        <Link href={`/produtos/${product.slug}`} className="w-full sm:w-auto">
-                          <Button size="sm" variant="outline" className="w-full text-xs sm:text-sm">
-                            <Eye size={14} className="sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                      <h3 className="font-bold text-[10px] sm:text-lg text-center px-0.5 leading-tight line-clamp-2">{product.name}</h3>
+                      <div className="flex flex-col gap-1 w-full">
+                        <Link href={`/produtos/${product.slug}`} className="w-full">
+                          <Button size="sm" variant="outline" className="w-full text-[10px] sm:text-sm py-1 sm:py-2 px-2 sm:px-4 h-auto">
+                            <Eye size={12} className="sm:w-4 sm:h-4 mr-0.5 sm:mr-2" />
                             <span className="hidden sm:inline">Ver Detalhes</span>
                             <span className="sm:hidden">Detalhes</span>
                           </Button>
@@ -390,9 +402,9 @@ export default function ComparePage() {
                         <Button
                           size="sm"
                           onClick={() => handleAddToCart(product)}
-                          className="w-full sm:w-auto text-xs sm:text-sm"
+                          className="w-full text-[10px] sm:text-sm py-1 sm:py-2 px-2 sm:px-4 h-auto"
                         >
-                          <ShoppingCart size={14} className="sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          <ShoppingCart size={12} className="sm:w-4 sm:h-4 mr-0.5 sm:mr-2" />
                           <span className="hidden sm:inline">Adicionar</span>
                           <span className="sm:hidden">Add</span>
                         </Button>
@@ -413,7 +425,7 @@ export default function ComparePage() {
                 }`}
                 style={{ height: 'auto' }}
               >
-                <td className="px-2 py-1.5 sm:px-3 sm:py-2 font-semibold sticky left-0 bg-white z-10 text-xs sm:text-sm border-r border-gray-200 align-top">
+                <td className="px-1.5 py-1 sm:px-3 sm:py-2 font-semibold sticky left-0 bg-white z-10 text-[10px] sm:text-sm border-r border-gray-200 align-top">
                   <span className="text-gray-800 break-words inline-block" style={{ wordBreak: 'break-word' }}>{field}</span>
                 </td>
                 {products.map((product) => {
@@ -465,21 +477,21 @@ export default function ComparePage() {
                         
                         if (isRating) {
                           value = (
-                            <div className="flex items-center justify-center gap-1.5 py-1">
+                            <div className="flex items-center justify-center gap-1 sm:gap-1.5 py-0.5 sm:py-1">
                               <div className="flex items-center gap-0.5">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                   <Star
                                     key={star}
-                                    size={18}
-                                    className={
+                                    size={12}
+                                    className={`sm:w-[18px] sm:h-[18px] ${
                                       star <= rating
                                         ? 'fill-yellow-400 text-yellow-400 drop-shadow-sm'
                                         : 'fill-gray-200 text-gray-200'
-                                    }
+                                    }`}
                                   />
                                 ))}
                               </div>
-                              <span className="ml-1.5 text-sm font-semibold text-gray-700">{rating}/5</span>
+                              <span className="ml-1 sm:ml-1.5 text-[10px] sm:text-sm font-semibold text-gray-700">{rating}/5</span>
                             </div>
                           )
                         } else {
@@ -490,7 +502,7 @@ export default function ComparePage() {
                   }
                   
                   return (
-                    <td key={product.id} className="px-2 py-1.5 sm:px-3 sm:py-2 text-center text-xs sm:text-sm bg-transparent align-top">
+                    <td key={product.id} className="px-1.5 py-1 sm:px-3 sm:py-2 text-center text-[10px] sm:text-sm bg-transparent align-top">
                       {typeof value === 'string' || typeof value === 'number' ? (
                         <span className="text-gray-700 break-words font-medium inline-block" style={{ wordBreak: 'break-word' }}>{value}</span>
                       ) : (
