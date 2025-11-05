@@ -1138,8 +1138,10 @@ export default function EditLandingPage() {
                   setSettings({ ...settings, value_package_button_link: e.target.value })
                 }
                 placeholder="Ex: /produtos ou /produtos/relogio-smartwatch"
-                helperText="Deixe vazio para manter comportamento padrão (scroll para WhatsApp VIP)"
               />
+              <p className="text-xs text-gray-500 -mt-2">
+                Deixe vazio para manter comportamento padrão (scroll para WhatsApp VIP)
+              </p>
 
               <Input
                 label="Texto de Estoque"
