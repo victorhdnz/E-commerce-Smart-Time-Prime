@@ -353,6 +353,7 @@ export const ValuePackage = ({
                 )}
               </div>
             </motion.div>
+          )}
           </motion.div>
         </div>
 

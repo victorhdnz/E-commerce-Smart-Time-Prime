@@ -179,7 +179,8 @@ export const SocialProof = ({
               )
             })}
           </motion.div>
-        </div>
+          </div>
+        )}
       </div>
     </section>
   )
