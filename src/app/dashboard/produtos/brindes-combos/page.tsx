@@ -17,6 +17,7 @@ interface Product {
   id: string
   name: string
   local_price: number
+  national_price: number
   images: string[]
 }
 
