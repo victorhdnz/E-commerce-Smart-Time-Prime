@@ -178,14 +178,36 @@ export const HeroSection = ({
               </motion.h1>
             )}
 
-            {elementVisibility.subtitle && (
+            {elementVisibility.subtitle && subtitle && (
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.8 }}
                 className="text-lg md:text-xl lg:text-2xl mb-8 opacity-90 whitespace-pre-line"
               >
-                {subtitle?.replace(/Garantir agora#####/gi, '').replace(/#####/g, '').trim()}
+                {(() => {
+                  let cleanedSubtitle = subtitle
+                    // Remover qualquer HTML de botão
+                    .replace(/<button[^>]*>.*?<\/button>/gi, '')
+                    .replace(/<a[^>]*>.*?<\/a>/gi, '')
+                    // Remover texto "Garantir agora" em várias variações
+                    .replace(/Garantir agora!?\s*#####/gi, '')
+                    .replace(/Garantir agora!?\s*#####/gi, '')
+                    .replace(/Garantir agora/gi, '')
+                    .replace(/#####/g, '')
+                    .replace(/!#####/g, '')
+                    .replace(/!#####/g, '')
+                    // Remover linhas vazias múltiplas
+                    .replace(/\n\s*\n\s*\n/g, '\n\n')
+                    .trim()
+                  
+                  // Se o subtitle limpo estiver vazio ou só tiver espaços, não renderizar
+                  if (!cleanedSubtitle || cleanedSubtitle.length === 0) {
+                    return null
+                  }
+                  
+                  return cleanedSubtitle
+                })()}
               </motion.p>
             )}
 
@@ -306,7 +328,7 @@ export const HeroSection = ({
             </motion.div>
 
             {/* CTA Button */}
-            {elementVisibility.cta && ctaText && (
+            {elementVisibility.cta && ctaText && !ctaText.toLowerCase().includes('garantir agora') && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -316,12 +338,12 @@ export const HeroSection = ({
                 {ctaLink ? (
                   <Link href={ctaLink}>
                     <Button size="lg" className="text-lg px-8 py-4">
-                      {ctaText}
+                      {ctaText.replace(/Garantir agora!?\s*#####/gi, '').replace(/#####/g, '').trim()}
                     </Button>
                   </Link>
                 ) : (
                   <Button size="lg" className="text-lg px-8 py-4">
-                    {ctaText}
+                    {ctaText.replace(/Garantir agora!?\s*#####/gi, '').replace(/#####/g, '').trim()}
                   </Button>
                 )}
               </motion.div>

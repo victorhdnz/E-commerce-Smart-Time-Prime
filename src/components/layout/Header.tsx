@@ -17,7 +17,8 @@ export const Header = () => {
   const router = useRouter()
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [siteSettings, setSiteSettings] = useState<{ site_logo?: string; site_name?: string } | null>(null)
+  const [siteName, setSiteName] = useState<string>('Smart Time Prime')
+  const [siteLogo, setSiteLogo] = useState<string | undefined>(undefined)
   const { isAuthenticated, profile, loading } = useAuth()
   const { getItemCount } = useCart()
   const { products } = useProductComparison()
@@ -41,19 +42,29 @@ export const Header = () => {
         }
 
         if (data) {
-          setSiteSettings({
-            site_logo: data.site_logo || undefined,
-            site_name: data.site_name || 'Smart Time Prime',
-          })
+          // Sempre atualizar o nome, mesmo se vazio (para permitir limpar)
+          setSiteName(data.site_name || 'Smart Time Prime')
+          // Atualizar logo apenas se existir
+          if (data.site_logo) {
+            setSiteLogo(data.site_logo)
+          } else {
+            setSiteLogo(undefined)
+          }
+        } else {
+          // Se não houver dados, manter o padrão
+          setSiteName('Smart Time Prime')
+          setSiteLogo(undefined)
         }
       } catch (error) {
         console.error('Erro ao carregar configurações:', error)
       }
     }
+    
+    // Carregar imediatamente
     loadSiteSettings()
 
-    // Recarregar configurações a cada 5 segundos (para atualizar após mudanças no dashboard)
-    const interval = setInterval(loadSiteSettings, 5000)
+    // Recarregar configurações a cada 3 segundos (para atualizar após mudanças no dashboard)
+    const interval = setInterval(loadSiteSettings, 3000)
     return () => clearInterval(interval)
   }, [])
 
@@ -111,17 +122,17 @@ export const Header = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-4 h-16">
-            {siteSettings?.site_logo && (
+            {siteLogo && (
               <Image
-                src={siteSettings.site_logo}
-                alt="Smart Time Prime"
+                src={siteLogo}
+                alt={siteName}
                 width={60}
                 height={48}
                 className="h-12 w-auto object-contain"
                 priority
               />
             )}
-            <span className="text-2xl font-bold">{siteSettings?.site_name || 'Smart Time Prime'}</span>
+            <span className="text-2xl font-bold">{siteName}</span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -171,7 +171,16 @@ export function ImageEditor({
           <div className="flex-1 min-w-0">
             <h2 className="text-lg sm:text-xl font-semibold">Editar e Recortar Imagem</h2>
             <p className="text-xs text-gray-500 mt-1 hidden sm:block">
-              📐 Arraste a imagem para posicionar • Ajuste o zoom e rotação • Dimensão final: <strong>1080 x 1080px</strong>
+              📐 Arraste a imagem para posicionar • Ajuste o zoom e rotação • Dimensão final: <strong>
+                {targetSize 
+                  ? `${targetSize.width} x ${targetSize.height}px`
+                  : cropType === 'banner'
+                    ? '1920 x 650px'
+                    : cropType === 'square'
+                      ? '1080 x 1080px'
+                      : 'Personalizado'
+                }
+              </strong>
             </p>
           </div>
           <button

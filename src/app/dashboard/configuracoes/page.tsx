@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { ImageUploader } from '@/components/ui/ImageUploader'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { Save, ArrowLeft } from 'lucide-react'
@@ -14,6 +15,7 @@ import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
 
 interface SiteConfig {
   site_name: string
+  site_logo: string
   site_description: string
   footer_text: string
   copyright_text: string
@@ -38,6 +40,7 @@ export default function ConfiguracoesPage() {
   const [saving, setSaving] = useState(false)
   const [config, setConfig] = useState<SiteConfig>({
     site_name: 'Smart Time Prime',
+    site_logo: '',
     site_description: 'E-commerce de produtos premium',
     footer_text: 'Produtos de qualidade com design moderno e elegante.',
     copyright_text: 'Todos os direitos reservados.',
@@ -79,6 +82,7 @@ export default function ConfiguracoesPage() {
       if (data) {
         setConfig({
           site_name: data.site_name || config.site_name,
+          site_logo: data.site_logo || config.site_logo,
           site_description: data.site_description || config.site_description,
           footer_text: data.footer_text || config.footer_text,
           copyright_text: data.copyright_text || config.copyright_text,
@@ -122,6 +126,7 @@ export default function ConfiguracoesPage() {
 
       const updateData: any = {
         site_name: config.site_name,
+        site_logo: config.site_logo || null,
         site_description: config.site_description,
         footer_text: config.footer_text,
         copyright_text: config.copyright_text,
@@ -257,6 +262,24 @@ export default function ConfiguracoesPage() {
             <h2 className="text-2xl font-bold mb-6">Informações Gerais</h2>
             
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Logo da Empresa
+                </label>
+                <ImageUploader
+                  value={config.site_logo}
+                  onChange={(url: string) => setConfig({ ...config, site_logo: url })}
+                  placeholder="Clique para fazer upload da logo"
+                  cropType="square"
+                  aspectRatio={1}
+                  targetSize={{ width: 200, height: 200 }}
+                  recommendedDimensions="Recomendado: 200x200px (quadrado). A logo será redimensionada automaticamente."
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  A logo aparecerá ao lado esquerdo do nome da empresa no navigation. Dimensões ideais: 200x200px (formato quadrado).
+                </p>
+              </div>
+
               <Input
                 label="Nome da Empresa"
                 value={config.site_name}
