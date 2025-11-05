@@ -139,7 +139,7 @@ export const BannerCarousel = ({
       <>
         <div 
           className="w-full relative cursor-pointer" 
-          style={{ aspectRatio: '1920/650', maxHeight: '400px' }}
+          style={{ aspectRatio: '1920/650' }}
           onClick={() => setShowModal(true)}
         >
           <Image
@@ -148,8 +148,9 @@ export const BannerCarousel = ({
             fill
             className="object-cover"
             priority
-            quality={90}
-            sizes="100vw"
+            quality={100}
+            sizes="(max-width: 768px) 100vw, 1920px"
+            unoptimized={false}
           />
         </div>
 
@@ -213,7 +214,7 @@ export const BannerCarousel = ({
       {/* Banner Principal - Clique abre modal */}
       <div 
         className="relative w-full group cursor-pointer" 
-        style={{ aspectRatio: '1920/650', maxHeight: '400px' }}
+        style={{ aspectRatio: '1920/650' }}
         onClick={() => setShowModal(true)}
       >
         <AnimatePresence mode="wait">
@@ -231,8 +232,9 @@ export const BannerCarousel = ({
               fill
               className="object-cover"
               priority={currentIndex === 0}
-              quality={90}
-              sizes="100vw"
+              quality={100}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1920px"
+              unoptimized={false}
             />
           </motion.div>
         </AnimatePresence>
@@ -320,8 +322,9 @@ export const BannerCarousel = ({
                       alt={`Banner ${currentIndex + 1}`}
                       fill
                       className="object-contain"
-                      quality={95}
-                      sizes="100vw"
+                      quality={100}
+                      sizes="(max-width: 768px) 100vw, 1920px"
+                      unoptimized={false}
                     />
                   </motion.div>
                 </AnimatePresence>

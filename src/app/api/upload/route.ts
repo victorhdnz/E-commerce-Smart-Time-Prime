@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File
     const folder = formData.get('folder') as string || 'smart-time-prime'
+    const isBanner = formData.get('isBanner') === 'true'
 
     if (!file) {
       return NextResponse.json({ error: 'Nenhum arquivo enviado' }, { status: 400 })
@@ -97,13 +98,21 @@ export async function POST(request: NextRequest) {
       unique_filename: true,
     }
 
-    // Aplicar transformações para imagens (conforme exemplo: width: 800, height: 600, crop: 'limit')
+    // Aplicar transformações para imagens
     if (!isVideo) {
-      uploadOptions.transformation = [
-        { width: 800, height: 600, crop: 'limit' }, // Limitar tamanho mas manter proporção
-        { quality: 'auto:good' } // Otimização automática de qualidade
-      ]
-      uploadOptions.allowed_formats = ALLOWED_IMAGE_FORMATS
+      // Para banners grandes (1920x650), não aplicar nenhuma transformação para manter qualidade máxima
+      if (isBanner) {
+        // Para banners, não aplicar transformações - manter tamanho e qualidade original
+        // O Cloudinary manterá a imagem no tamanho original sem compressão
+        uploadOptions.allowed_formats = ALLOWED_IMAGE_FORMATS
+      } else {
+        // Para imagens menores, aplicar limitação padrão
+        uploadOptions.transformation = [
+          { width: 800, height: 600, crop: 'limit' }, // Limitar tamanho mas manter proporção
+          { quality: 'auto:good' } // Otimização automática de qualidade
+        ]
+        uploadOptions.allowed_formats = ALLOWED_IMAGE_FORMATS
+      }
     } else {
       // Para vídeos, configurações básicas de upload
       // Transformações podem ser aplicadas via URL quando necessário

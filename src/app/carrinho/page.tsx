@@ -86,6 +86,12 @@ export default function CartPage() {
                 combo: comboData,
                 items: comboItems
               }
+            } else {
+              console.log('Combo não encontrado ou sem itens:', {
+                slug: item.product.slug,
+                error,
+                comboData
+              })
             }
           } catch (error) {
             console.error('Erro ao carregar dados do combo:', error)
@@ -147,7 +153,7 @@ export default function CartPage() {
                 >
                 {/* Image */}
                 <div className="w-24 h-24 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 relative">
-                  {isCombo && comboItems.length > 0 ? (
+                  {isCombo && comboItems && comboItems.length > 0 ? (
                     <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 p-1 flex items-center justify-center">
                       <div className="grid grid-cols-2 gap-0.5 w-full h-full">
                         {comboItems.slice(0, 4).map((comboItem, idx) => {
@@ -161,7 +167,7 @@ export default function CartPage() {
                               {itemImage ? (
                                 <Image
                                   src={itemImage}
-                                  alt={comboItem.product.name}
+                                  alt={comboItem.product?.name || 'Produto do combo'}
                                   fill
                                   className="object-cover"
                                   sizes="48px"
@@ -230,7 +236,7 @@ export default function CartPage() {
                           Cor: {item.color.color_name}
                         </p>
                       )}
-                      {isCombo && comboItems.length > 0 && (
+                      {isCombo && comboItems && comboItems.length > 0 && (
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2 mb-1">
                             <Package size={14} className="text-green-600" />
@@ -239,7 +245,7 @@ export default function CartPage() {
                           <div className="flex flex-wrap gap-1">
                             {comboItems.slice(0, 3).map((comboItem, idx) => (
                               <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                                {comboItem.quantity > 1 && `${comboItem.quantity}x `}{comboItem.product.name}
+                                {comboItem.quantity > 1 && `${comboItem.quantity}x `}{comboItem.product?.name || 'Produto'}
                               </span>
                             ))}
                             {comboItems.length > 3 && (

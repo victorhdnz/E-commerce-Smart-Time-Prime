@@ -118,13 +118,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       return
     }
 
-    // Se for um combo, adicionar todos os produtos do combo ao carrinho
-    if (isCombo && comboItems.length > 0) {
-      comboItems.forEach(item => {
-        if (item.product) {
-          addItem(item.product, undefined, item.quantity)
-        }
-      })
+    // Se for um combo, adicionar o produto combo em si (não os produtos individuais)
+    if (isCombo) {
+      addItem(product, undefined, 1)
       toast.success('Combo adicionado ao carrinho!')
     } else {
       addItem(product)

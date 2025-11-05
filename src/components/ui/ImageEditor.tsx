@@ -118,12 +118,14 @@ export function ImageEditor({
     )
 
     return new Promise((resolve) => {
+      // Usar qualidade maior para banners (1920x650) para manter nitidez
+      const quality = (targetSize && targetSize.width >= 1920) || cropType === 'banner' ? 0.95 : 0.9
       canvas.toBlob((blob) => {
         if (!blob) {
           throw new Error('Erro ao processar imagem')
         }
         resolve(blob)
-      }, 'image/jpeg', 0.9)
+      }, 'image/jpeg', quality)
     })
   }
 
@@ -143,6 +145,10 @@ export function ImageEditor({
       const formData = new FormData()
       formData.append('file', croppedImage, file.name)
       formData.append('folder', 'images')
+      // Passar informação sobre tipo de imagem para API ajustar qualidade
+      if (targetSize && targetSize.width >= 1920) {
+        formData.append('isBanner', 'true')
+      }
 
       const response = await fetch('/api/upload', {
         method: 'POST',

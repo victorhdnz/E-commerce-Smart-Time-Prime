@@ -229,13 +229,9 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       return
     }
 
-    // Se for um combo, adicionar todos os produtos do combo ao carrinho
+    // Se for um combo, adicionar o produto combo em si (não os produtos individuais)
     if (comboItems.length > 0) {
-      comboItems.forEach(item => {
-        if (item.product) {
-          addItem(item.product, undefined, item.quantity * quantity)
-        }
-      })
+      addItem(product, selectedColor || undefined, quantity)
       toast.success('Combo adicionado ao carrinho!')
     } else {
       addItem(product, selectedColor || undefined, quantity)
