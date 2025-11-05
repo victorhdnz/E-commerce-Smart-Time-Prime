@@ -71,6 +71,8 @@ export default function BrindesECombosPage() {
     description: '',
     discount_percentage: 0,
     discount_amount: 0,
+    local_price: '',
+    national_price: '',
     items: [] as { product_id: string; quantity: number }[]
   })
 
@@ -211,7 +213,7 @@ export default function BrindesECombosPage() {
     }
   }
 
-  const calculateComboPrice = () => {
+  const calculateLocalPrice = () => {
     const totalPrice = comboForm.items.reduce((sum, item) => {
       const product = products.find(p => p.id === item.product_id)
       return sum + (product?.local_price || 0) * item.quantity
@@ -224,15 +226,72 @@ export default function BrindesECombosPage() {
     return totalPrice - comboForm.discount_amount
   }
 
+  const calculateNationalPrice = () => {
+    const totalPrice = comboForm.items.reduce((sum, item) => {
+      const product = products.find(p => p.id === item.product_id)
+      return sum + (product?.national_price || product?.local_price || 0) * item.quantity
+    }, 0)
+
+    if (comboForm.discount_percentage > 0) {
+      return totalPrice * (1 - comboForm.discount_percentage / 100)
+    }
+    
+    return totalPrice - comboForm.discount_amount
+  }
+
+  // Atualizar preços calculados quando os itens ou desconto mudarem
+  useEffect(() => {
+    if (comboForm.items.length > 0) {
+      const calculatedLocal = calculateLocalPrice()
+      const calculatedNational = calculateNationalPrice()
+      
+      // Atualizar preços apenas se os campos estiverem vazios ou se o usuário não tiver editado manualmente
+      // Verificar se o valor atual é igual ao calculado anteriormente (para não sobrescrever edições manuais)
+      const currentLocal = parseFloat(comboForm.local_price) || 0
+      const currentNational = parseFloat(comboForm.national_price) || 0
+      
+      // Se os campos estão vazios ou se o valor atual é muito próximo do calculado (dentro de 0.01 de diferença)
+      // Isso permite que o usuário edite manualmente sem que seja sobrescrito
+      if (!comboForm.local_price || Math.abs(currentLocal - calculatedLocal) < 0.01) {
+        setComboForm(prev => ({
+          ...prev,
+          local_price: calculatedLocal.toFixed(2)
+        }))
+      }
+      if (!comboForm.national_price || Math.abs(currentNational - calculatedNational) < 0.01) {
+        setComboForm(prev => ({
+          ...prev,
+          national_price: calculatedNational.toFixed(2)
+        }))
+      }
+    }
+  }, [comboForm.items, comboForm.discount_percentage, comboForm.discount_amount])
+
   const handleSaveCombo = async () => {
     if (!comboForm.name || comboForm.items.length === 0) {
       toast.error('Preencha o nome e adicione pelo menos um produto')
       return
     }
 
+    // Validar preços
+    if (!comboForm.local_price || !comboForm.national_price) {
+      toast.error('Preencha os preços local e nacional')
+      return
+    }
+
+    const localPrice = parseFloat(comboForm.local_price) || 0
+    const nationalPrice = parseFloat(comboForm.national_price) || 0
+    
+    if (localPrice <= 0 || nationalPrice <= 0) {
+      toast.error('Os preços local e nacional devem ser maiores que zero')
+      return
+    }
+
     try {
       setLoading(true)
-      const finalPrice = calculateComboPrice()
+      
+      // Usar o menor preço como final_price para compatibilidade
+      const finalPrice = Math.min(localPrice, nationalPrice)
       
       // Gerar slug do nome do combo
       const slug = slugify(comboForm.name) || `combo-${Date.now()}`
@@ -309,8 +368,8 @@ export default function BrindesECombosPage() {
         short_description: comboForm.description ? comboForm.description.substring(0, 150) : '',
         slug: slug,
         category: 'Combos',
-        local_price: finalPrice,
-        national_price: finalPrice,
+        local_price: localPrice,
+        national_price: nationalPrice,
         stock: 999, // Combos sempre em estoque
         images: comboImages,
         is_active: true,
@@ -373,13 +432,38 @@ export default function BrindesECombosPage() {
     setEditingCombo(null)
   }
 
-  const handleEditCombo = (combo: Combo) => {
+  const handleEditCombo = async (combo: Combo) => {
     setEditingCombo(combo)
+    
+    // Buscar o produto correspondente para obter os preços
+    let localPrice = ''
+    let nationalPrice = ''
+    
+    if (combo.slug) {
+      try {
+        const { data: productData } = await supabase
+          .from('products')
+          .select('local_price, national_price')
+          .eq('slug', combo.slug)
+          .eq('category', 'Combos')
+          .maybeSingle()
+        
+        if (productData) {
+          localPrice = productData.local_price?.toString() || ''
+          nationalPrice = productData.national_price?.toString() || ''
+        }
+      } catch (error) {
+        console.error('Erro ao carregar preços do combo:', error)
+      }
+    }
+    
     setComboForm({
       name: combo.name,
       description: combo.description,
       discount_percentage: combo.discount_percentage,
       discount_amount: combo.discount_amount,
+      local_price: localPrice,
+      national_price: nationalPrice,
       items: combo.combo_items?.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity
@@ -885,6 +969,50 @@ export default function BrindesECombosPage() {
                   }))}
                   placeholder="0.00"
                 />
+              </div>
+            </div>
+
+            {/* Prices */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Preço Local (Uberlândia) <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={comboForm.local_price}
+                  onChange={(e) => setComboForm(prev => ({ 
+                    ...prev, 
+                    local_price: e.target.value 
+                  }))}
+                  placeholder="0.00"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Preço calculado automaticamente. Você pode editar manualmente.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Preço Nacional <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={comboForm.national_price}
+                  onChange={(e) => setComboForm(prev => ({ 
+                    ...prev, 
+                    national_price: e.target.value 
+                  }))}
+                  placeholder="0.00"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Preço calculado automaticamente. Você pode editar manualmente.
+                </p>
               </div>
             </div>
 

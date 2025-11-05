@@ -8,7 +8,7 @@ import Image from 'next/image'
 import { Card } from '@/components/ui/Card'
 import { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
-import { ShoppingCart, Eye, MapPin, GitCompare } from 'lucide-react'
+import { ShoppingCart, Eye, MapPin, GitCompare, Package } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useCart } from '@/hooks/useCart'
 import { useProductComparison } from '@/hooks/useProductComparison'
@@ -16,6 +16,7 @@ import toast from 'react-hot-toast'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { getProductPrice } from '@/lib/utils/price'
 import { useAuth } from '@/hooks/useAuth'
+import { createClient } from '@/lib/supabase/client'
 
 interface ProductCardProps {
   product: Product
@@ -29,7 +30,54 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const { isAuthenticated } = useAuth()
   const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
   const [showAddressModal, setShowAddressModal] = useState(false)
+  const [comboItems, setComboItems] = useState<Array<{ product: Product; quantity: number }>>([])
+  const [isLoadingCombo, setIsLoadingCombo] = useState(false)
   const isInComparison = products.some(p => p.id === product.id)
+  const isCombo = product.category === 'Combos'
+  const supabase = createClient()
+
+  // Carregar dados do combo se for um combo
+  const loadComboData = async () => {
+    try {
+      setIsLoadingCombo(true)
+      const { data: comboData, error } = await supabase
+        .from('product_combos')
+        .select(`
+          *,
+          combo_items (
+            id,
+            product_id,
+            quantity,
+            product:products (id, name, local_price, national_price, images)
+          )
+        `)
+        .eq('slug', product.slug)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (error || !comboData) {
+        return
+      }
+
+      if (comboData.combo_items) {
+        const items = comboData.combo_items.map((item: any) => ({
+          product: item.product,
+          quantity: item.quantity
+        }))
+        setComboItems(items)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados do combo:', error)
+    } finally {
+      setIsLoadingCombo(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isCombo && product.slug) {
+      loadComboData()
+    }
+  }, [isCombo, product.slug])
 
   // Atualizar quando usuário cadastrar endereço (via evento customizado)
   useEffect(() => {
@@ -70,17 +118,73 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       return
     }
 
-    addItem(product)
-    
-    toast.success('Produto adicionado ao carrinho!')
+    // Se for um combo, adicionar todos os produtos do combo ao carrinho
+    if (isCombo && comboItems.length > 0) {
+      comboItems.forEach(item => {
+        if (item.product) {
+          addItem(item.product, undefined, item.quantity)
+        }
+      })
+      toast.success('Combo adicionado ao carrinho!')
+    } else {
+      addItem(product)
+      toast.success('Produto adicionado ao carrinho!')
+    }
   }
 
   return (
     <Card hover className="group">
       <Link href={`/produtos/${product.slug}`}>
         <div className="relative aspect-square overflow-hidden">
-          {/* Image */}
-          {mainImage ? (
+          {/* Combo Badge */}
+          {isCombo && (
+            <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+              <Package size={14} />
+              Combo
+            </div>
+          )}
+
+          {/* Image or Combo Preview */}
+          {isCombo && comboItems.length > 0 ? (
+            <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 p-2 flex items-center justify-center">
+              <div className="grid grid-cols-2 gap-1 w-full h-full">
+                {comboItems.slice(0, 4).map((item, idx) => {
+                  const itemImage = Array.isArray(item.product.images) 
+                    ? item.product.images[0] 
+                    : typeof item.product.images === 'string'
+                      ? item.product.images
+                      : null
+                  return (
+                    <div key={idx} className="relative bg-white rounded-lg overflow-hidden border border-gray-200">
+                      {itemImage ? (
+                        <Image
+                          src={itemImage}
+                          alt={item.product.name}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-2xl">⌚</span>
+                        </div>
+                      )}
+                      {item.quantity > 1 && (
+                        <div className="absolute top-1 right-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded">
+                          {item.quantity}x
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              {comboItems.length > 4 && (
+                <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                  +{comboItems.length - 4} mais
+                </div>
+              )}
+            </div>
+          ) : mainImage ? (
             <Image
               src={mainImage}
               alt={product.name}
@@ -96,7 +200,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           )}
 
           {/* Featured Badge */}
-          {product.is_featured && (
+          {product.is_featured && !isCombo && (
             <div className="absolute top-4 left-4 bg-accent text-black px-3 py-1 rounded-full text-sm font-semibold">
               Destaque
             </div>
@@ -126,6 +230,28 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <p className="text-sm text-gray-600 mb-3 line-clamp-2">
             {product.short_description}
           </p>
+        )}
+
+        {/* Combo Products Preview */}
+        {isCombo && comboItems.length > 0 && (
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Package size={14} className="text-green-600" />
+              <span className="text-xs font-semibold text-green-600">Produtos incluídos:</span>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {comboItems.slice(0, 3).map((item, idx) => (
+                <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                  {item.quantity > 1 && `${item.quantity}x `}{item.product.name}
+                </span>
+              ))}
+              {comboItems.length > 3 && (
+                <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                  +{comboItems.length - 3} mais
+                </span>
+              )}
+            </div>
+          </div>
         )}
 
         {/* Colors */}

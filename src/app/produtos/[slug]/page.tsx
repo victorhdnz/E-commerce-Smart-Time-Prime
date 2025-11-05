@@ -11,7 +11,7 @@ import { formatCurrency } from '@/lib/utils/format'
 import { createClient } from '@/lib/supabase/client'
 import { Product, ProductColor } from '@/types'
 import Image from 'next/image'
-import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin, Eye, X, ChevronLeft, ChevronRight, GitCompare } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin, Eye, X, ChevronLeft, ChevronRight, GitCompare, Package, Plus } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { useProductComparison } from '@/hooks/useProductComparison'
@@ -33,6 +33,8 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const [showImageModal, setShowImageModal] = useState(false)
   const [gifts, setGifts] = useState<Product[]>([])
   const [isFavorite, setIsFavorite] = useState(false)
+  const [comboData, setComboData] = useState<any>(null)
+  const [comboItems, setComboItems] = useState<Array<{ product: Product; quantity: number }>>([])
 
   const supabase = createClient()
 
@@ -148,6 +150,43 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         setGifts(giftsData.map((g: any) => g.gift_product))
       }
 
+      // Carregar dados do combo se for um combo
+      if (productData.category === 'Combos' && productData.slug) {
+        const { data: comboData, error: comboError } = await supabase
+          .from('product_combos')
+          .select(`
+            *,
+            combo_items (
+              id,
+              product_id,
+              quantity,
+              product:products (
+                id,
+                name,
+                description,
+                local_price,
+                national_price,
+                images,
+                slug
+              )
+            )
+          `)
+          .eq('slug', productData.slug)
+          .eq('is_active', true)
+          .maybeSingle()
+
+        if (!comboError && comboData) {
+          setComboData(comboData)
+          if (comboData.combo_items) {
+            const items = comboData.combo_items.map((item: any) => ({
+              product: item.product,
+              quantity: item.quantity
+            }))
+            setComboItems(items)
+          }
+        }
+      }
+
       // Verificar se o produto está nos favoritos
       if (isAuthenticated) {
         try {
@@ -189,12 +228,20 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       return
     }
 
-    addItem(product, selectedColor || undefined, quantity)
-
-    // Os brindes são adicionados automaticamente pelo hook useCart
-    // Não precisamos adicionar manualmente aqui para evitar duplicação
-
-    toast.success('Produto adicionado ao carrinho!')
+    // Se for um combo, adicionar todos os produtos do combo ao carrinho
+    if (comboItems.length > 0) {
+      comboItems.forEach(item => {
+        if (item.product) {
+          addItem(item.product, undefined, item.quantity * quantity)
+        }
+      })
+      toast.success('Combo adicionado ao carrinho!')
+    } else {
+      addItem(product, selectedColor || undefined, quantity)
+      // Os brindes são adicionados automaticamente pelo hook useCart
+      // Não precisamos adicionar manualmente aqui para evitar duplicação
+      toast.success('Produto adicionado ao carrinho!')
+    }
   }
 
   const handleUnlockPrice = () => {
@@ -554,6 +601,123 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               </div>
             </div>,
             document.body
+          )}
+
+          {/* Combo Products Section */}
+          {comboItems.length > 0 && (
+            <div className="mb-8 p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border-2 border-green-200">
+              <div className="flex items-center gap-2 mb-4">
+                <Package size={24} className="text-green-600" />
+                <h3 className="text-xl font-bold text-green-900">Este Combo Inclui:</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {comboItems.map((item, idx) => {
+                  const itemImages = Array.isArray(item.product.images) 
+                    ? item.product.images 
+                    : typeof item.product.images === 'string'
+                      ? [item.product.images]
+                      : []
+                  const itemImage = itemImages[0]
+                  
+                  return (
+                    <div key={idx} className="flex items-center gap-4 p-4 bg-white rounded-lg border border-green-200 hover:border-green-400 transition-all hover:shadow-md">
+                      {/* Product Image */}
+                      <Link href={`/produtos/${item.product.slug}`} className="flex-shrink-0">
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200">
+                          {itemImage ? (
+                            <Image
+                              src={itemImage}
+                              alt={item.product.name}
+                              fill
+                              className="object-cover"
+                              sizes="80px"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                              <span className="text-2xl">⌚</span>
+                            </div>
+                          )}
+                          {item.quantity > 1 && (
+                            <div className="absolute top-1 right-1 bg-green-600 text-white text-xs font-bold px-1.5 py-0.5 rounded">
+                              {item.quantity}x
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                      
+                      {/* Product Info */}
+                      <div className="flex-1 min-w-0">
+                        <Link href={`/produtos/${item.product.slug}`}>
+                          <h4 className="font-semibold text-gray-900 hover:text-green-600 transition-colors line-clamp-2">
+                            {item.product.name}
+                          </h4>
+                        </Link>
+                        {item.product.description && (
+                          <p className="text-sm text-gray-600 line-clamp-1 mt-1">
+                            {item.product.description}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-sm font-bold text-green-700">
+                            {formatCurrency(item.product.local_price || item.product.national_price)}
+                          </span>
+                          {item.quantity > 1 && (
+                            <span className="text-xs text-gray-500">
+                              (cada)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Plus Icon */}
+                      {idx < comboItems.length - 1 && (
+                        <div className="hidden md:flex items-center justify-center flex-shrink-0">
+                          <Plus size={20} className="text-green-600" />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              
+              {/* Combo Summary */}
+              {comboData && (
+                <div className="mt-4 p-4 bg-white rounded-lg border border-green-300">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-gray-700">Total dos produtos separados:</span>
+                    <span className="text-lg font-bold text-gray-900">
+                      {formatCurrency(comboItems.reduce((sum, item) => {
+                        const itemPrice = item.product.local_price || item.product.national_price
+                        return sum + (itemPrice * item.quantity)
+                      }, 0))}
+                    </span>
+                  </div>
+                  {comboData.discount_amount > 0 && (
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-green-600">Desconto do combo:</span>
+                      <span className="text-lg font-bold text-green-600">
+                        - {formatCurrency(comboData.discount_amount)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                    <span className="text-lg font-bold text-green-900">Preço do combo:</span>
+                    <span className="text-2xl font-bold text-green-700">
+                      {formatCurrency(comboData.final_price || product.local_price || product.national_price)}
+                    </span>
+                  </div>
+                  {comboData.discount_amount > 0 && (
+                    <p className="text-xs text-gray-600 mt-2 text-center">
+                      💰 Você economiza {formatCurrency(comboItems.reduce((sum, item) => {
+                        const itemPrice = item.product.local_price || item.product.national_price
+                        return sum + (itemPrice * item.quantity)
+                      }, 0) - (comboData.final_price || product.local_price || product.national_price))} com este combo!
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Colors */}
