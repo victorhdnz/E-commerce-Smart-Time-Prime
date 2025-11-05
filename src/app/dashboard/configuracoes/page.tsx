@@ -104,44 +104,117 @@ export default function ConfiguracoesPage() {
   const handleSave = async () => {
     setSaving(true)
     try {
+      console.log('Iniciando salvamento...', config)
+      
       // Buscar primeiro registro existente (se houver)
       const { data: existingData, error: checkError } = await supabase
         .from('site_settings')
-        .select('id')
+        .select('id, key')
         .limit(1)
         .maybeSingle()
 
+      console.log('Dados existentes encontrados:', existingData)
+      
       if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Erro ao verificar dados existentes:', checkError)
         throw checkError
       }
 
-      if (existingData) {
-        // Atualizar registro existente usando o ID encontrado
-        const { error } = await supabase
-          .from('site_settings')
-          .update({
-            ...config,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', existingData.id)
-
-        if (error) throw error
-      } else {
-        // Criar novo registro (sem especificar id - deixar UUID gerar automaticamente)
-        const { error } = await supabase
-          .from('site_settings')
-          .insert({
-            ...config,
-            updated_at: new Date().toISOString(),
-          })
-
-        if (error) throw error
+      const updateData: any = {
+        site_name: config.site_name,
+        site_description: config.site_description,
+        footer_text: config.footer_text,
+        copyright_text: config.copyright_text,
+        contact_email: config.contact_email,
+        contact_phone: config.contact_phone,
+        contact_whatsapp: config.contact_whatsapp,
+        contact_maps_link: config.contact_maps_link,
+        instagram_url: config.instagram_url,
+        facebook_url: config.facebook_url,
+        address_street: config.address_street,
+        address_city: config.address_city,
+        address_state: config.address_state,
+        address_zip: config.address_zip,
+        updated_at: new Date().toISOString(),
       }
 
+      // Remover campos undefined/null para evitar erros
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined || updateData[key] === null) {
+          delete updateData[key]
+        }
+      })
+
+      console.log('Dados a serem salvos:', updateData)
+
+      if (existingData) {
+        // Atualizar registro existente usando o ID encontrado
+        const { data, error } = await supabase
+          .from('site_settings')
+          .update(updateData)
+          .eq('id', existingData.id)
+          .select()
+
+        console.log('Resultado da atualização:', { data, error })
+
+        if (error) {
+          console.error('Erro detalhado na atualização:', error)
+          console.error('Código do erro:', error.code)
+          console.error('Mensagem:', error.message)
+          console.error('Detalhes:', error.details)
+          console.error('Hint:', error.hint)
+          throw error
+        }
+
+        if (!data || data.length === 0) {
+          throw new Error('Nenhum registro foi atualizado. Verifique as políticas RLS.')
+        }
+
+        console.log('✅ Configurações atualizadas com sucesso!')
+      } else {
+        // Criar novo registro com key obrigatória
+        const insertData = {
+          ...updateData,
+          key: 'general', // Chave obrigatória para o formato key-value
+          description: 'Configurações gerais do site',
+        }
+
+        const { data, error } = await supabase
+          .from('site_settings')
+          .insert(insertData)
+          .select()
+
+        console.log('Resultado da inserção:', { data, error })
+
+        if (error) {
+          console.error('Erro detalhado na inserção:', error)
+          console.error('Código do erro:', error.code)
+          console.error('Mensagem:', error.message)
+          console.error('Detalhes:', error.details)
+          console.error('Hint:', error.hint)
+          throw error
+        }
+
+        if (!data || data.length === 0) {
+          throw new Error('Nenhum registro foi criado. Verifique as políticas RLS.')
+        }
+
+        console.log('✅ Configurações criadas com sucesso!')
+      }
+
+      // Recarregar configurações após salvar
+      await loadConfig()
+      
       toast.success('Configurações salvas com sucesso!')
     } catch (error: any) {
       console.error('Erro ao salvar configurações:', error)
-      toast.error(error.message || 'Erro ao salvar configurações')
+      console.error('Detalhes completos do erro:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      })
+      toast.error(error.message || 'Erro ao salvar configurações. Verifique o console para mais detalhes.')
     } finally {
       setSaving(false)
     }
