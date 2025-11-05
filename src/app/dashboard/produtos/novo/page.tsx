@@ -21,7 +21,6 @@ export default function NovoProduct() {
   const [loading, setLoading] = useState(false)
   const [existingCategories, setExistingCategories] = useState<string[]>([])
   const [showCategoryList, setShowCategoryList] = useState(false)
-  const [categorySpecs, setCategorySpecs] = useState<{ key: string; label: string }[]>([])
   const [loadingSpecs, setLoadingSpecs] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -67,76 +66,46 @@ export default function NovoProduct() {
     loadCategories()
   }, [])
 
-  // Carregar especificações padrão da categoria quando categoria mudar
+  // Carregar especificações do último produto da categoria quando categoria mudar
   useEffect(() => {
-    const loadCategorySpecs = async () => {
+    const loadLastProductSpecs = async () => {
       if (!formData.category) {
-        setCategorySpecs([])
         return
       }
 
       setLoadingSpecs(true)
       try {
-        // Tentar carregar especificações padrão da categoria
-        const { data: categorySpecsData, error: categoryError } = await supabase
-          .from('category_specifications')
-          .select('spec_key, spec_label')
-          .eq('category_name', formData.category)
-          .order('display_order')
+        // Carregar especificações do último produto dessa categoria para espelhar
+        const { data: lastProductData, error: productError } = await supabase
+          .from('products')
+          .select('specifications')
+          .eq('category', formData.category)
+          .not('specifications', 'is', null)
+          .order('updated_at', { ascending: false })
+          .limit(1)
 
-        if (!categoryError && categorySpecsData && categorySpecsData.length > 0) {
-          // Se existem especificações padrão, carregá-las
-          const specs = categorySpecsData.map((s: any) => ({
-            key: s.spec_key,
-            label: s.spec_label
-          }))
-          setCategorySpecs(specs)
-
-          // Carregar valores do último produto dessa categoria
-          const { data: lastProductData, error: productError } = await supabase
-            .from('products')
-            .select('specifications')
-            .eq('category', formData.category)
-            .not('specifications', 'is', null)
-            .order('updated_at', { ascending: false })
-            .limit(1)
-
-          const lastProduct = lastProductData && lastProductData.length > 0 ? lastProductData[0] : null
-
-          if (!productError && lastProduct && (lastProduct as any).specifications) {
+        if (!productError && lastProductData && lastProductData.length > 0) {
+          const lastProduct = lastProductData[0]
+          if (lastProduct && (lastProduct as any).specifications) {
             const lastSpecs = (lastProduct as any).specifications as { key: string; value: string }[]
-            // Mapear especificações padrão com valores do último produto
-            const specsWithValues = specs.map(spec => {
-              const lastSpec = lastSpecs.find(ls => ls.key === spec.key)
-              return {
-                key: spec.key,
-                value: lastSpec?.value || ''
-              }
-            })
-            setFormData(prev => ({
-              ...prev,
-              specifications: specsWithValues
-            }))
-          } else {
-            // Se não há produto anterior, criar especificações vazias
-            setFormData(prev => ({
-              ...prev,
-              specifications: specs.map(spec => ({ key: spec.key, value: '' }))
-            }))
+            // Espelhar especificações do último produto, mas permitir edição livre
+            if (formData.specifications.length === 0 || 
+                formData.specifications.every(s => !s.key && !s.value)) {
+              setFormData(prev => ({
+                ...prev,
+                specifications: lastSpecs.map(spec => ({ ...spec }))
+              }))
+            }
           }
-        } else {
-          // Se não existem especificações padrão, manter como está
-          setCategorySpecs([])
         }
       } catch (error) {
-        console.error('Erro ao carregar especificações da categoria:', error)
-        setCategorySpecs([])
+        console.error('Erro ao carregar especificações do último produto:', error)
       } finally {
         setLoadingSpecs(false)
       }
     }
 
-    loadCategorySpecs()
+    loadLastProductSpecs()
   }, [formData.category])
 
   const handleImagesChange = (images: string[]) => {
@@ -237,38 +206,7 @@ export default function NovoProduct() {
         throw productError
       }
 
-      // Salvar/atualizar especificações padrão da categoria
-      if (formData.category && formData.specifications.length > 0) {
-        try {
-          // Primeiro, remover especificações antigas da categoria
-          await supabase
-            .from('category_specifications')
-            .delete()
-            .eq('category_name', formData.category)
-
-          // Inserir novas especificações padrão
-          const categorySpecsToInsert = formData.specifications.map((spec, index) => ({
-            category_name: formData.category,
-            spec_key: spec.key,
-            spec_label: spec.key, // Usar a key como label por padrão
-            display_order: index
-          }))
-
-          if (categorySpecsToInsert.length > 0) {
-            const { error: categorySpecsError } = await supabase
-              .from('category_specifications')
-              .insert(categorySpecsToInsert)
-
-            if (categorySpecsError) {
-              console.error('Erro ao salvar especificações da categoria:', categorySpecsError)
-              // Não falhar o save do produto por causa disso
-            }
-          }
-        } catch (error) {
-          console.error('Erro ao salvar especificações da categoria:', error)
-          // Não falhar o save do produto por causa disso
-        }
-      }
+      // Não salvar mais em category_specifications - sistema de tópicos fixos removido
 
       // Criar variações de cor
       if (colors.length > 0 && product) {
@@ -425,57 +363,43 @@ export default function NovoProduct() {
               </div>
 
               <div className="space-y-3">
-                {formData.specifications.map((spec, index) => {
-                  const categorySpec = categorySpecs.find(cs => cs.key === spec.key)
-                  const isFixed = !!categorySpec
-                  
-                  return (
-                    <div key={index} className="flex gap-3 items-center">
-                      <div className="flex-1">
-                        {isFixed ? (
-                          <div className="px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
-                            <span className="text-sm font-medium">{categorySpec.label}</span>
-                            <span className="ml-2 text-xs text-gray-500">(fixo)</span>
-                          </div>
-                        ) : (
-                          <Input
-                            placeholder="Característica"
-                            value={spec.key}
-                            onChange={(e) => {
-                              const newSpecs = [...formData.specifications]
-                              newSpecs[index].key = e.target.value
-                              setFormData({ ...formData, specifications: newSpecs })
-                            }}
-                          />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-4">
-                          <StarRating
-                            value={spec.value ? parseInt(spec.value) || 0 : 0}
-                            onChange={(rating) => {
-                              const newSpecs = [...formData.specifications]
-                              newSpecs[index].value = rating.toString()
-                              setFormData({ ...formData, specifications: newSpecs })
-                            }}
-                            size={20}
-                          />
-                        </div>
-                      </div>
-                      {!isFixed && (
-                        <button
-                          onClick={() => handleRemoveSpecification(index)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      )}
+                {formData.specifications.map((spec, index) => (
+                  <div key={index} className="flex gap-3 items-center">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Característica"
+                        value={spec.key}
+                        onChange={(e) => {
+                          const newSpecs = [...formData.specifications]
+                          newSpecs[index].key = e.target.value
+                          setFormData({ ...formData, specifications: newSpecs })
+                        }}
+                      />
                     </div>
-                  )
-                })}
-                {categorySpecs.length === 0 && (
-                  <p className="text-sm text-gray-500">
-                    Adicione especificações para criar os campos padrão desta categoria
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4">
+                        <StarRating
+                          value={spec.value ? parseInt(spec.value) || 0 : 0}
+                          onChange={(rating) => {
+                            const newSpecs = [...formData.specifications]
+                            newSpecs[index].value = rating.toString()
+                            setFormData({ ...formData, specifications: newSpecs })
+                          }}
+                          size={20}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveSpecification(index)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))}
+                {formData.specifications.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    Nenhuma especificação adicionada. Adicione especificações para este produto.
                   </p>
                 )}
               </div>

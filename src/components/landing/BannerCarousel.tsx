@@ -148,6 +148,7 @@ export const BannerCarousel = ({
             fill
             className="object-cover"
             priority
+            quality={90}
             sizes="100vw"
           />
         </div>
@@ -230,6 +231,7 @@ export const BannerCarousel = ({
               fill
               className="object-cover"
               priority={currentIndex === 0}
+              quality={90}
               sizes="100vw"
             />
           </motion.div>
@@ -318,6 +320,7 @@ export const BannerCarousel = ({
                       alt={`Banner ${currentIndex + 1}`}
                       fill
                       className="object-contain"
+                      quality={95}
                       sizes="100vw"
                     />
                   </motion.div>

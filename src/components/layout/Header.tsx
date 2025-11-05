@@ -121,18 +121,19 @@ export const Header = () => {
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-4 h-16">
+          <Link href="/" className="flex items-center gap-2 sm:gap-4 h-16 flex-shrink-0 min-w-0">
             {siteLogo && (
               <Image
                 src={siteLogo}
                 alt={siteName}
                 width={60}
                 height={48}
-                className="h-12 w-auto object-contain"
+                className="h-8 sm:h-12 w-auto object-contain flex-shrink-0"
                 priority
+                sizes="(max-width: 640px) 32px, 48px"
               />
             )}
-            <span className="text-2xl font-bold">{siteName}</span>
+            <span className="text-lg sm:text-2xl font-bold truncate max-w-[150px] sm:max-w-none">{siteName}</span>
           </Link>
 
           {/* Desktop Navigation */}

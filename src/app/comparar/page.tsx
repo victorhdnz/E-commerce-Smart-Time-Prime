@@ -42,13 +42,16 @@ export default function ComparePage() {
         return
       }
 
-      // Buscar campos de comparação configurados para a categoria dos produtos
-      // Por enquanto, vamos usar as especificações dos produtos como base
+      // Buscar campos de comparação usando as especificações dos produtos
+      // Comparar por nome da especificação, não por posição
       const allSpecKeys = new Set<string>()
       products.forEach(product => {
         if (product.specifications) {
           product.specifications.forEach(spec => {
-            allSpecKeys.add(spec.key)
+            // Adicionar por nome (key), permitindo duplicatas se necessário
+            if (spec.key && spec.key.trim()) {
+              allSpecKeys.add(spec.key.trim())
+            }
           })
         }
       })
@@ -56,8 +59,9 @@ export default function ComparePage() {
       // Campos padrão sempre presentes
       const defaultFields = ['Nome', 'Preço', 'Categoria', 'Estoque']
       
-      // Combinar campos padrão com especificações
-      setComparisonFields([...defaultFields, ...Array.from(allSpecKeys)])
+      // Combinar campos padrão com especificações (ordenadas alfabeticamente)
+      const sortedSpecs = Array.from(allSpecKeys).sort()
+      setComparisonFields([...defaultFields, ...sortedSpecs])
       setLoading(false)
     } catch (error) {
       console.error('Erro ao carregar campos de comparação:', error)
@@ -121,7 +125,16 @@ export default function ComparePage() {
     if (products.length > 0) {
       const firstProductCategory = products[0].category
       if (product.category !== firstProductCategory) {
-        toast.error('Você só pode comparar produtos da mesma categoria')
+        toast.error(
+          `Não é possível comparar produtos de categorias diferentes.\n\nProdutos na comparação: ${firstProductCategory || 'Sem categoria'}\nProduto selecionado: ${product.category || 'Sem categoria'}\n\nPor favor, limpe a comparação atual ou selecione produtos da mesma categoria.`,
+          {
+            duration: 5000,
+            style: {
+              maxWidth: '500px',
+              whiteSpace: 'pre-line',
+            },
+          }
+        )
         return
       }
     }
@@ -262,7 +275,11 @@ export default function ComparePage() {
           <h2 className="text-xl font-bold mb-4">Selecione produtos para comparar</h2>
           <p className="text-sm text-gray-600 mb-4">
             {products.length > 0 && (
-              <>Você só pode comparar produtos da categoria <strong>{products[0].category}</strong></>
+              <>
+                ⚠️ Você só pode comparar produtos da mesma categoria.
+                <br />
+                Categoria atual: <strong>{products[0].category || 'Sem categoria'}</strong>
+              </>
             )}
           </p>
           <div className="flex flex-wrap gap-3 mb-6">
@@ -330,61 +347,67 @@ export default function ComparePage() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-        <table className="w-full min-w-[800px]">
-          <thead>
-            <tr className="border-b">
-              <th className="p-4 text-left font-bold sticky left-0 bg-white z-10 min-w-[200px]">
-                Característica
-              </th>
-              {products.map((product) => (
-                <th key={product.id} className="p-4 text-center min-w-[250px]">
-                  <div className="flex flex-col items-center gap-3">
-                    <button
-                      onClick={() => handleRemoveProduct(product.id)}
-                      className="ml-auto text-gray-400 hover:text-red-600 transition-colors"
-                    >
-                      <X size={20} />
-                    </button>
-                    <div className="relative w-32 h-32 bg-gray-100 rounded-lg overflow-hidden">
-                      {product.images?.[0] ? (
-                        <Image
-                          src={product.images[0]}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-4xl">
-                          ⌚
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="font-bold text-lg">{product.name}</h3>
-                    <div className="flex gap-2">
-                      <Link href={`/produtos/${product.slug}`}>
-                        <Button size="sm" variant="outline">
-                          <Eye size={16} className="mr-2" />
-                          Ver Detalhes
-                        </Button>
-                      </Link>
-                      <Button
-                        size="sm"
-                        onClick={() => handleAddToCart(product)}
-                      >
-                        <ShoppingCart size={16} className="mr-2" />
-                        Adicionar
-                      </Button>
-                    </div>
-                  </div>
+      <div className="bg-white rounded-lg shadow-md overflow-x-auto -mx-4 sm:mx-0">
+        <div className="px-4 sm:px-0">
+          <table className="w-full min-w-[800px]">
+            <thead>
+              <tr className="border-b">
+                <th className="p-2 sm:p-4 text-left font-bold sticky left-0 bg-white z-10 min-w-[150px] sm:min-w-[200px]">
+                  <span className="text-sm sm:text-base">Característica</span>
                 </th>
-              ))}
-            </tr>
-          </thead>
+                {products.map((product) => (
+                  <th key={product.id} className="p-2 sm:p-4 text-center min-w-[200px] sm:min-w-[250px]">
+                    <div className="flex flex-col items-center gap-2 sm:gap-3">
+                      <button
+                        onClick={() => handleRemoveProduct(product.id)}
+                        className="ml-auto text-gray-400 hover:text-red-600 transition-colors"
+                        aria-label="Remover produto"
+                      >
+                        <X size={18} className="sm:w-5 sm:h-5" />
+                      </button>
+                      <div className="relative w-20 h-20 sm:w-32 sm:h-32 bg-gray-100 rounded-lg overflow-hidden">
+                        {product.images?.[0] ? (
+                          <Image
+                            src={product.images[0]}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 80px, 128px"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-2xl sm:text-4xl">
+                            ⌚
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="font-bold text-xs sm:text-lg text-center px-1">{product.name}</h3>
+                      <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 w-full">
+                        <Link href={`/produtos/${product.slug}`} className="w-full sm:w-auto">
+                          <Button size="sm" variant="outline" className="w-full text-xs sm:text-sm">
+                            <Eye size={14} className="sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">Ver Detalhes</span>
+                            <span className="sm:hidden">Detalhes</span>
+                          </Button>
+                        </Link>
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddToCart(product)}
+                          className="w-full sm:w-auto text-xs sm:text-sm"
+                        >
+                          <ShoppingCart size={14} className="sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          <span className="hidden sm:inline">Adicionar</span>
+                          <span className="sm:hidden">Add</span>
+                        </Button>
+                      </div>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
           <tbody>
             {comparisonFields.map((field) => (
               <tr key={field} className="border-b hover:bg-gray-50">
-                <td className="p-4 font-semibold sticky left-0 bg-white z-10">
+                <td className="p-2 sm:p-4 font-semibold sticky left-0 bg-white z-10 text-xs sm:text-base">
                   {field}
                 </td>
                 {products.map((product) => {
@@ -459,9 +482,9 @@ export default function ComparePage() {
                   }
                   
                   return (
-                    <td key={product.id} className="p-4 text-center">
+                    <td key={product.id} className="p-2 sm:p-4 text-center text-xs sm:text-base">
                       {typeof value === 'string' || typeof value === 'number' ? (
-                        <span className="text-gray-700">{value}</span>
+                        <span className="text-gray-700 break-words">{value}</span>
                       ) : (
                         value
                       )}
@@ -472,6 +495,7 @@ export default function ComparePage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Modal para cadastrar endereço */}
