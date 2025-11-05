@@ -37,6 +37,7 @@ interface Combo {
   final_price: number
   is_active: boolean
   is_featured: boolean
+  slug?: string
   combo_items?: ComboItem[]
 }
 
@@ -442,22 +443,23 @@ export default function BrindesECombosPage() {
     let localPrice = ''
     let nationalPrice = ''
     
-    if (combo.slug) {
-      try {
-        const { data: productData } = await supabase
-          .from('products')
-          .select('local_price, national_price')
-          .eq('slug', combo.slug)
-          .eq('category', 'Combos')
-          .maybeSingle()
-        
-        if (productData) {
-          localPrice = productData.local_price?.toString() || ''
-          nationalPrice = productData.national_price?.toString() || ''
-        }
-      } catch (error) {
-        console.error('Erro ao carregar preços do combo:', error)
+    // Gerar o slug a partir do nome do combo se não tiver slug
+    const comboSlug = combo.slug || slugify(combo.name)
+    
+    try {
+      const { data: productData } = await supabase
+        .from('products')
+        .select('local_price, national_price')
+        .eq('slug', comboSlug)
+        .eq('category', 'Combos')
+        .maybeSingle()
+      
+      if (productData) {
+        localPrice = productData.local_price?.toString() || ''
+        nationalPrice = productData.national_price?.toString() || ''
       }
+    } catch (error) {
+      console.error('Erro ao carregar preços do combo:', error)
     }
     
     setComboForm({
@@ -479,19 +481,20 @@ export default function BrindesECombosPage() {
     if (!confirm('Deseja excluir este combo?')) return
 
     try {
-      // Buscar o combo para obter o slug
+      // Buscar o combo para obter o nome
       const { data: combo } = await supabase
         .from('product_combos')
-        .select('slug')
+        .select('name')
         .eq('id', comboId)
         .single()
 
       // Deletar o produto correspondente se existir
-      if (combo?.slug) {
+      if (combo?.name) {
+        const comboSlug = slugify(combo.name)
         await supabase
           .from('products')
           .delete()
-          .eq('slug', combo.slug)
+          .eq('slug', comboSlug)
           .eq('category', 'Combos')
       }
 
