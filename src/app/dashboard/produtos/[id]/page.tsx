@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Product, ProductColor } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
 import { ArrowLeft, Save, Plus, Trash2, Upload, Star, Eye, EyeOff } from 'lucide-react'
+import { StarRating } from '@/components/ui/StarRating'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
@@ -592,15 +593,17 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                         setFormData({ ...formData, specifications: newSpecs })
                       }}
                     />
-                    <Input
-                      placeholder="Valor"
-                      value={spec.value}
-                      onChange={(e) => {
-                        const newSpecs = [...formData.specifications]
-                        newSpecs[index].value = e.target.value
-                        setFormData({ ...formData, specifications: newSpecs })
-                      }}
-                    />
+                    <div className="flex items-center gap-4">
+                      <StarRating
+                        value={spec.value ? parseInt(spec.value) || 0 : 0}
+                        onChange={(rating) => {
+                          const newSpecs = [...formData.specifications]
+                          newSpecs[index].value = rating.toString()
+                          setFormData({ ...formData, specifications: newSpecs })
+                        }}
+                        size={20}
+                      />
+                    </div>
                     <button
                       onClick={() => {
                         setFormData({

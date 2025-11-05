@@ -119,18 +119,18 @@ export const ValuePackage = ({
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {elementVisibility.title && (
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
             className="text-center mb-16"
           >
             <motion.h2 
               className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-black via-gray-800 to-black bg-clip-text text-transparent"
-              initial={{ scale: 0.9 }}
+              initial={{ scale: 0.95 }}
               whileInView={{ scale: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
             >
               {title}
             </motion.h2>
@@ -139,7 +139,7 @@ export const ValuePackage = ({
               initial={{ width: 0 }}
               whileInView={{ width: 128 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+              transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
             />
           </motion.div>
         )}
@@ -148,10 +148,10 @@ export const ValuePackage = ({
           {/* Imagem */}
           {elementVisibility.image && (
             <motion.div
-            initial={{ opacity: 0, x: -50, scale: 0.9 }}
+            initial={{ opacity: 0, x: -30, scale: 0.95 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
             className="relative"
           >
             {image ? (
@@ -186,10 +186,10 @@ export const ValuePackage = ({
 
           {/* Conteúdo */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
             className="space-y-8"
           >
             {/* Lista de itens */}
@@ -198,14 +198,13 @@ export const ValuePackage = ({
                 {items.map((item, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, x: -50, scale: 0.9 }}
+                  initial={{ opacity: 0, x: -20, scale: 0.95 }}
                   whileInView={{ opacity: 1, x: 0, scale: 1 }}
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ 
-                    delay: index * 0.1, 
-                    type: 'spring', 
-                    stiffness: 120,
-                    damping: 12
+                    delay: index * 0.05, 
+                    duration: 0.4,
+                    ease: [0.25, 0.1, 0.25, 1]
                   }}
                   whileHover={{ x: 8, scale: 1.03, boxShadow: "0 10px 30px rgba(0,0,0,0.15)" }}
                   className="flex items-center justify-between p-5 bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 border border-gray-200 group backdrop-blur-sm"
@@ -214,14 +213,13 @@ export const ValuePackage = ({
                     <motion.div
                       className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg"
                       animate={{ 
-                        scale: [1, 1.15, 1],
-                        rotate: [0, 5, -5, 0],
+                        scale: [1, 1.1, 1],
                       }}
                       transition={{ 
                         duration: 2,
-                        delay: index * 0.3,
+                        delay: index * 0.2,
                         repeat: Infinity,
-                        repeatDelay: 4,
+                        repeatDelay: 3,
                         ease: "easeInOut"
                       }}
                     >
@@ -233,10 +231,10 @@ export const ValuePackage = ({
                   </div>
                   <motion.span 
                     className="text-lg font-bold text-gray-800 px-5 py-2.5 bg-gradient-to-br from-yellow-50 via-gray-50 to-gray-100 rounded-xl border-2 border-gray-300 shadow-sm min-w-[100px] text-center"
-                    initial={{ opacity: 0, scale: 0.8 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 + 0.3, type: 'spring', stiffness: 200 }}
+                    transition={{ delay: index * 0.05 + 0.15, duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
                     whileHover={{ scale: 1.1, borderColor: "#fbbf24" }}
                   >
                     {item.price || '-'}
@@ -250,10 +248,10 @@ export const ValuePackage = ({
             {elementVisibility.prices && (
               <motion.div 
               className="relative bg-gradient-to-br from-black via-gray-900 to-black text-white rounded-3xl p-8 md:p-10 text-center shadow-2xl border-2 border-white/10 overflow-hidden"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4, duration: 0.6 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ delay: 0.2, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
               whileHover={{ scale: 1.02 }}
             >
               {/* Animated background gradient */}
@@ -265,17 +263,17 @@ export const ValuePackage = ({
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.5 }}
+                  transition={{ delay: 0.25, duration: 0.3 }}
                 >
                   <p className="text-gray-400 line-through text-xl mb-3 font-medium">
                     Valor total: {totalPrice}
                   </p>
                   <motion.p 
                     className="text-5xl md:text-6xl font-black bg-gradient-to-r from-white via-yellow-200 to-white bg-clip-text text-transparent"
-                    initial={{ scale: 0.8 }}
+                    initial={{ scale: 0.95 }}
                     whileInView={{ scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
+                    transition={{ delay: 0.3, duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
                   >
                     Por apenas {salePrice}
                   </motion.p>
@@ -285,7 +283,7 @@ export const ValuePackage = ({
                   initial={{ opacity: 0 }}
                   whileInView={{ opacity: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.7 }}
+                  transition={{ delay: 0.35, duration: 0.3 }}
                 >
                   {deliveryText}
                 </motion.p>
@@ -293,10 +291,10 @@ export const ValuePackage = ({
                 {/* Timer */}
                 {elementVisibility.timer && timeLeft && (
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.75 }}
+                    transition={{ delay: 0.4, duration: 0.3 }}
                     className="mb-6"
                   >
                     <div className="bg-red-500/20 border border-red-400/50 rounded-xl p-4 text-center">
@@ -317,10 +315,10 @@ export const ValuePackage = ({
                 {/* Button */}
                 {elementVisibility.button && buttonText && (
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.8 }}
+                    transition={{ delay: 0.45, duration: 0.3 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >

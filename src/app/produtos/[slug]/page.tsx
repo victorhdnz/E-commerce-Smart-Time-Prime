@@ -783,12 +783,34 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             <div className="border-t pt-6 mt-6">
               <h3 className="text-2xl font-bold mb-4">Especificações Técnicas</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {product.specifications.map((spec: any, index: number) => (
-                  <div key={index} className="flex gap-2">
-                    <span className="font-semibold text-gray-700">{spec.key}:</span>
-                    <span className="text-gray-600">{spec.value}</span>
-                  </div>
-                ))}
+                {product.specifications.map((spec: any, index: number) => {
+                  const rating = parseInt(spec.value) || 0
+                  const isRating = rating >= 1 && rating <= 5
+                  
+                  return (
+                    <div key={index} className="flex justify-between items-center gap-2">
+                      <span className="font-semibold text-gray-700">{spec.key}:</span>
+                      {isRating ? (
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              size={18}
+                              className={
+                                star <= rating
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'fill-gray-300 text-gray-300'
+                              }
+                            />
+                          ))}
+                          <span className="ml-2 text-sm text-gray-600">{rating}/5</span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-600">{spec.value}</span>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}

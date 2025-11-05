@@ -1346,6 +1346,18 @@ export default function EditLandingPage() {
                   onChange={(images) => setSettings({ ...settings, about_us_store_images: images })}
                 />
               </div>
+
+              <Input
+                label="Localização"
+                value={settings.about_us_location}
+                onChange={(e) =>
+                  setSettings({ ...settings, about_us_location: e.target.value })
+                }
+                placeholder="Shopping Planalto, Uberlândia/MG"
+              />
+              <p className="text-xs text-gray-500 -mt-2">
+                Localização que aparecerá no botão de endereço da loja
+              </p>
             </div>
           </motion.div>
 

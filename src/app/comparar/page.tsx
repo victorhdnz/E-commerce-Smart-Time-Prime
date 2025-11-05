@@ -10,7 +10,7 @@ import { formatCurrency } from '@/lib/utils/format'
 import { getProductPrice } from '@/lib/utils/price'
 import { Product } from '@/types'
 import Image from 'next/image'
-import { X, ShoppingCart, Eye, Check, XCircle, MapPin, GitCompare } from 'lucide-react'
+import { X, ShoppingCart, Eye, Check, XCircle, MapPin, GitCompare, Star } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
@@ -35,6 +35,13 @@ export default function ComparePage() {
 
   const loadComparisonFields = async () => {
     try {
+      // Se não há produtos, não precisa carregar campos
+      if (products.length === 0) {
+        setComparisonFields([])
+        setLoading(false)
+        return
+      }
+
       // Buscar campos de comparação configurados para a categoria dos produtos
       // Por enquanto, vamos usar as especificações dos produtos como base
       const allSpecKeys = new Set<string>()
@@ -59,9 +66,7 @@ export default function ComparePage() {
   }
 
   useEffect(() => {
-    if (products.length > 0) {
-      loadComparisonFields()
-    }
+    loadComparisonFields()
   }, [products])
 
   const handleRemoveProduct = (productId: string) => {
@@ -93,6 +98,7 @@ export default function ComparePage() {
   useEffect(() => {
     const loadProductsAndCategories = async () => {
       try {
+        setLoading(true)
         const { data: productsData, error } = await supabase
           .from('products')
           .select('*')
@@ -106,9 +112,11 @@ export default function ComparePage() {
           const uniqueCategories = [...new Set(productsData.map((p: any) => p.category).filter(Boolean))] as string[]
           setCategories(uniqueCategories.sort())
         }
+        setLoading(false)
       } catch (error) {
         console.error('Erro ao carregar produtos:', error)
         toast.error('Erro ao carregar produtos')
+        setLoading(false)
       }
     }
 
@@ -421,7 +429,29 @@ export default function ComparePage() {
                       // Buscar na especificações
                       const spec = product.specifications?.find(s => s.key === field)
                       if (spec) {
-                        value = spec.value
+                        const rating = parseInt(spec.value) || 0
+                        const isRating = rating >= 1 && rating <= 5
+                        
+                        if (isRating) {
+                          value = (
+                            <div className="flex items-center justify-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  size={16}
+                                  className={
+                                    star <= rating
+                                      ? 'fill-yellow-400 text-yellow-400'
+                                      : 'fill-gray-300 text-gray-300'
+                                  }
+                                />
+                              ))}
+                              <span className="ml-2 text-sm text-gray-600">{rating}/5</span>
+                            </div>
+                          )
+                        } else {
+                          value = spec.value
+                        }
                       }
                       break
                   }

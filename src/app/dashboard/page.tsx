@@ -17,6 +17,7 @@ import {
   Eye,
   UserCheck,
   MessageCircle,
+  FileText,
 } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils/format'
@@ -273,6 +274,13 @@ export default function DashboardPage() {
       icon: Settings,
       href: '/dashboard/configuracoes',
       color: 'bg-gray-500',
+    },
+    {
+      title: 'Termos',
+      description: 'Gerenciar termos e políticas do site',
+      icon: FileText,
+      href: '/dashboard/termos',
+      color: 'bg-blue-600',
     },
   ]
 

@@ -11,6 +11,7 @@ import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
+import { StarRating } from '@/components/ui/StarRating'
 
 export default function NovoProduct() {
   const router = useRouter()
@@ -92,14 +93,15 @@ export default function NovoProduct() {
           setCategorySpecs(specs)
 
           // Carregar valores do último produto dessa categoria
-          const { data: lastProduct, error: productError } = await supabase
+          const { data: lastProductData, error: productError } = await supabase
             .from('products')
             .select('specifications')
             .eq('category', formData.category)
             .not('specifications', 'is', null)
             .order('updated_at', { ascending: false })
             .limit(1)
-            .single()
+
+          const lastProduct = lastProductData && lastProductData.length > 0 ? lastProductData[0] : null
 
           if (!productError && lastProduct && (lastProduct as any).specifications) {
             const lastSpecs = (lastProduct as any).specifications as { key: string; value: string }[]
@@ -349,12 +351,16 @@ export default function NovoProduct() {
                     <div className="flex gap-2">
                       <select
                         value={formData.category}
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const selectedCategory = e.target.value
                           if (selectedCategory === '__new__') {
                             const newCategory = prompt('Digite o nome da nova categoria:')
                             if (newCategory && newCategory.trim()) {
-                              setFormData({ ...formData, category: newCategory.trim() })
+                              const trimmedCategory = newCategory.trim()
+                              // Adicionar a nova categoria à lista
+                              setExistingCategories(prev => [...prev, trimmedCategory].sort())
+                              // Definir a categoria no formData
+                              setFormData({ ...formData, category: trimmedCategory })
                             }
                           } else {
                             setFormData({ ...formData, category: selectedCategory })
@@ -444,15 +450,17 @@ export default function NovoProduct() {
                         )}
                       </div>
                       <div className="flex-1">
-                        <Input
-                          placeholder="Valor"
-                          value={spec.value}
-                          onChange={(e) => {
-                            const newSpecs = [...formData.specifications]
-                            newSpecs[index].value = e.target.value
-                            setFormData({ ...formData, specifications: newSpecs })
-                          }}
-                        />
+                        <div className="flex items-center gap-4">
+                          <StarRating
+                            value={spec.value ? parseInt(spec.value) || 0 : 0}
+                            onChange={(rating) => {
+                              const newSpecs = [...formData.specifications]
+                              newSpecs[index].value = rating.toString()
+                              setFormData({ ...formData, specifications: newSpecs })
+                            }}
+                            size={20}
+                          />
+                        </div>
                       </div>
                       {!isFixed && (
                         <button

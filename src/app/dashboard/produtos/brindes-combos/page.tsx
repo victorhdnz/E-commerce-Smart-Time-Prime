@@ -231,10 +231,16 @@ export default function BrindesECombosPage() {
     }
 
     try {
+      setLoading(true)
       const finalPrice = calculateComboPrice()
       
       // Gerar slug do nome do combo
       const slug = slugify(comboForm.name) || `combo-${Date.now()}`
+      
+      // Buscar imagens do primeiro produto do combo para usar como imagem do combo
+      const firstItem = comboForm.items[0]
+      const firstProduct = products.find(p => p.id === firstItem.product_id)
+      const comboImages = firstProduct?.images || []
       
       let comboData = {
         name: comboForm.name,
@@ -255,7 +261,10 @@ export default function BrindesECombosPage() {
           .update(comboData)
           .eq('id', editingCombo.id)
 
-        if (error) throw error
+        if (error) {
+          console.error('Erro ao atualizar combo:', error)
+          throw error
+        }
         comboId = editingCombo.id
 
         // Remove existing items
@@ -270,7 +279,10 @@ export default function BrindesECombosPage() {
           .select()
           .single()
 
-        if (error) throw error
+        if (error) {
+          console.error('Erro ao criar combo:', error)
+          throw error
+        }
         comboId = data.id
       }
 
@@ -285,14 +297,68 @@ export default function BrindesECombosPage() {
         .from('combo_items')
         .insert(itemsData)
 
-      if (itemsError) throw itemsError
+      if (itemsError) {
+        console.error('Erro ao adicionar itens do combo:', itemsError)
+        throw itemsError
+      }
+
+      // Criar ou atualizar produto correspondente na tabela products
+      const productData = {
+        name: comboForm.name,
+        description: comboForm.description || '',
+        short_description: comboForm.description ? comboForm.description.substring(0, 150) : '',
+        slug: slug,
+        category: 'Combos',
+        local_price: finalPrice,
+        national_price: finalPrice,
+        stock: 999, // Combos sempre em estoque
+        images: comboImages,
+        is_active: true,
+        is_featured: false,
+        product_code: `COMBO-${comboId.substring(0, 8).toUpperCase()}`,
+        specifications: [],
+        benefits: {},
+      }
+
+      // Verificar se já existe um produto para este combo
+      const { data: existingProduct } = await supabase
+        .from('products')
+        .select('id')
+        .eq('slug', slug)
+        .maybeSingle()
+
+      if (existingProduct) {
+        // Atualizar produto existente
+        const { error: updateError } = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', existingProduct.id)
+
+        if (updateError) {
+          console.error('Erro ao atualizar produto do combo:', updateError)
+          // Não falhar o save do combo por causa disso
+        }
+      } else {
+        // Criar novo produto
+        const { error: productError } = await supabase
+          .from('products')
+          .insert(productData)
+
+        if (productError) {
+          console.error('Erro ao criar produto do combo:', productError)
+          // Não falhar o save do combo por causa disso
+        }
+      }
 
       toast.success(editingCombo ? 'Combo atualizado!' : 'Combo criado!')
       setShowComboModal(false)
       resetComboForm()
       loadCombos()
-    } catch (error) {
-      toast.error('Erro ao salvar combo')
+    } catch (error: any) {
+      console.error('Erro detalhado ao salvar combo:', error)
+      toast.error(error.message || 'Erro ao salvar combo. Verifique o console para mais detalhes.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -326,6 +392,23 @@ export default function BrindesECombosPage() {
     if (!confirm('Deseja excluir este combo?')) return
 
     try {
+      // Buscar o combo para obter o slug
+      const { data: combo } = await supabase
+        .from('product_combos')
+        .select('slug')
+        .eq('id', comboId)
+        .single()
+
+      // Deletar o produto correspondente se existir
+      if (combo?.slug) {
+        await supabase
+          .from('products')
+          .delete()
+          .eq('slug', combo.slug)
+          .eq('category', 'Combos')
+      }
+
+      // Deletar o combo
       const { error } = await supabase
         .from('product_combos')
         .delete()
@@ -335,6 +418,7 @@ export default function BrindesECombosPage() {
       toast.success('Combo excluído')
       loadCombos()
     } catch (error) {
+      console.error('Erro ao excluir combo:', error)
       toast.error('Erro ao excluir combo')
     }
   }
