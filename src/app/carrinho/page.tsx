@@ -134,17 +134,17 @@ export default function CartPage() {
               const comboItems = comboData?.items || []
               
               return (
-              <motion.div
-                key={`${item.product.id}-${item.color?.id}-${item.is_gift}`}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className={`rounded-lg shadow-md p-4 flex gap-4 ${
-                  item.is_gift ? 'bg-green-50 border-2 border-green-200' : 
-                  isCombo ? 'bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200' : 
-                  'bg-white'
-                }`}
-              >
+                <motion.div
+                  key={`${item.product.id}-${item.color?.id}-${item.is_gift}`}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className={`rounded-lg shadow-md p-4 flex gap-4 ${
+                    item.is_gift ? 'bg-green-50 border-2 border-green-200' : 
+                    isCombo ? 'bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200' : 
+                    'bg-white'
+                  }`}
+                >
                 {/* Image */}
                 <div className="w-24 h-24 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 relative">
                   {isCombo && comboItems.length > 0 ? (
@@ -366,8 +366,9 @@ export default function CartPage() {
                     </button>
                   )}
                 </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              )
+            })}
 
             <button
               onClick={clearCart}
