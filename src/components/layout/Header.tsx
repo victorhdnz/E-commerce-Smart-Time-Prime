@@ -118,23 +118,23 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-30 bg-white shadow-sm">
       <AuthDebug />
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-1 sm:gap-4">
+      <nav className="container mx-auto px-2 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20 gap-2 sm:gap-4 w-full">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-1 sm:gap-3 h-full min-w-0 flex-1 max-w-full">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 h-full min-w-0 flex-1 max-w-[calc(100%-140px)] sm:max-w-none">
             {siteLogo && (
               <Image
                 src={siteLogo}
                 alt={siteName}
                 width={60}
                 height={48}
-                className="h-6 sm:h-12 w-auto object-contain flex-shrink-0"
+                className="h-8 sm:h-12 w-auto object-contain flex-shrink-0"
                 priority
-                sizes="(max-width: 640px) 24px, 48px"
+                sizes="(max-width: 640px) 32px, 48px"
               />
             )}
             <span 
-              className="text-[10px] xs:text-[11px] sm:text-2xl font-bold leading-tight break-words whitespace-normal min-w-0 flex-1" 
+              className="text-sm sm:text-2xl font-bold leading-tight break-words whitespace-normal min-w-0 flex-1" 
               style={{ 
                 wordBreak: 'break-word', 
                 overflowWrap: 'break-word',
@@ -142,8 +142,8 @@ export const Header = () => {
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
-                maxHeight: '2.4em',
-                lineHeight: '1.2em'
+                maxHeight: '2.5em',
+                lineHeight: '1.25em'
               }}
             >
               {siteName}
@@ -165,13 +165,13 @@ export const Header = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center space-x-1 sm:space-x-4 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-4 flex-shrink-0 ml-2">
             {/* Comparison Icon */}
             <Link
               href="/comparar"
-              className="relative p-1 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="relative p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <GitCompare size={18} className="sm:w-6 sm:h-6" />
+              <GitCompare size={20} className="sm:w-6 sm:h-6" />
               {comparisonCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-black text-white text-[10px] sm:text-xs w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full">
                   {comparisonCount}
@@ -182,9 +182,9 @@ export const Header = () => {
             {/* Cart */}
             <Link
               href="/carrinho"
-              className="relative p-1 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="relative p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <ShoppingCart size={18} className="sm:w-6 sm:h-6" />
+              <ShoppingCart size={20} className="sm:w-6 sm:h-6" />
               {itemCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-black text-white text-[10px] sm:text-xs w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full">
                   {itemCount}
@@ -194,19 +194,21 @@ export const Header = () => {
 
             {/* User Menu */}
             {!loading && !isAuthenticated ? (
-              <Link href="/login">
+              <Link href="/login" className="hidden sm:block">
                 <Button size="sm">Entrar</Button>
               </Link>
             ) : (
-              <UserMenu />
+              <div className="hidden sm:block">
+                <UserMenu />
+              </div>
             )}
 
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-1 sm:p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
             >
-              {mobileMenuOpen ? <X size={18} className="sm:w-6 sm:h-6" /> : <Menu size={18} className="sm:w-6 sm:h-6" />}
+              {mobileMenuOpen ? <X size={20} className="sm:w-6 sm:h-6" /> : <Menu size={20} className="sm:w-6 sm:h-6" />}
             </button>
           </div>
         </div>
