@@ -128,9 +128,9 @@ export const Header = () => {
                 alt={siteName}
                 width={60}
                 height={48}
-                className="h-8 sm:h-12 w-auto object-contain flex-shrink-0"
+                className="h-10 sm:h-12 w-auto object-contain flex-shrink-0"
                 priority
-                sizes="(max-width: 640px) 32px, 48px"
+                sizes="(max-width: 640px) 40px, 48px"
               />
             )}
             <span 
@@ -165,7 +165,7 @@ export const Header = () => {
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 sm:gap-4 flex-shrink-0 ml-2">
+          <div className="flex items-center gap-2.5 sm:gap-4 flex-shrink-0 ml-2">
             {/* Comparison Icon */}
             <Link
               href="/comparar"
