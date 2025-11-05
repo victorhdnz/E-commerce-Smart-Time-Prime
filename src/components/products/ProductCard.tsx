@@ -200,7 +200,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 e.preventDefault()
                 e.stopPropagation()
                 if (isInComparison) {
-                  toast.info('Produto já está na comparação')
+                  toast('Produto já está na comparação')
                   router.push('/comparar')
                   return
                 }

@@ -640,7 +640,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             <Button
               onClick={() => {
                 if (products.some(p => p.id === product.id)) {
-                  toast.info('Produto já está na comparação')
+                  toast('Produto já está na comparação')
                   router.push('/comparar')
                   return
                 }
