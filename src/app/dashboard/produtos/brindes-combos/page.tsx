@@ -105,7 +105,7 @@ export default function BrindesECombosPage() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, local_price, images')
+        .select('id, name, local_price, national_price, images')
         .eq('is_active', true)
         .order('name')
 
