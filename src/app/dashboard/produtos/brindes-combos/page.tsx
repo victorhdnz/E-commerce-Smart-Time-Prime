@@ -241,6 +241,11 @@ export default function BrindesECombosPage() {
     return totalPrice - comboForm.discount_amount
   }
 
+  const calculateComboPrice = () => {
+    // Retorna o preço local calculado para o resumo do combo
+    return calculateLocalPrice()
+  }
+
   // Atualizar preços calculados quando os itens ou desconto mudarem
   useEffect(() => {
     if (comboForm.items.length > 0) {
