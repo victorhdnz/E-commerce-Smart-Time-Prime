@@ -119,9 +119,9 @@ export const Header = () => {
     <header className="sticky top-0 z-30 bg-white shadow-sm">
       <AuthDebug />
       <nav className="container mx-auto px-2 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-2 sm:gap-4 w-full">
+        <div className="flex items-center justify-between h-20 gap-2 sm:gap-4 w-full relative">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 h-full min-w-0 flex-1 max-w-[calc(100%-140px)] sm:max-w-none">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 h-full min-w-0 flex-shrink-0 max-w-[calc(100%-140px)] sm:max-w-none z-10">
             {siteLogo && (
               <Image
                 src={siteLogo}
@@ -150,8 +150,8 @@ export const Header = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Desktop Navigation - Centralizado */}
+          <div className="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2 space-x-8 z-10">
             {navigation.map((item) => (
               <Link
                 key={item.name}
@@ -198,7 +198,7 @@ export const Header = () => {
                 <Button size="sm">Entrar</Button>
               </Link>
             ) : (
-              <div className="hidden sm:block">
+              <div>
                 <UserMenu />
               </div>
             )}
