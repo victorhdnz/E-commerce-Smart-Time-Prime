@@ -97,14 +97,14 @@ export const SocialProof = ({
 
           <motion.div
             animate={{
-              x: [0, -(duplicatedReviews.length / 3) * 336], // 336 = 320px width + 16px gap
+              x: [0, -(duplicatedReviews.length / 3) * 320], // Valor médio: mobile ~300px (w-72 + gap-3), desktop 336px (w-80 + gap-4)
             }}
             transition={{
               duration: duplicatedReviews.length * 4, // 4 segundos por review
               repeat: Infinity,
               ease: 'linear',
             }}
-            className="flex gap-4"
+            className="flex gap-3 sm:gap-4"
           >
             {duplicatedReviews.map((review, index) => {
               const googleReviewLink = (review as any).google_review_link
@@ -112,32 +112,32 @@ export const SocialProof = ({
               return (
                 <div
                   key={`${review.id}-${index}`}
-                  className="flex-shrink-0 w-80 bg-white/10 backdrop-blur-md rounded-lg p-6 hover:bg-white/20 transition-colors"
+                  className="flex-shrink-0 w-72 sm:w-80 bg-white/10 backdrop-blur-md rounded-lg p-4 sm:p-5 hover:bg-white/20 transition-colors flex flex-col"
                 >
                   {/* Rating */}
-                  <div className="flex mb-4 justify-center">
+                  <div className="flex mb-2 sm:mb-3 justify-center">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
                         key={i}
-                        size={18}
-                        className={
+                        size={14}
+                        className={`sm:w-[18px] sm:h-[18px] ${
                           i < review.rating
                             ? 'fill-accent text-accent'
                             : 'text-gray-500'
-                        }
+                        }`}
                       />
                     ))}
                   </div>
 
                   {/* Comment */}
-                  <p className="text-gray-200 mb-4 text-sm text-center">
+                  <p className="text-gray-200 mb-3 sm:mb-4 text-xs sm:text-sm text-center line-clamp-4 flex-grow">
                     "{review.comment}"
                   </p>
 
                   {/* Customer */}
-                  <div className="flex items-center justify-center relative">
+                  <div className="flex items-center justify-center relative mt-auto">
                     {allowPhotos && (review as any).photo ? (
-                      <div className="w-10 h-10 rounded-full overflow-hidden">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden flex-shrink-0">
                         <img
                           src={(review as any).photo}
                           alt={review.customer_name}
@@ -145,13 +145,13 @@ export const SocialProof = ({
                         />
                       </div>
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-black font-bold text-sm">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-accent flex items-center justify-center text-black font-bold text-xs sm:text-sm flex-shrink-0">
                         {review.customer_name.charAt(0).toUpperCase()}
                       </div>
                     )}
                     {googleIcon && (
                       <div className="absolute bottom-0 -right-1 bg-white rounded-full p-0.5 shadow-lg z-10 border border-gray-200">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg width="12" height="12" className="sm:w-[14px] sm:h-[14px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                           <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -159,19 +159,19 @@ export const SocialProof = ({
                         </svg>
                       </div>
                     )}
-                    <div className="ml-3">
-                      <p className="font-semibold text-sm">{review.customer_name}</p>
+                    <div className="ml-2 sm:ml-3 min-w-0 flex-1">
+                      <p className="font-semibold text-xs sm:text-sm truncate">{review.customer_name}</p>
                       {googleReviewLink ? (
                         <a
                           href={googleReviewLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-400 hover:text-blue-300 underline transition-colors"
+                          className="text-[10px] sm:text-xs text-blue-400 hover:text-blue-300 underline transition-colors"
                         >
                           Cliente Verificado
                         </a>
                       ) : (
-                        <p className="text-xs text-gray-400">Cliente Verificado</p>
+                        <p className="text-[10px] sm:text-xs text-gray-400">Cliente Verificado</p>
                       )}
                     </div>
                   </div>
