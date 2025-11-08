@@ -340,7 +340,157 @@ export default function ComparePage() {
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow-md overflow-x-auto -mx-2 sm:-mx-4 sm:mx-0">
+      {/* Mobile Layout - Cards Verticais */}
+      <div className="block md:hidden space-y-4">
+        {/* Header dos Produtos no Mobile */}
+        <div className="bg-white rounded-lg shadow-md p-4 mb-4">
+          <div className="grid grid-cols-2 gap-3">
+            {products.map((product) => (
+              <div key={product.id} className="flex flex-col items-center gap-2">
+                <button
+                  onClick={() => handleRemoveProduct(product.id)}
+                  className="self-end text-gray-400 hover:text-red-600 transition-colors"
+                  aria-label="Remover produto"
+                >
+                  <X size={16} />
+                </button>
+                <div className="relative w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
+                  {product.images?.[0] ? (
+                    <Image
+                      src={product.images[0]}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-2xl">
+                      ⌚
+                    </div>
+                  )}
+                </div>
+                <h3 className="font-bold text-xs text-center line-clamp-2 leading-tight">{product.name}</h3>
+                <div className="flex flex-col gap-1.5 w-full">
+                  <Link href={`/produtos/${product.slug}`} className="w-full">
+                    <Button size="sm" variant="outline" className="w-full text-xs py-1.5 px-2 h-auto">
+                      <Eye size={12} className="mr-1" />
+                      Detalhes
+                    </Button>
+                  </Link>
+                  <Button
+                    size="sm"
+                    onClick={() => handleAddToCart(product)}
+                    className="w-full text-xs py-1.5 px-2 h-auto"
+                  >
+                    <ShoppingCart size={12} className="mr-1" />
+                    Add
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Cards de Comparação */}
+        {comparisonFields.map((field, index) => (
+          <div 
+            key={field}
+            className={`bg-white rounded-lg shadow-md p-4 ${
+              index % 2 === 0 
+                ? 'bg-white' 
+                : 'bg-gray-50/30'
+            }`}
+          >
+            <h3 className="font-bold text-sm mb-3 text-gray-800 border-b pb-2">{field}</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {products.map((product) => {
+                let value: string | number | React.ReactNode = '—'
+                
+                switch (field) {
+                  case 'Nome':
+                    value = product.name
+                    break
+                  case 'Preço':
+                    if (needsAddress && !locationLoading) {
+                      value = (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (!isAuthenticated) {
+                              router.push('/login')
+                              return
+                            }
+                            setShowAddressModal(true)
+                          }}
+                          className="relative cursor-pointer group w-full"
+                        >
+                          <div className="flex items-center justify-center gap-1">
+                            <Eye size={14} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
+                            <span className="text-gray-400 blur-sm select-none text-xs">
+                              {formatCurrency(product.local_price || product.national_price)}
+                            </span>
+                          </div>
+                        </button>
+                      )
+                    } else {
+                      value = formatCurrency(getProductPrice(product, isUberlandia))
+                    }
+                    break
+                  case 'Categoria':
+                    value = product.category || '—'
+                    break
+                  case 'Estoque':
+                    value = product.stock > 0 ? `${product.stock} unidades` : 'Esgotado'
+                    break
+                  default:
+                    const spec = product.specifications?.find(s => s.key === field)
+                    if (spec) {
+                      const rating = parseInt(spec.value) || 0
+                      const isRating = rating >= 1 && rating <= 5
+                      
+                      if (isRating) {
+                        value = (
+                          <div className="flex flex-col items-center gap-1">
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  size={12}
+                                  className={
+                                    star <= rating
+                                      ? 'fill-yellow-400 text-yellow-400'
+                                      : 'fill-gray-200 text-gray-200'
+                                  }
+                                />
+                              ))}
+                            </div>
+                            <span className="text-xs font-semibold text-gray-700">{rating}/5</span>
+                          </div>
+                        )
+                      } else {
+                        value = <span className="text-gray-700 text-xs break-words">{spec.value}</span>
+                      }
+                    }
+                    break
+                }
+                
+                return (
+                  <div key={product.id} className="text-center">
+                    {typeof value === 'string' || typeof value === 'number' ? (
+                      <span className="text-gray-700 text-xs break-words font-medium">{value}</span>
+                    ) : (
+                      value
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Layout - Tabela */}
+      <div className="hidden md:block bg-white rounded-lg shadow-md overflow-x-auto -mx-2 sm:-mx-4 sm:mx-0">
         <div className="px-2 sm:px-4 sm:px-0">
           <table className="w-full min-w-[600px] sm:min-w-[800px]">
             <thead>

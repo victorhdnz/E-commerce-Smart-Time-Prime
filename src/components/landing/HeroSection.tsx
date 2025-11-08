@@ -363,10 +363,39 @@ export const HeroSection = ({
                 className="mt-6 relative z-10"
               >
                 <Link href={heroButtonLink} target={heroButtonLink.startsWith('http') ? '_blank' : '_self'} rel={heroButtonLink.startsWith('http') ? 'noopener noreferrer' : undefined}>
-                  <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-black transition-all relative z-10">
-                    {heroButtonText}
-                    <ChevronRight className="ml-2" size={20} />
-                  </Button>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative inline-block group"
+                  >
+                    <Button 
+                      size="lg" 
+                      variant="outline" 
+                      className="text-lg px-8 py-4 border-2 border-white text-white bg-transparent hover:bg-white/10 hover:border-white/80 active:bg-white/20 transition-all duration-300 relative z-10 backdrop-blur-sm group-hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                    >
+                      {heroButtonText}
+                      <motion.div
+                        animate={{
+                          x: [0, 4, 0],
+                        }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: 'easeInOut'
+                        }}
+                        className="inline-block ml-2"
+                      >
+                        <ChevronRight size={20} />
+                      </motion.div>
+                    </Button>
+                    {/* Glow effect on hover */}
+                    <motion.div
+                      className="absolute inset-0 rounded-lg blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-300 pointer-events-none -z-10"
+                      style={{
+                        background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)',
+                      }}
+                    />
+                  </motion.div>
                 </Link>
                 
                 {/* Scroll Indicator - abaixo do botão */}

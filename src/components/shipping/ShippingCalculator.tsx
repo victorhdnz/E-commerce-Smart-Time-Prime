@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useCart } from '@/hooks/useCart'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { formatCurrency } from '@/lib/utils/format'
@@ -44,19 +44,7 @@ export function ShippingCalculator({
     selectedShipping || null
   )
 
-  // Preencher CEP automaticamente se houver endereço cadastrado
-  useEffect(() => {
-    if (userAddress?.cep && !cep) {
-      const formattedCEP = userAddress.cep.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')
-      setCep(formattedCEP)
-      // Calcular frete automaticamente
-      setTimeout(() => {
-        calculateShippingWithCEP(formattedCEP)
-      }, 500)
-    }
-  }, [userAddress])
-
-  const calculateShippingWithCEP = async (cepValue: string) => {
+  const calculateShippingWithCEP = useCallback(async (cepValue: string) => {
     if (!cepValue || cepValue.replace(/\D/g, '').length !== 8) {
       return
     }
@@ -94,7 +82,7 @@ export function ShippingCalculator({
     } finally {
       setLoading(false)
     }
-  }
+  }, [items, selected, onShippingSelected])
 
   const calculateShipping = async () => {
     if (!cep || cep.replace(/\D/g, '').length !== 8) {
@@ -116,6 +104,41 @@ export function ShippingCalculator({
     onShippingSelected?.(option)
   }
 
+  // Preencher CEP automaticamente se houver endereço cadastrado
+  useEffect(() => {
+    if (userAddress?.cep) {
+      const formattedCEP = userAddress.cep.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')
+      // Sempre atualizar o CEP quando o endereço padrão mudar
+      if (cep !== formattedCEP) {
+        setCep(formattedCEP)
+        // Calcular frete automaticamente quando o CEP mudar
+        setTimeout(() => {
+          calculateShippingWithCEP(formattedCEP)
+        }, 500)
+      }
+    }
+  }, [userAddress, cep, calculateShippingWithCEP])
+
+  // Escutar evento de mudança de endereço padrão
+  useEffect(() => {
+    const handleAddressRegistered = () => {
+      // Recalcular frete quando o endereço padrão for alterado
+      if (userAddress?.cep) {
+        const formattedCEP = userAddress.cep.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')
+        setCep(formattedCEP)
+        setTimeout(() => {
+          calculateShippingWithCEP(formattedCEP)
+        }, 500)
+      }
+    }
+
+    window.addEventListener('addressRegistered', handleAddressRegistered)
+    
+    return () => {
+      window.removeEventListener('addressRegistered', handleAddressRegistered)
+    }
+  }, [userAddress, calculateShippingWithCEP])
+
   useEffect(() => {
     if (selectedShipping) {
       setSelected(selectedShipping)
@@ -125,10 +148,17 @@ export function ShippingCalculator({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-2">
-          <MapPin className="inline mr-2" size={16} />
-          Calcular Frete
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium">
+            <MapPin className="inline mr-2" size={16} />
+            Calcular Frete
+          </label>
+          {userAddress?.cep && (
+            <span className="text-xs text-gray-500">
+              CEP padrão: {userAddress.cep.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')}
+            </span>
+          )}
+        </div>
         {needsAddress && (
           <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800 mb-2">

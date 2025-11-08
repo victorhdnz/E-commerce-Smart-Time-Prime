@@ -68,15 +68,48 @@ export default function ConfiguracoesPage() {
 
   const loadConfig = async () => {
     try {
-      // Buscar primeiro registro (sem usar .single() para evitar erro se não houver)
+      // Buscar primeiro registro que tenha site_name ou site_logo (configurações gerais)
+      // Ou buscar qualquer registro se não houver um específico
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
+        .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle()
 
       if (error && error.code !== 'PGRST116') {
-        throw error
+        console.error('Erro ao buscar configurações:', error)
+        // Se não encontrar, tentar buscar qualquer registro
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('site_settings')
+          .select('*')
+          .limit(1)
+          .maybeSingle()
+
+        if (fallbackError && fallbackError.code !== 'PGRST116') {
+          throw fallbackError
+        }
+
+        if (fallbackData) {
+          setConfig({
+            site_name: fallbackData.site_name || config.site_name,
+            site_logo: fallbackData.site_logo || config.site_logo,
+            site_description: fallbackData.site_description || config.site_description,
+            footer_text: fallbackData.footer_text || config.footer_text,
+            copyright_text: fallbackData.copyright_text || config.copyright_text,
+            contact_email: fallbackData.contact_email || config.contact_email,
+            contact_phone: fallbackData.contact_phone || config.contact_phone,
+            contact_whatsapp: fallbackData.contact_whatsapp || config.contact_whatsapp,
+            contact_maps_link: fallbackData.contact_maps_link || config.contact_maps_link,
+            instagram_url: fallbackData.instagram_url || config.instagram_url,
+            facebook_url: fallbackData.facebook_url || config.facebook_url,
+            address_street: fallbackData.address_street || config.address_street,
+            address_city: fallbackData.address_city || config.address_city,
+            address_state: fallbackData.address_state || config.address_state,
+            address_zip: fallbackData.address_zip || config.address_zip,
+          })
+        }
+        return
       }
 
       if (data) {
@@ -110,18 +143,30 @@ export default function ConfiguracoesPage() {
     try {
       console.log('Iniciando salvamento...', config)
       
-      // Buscar primeiro registro existente (se houver)
+      // Buscar primeiro registro existente
       const { data: existingData, error: checkError } = await supabase
         .from('site_settings')
         .select('id, key')
+        .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle()
 
-      console.log('Dados existentes encontrados:', existingData)
+      // Se não encontrar, tentar buscar qualquer registro
+      let finalExistingData = existingData
+      if (!existingData && checkError?.code === 'PGRST116') {
+        const { data: fallbackData } = await supabase
+          .from('site_settings')
+          .select('id, key')
+          .limit(1)
+          .maybeSingle()
+        finalExistingData = fallbackData || null
+      }
+
+      console.log('Dados existentes encontrados:', finalExistingData)
       
       if (checkError && checkError.code !== 'PGRST116') {
         console.error('Erro ao verificar dados existentes:', checkError)
-        throw checkError
+        // Não lançar erro aqui, tentar criar novo registro
       }
 
       const updateData: any = {
@@ -143,21 +188,21 @@ export default function ConfiguracoesPage() {
         updated_at: new Date().toISOString(),
       }
 
-      // Remover campos undefined/null para evitar erros
+      // Remover apenas campos undefined (manter null para site_logo permitir limpar)
       Object.keys(updateData).forEach(key => {
-        if (updateData[key] === undefined || updateData[key] === null) {
+        if (updateData[key] === undefined) {
           delete updateData[key]
         }
       })
 
       console.log('Dados a serem salvos:', updateData)
 
-      if (existingData) {
+      if (finalExistingData) {
         // Atualizar registro existente usando o ID encontrado
         const { data, error } = await supabase
           .from('site_settings')
           .update(updateData)
-          .eq('id', existingData.id)
+          .eq('id', finalExistingData.id)
           .select()
 
         console.log('Resultado da atualização:', { data, error })

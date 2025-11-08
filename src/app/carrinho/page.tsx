@@ -33,7 +33,7 @@ interface ShippingOption {
 export default function CartPage() {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
-  const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
+  const { isUberlandia, needsAddress, loading: locationLoading, userAddress } = useUserLocation()
   const { items, removeItem, updateQuantity, getTotal, clearCart } = useCart()
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null)
   const [showAddressModal, setShowAddressModal] = useState(false)
@@ -430,8 +430,15 @@ export default function CartPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Frete</span>
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col">
+                    <span className="text-gray-600">Frete</span>
+                    {selectedShipping && userAddress?.cep && (
+                      <span className="text-xs text-gray-500 mt-0.5">
+                        CEP: {userAddress.cep.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')}
+                      </span>
+                    )}
+                  </div>
                   <span className="font-semibold text-sm">
                     {selectedShipping ? (
                       formatCurrency(selectedShipping.price)

@@ -54,6 +54,42 @@ export const useUserLocation = () => {
     loadUserAddress()
   }, [isAuthenticated, profile, supabase])
 
+  // Escutar evento de mudança de endereço padrão
+  useEffect(() => {
+    if (!isAuthenticated || !profile) return
+
+    const handleAddressRegistered = async () => {
+      // Recarregar endereço quando o endereço padrão for alterado
+      try {
+        const { data, error } = await supabase
+          .from('addresses')
+          .select('cep, city, state')
+          .eq('user_id', profile.id)
+          .eq('is_default', true)
+          .single()
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Erro ao recarregar endereço:', error)
+        }
+
+        if (data) {
+          setUserAddress(data)
+          setNeedsAddress(false)
+        } else {
+          setNeedsAddress(true)
+        }
+      } catch (error) {
+        console.error('Erro ao recarregar endereço:', error)
+      }
+    }
+
+    window.addEventListener('addressRegistered', handleAddressRegistered)
+    
+    return () => {
+      window.removeEventListener('addressRegistered', handleAddressRegistered)
+    }
+  }, [isAuthenticated, profile, supabase])
+
   const isUberlandia = useMemo(() => {
     if (!userAddress) return false
     const cepNum = parseInt(userAddress.cep.replace(/\D/g, ''))

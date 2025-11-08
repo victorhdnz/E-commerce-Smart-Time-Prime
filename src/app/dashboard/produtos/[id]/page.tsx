@@ -621,51 +621,6 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                     />
                   )}
                 </div>
-
-                {/* Brinde */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="flex items-center gap-2 font-semibold">
-                      <input
-                        type="checkbox"
-                        checked={formData.benefits.gift.enabled}
-                        onChange={(e) => {
-                          setFormData({
-                            ...formData,
-                            benefits: {
-                              ...formData.benefits,
-                              gift: {
-                                ...formData.benefits.gift,
-                                enabled: e.target.checked,
-                              },
-                            },
-                          })
-                        }}
-                        className="w-4 h-4"
-                      />
-                      🎁 Brinde
-                    </label>
-                  </div>
-                  {formData.benefits.gift.enabled && (
-                    <Input
-                      value={formData.benefits.gift.text}
-                      onChange={(e) => {
-                        setFormData({
-                          ...formData,
-                          benefits: {
-                            ...formData.benefits,
-                            gift: {
-                              ...formData.benefits.gift,
-                              text: e.target.value,
-                            },
-                          },
-                        })
-                      }}
-                      placeholder="Ex: Brinde exclusivo incluído"
-                      className="mt-2"
-                    />
-                  )}
-                </div>
               </div>
             </div>
 

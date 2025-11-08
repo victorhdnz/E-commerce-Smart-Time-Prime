@@ -36,6 +36,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const [isFavorite, setIsFavorite] = useState(false)
   const [comboData, setComboData] = useState<any>(null)
   const [comboItems, setComboItems] = useState<Array<{ product: Product; quantity: number }>>([])
+  const [showFullDescription, setShowFullDescription] = useState(false)
 
   const supabase = createClient()
 
@@ -984,9 +985,31 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           {product.description && (
             <div className="border-t pt-6 mt-6">
               <h3 className="text-2xl font-bold mb-4">Descrição</h3>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                {product.description}
-              </p>
+              <div className="text-gray-700 leading-relaxed">
+                {showFullDescription ? (
+                  <p className="whitespace-pre-line">{product.description}</p>
+                ) : (
+                  <p className="line-clamp-3 whitespace-pre-line">{product.description}</p>
+                )}
+                {product.description.length > 150 && (
+                  <button
+                    onClick={() => setShowFullDescription(!showFullDescription)}
+                    className="mt-3 text-black font-semibold hover:underline flex items-center gap-1 transition-colors"
+                  >
+                    {showFullDescription ? (
+                      <>
+                        Ver menos
+                        <ChevronLeft size={16} className="rotate-90" />
+                      </>
+                    ) : (
+                      <>
+                        Ler mais
+                        <ChevronRight size={16} className="rotate-90" />
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
