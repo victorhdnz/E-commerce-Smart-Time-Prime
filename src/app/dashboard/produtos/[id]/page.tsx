@@ -104,8 +104,16 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             topic_type: topic.topic_type
           })))
 
-          // Adicionar novos tópicos que não existem nas especificações
-          const existingKeys = new Set(formData.specifications.map(s => s.key))
+          // Obter chaves dos tópicos da nova categoria
+          const newTopicKeys = new Set(topicsData.map(t => t.topic_key))
+          
+          // Manter apenas valores existentes que ainda existem na nova categoria
+          const existingSpecs = formData.specifications.filter(s => 
+            s.key && newTopicKeys.has(s.key)
+          )
+          
+          // Criar especificações para novos tópicos que não têm valor ainda
+          const existingKeys = new Set(existingSpecs.map(s => s.key))
           const newTopics = topicsData
             .filter(topic => !existingKeys.has(topic.topic_key))
             .map(topic => ({
@@ -113,14 +121,17 @@ export default function EditProductPage({ params }: EditProductPageProps) {
               value: topic.topic_type === 'rating' ? '0' : ''
             }))
 
-          if (newTopics.length > 0) {
-            setFormData(prev => ({
-              ...prev,
-              specifications: [...prev.specifications, ...newTopics]
-            }))
-          }
+          // Combinar especificações existentes com novas
+          const finalSpecs = [...existingSpecs, ...newTopics]
+
+          setFormData(prev => ({
+            ...prev,
+            specifications: finalSpecs
+          }))
         } else {
           setCategoryTopics([])
+          // Se não houver tópicos pré-definidos, manter especificações existentes
+          // (podem ser tópicos antigos que não foram migrados)
         }
       } catch (error) {
         console.error('Erro ao carregar tópicos da categoria:', error)
@@ -658,6 +669,81 @@ export default function EditProductPage({ params }: EditProductPageProps) {
               </div>
             </div>
 
+            {/* Tópicos de Classificação */}
+            {categoryTopics.length > 0 && (
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="text-2xl font-bold mb-4">Tópicos de Classificação</h2>
+                <p className="text-sm text-gray-600 mb-6">
+                  Preencha os valores dos tópicos pré-definidos para esta categoria. Para editar os tópicos, acesse a página "Tópicos de Classificação".
+                </p>
+                
+                <div className="space-y-4">
+                  {categoryTopics.map((topic) => {
+                    const spec = formData.specifications.find(s => s.key === topic.topic_key)
+                    const value = spec?.value || (topic.topic_type === 'rating' ? '0' : '')
+                    
+                    return (
+                      <div key={topic.topic_key} className="border rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="font-semibold text-gray-900">{topic.topic_label}</span>
+                          {topic.topic_type === 'rating' && (
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">
+                              Estrelas
+                            </span>
+                          )}
+                          {topic.topic_type === 'text' && (
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                              Texto
+                            </span>
+                          )}
+                        </div>
+                        
+                        {topic.topic_type === 'rating' ? (
+                          <div className="flex items-center gap-4">
+                            <StarRating
+                              value={parseInt(value) || 0}
+                              onChange={(rating) => {
+                                const newSpecs = [...formData.specifications]
+                                const existingIndex = newSpecs.findIndex(s => s.key === topic.topic_key)
+                                
+                                if (existingIndex >= 0) {
+                                  newSpecs[existingIndex].value = rating.toString()
+                                } else {
+                                  newSpecs.push({ key: topic.topic_key, value: rating.toString() })
+                                }
+                                
+                                setFormData({ ...formData, specifications: newSpecs })
+                              }}
+                              size={24}
+                            />
+                            <span className="text-sm text-gray-500">
+                              {parseInt(value) || 0} de 5 estrelas
+                            </span>
+                          </div>
+                        ) : (
+                          <Input
+                            placeholder={`Digite o valor para ${topic.topic_label.toLowerCase()}`}
+                            value={value}
+                            onChange={(e) => {
+                              const newSpecs = [...formData.specifications]
+                              const existingIndex = newSpecs.findIndex(s => s.key === topic.topic_key)
+                              
+                              if (existingIndex >= 0) {
+                                newSpecs[existingIndex].value = e.target.value
+                              } else {
+                                newSpecs.push({ key: topic.topic_key, value: e.target.value })
+                              }
+                              
+                              setFormData({ ...formData, specifications: newSpecs })
+                            }}
+                          />
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Cores */}
             <div className="bg-white rounded-lg shadow-md p-6">

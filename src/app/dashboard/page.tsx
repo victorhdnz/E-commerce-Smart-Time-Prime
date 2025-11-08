@@ -332,16 +332,17 @@ export default function DashboardPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
+                className="h-full"
               >
                 <Link href={action.href}>
-                  <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer group">
+                  <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer group h-full flex flex-col">
                     <div
-                      className={`${action.color} w-14 h-14 rounded-lg flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform`}
+                      className={`${action.color} w-14 h-14 rounded-lg flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform flex-shrink-0`}
                     >
                       <action.icon size={28} />
                     </div>
-                    <h3 className="text-xl font-bold mb-2">{action.title}</h3>
-                    <p className="text-gray-600">{action.description}</p>
+                    <h3 className="text-xl font-bold mb-2 flex-shrink-0">{action.title}</h3>
+                    <p className="text-gray-600 flex-1 leading-relaxed">{action.description}</p>
                   </div>
                 </Link>
               </motion.div>
