@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { createClient } from '@/lib/supabase/client'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
-import { Plus, Trash2, Edit, Save, X, Star } from 'lucide-react'
+import { Plus, Trash2, Edit, Save, X, Star, GripVertical } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 
 interface CategoryTopic {
   id: string
@@ -57,16 +58,30 @@ export default function CategoryTopicsPage() {
 
   const loadCategories = async () => {
     try {
-      const { data, error } = await supabase
+      // Carregar categorias dos produtos
+      const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select('category')
         .not('category', 'is', null)
         .neq('category', '')
 
-      if (error) throw error
+      if (productsError) throw productsError
 
-      const uniqueCategories = Array.from(new Set(data?.map(p => p.category).filter(Boolean) || [])) as string[]
-      setCategories(uniqueCategories.sort())
+      // Carregar categorias dos tópicos (mesmo que não existam produtos ainda)
+      const { data: topicsData, error: topicsError } = await supabase
+        .from('category_topics')
+        .select('category_name')
+
+      if (topicsError) throw topicsError
+
+      // Combinar ambas as listas
+      const productCategories = Array.from(new Set(productsData?.map(p => p.category).filter(Boolean) || [])) as string[]
+      const topicCategories = Array.from(new Set(topicsData?.map(t => t.category_name).filter(Boolean) || [])) as string[]
+      
+      // Unir e remover duplicatas
+      const allCategories = Array.from(new Set([...productCategories, ...topicCategories]))
+      
+      setCategories(allCategories.sort())
       setLoading(false)
     } catch (error: any) {
       console.error('Erro ao carregar categorias:', error)
@@ -201,7 +216,76 @@ export default function CategoryTopicsPage() {
     setSelectedCategory(categoryName)
     setShowNewCategoryInput(false)
     setNewCategoryName('')
-    toast.success(`Categoria "${categoryName}" criada com sucesso!`)
+    toast.success(`Categoria "${categoryName}" criada com sucesso! Agora você pode configurar os tópicos.`)
+  }
+
+  const handleDeleteCategory = async () => {
+    if (!selectedCategory) {
+      toast.error('Selecione uma categoria primeiro')
+      return
+    }
+
+    if (!confirm(`Tem certeza que deseja remover a categoria "${selectedCategory}" e todos os seus tópicos? Esta ação não pode ser desfeita.`)) {
+      return
+    }
+
+    try {
+      // Deletar todos os tópicos da categoria
+      const { error: topicsError } = await supabase
+        .from('category_topics')
+        .delete()
+        .eq('category_name', selectedCategory)
+
+      if (topicsError) throw topicsError
+
+      // Remover da lista de categorias
+      const updatedCategories = categories.filter(cat => cat !== selectedCategory)
+      setCategories(updatedCategories)
+      setSelectedCategory('')
+      setTopics([])
+      
+      toast.success(`Categoria "${selectedCategory}" e todos os seus tópicos foram removidos com sucesso!`)
+    } catch (error: any) {
+      console.error('Erro ao remover categoria:', error)
+      toast.error(error.message || 'Erro ao remover categoria')
+    }
+  }
+
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination || !selectedCategory) return
+
+    const items = Array.from(topics)
+    const [reorderedItem] = items.splice(result.source.index, 1)
+    items.splice(result.destination.index, 0, reorderedItem)
+
+    // Atualizar display_order de todos os itens
+    const updatedItems = items.map((item, index) => ({
+      ...item,
+      display_order: index
+    }))
+
+    setTopics(updatedItems)
+
+    // Salvar a nova ordem no banco
+    try {
+      const updates = updatedItems.map((item, index) =>
+        supabase
+          .from('category_topics')
+          .update({ display_order: index })
+          .eq('id', item.id)
+      )
+
+      await Promise.all(updates.map(update => update.then(({ error }) => {
+        if (error) throw error
+      })))
+
+      toast.success('Ordem dos tópicos atualizada!')
+    } catch (error: any) {
+      console.error('Erro ao salvar ordem dos tópicos:', error)
+      toast.error('Erro ao salvar ordem dos tópicos')
+      // Recarregar do banco em caso de erro
+      loadTopics()
+    }
   }
 
   const handleUpdateProductTopics = async () => {
@@ -322,6 +406,16 @@ export default function CategoryTopicsPage() {
                 <Plus size={18} className="mr-2" />
                 Criar Nova Categoria
               </Button>
+              {selectedCategory && (
+                <Button
+                  onClick={handleDeleteCategory}
+                  variant="outline"
+                  className="text-red-600 hover:text-red-700 hover:border-red-300"
+                >
+                  <Trash2 size={18} className="mr-2" />
+                  Deletar Categoria
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
@@ -437,70 +531,94 @@ export default function CategoryTopicsPage() {
                   <p className="text-sm mt-2">Adicione um tópico acima para começar.</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {topics.map((topic) => (
-                    <div
-                      key={topic.id}
-                      className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50"
-                    >
-                      {editingTopic?.id === topic.id ? (
-                        <>
-                          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Input
-                              value={editingTopic.topic_key}
-                              onChange={(e) => setEditingTopic({ ...editingTopic, topic_key: e.target.value })}
-                              placeholder="Chave"
-                            />
-                            <Input
-                              value={editingTopic.topic_label}
-                              onChange={(e) => setEditingTopic({ ...editingTopic, topic_label: e.target.value })}
-                              placeholder="Rótulo"
-                            />
-                            <select
-                              value={editingTopic.topic_type}
-                              onChange={(e) => setEditingTopic({ ...editingTopic, topic_type: e.target.value as 'rating' | 'text' })}
-                              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                            >
-                              <option value="rating">Estrelas</option>
-                              <option value="text">Texto</option>
-                            </select>
-                          </div>
-                          <Button onClick={handleSaveEdit} size="sm">
-                            <Save size={16} />
-                          </Button>
-                          <Button onClick={() => setEditingTopic(null)} variant="outline" size="sm">
-                            <X size={16} />
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold">{topic.topic_label}</span>
-                              <span className="text-xs text-gray-500">({topic.topic_key})</span>
-                              {topic.topic_type === 'rating' && (
-                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">
-                                  Estrelas
-                                </span>
-                              )}
-                              {topic.topic_type === 'text' && (
-                                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
-                                  Texto
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <Button onClick={() => handleEditTopic(topic)} variant="outline" size="sm">
-                            <Edit size={16} />
-                          </Button>
-                          <Button onClick={() => handleDeleteTopic(topic.id)} variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                            <Trash2 size={16} />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <DragDropContext onDragEnd={handleDragEnd}>
+                  <Droppable droppableId="topics">
+                    {(provided) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="space-y-3"
+                      >
+                        {topics.map((topic, index) => (
+                          <Draggable key={topic.id} draggableId={topic.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={`flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors ${
+                                  snapshot.isDragging ? 'bg-gray-100 shadow-lg' : ''
+                                }`}
+                              >
+                                {editingTopic?.id === topic.id ? (
+                                  <>
+                                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                      <Input
+                                        value={editingTopic.topic_key}
+                                        onChange={(e) => setEditingTopic({ ...editingTopic, topic_key: e.target.value })}
+                                        placeholder="Chave"
+                                      />
+                                      <Input
+                                        value={editingTopic.topic_label}
+                                        onChange={(e) => setEditingTopic({ ...editingTopic, topic_label: e.target.value })}
+                                        placeholder="Rótulo"
+                                      />
+                                      <select
+                                        value={editingTopic.topic_type}
+                                        onChange={(e) => setEditingTopic({ ...editingTopic, topic_type: e.target.value as 'rating' | 'text' })}
+                                        className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                                      >
+                                        <option value="rating">Estrelas</option>
+                                        <option value="text">Texto</option>
+                                      </select>
+                                    </div>
+                                    <Button onClick={handleSaveEdit} size="sm">
+                                      <Save size={16} />
+                                    </Button>
+                                    <Button onClick={() => setEditingTopic(null)} variant="outline" size="sm">
+                                      <X size={16} />
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div
+                                      {...provided.dragHandleProps}
+                                      className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                      <GripVertical size={20} />
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-semibold">{topic.topic_label}</span>
+                                        <span className="text-xs text-gray-500">({topic.topic_key})</span>
+                                        {topic.topic_type === 'rating' && (
+                                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">
+                                            Estrelas
+                                          </span>
+                                        )}
+                                        {topic.topic_type === 'text' && (
+                                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                                            Texto
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <Button onClick={() => handleEditTopic(topic)} variant="outline" size="sm">
+                                      <Edit size={16} />
+                                    </Button>
+                                    <Button onClick={() => handleDeleteTopic(topic.id)} variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                      <Trash2 size={16} />
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
               )}
             </motion.div>
           </>
