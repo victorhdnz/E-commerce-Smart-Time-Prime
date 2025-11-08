@@ -80,22 +80,8 @@ export function SectionTransition({
   const needsTopTransition = !isFirst && shouldApplyTransition(previousBgColor, backgroundColor)
   const needsBottomTransition = !isLast && shouldApplyTransition(backgroundColor, nextBgColor)
 
-  // Criar gradiente baseado nas cores - mais suave e visível
-  const createGradient = (fromColor: string, toColor: string, direction: 'top' | 'bottom'): string => {
-    const fromHex = normalizeColor(fromColor)
-    const toHex = normalizeColor(toColor)
-    
-    if (direction === 'top') {
-      // Gradiente superior: da cor anterior para a atual (mais suave)
-      return `linear-gradient(to bottom, ${fromHex}FF 0%, ${fromHex}CC 15%, ${fromHex}99 30%, ${fromHex}66 50%, ${toHex}66 70%, ${toHex}33 85%, transparent 100%)`
-    } else {
-      // Gradiente inferior: da cor atual para a próxima (mais suave)
-      return `linear-gradient(to top, ${toHex}FF 0%, ${toHex}CC 15%, ${toHex}99 30%, ${toHex}66 50%, ${fromHex}66 70%, ${fromHex}33 85%, transparent 100%)`
-    }
-  }
-
-  // Criar sombra sutil baseada no contraste
-  const createShadow = (fromColor: string, toColor: string): string => {
+  // Criar sombra 3D baseada no contraste - efeito de relevo
+  const create3DShadow = (fromColor: string, toColor: string, position: 'top' | 'bottom'): string => {
     const fromHex = normalizeColor(fromColor)
     const toHex = normalizeColor(toColor)
     
@@ -113,35 +99,38 @@ export function SectionTransition({
     const lum1 = getLuminance(fromHex)
     const lum2 = getLuminance(toHex)
     
-    // Se está indo de claro para escuro, sombra mais forte
-    if (lum1 > lum2) {
-      return `0 4px 12px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1)`
+    // Efeito de relevo 3D: sombra superior para criar profundidade
+    if (position === 'top') {
+      // Sombra superior - cria efeito de elevação da seção atual
+      if (lum1 > lum2) {
+        // De claro para escuro: sombra mais forte embaixo (seção atual parece elevada)
+        return `0 8px 16px -4px rgba(0,0,0,0.12), 0 4px 8px -2px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.1)`
+      } else {
+        // De escuro para claro: sombra mais sutil
+        return `0 6px 12px -4px rgba(0,0,0,0.1), 0 3px 6px -2px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.05)`
+      }
     } else {
-      // Se está indo de escuro para claro, sombra mais sutil
-      return `0 2px 8px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.05)`
+      // Sombra inferior - cria efeito de profundidade
+      if (lum1 > lum2) {
+        // De claro para escuro: sombra mais forte embaixo
+        return `0 -4px 12px -2px rgba(0,0,0,0.1), 0 -2px 6px -1px rgba(0,0,0,0.06)`
+      } else {
+        // De escuro para claro: sombra mais sutil
+        return `0 -3px 8px -2px rgba(0,0,0,0.08), 0 -1px 4px -1px rgba(0,0,0,0.04)`
+      }
     }
   }
 
   return (
     <div className={`relative ${className}`}>
-      {/* Gradiente superior (transição da seção anterior) */}
+      {/* Sombra superior - efeito de relevo 3D */}
       {needsTopTransition && previousBgColor && backgroundColor && (
-        <>
-          <div
-            className="absolute top-0 left-0 right-0 h-24 md:h-32 pointer-events-none z-10"
-            style={{
-              background: createGradient(previousBgColor, backgroundColor, 'top'),
-            }}
-          />
-          {/* Sombra sutil na borda superior */}
-          <div
-            className="absolute top-0 left-0 right-0 h-1 pointer-events-none z-20"
-            style={{
-              background: `linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 50%, transparent 100%)`,
-              boxShadow: createShadow(previousBgColor, backgroundColor),
-            }}
-          />
-        </>
+        <div
+          className="absolute top-0 left-0 right-0 h-2 pointer-events-none z-10"
+          style={{
+            boxShadow: create3DShadow(previousBgColor, backgroundColor, 'top'),
+          }}
+        />
       )}
 
       {/* Conteúdo da seção */}
@@ -149,24 +138,14 @@ export function SectionTransition({
         {children}
       </div>
 
-      {/* Gradiente inferior (transição para próxima seção) */}
+      {/* Sombra inferior - efeito de relevo 3D */}
       {needsBottomTransition && backgroundColor && nextBgColor && (
-        <>
-          <div
-            className="absolute bottom-0 left-0 right-0 h-24 md:h-32 pointer-events-none z-10"
-            style={{
-              background: createGradient(nextBgColor, backgroundColor, 'bottom'),
-            }}
-          />
-          {/* Sombra sutil na borda inferior */}
-          <div
-            className="absolute bottom-0 left-0 right-0 h-1 pointer-events-none z-20"
-            style={{
-              background: `linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 50%, transparent 100%)`,
-              boxShadow: createShadow(backgroundColor, nextBgColor),
-            }}
-          />
-        </>
+        <div
+          className="absolute bottom-0 left-0 right-0 h-2 pointer-events-none z-10"
+          style={{
+            boxShadow: create3DShadow(backgroundColor, nextBgColor, 'bottom'),
+          }}
+        />
       )}
     </div>
   )
