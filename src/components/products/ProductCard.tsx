@@ -8,7 +8,7 @@ import Image from 'next/image'
 import { Card } from '@/components/ui/Card'
 import { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
-import { ShoppingCart, Eye, MapPin, GitCompare, Package } from 'lucide-react'
+import { ShoppingCart, Eye, MapPin, GitCompare, Package, Gift } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useCart } from '@/hooks/useCart'
 import { useProductComparison } from '@/hooks/useProductComparison'
@@ -32,6 +32,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const [showAddressModal, setShowAddressModal] = useState(false)
   const [comboItems, setComboItems] = useState<Array<{ product: Product; quantity: number }>>([])
   const [isLoadingCombo, setIsLoadingCombo] = useState(false)
+  const [hasGift, setHasGift] = useState(false)
   const isInComparison = products.some(p => p.id === product.id)
   const isCombo = product.category === 'Combos'
   const supabase = createClient()
@@ -73,11 +74,34 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     }
   }
 
+  // Carregar brindes vinculados
+  const loadGifts = async () => {
+    try {
+      const { data: giftsData, error } = await supabase
+        .from('product_gifts')
+        .select('id')
+        .eq('product_id', product.id)
+        .eq('is_active', true)
+        .limit(1)
+
+      if (!error && giftsData && giftsData.length > 0) {
+        setHasGift(true)
+      } else {
+        setHasGift(false)
+      }
+    } catch (error) {
+      console.error('Erro ao verificar brindes:', error)
+      setHasGift(false)
+    }
+  }
+
   useEffect(() => {
     if (isCombo && product.slug) {
       loadComboData()
+    } else if (!isCombo && product.id) {
+      loadGifts()
     }
-  }, [isCombo, product.slug])
+  }, [isCombo, product.slug, product.id])
 
   // Atualizar quando usuário cadastrar endereço (via evento customizado)
   useEffect(() => {
@@ -137,6 +161,14 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
               <Package size={14} />
               Combo
+            </div>
+          )}
+          
+          {/* Brinde Badge - apenas se não for combo e tiver brinde */}
+          {!isCombo && hasGift && (
+            <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+              <Gift size={14} />
+              Brinde incluso
             </div>
           )}
 
@@ -326,25 +358,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                   router.push('/comparar')
                   return
                 }
-                // Verificar se produtos já na comparação são da mesma categoria
-                if (products.length > 0) {
-                  const firstProductCategory = products[0].category
-                  if (product.category !== firstProductCategory) {
-                    toast.error(
-                      `Não é possível comparar produtos de categorias diferentes.\n\nProdutos na comparação: ${firstProductCategory || 'Sem categoria'}\nProduto selecionado: ${product.category || 'Sem categoria'}\n\nPor favor, limpe a comparação atual ou selecione produtos da mesma categoria.`,
-                      {
-                        duration: 5000,
-                        style: {
-                          maxWidth: '500px',
-                          whiteSpace: 'pre-line',
-                        },
-                      }
-                    )
-                    return
-                  }
-                }
+                // Removida restrição de categoria - agora permite comparar produtos de categorias diferentes
                 if (!canAddMore()) {
-                  toast.error('Você pode comparar até 4 produtos. Limpe a comparação atual ou remova algum produto.')
+                  toast.error('Você pode comparar até 2 produtos. Limpe a comparação atual ou remova algum produto.')
                   return
                 }
                 addProduct(product)

@@ -119,26 +119,9 @@ export default function ComparePage() {
   }, [])
 
   const handleAddProductToComparison = (product: Product) => {
-    // Verificar se produtos já na comparação são da mesma categoria
-    if (products.length > 0) {
-      const firstProductCategory = products[0].category
-      if (product.category !== firstProductCategory) {
-        toast.error(
-          `Não é possível comparar produtos de categorias diferentes.\n\nProdutos na comparação: ${firstProductCategory || 'Sem categoria'}\nProduto selecionado: ${product.category || 'Sem categoria'}\n\nPor favor, limpe a comparação atual ou selecione produtos da mesma categoria.`,
-          {
-            duration: 5000,
-            style: {
-              maxWidth: '500px',
-              whiteSpace: 'pre-line',
-            },
-          }
-        )
-        return
-      }
-    }
-
+    // Removida restrição de categoria - agora permite comparar produtos de categorias diferentes
     if (!canAddMore()) {
-      toast.error('Você pode comparar até 4 produtos. Limpe a comparação atual ou remova algum produto.')
+      toast.error('Você pode comparar até 2 produtos. Limpe a comparação atual ou remova algum produto.')
       return
     }
 
@@ -286,9 +269,9 @@ export default function ComparePage() {
           <p className="text-sm text-gray-600 mb-4">
             {products.length > 0 && (
               <>
-                ⚠️ Você só pode comparar produtos da mesma categoria.
+                Você pode comparar até 2 produtos de qualquer categoria.
                 <br />
-                Categoria atual: <strong>{products[0].category || 'Sem categoria'}</strong>
+                {products.length} produto(s) na comparação
               </>
             )}
           </p>
@@ -346,7 +329,7 @@ export default function ComparePage() {
                     size="sm"
                     className="w-full"
                     onClick={() => handleAddProductToComparison(product)}
-                    disabled={!canAddMore() || (products.length > 0 && product.category !== products[0].category)}
+                    disabled={!canAddMore()}
                   >
                     <GitCompare size={16} className="mr-2" />
                     Adicionar

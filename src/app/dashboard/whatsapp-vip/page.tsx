@@ -27,6 +27,7 @@ export default function DashboardWhatsAppVipPage() {
   const [loading, setLoading] = useState(true)
   const [registrations, setRegistrations] = useState<WhatsAppVipRegistration[]>([])
   const [whatsappGroupLink, setWhatsappGroupLink] = useState<string>('')
+  const [requireRegistration, setRequireRegistration] = useState<boolean>(true)
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !isAdmin)) {
@@ -37,6 +38,7 @@ export default function DashboardWhatsAppVipPage() {
     if (isAuthenticated && isAdmin) {
       loadRegistrations()
       loadWhatsAppLink()
+      loadRequireRegistration()
     }
   }, [isAuthenticated, isAdmin, authLoading, router])
 
@@ -117,6 +119,45 @@ export default function DashboardWhatsAppVipPage() {
     }
   }
 
+  const loadRequireRegistration = async () => {
+    try {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'whatsapp_vip_require_registration')
+        .maybeSingle()
+
+      if (data?.value !== undefined) {
+        setRequireRegistration(typeof data.value === 'boolean' ? data.value : data.value === 'true' || data.value === true)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configuração de cadastro:', error)
+    }
+  }
+
+  const updateRequireRegistration = async (value: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'whatsapp_vip_require_registration',
+          value: value,
+          description: 'Exigir cadastro antes de acessar o grupo WhatsApp',
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'key'
+        })
+
+      if (error) throw error
+
+      setRequireRegistration(value)
+      toast.success(value ? 'Cadastro obrigatório ativado' : 'Cadastro obrigatório desativado')
+    } catch (error: any) {
+      console.error('Erro ao atualizar configuração:', error)
+      toast.error('Erro ao atualizar configuração')
+    }
+  }
+
   const updateWhatsAppLink = async () => {
     const newLink = prompt('Digite o link do grupo VIP do WhatsApp:', whatsappGroupLink || 'https://chat.whatsapp.com/EVPNbUpwsjW7FMlerVRDqo?mode=wwt')
     
@@ -172,39 +213,65 @@ export default function DashboardWhatsAppVipPage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-lg shadow-md p-6 mb-8"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold mb-2">Link do Grupo WhatsApp</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Configure o link do grupo VIP que será exibido após o cadastro
-              </p>
-              {whatsappGroupLink && (
-                <a
-                  href={whatsappGroupLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-green-600 hover:text-green-700 flex items-center gap-2 text-sm"
-                >
-                  <ExternalLink size={16} />
-                  {whatsappGroupLink}
-                </a>
-              )}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold mb-2">Link do Grupo WhatsApp</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Configure o link do grupo VIP que será exibido após o cadastro
+                </p>
+                {whatsappGroupLink && (
+                  <a
+                    href={whatsappGroupLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-green-600 hover:text-green-700 flex items-center gap-2 text-sm"
+                  >
+                    <ExternalLink size={16} />
+                    {whatsappGroupLink}
+                  </a>
+                )}
+              </div>
+              <button
+                onClick={updateWhatsAppLink}
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+              >
+                {whatsappGroupLink ? 'Editar Link' : 'Adicionar Link'}
+              </button>
             </div>
-            <button
-              onClick={updateWhatsAppLink}
-              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
-            >
-              {whatsappGroupLink ? 'Editar Link' : 'Adicionar Link'}
-            </button>
+
+            {/* Configuração de Cadastro */}
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold mb-2">Exigir Cadastro</h3>
+                  <p className="text-sm text-gray-600">
+                    {requireRegistration 
+                      ? 'O usuário precisa preencher o formulário antes de acessar o grupo'
+                      : 'O usuário pode acessar o grupo diretamente sem preencher o formulário'}
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={requireRegistration}
+                    onChange={(e) => updateRequireRegistration(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                </label>
+              </div>
+            </div>
+
+            {registrations.length > 0 && (
+              <div className="border-t pt-4">
+                <Button onClick={handleExportCSV} variant="outline" className="w-full">
+                  <Download size={18} className="mr-2" />
+                  Exportar CSV dos Registros
+                </Button>
+              </div>
+            )}
           </div>
-          {registrations.length > 0 && (
-            <div className="border-t pt-4 mt-4">
-              <Button onClick={handleExportCSV} variant="outline" className="w-full">
-                <Download size={18} className="mr-2" />
-                Exportar CSV dos Registros
-              </Button>
-            </div>
-          )}
         </motion.div>
 
         {/* Estatísticas */}

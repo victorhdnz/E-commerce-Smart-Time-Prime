@@ -7,12 +7,13 @@ import toast from 'react-hot-toast'
 
 interface WhatsAppVipRegistrationProps {
   whatsappGroupLink?: string
+  requireRegistration?: boolean
 }
 
 // Link do Grupo VIP do WhatsApp (configurado diretamente no código)
 const DEFAULT_WHATSAPP_GROUP_LINK = 'https://chat.whatsapp.com/EVPNbUpwsjW7FMlerVRDqo?mode=wwt'
 
-export function WhatsAppVipRegistration({ whatsappGroupLink }: WhatsAppVipRegistrationProps) {
+export function WhatsAppVipRegistration({ whatsappGroupLink, requireRegistration = true }: WhatsAppVipRegistrationProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -183,27 +184,41 @@ export function WhatsAppVipRegistration({ whatsappGroupLink }: WhatsAppVipRegist
 
               {/* Botão de Entrar no Grupo VIP */}
               {!success && (
-                <button
-                  type="submit"
-                  disabled={submitting || !isFormComplete}
-                  className={`w-full inline-flex items-center justify-center gap-3 py-4 rounded-lg font-semibold text-lg transition-colors ${
-                    submitting || !isFormComplete
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-green-500 hover:bg-green-600 text-white shadow-lg'
-                  }`}
-                >
-                  {submitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Registrando...
-                    </>
+                <>
+                  {requireRegistration ? (
+                    <button
+                      type="submit"
+                      disabled={submitting || !isFormComplete}
+                      className={`w-full inline-flex items-center justify-center gap-3 py-4 rounded-lg font-semibold text-lg transition-colors ${
+                        submitting || !isFormComplete
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : 'bg-green-500 hover:bg-green-600 text-white shadow-lg'
+                      }`}
+                    >
+                      {submitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                          Registrando...
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle size={24} />
+                          Entrar no Grupo VIP do WhatsApp
+                        </>
+                      )}
+                    </button>
                   ) : (
-                    <>
+                    <a
+                      href={groupLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-3 py-4 rounded-lg font-semibold text-lg bg-green-500 hover:bg-green-600 text-white shadow-lg transition-colors"
+                    >
                       <MessageCircle size={24} />
                       Entrar no Grupo VIP do WhatsApp
-                    </>
+                    </a>
                   )}
-                </button>
+                </>
               )}
 
 

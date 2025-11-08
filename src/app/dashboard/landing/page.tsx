@@ -10,11 +10,12 @@ import { VideoUploader } from '@/components/ui/VideoUploader'
 import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Save, Plus, Trash2 } from 'lucide-react'
+import { Save, Plus, Trash2, GripVertical } from 'lucide-react'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import { createClient } from '@/lib/supabase/client'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 
 interface LandingSettings {
   // Hero Section (expandido)
@@ -22,6 +23,8 @@ interface LandingSettings {
   hero_subtitle: string
   hero_badge_text: string
   hero_cta_text: string
+  hero_button_text: string
+  hero_button_link: string
   hero_bg_color: string
   hero_text_color: string
   hero_images: string[]
@@ -123,6 +126,7 @@ interface LandingSettings {
   hero_title_visible: boolean
   hero_subtitle_visible: boolean
   hero_cta_visible: boolean
+  hero_button_visible: boolean
   hero_timer_visible: boolean
   hero_banner_visible: boolean
   
@@ -186,12 +190,24 @@ export default function EditLandingPage() {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [sectionOrder, setSectionOrder] = useState<string[]>([
+    'hero',
+    'media_showcase',
+    'value_package',
+    'social_proof',
+    'story',
+    'whatsapp_vip',
+    'about_us',
+    'contact'
+  ])
   const [settings, setSettings] = useState<LandingSettings>({
     // Hero
     hero_title: '',
     hero_subtitle: '',
     hero_badge_text: '',
     hero_cta_text: '',
+    hero_button_text: '',
+    hero_button_link: '',
     hero_bg_color: '#000000',
     hero_text_color: '#FFFFFF',
     hero_images: [],
@@ -320,6 +336,7 @@ export default function EditLandingPage() {
     hero_title_visible: true,
     hero_subtitle_visible: true,
     hero_cta_visible: true,
+    hero_button_visible: true,
     hero_timer_visible: true,
     hero_banner_visible: true,
     // Media Showcase Section
@@ -368,7 +385,132 @@ export default function EditLandingPage() {
     }
 
     loadSettings()
+    loadSectionOrder()
   }, [isAuthenticated, isEditor, authLoading])
+
+  const loadSectionOrder = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'landing_section_order')
+        .maybeSingle()
+
+      if (error) throw error
+
+      if (data?.value && Array.isArray(data.value)) {
+        setSectionOrder(data.value)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar ordem das seções:', error)
+    }
+  }
+
+  const saveSectionOrder = async (newOrder: string[]) => {
+    try {
+      await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'landing_section_order',
+          value: newOrder,
+          description: 'Ordem das seções da landing page',
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'key'
+        })
+    } catch (error) {
+      console.error('Erro ao salvar ordem das seções:', error)
+      toast.error('Erro ao salvar ordem das seções')
+    }
+  }
+
+  // Mapeamento de seções
+  const sectionMap: Record<string, { label: string; key: string; elements: Array<{ key: string; label: string }> }> = {
+    hero: {
+      label: 'Hero (Banner de Abertura)',
+      key: 'section_hero_visible',
+      elements: [
+        { key: 'hero_banner_visible', label: 'Banner' },
+        { key: 'hero_badge_visible', label: 'Badge' },
+        { key: 'hero_title_visible', label: 'Título' },
+        { key: 'hero_subtitle_visible', label: 'Subtítulo' },
+        { key: 'hero_timer_visible', label: 'Cronômetro' },
+        { key: 'hero_cta_visible', label: 'Botão CTA' },
+        { key: 'hero_button_visible', label: 'Botão Secundário' },
+      ]
+    },
+    media_showcase: {
+      label: 'Fotos e Vídeo do Produto',
+      key: 'section_media_showcase_visible',
+      elements: [
+        { key: 'media_showcase_title_visible', label: 'Título' },
+        { key: 'media_showcase_features_visible', label: 'Características' },
+        { key: 'media_showcase_images_visible', label: 'Imagens' },
+        { key: 'media_showcase_video_visible', label: 'Vídeo' },
+      ]
+    },
+    value_package: {
+      label: 'Você Leva Tudo Isso',
+      key: 'section_value_package_visible',
+      elements: [
+        { key: 'value_package_title_visible', label: 'Título' },
+        { key: 'value_package_image_visible', label: 'Imagem' },
+        { key: 'value_package_items_visible', label: 'Lista de Itens' },
+        { key: 'value_package_prices_visible', label: 'Preços' },
+        { key: 'value_package_timer_visible', label: 'Cronômetro' },
+        { key: 'value_package_button_visible', label: 'Botão' },
+      ]
+    },
+    social_proof: {
+      label: 'Avaliações de Clientes',
+      key: 'section_social_proof_visible',
+      elements: [
+        { key: 'social_proof_title_visible', label: 'Título' },
+        { key: 'social_proof_reviews_visible', label: 'Avaliações' },
+      ]
+    },
+    story: {
+      label: 'Nossa História',
+      key: 'section_story_visible',
+      elements: [
+        { key: 'story_title_visible', label: 'Título' },
+        { key: 'story_content_visible', label: 'Conteúdo' },
+        { key: 'story_images_visible', label: 'Imagens' },
+      ]
+    },
+    about_us: {
+      label: 'Sobre a Smart Time Prime',
+      key: 'section_about_us_visible',
+      elements: [
+        { key: 'about_us_title_visible', label: 'Título' },
+        { key: 'about_us_description_visible', label: 'Descrição' },
+        { key: 'about_us_images_visible', label: 'Imagens' },
+        { key: 'about_us_location_visible', label: 'Localização' },
+      ]
+    },
+    whatsapp_vip: {
+      label: 'Grupo VIP do WhatsApp',
+      key: 'section_whatsapp_vip_visible',
+      elements: []
+    },
+    contact: {
+      label: 'Contato',
+      key: 'section_contact_visible',
+      elements: []
+    }
+  }
+
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return
+
+    const items = Array.from(sectionOrder)
+    const [reorderedItem] = items.splice(result.source.index, 1)
+    items.splice(result.destination.index, 0, reorderedItem)
+
+    setSectionOrder(items)
+    saveSectionOrder(items)
+    toast.success('Ordem das seções atualizada!')
+  }
 
   const loadSettings = async () => {
     try {
@@ -389,6 +531,8 @@ export default function EditLandingPage() {
           hero_subtitle: savedSettings.hero_subtitle || '',
           hero_badge_text: savedSettings.hero_badge_text || '',
           hero_cta_text: savedSettings.hero_cta_text || '',
+          hero_button_text: savedSettings.hero_button_text || '',
+          hero_button_link: savedSettings.hero_button_link || '',
           hero_bg_color: savedSettings.hero_bg_color || '#000000',
           hero_text_color: savedSettings.hero_text_color || '#FFFFFF',
           hero_images: Array.isArray(savedSettings.hero_images) ? savedSettings.hero_images : [],
@@ -543,6 +687,7 @@ export default function EditLandingPage() {
           hero_title_visible: savedSettings.hero_title_visible !== undefined ? savedSettings.hero_title_visible : true,
           hero_subtitle_visible: savedSettings.hero_subtitle_visible !== undefined ? savedSettings.hero_subtitle_visible : true,
           hero_cta_visible: savedSettings.hero_cta_visible !== undefined ? savedSettings.hero_cta_visible : true,
+          hero_button_visible: savedSettings.hero_button_visible !== undefined ? savedSettings.hero_button_visible : true,
           hero_timer_visible: savedSettings.hero_timer_visible !== undefined ? savedSettings.hero_timer_visible : true,
           hero_banner_visible: savedSettings.hero_banner_visible !== undefined ? savedSettings.hero_banner_visible : true,
           // Media Showcase Section
@@ -841,6 +986,7 @@ export default function EditLandingPage() {
                     { key: 'hero_subtitle_visible', label: 'Subtítulo' },
                     { key: 'hero_timer_visible', label: 'Cronômetro' },
                     { key: 'hero_cta_visible', label: 'Botão CTA' },
+                    { key: 'hero_button_visible', label: 'Botão Secundário' },
                   ].map((element) => (
                     <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
                       <input
@@ -897,6 +1043,24 @@ export default function EditLandingPage() {
                   setSettings({ ...settings, hero_cta_text: e.target.value })
                 }
                 placeholder="💬 QUERO MEU SÉRIE 11 AGORA!"
+              />
+
+              <Input
+                label="Texto do Botão Secundário (Hero)"
+                value={settings.hero_button_text}
+                onChange={(e) =>
+                  setSettings({ ...settings, hero_button_text: e.target.value })
+                }
+                placeholder="Ex: Saiba Mais"
+              />
+
+              <Input
+                label="Link do Botão Secundário (Hero)"
+                value={settings.hero_button_link}
+                onChange={(e) =>
+                  setSettings({ ...settings, hero_button_link: e.target.value })
+                }
+                placeholder="Ex: /produtos ou https://exemplo.com"
               />
 
               {/* Banners Carrossel (1920x650) */}
@@ -1595,255 +1759,70 @@ export default function EditLandingPage() {
             transition={{ delay: 0.75 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">👁️ Visibilidade das Seções</h2>
+            <h2 className="text-2xl font-bold mb-6">👁️ Visibilidade e Ordem das Seções</h2>
             <p className="text-sm text-gray-600 mb-6">
-              Controle quais seções da página inicial devem ser exibidas.
+              Controle quais seções da página inicial devem ser exibidas e arraste para reordenar.
             </p>
             
-            <div className="space-y-4">
-              {/* Hero Section */}
-              <div className="border rounded-lg p-4">
-                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
-                  <input
-                    type="checkbox"
-                    checked={settings.section_hero_visible ?? true}
-                    onChange={(e) =>
-                      setSettings({ ...settings, section_hero_visible: e.target.checked })
-                    }
-                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                  />
-                  <span className="text-sm font-bold">Hero (Banner de Abertura)</span>
-                </label>
-                {settings.section_hero_visible && (
-                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
-                    {[
-                      { key: 'hero_banner_visible', label: 'Banner' },
-                      { key: 'hero_badge_visible', label: 'Badge' },
-                      { key: 'hero_title_visible', label: 'Título' },
-                      { key: 'hero_subtitle_visible', label: 'Subtítulo' },
-                      { key: 'hero_timer_visible', label: 'Cronômetro' },
-                      { key: 'hero_cta_visible', label: 'Botão CTA' },
-                    ].map((element) => (
-                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                        <input
-                          type="checkbox"
-                          checked={(settings as any)[element.key] ?? true}
-                          onChange={(e) =>
-                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                          }
-                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                        />
-                        <span>{element.label}</span>
-                      </label>
-                    ))}
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="sections">
+                {(provided) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                    {sectionOrder.map((sectionId, index) => {
+                      const section = sectionMap[sectionId]
+                      if (!section) return null
+                      
+                      return (
+                        <Draggable key={sectionId} draggableId={sectionId} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`border rounded-lg p-4 ${snapshot.isDragging ? 'bg-gray-100 shadow-lg' : 'bg-white'}`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing">
+                                  <GripVertical size={20} className="text-gray-400" />
+                                </div>
+                                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3 flex-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={(settings as any)[section.key] ?? true}
+                                    onChange={(e) =>
+                                      setSettings({ ...settings, [section.key]: e.target.checked } as any)
+                                    }
+                                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                                  />
+                                  <span className="text-sm font-bold">{section.label}</span>
+                                </label>
+                              </div>
+                              {(settings as any)[section.key] && section.elements.length > 0 && (
+                                <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200 mt-2">
+                                  {section.elements.map((element) => (
+                                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                                      <input
+                                        type="checkbox"
+                                        checked={(settings as any)[element.key] ?? true}
+                                        onChange={(e) =>
+                                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                                        }
+                                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                                      />
+                                      <span>{element.label}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </Draggable>
+                      )
+                    })}
+                    {provided.placeholder}
                   </div>
                 )}
-              </div>
-
-              {/* Media Showcase Section */}
-              <div className="border rounded-lg p-4">
-                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
-                  <input
-                    type="checkbox"
-                    checked={settings.section_media_showcase_visible ?? true}
-                    onChange={(e) =>
-                      setSettings({ ...settings, section_media_showcase_visible: e.target.checked })
-                    }
-                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                  />
-                  <span className="text-sm font-bold">Fotos e Vídeo do Produto</span>
-                </label>
-                {settings.section_media_showcase_visible && (
-                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
-                    {[
-                      { key: 'media_showcase_title_visible', label: 'Título' },
-                      { key: 'media_showcase_features_visible', label: 'Características' },
-                      { key: 'media_showcase_images_visible', label: 'Imagens' },
-                      { key: 'media_showcase_video_visible', label: 'Vídeo' },
-                    ].map((element) => (
-                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                        <input
-                          type="checkbox"
-                          checked={(settings as any)[element.key] ?? true}
-                          onChange={(e) =>
-                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                          }
-                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                        />
-                        <span>{element.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Value Package Section */}
-              <div className="border rounded-lg p-4">
-                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
-                  <input
-                    type="checkbox"
-                    checked={settings.section_value_package_visible ?? true}
-                    onChange={(e) =>
-                      setSettings({ ...settings, section_value_package_visible: e.target.checked })
-                    }
-                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                  />
-                  <span className="text-sm font-bold">Você Leva Tudo Isso</span>
-                </label>
-                {settings.section_value_package_visible && (
-                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
-                    {[
-                      { key: 'value_package_title_visible', label: 'Título' },
-                      { key: 'value_package_image_visible', label: 'Imagem' },
-                      { key: 'value_package_items_visible', label: 'Lista de Itens' },
-                      { key: 'value_package_prices_visible', label: 'Preços' },
-                      { key: 'value_package_timer_visible', label: 'Cronômetro' },
-                      { key: 'value_package_button_visible', label: 'Botão' },
-                    ].map((element) => (
-                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                        <input
-                          type="checkbox"
-                          checked={(settings as any)[element.key] ?? true}
-                          onChange={(e) =>
-                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                          }
-                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                        />
-                        <span>{element.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Social Proof Section */}
-              <div className="border rounded-lg p-4">
-                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
-                  <input
-                    type="checkbox"
-                    checked={settings.section_social_proof_visible ?? true}
-                    onChange={(e) =>
-                      setSettings({ ...settings, section_social_proof_visible: e.target.checked })
-                    }
-                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                  />
-                  <span className="text-sm font-bold">Avaliações de Clientes</span>
-                </label>
-                {settings.section_social_proof_visible && (
-                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
-                    {[
-                      { key: 'social_proof_title_visible', label: 'Título' },
-                      { key: 'social_proof_reviews_visible', label: 'Avaliações' },
-                    ].map((element) => (
-                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                        <input
-                          type="checkbox"
-                          checked={(settings as any)[element.key] ?? true}
-                          onChange={(e) =>
-                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                          }
-                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                        />
-                        <span>{element.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Story Section */}
-              <div className="border rounded-lg p-4">
-                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
-                  <input
-                    type="checkbox"
-                    checked={settings.section_story_visible ?? true}
-                    onChange={(e) =>
-                      setSettings({ ...settings, section_story_visible: e.target.checked })
-                    }
-                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                  />
-                  <span className="text-sm font-bold">Nossa História</span>
-                </label>
-                {settings.section_story_visible && (
-                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
-                    {[
-                      { key: 'story_title_visible', label: 'Título' },
-                      { key: 'story_content_visible', label: 'Conteúdo' },
-                      { key: 'story_images_visible', label: 'Imagens' },
-                    ].map((element) => (
-                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                        <input
-                          type="checkbox"
-                          checked={(settings as any)[element.key] ?? true}
-                          onChange={(e) =>
-                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                          }
-                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                        />
-                        <span>{element.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* About Us Section */}
-              <div className="border rounded-lg p-4">
-                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3">
-                  <input
-                    type="checkbox"
-                    checked={settings.section_about_us_visible ?? true}
-                    onChange={(e) =>
-                      setSettings({ ...settings, section_about_us_visible: e.target.checked })
-                    }
-                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                  />
-                  <span className="text-sm font-bold">Sobre a Smart Time Prime</span>
-                </label>
-                {settings.section_about_us_visible && (
-                  <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200">
-                    {[
-                      { key: 'about_us_title_visible', label: 'Título' },
-                      { key: 'about_us_description_visible', label: 'Descrição' },
-                      { key: 'about_us_images_visible', label: 'Imagens' },
-                      { key: 'about_us_location_visible', label: 'Localização' },
-                    ].map((element) => (
-                      <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                        <input
-                          type="checkbox"
-                          checked={(settings as any)[element.key] ?? true}
-                          onChange={(e) =>
-                            setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                          }
-                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                        />
-                        <span>{element.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Outras seções simples */}
-              <div className="space-y-2">
-                {[
-                  { key: 'section_whatsapp_vip_visible', label: 'Grupo VIP do WhatsApp' },
-                  { key: 'section_contact_visible', label: 'Contato' },
-                ].map((section) => (
-                  <label key={section.key} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50">
-                    <input
-                      type="checkbox"
-                      checked={(settings as any)[section.key] ?? true}
-                      onChange={(e) =>
-                        setSettings({ ...settings, [section.key]: e.target.checked } as any)
-                      }
-                      className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                    />
-                    <span className="text-sm font-medium">{section.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+              </Droppable>
+            </DragDropContext>
           </motion.div>
 
           {/* Social Proof Section */}

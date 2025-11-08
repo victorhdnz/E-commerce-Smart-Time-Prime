@@ -9,6 +9,7 @@ import { ExitPopup } from '@/components/landing/ExitPopup'
 import { ValuePackage } from '@/components/landing/ValuePackage'
 import { StorySection } from '@/components/landing/StorySection'
 import { AboutUsSection } from '@/components/landing/AboutUsSection'
+import { ContactSection } from '@/components/landing/ContactSection'
 import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
 import { createServerClient } from '@/lib/supabase/server'
 
@@ -36,9 +37,11 @@ async function getPageData() {
         )
       `).eq('is_featured', true).eq('is_active', true).limit(6),
       supabase.from('site_settings').select('value').eq('key', 'whatsapp_vip_group_link').maybeSingle(),
+      supabase.from('site_settings').select('value').eq('key', 'whatsapp_vip_require_registration').maybeSingle(),
+      supabase.from('site_settings').select('value').eq('key', 'landing_section_order').maybeSingle(),
     ])
 
-    const [settingsResult, mapsLinkResult, productsResult, reviewsResult, faqsResult, layoutResult, combosResult, whatsappLinkResult] = results
+    const [settingsResult, mapsLinkResult, productsResult, reviewsResult, faqsResult, layoutResult, combosResult, whatsappLinkResult, requireRegistrationResult, sectionOrderResult] = results
 
     // Extrair link do WhatsApp (pode vir do banco ou usar o padrão do código)
     const whatsappLinkData = whatsappLinkResult.status === 'fulfilled' ? whatsappLinkResult.value.data : null
@@ -66,6 +69,22 @@ async function getPageData() {
     const mapsLinkData = mapsLinkResult.status === 'fulfilled' ? mapsLinkResult.value.data : null
     const mapsLink = mapsLinkData?.contact_maps_link || 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6'
 
+    // Extrair configuração de cadastro obrigatório
+    const requireRegistrationData = requireRegistrationResult.status === 'fulfilled' ? requireRegistrationResult.value.data : null
+    let requireRegistration: boolean = true // Padrão: exigir cadastro
+    if (requireRegistrationData?.value !== undefined) {
+      requireRegistration = typeof requireRegistrationData.value === 'boolean' 
+        ? requireRegistrationData.value 
+        : requireRegistrationData.value === 'true' || requireRegistrationData.value === true
+    }
+
+    // Extrair ordem das seções
+    const sectionOrderData = sectionOrderResult.status === 'fulfilled' ? sectionOrderResult.value.data : null
+    let sectionOrder: string[] = ['hero', 'media_showcase', 'value_package', 'social_proof', 'story', 'whatsapp_vip', 'about_us', 'contact']
+    if (sectionOrderData?.value && Array.isArray(sectionOrderData.value)) {
+      sectionOrder = sectionOrderData.value
+    }
+
     return {
       siteSettings: settingsResult.status === 'fulfilled' ? settingsResult.value.data : null,
       products: productsResult.status === 'fulfilled' ? productsResult.value.data || [] : [],
@@ -74,6 +93,8 @@ async function getPageData() {
       activeLayout: layoutResult.status === 'fulfilled' ? layoutResult.value.data : null,
       combos: combosResult.status === 'fulfilled' ? combosResult.value.data || [] : [],
       whatsappVipLink: whatsappLink,
+      whatsappVipRequireRegistration: requireRegistration,
+      sectionOrder: sectionOrder,
       mapsLink: mapsLink,
     }
   } catch (error) {
@@ -81,6 +102,8 @@ async function getPageData() {
     // Retornar dados padrão mesmo com erro
     return {
       siteSettings: null,
+      whatsappVipRequireRegistration: true,
+      sectionOrder: ['hero', 'media_showcase', 'value_package', 'social_proof', 'story', 'whatsapp_vip', 'about_us', 'contact'],
       products: [],
       reviews: [],
       faqs: [],
@@ -91,7 +114,7 @@ async function getPageData() {
 }
 
 export default async function Home() {
-  const { siteSettings, products, reviews, faqs, activeLayout, combos, whatsappVipLink, mapsLink } = await getPageData()
+  const { siteSettings, products, reviews, faqs, activeLayout, combos, whatsappVipLink, whatsappVipRequireRegistration, sectionOrder, mapsLink } = await getPageData()
 
   // Extrair configurações do formato key-value
   const settings = siteSettings?.value || {}
@@ -222,6 +245,134 @@ export default async function Home() {
   // Usar avaliações do dashboard se existirem, senão usar reviews do banco
   const reviewsToUse = dashboardReviews.length > 0 ? dashboardReviews : (reviews || [])
 
+  // Mapeamento de seções para componentes
+  const sectionComponents: Record<string, JSX.Element | null> = {
+    hero: settings.section_hero_visible !== false ? (
+      <HeroSection 
+        key="hero"
+        title={settings.hero_title || '🖤 SMART TIME PRIME — BLACK FRIDAY UBERLÂNDIA'}
+        subtitle={settings.hero_subtitle || '🚨 A BLACK FRIDAY CHEGOU!\nSmartwatch Série 11 com até 50% OFF + 4 BRINDES EXCLUSIVOS\n📦 Entrega em até 24h direto do Shopping Planalto – Uberlândia/MG'}
+        badgeText={settings.hero_badge_text}
+        ctaText={settings.hero_cta_text || '💬 QUERO MEU SÉRIE 11 AGORA!'}
+        heroButtonText={settings.hero_button_text}
+        heroButtonLink={settings.hero_button_link}
+        backgroundColor={settings.hero_bg_color || '#000000'}
+        textColor={settings.hero_text_color || '#FFFFFF'}
+        heroImages={heroImages}
+        heroBanner={settings.hero_banner}
+        heroBanners={heroBanners}
+        timerEndDate={timerEnabled ? timerEndDate : undefined}
+        elementVisibility={{
+          banner: settings.hero_banner_visible !== false,
+          badge: settings.hero_badge_visible !== false,
+          title: settings.hero_title_visible !== false,
+          subtitle: settings.hero_subtitle_visible !== false,
+          timer: settings.hero_timer_visible !== false,
+          cta: settings.hero_cta_visible !== false,
+          heroButton: settings.hero_button_visible !== false,
+        }}
+      />
+    ) : null,
+    media_showcase: settings.section_media_showcase_visible !== false ? (
+      <MediaShowcase 
+        key="media_showcase"
+        title={settings.media_showcase_title || '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO'}
+        images={showcaseImages}
+        videoUrl={settings.showcase_video_url || ""}
+        features={mediaFeatures}
+        elementVisibility={{
+          title: settings.media_showcase_title_visible !== false,
+          features: settings.media_showcase_features_visible !== false,
+          images: settings.media_showcase_images_visible !== false,
+          video: settings.media_showcase_video_visible !== false,
+        }}
+      />
+    ) : null,
+    value_package: settings.section_value_package_visible !== false ? (
+      <ValuePackage
+        key="value_package"
+        title={settings.value_package_title}
+        image={settings.value_package_image}
+        items={valuePackageItems}
+        totalPrice={settings.value_package_total_price}
+        salePrice={settings.value_package_sale_price}
+        deliveryText={settings.value_package_delivery_text}
+        buttonText={settings.value_package_button_text}
+        buttonLink={settings.value_package_button_link}
+        endDate={timerEnabled ? timerEndDate : undefined}
+        elementVisibility={{
+          title: settings.value_package_title_visible !== false,
+          image: settings.value_package_image_visible !== false,
+          items: settings.value_package_items_visible !== false,
+          prices: settings.value_package_prices_visible !== false,
+          timer: settings.value_package_timer_visible !== false,
+          button: settings.value_package_button_visible !== false,
+        }}
+      />
+    ) : null,
+    social_proof: settings.section_social_proof_visible !== false ? (
+      <SocialProof
+        key="social_proof"
+        reviews={reviewsToUse as any}
+        title={settings.social_proof_title}
+        googleIcon={settings.social_proof_google_icon !== undefined ? settings.social_proof_google_icon : true}
+        allowPhotos={settings.social_proof_allow_photos !== undefined ? settings.social_proof_allow_photos : true}
+        testimonialCount={settings.social_proof_testimonial_count}
+        elementVisibility={{
+          title: settings.social_proof_title_visible !== false,
+          reviews: settings.social_proof_reviews_visible !== false,
+        }}
+      />
+    ) : null,
+    story: settings.section_story_visible !== false ? (
+      <StorySection
+        key="story"
+        title={settings.story_title}
+        content={settings.story_content}
+        images={settings.story_images}
+        image={settings.story_image}
+        foundersNames={settings.story_founders_names}
+        elementVisibility={{
+          title: settings.story_title_visible !== false,
+          content: settings.story_content_visible !== false,
+          images: settings.story_images_visible !== false,
+        }}
+      />
+    ) : null,
+    whatsapp_vip: settings.section_whatsapp_vip_visible !== false ? (
+      <WhatsAppVipRegistration 
+        key="whatsapp_vip"
+        whatsappGroupLink={whatsappVipLink} 
+        requireRegistration={whatsappVipRequireRegistration}
+      />
+    ) : null,
+    about_us: settings.section_about_us_visible !== false ? (
+      <AboutUsSection
+        key="about_us"
+        title={settings.about_us_title}
+        description={settings.about_us_description}
+        storeImages={settings.about_us_store_images}
+        storeImage={settings.about_us_store_image}
+        foundersNames={settings.about_us_founders_names}
+        location={settings.about_us_location}
+        elementVisibility={{
+          title: settings.about_us_title_visible !== false,
+          description: settings.about_us_description_visible !== false,
+          images: settings.about_us_images_visible !== false,
+          location: settings.about_us_location_visible !== false,
+        }}
+      />
+    ) : null,
+    contact: settings.section_contact_visible !== false ? (
+      <ContactSection
+        key="contact"
+        title={settings.contact_title}
+        description={settings.contact_description}
+        mapsLink={mapsLink}
+      />
+    ) : null,
+  }
+
   return (
     <div>
       {/* Auth Redirect Handler */}
@@ -251,208 +402,8 @@ export default async function Home() {
         />
       )}
 
-      {/* 2. Hero Section (Banner de Abertura) */}
-      {settings.section_hero_visible !== false && (
-        <HeroSection 
-          title={settings.hero_title || '🖤 SMART TIME PRIME — BLACK FRIDAY UBERLÂNDIA'}
-          subtitle={settings.hero_subtitle || '🚨 A BLACK FRIDAY CHEGOU!\nSmartwatch Série 11 com até 50% OFF + 4 BRINDES EXCLUSIVOS\n📦 Entrega em até 24h direto do Shopping Planalto – Uberlândia/MG'}
-          badgeText={settings.hero_badge_text}
-          ctaText={settings.hero_cta_text || '💬 QUERO MEU SÉRIE 11 AGORA!'}
-          backgroundColor={settings.hero_bg_color || '#000000'}
-          textColor={settings.hero_text_color || '#FFFFFF'}
-          heroImages={heroImages}
-          heroBanner={settings.hero_banner}
-          heroBanners={heroBanners}
-          timerEndDate={timerEnabled ? timerEndDate : undefined}
-          elementVisibility={{
-            banner: settings.hero_banner_visible !== false,
-            badge: settings.hero_badge_visible !== false,
-            title: settings.hero_title_visible !== false,
-            subtitle: settings.hero_subtitle_visible !== false,
-            timer: settings.hero_timer_visible !== false,
-            cta: settings.hero_cta_visible !== false,
-          }}
-        />
-      )}
-
-      {/* 3. Product Photos and Video (Fotos e Vídeo do Produto) */}
-      {settings.section_media_showcase_visible !== false && (
-        <MediaShowcase 
-          title={settings.media_showcase_title || '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO'}
-          images={showcaseImages}
-          videoUrl={settings.showcase_video_url || ""}
-          features={mediaFeatures}
-          elementVisibility={{
-            title: settings.media_showcase_title_visible !== false,
-            features: settings.media_showcase_features_visible !== false,
-            images: settings.media_showcase_images_visible !== false,
-            video: settings.media_showcase_video_visible !== false,
-          }}
-        />
-      )}
-
-      {/* 4. Value Package (Pacote de Valor - Oferta + Benefícios) */}
-      {settings.section_value_package_visible !== false && (
-        <ValuePackage
-          title={settings.value_package_title}
-          image={settings.value_package_image}
-          items={valuePackageItems}
-          totalPrice={settings.value_package_total_price}
-          salePrice={settings.value_package_sale_price}
-          deliveryText={settings.value_package_delivery_text}
-          buttonText={settings.value_package_button_text}
-          buttonLink={settings.value_package_button_link}
-          endDate={timerEnabled ? timerEndDate : undefined}
-          elementVisibility={{
-            title: settings.value_package_title_visible !== false,
-            image: settings.value_package_image_visible !== false,
-            items: settings.value_package_items_visible !== false,
-            prices: settings.value_package_prices_visible !== false,
-            timer: settings.value_package_timer_visible !== false,
-            button: settings.value_package_button_visible !== false,
-          }}
-        />
-      )}
-
-      {/* 5. Customer Reviews (Avaliações de Clientes) */}
-      {settings.section_social_proof_visible !== false && (
-        <SocialProof
-          reviews={reviewsToUse as any}
-          title={settings.social_proof_title}
-          googleIcon={settings.social_proof_google_icon !== undefined ? settings.social_proof_google_icon : true}
-          allowPhotos={settings.social_proof_allow_photos !== undefined ? settings.social_proof_allow_photos : true}
-          testimonialCount={settings.social_proof_testimonial_count}
-          elementVisibility={{
-            title: settings.social_proof_title_visible !== false,
-            reviews: settings.social_proof_reviews_visible !== false,
-          }}
-        />
-      )}
-
-      {/* 6. Story (História) */}
-      {settings.section_story_visible !== false && (
-        <StorySection
-          title={settings.story_title}
-          content={settings.story_content}
-          images={settings.story_images}
-          image={settings.story_image} // Fallback para compatibilidade
-          foundersNames={settings.story_founders_names}
-          elementVisibility={{
-            title: settings.story_title_visible !== false,
-            content: settings.story_content_visible !== false,
-            images: settings.story_images_visible !== false,
-          }}
-        />
-      )}
-
-      {/* 7. WhatsApp Group (Grupo do WhatsApp) */}
-      {settings.section_whatsapp_vip_visible !== false && (
-        <WhatsAppVipRegistration whatsappGroupLink={whatsappVipLink} />
-      )}
-
-      {/* 8. About Us (Quem Somos - apresentação da loja) */}
-      {settings.section_about_us_visible !== false && (
-        <AboutUsSection
-          title={settings.about_us_title}
-          description={settings.about_us_description}
-          storeImages={settings.about_us_store_images}
-          storeImage={settings.about_us_store_image} // Fallback para compatibilidade
-          foundersNames={settings.about_us_founders_names}
-          location={settings.about_us_location}
-          elementVisibility={{
-            title: settings.about_us_title_visible !== false,
-            description: settings.about_us_description_visible !== false,
-            images: settings.about_us_images_visible !== false,
-            location: settings.about_us_location_visible !== false,
-          }}
-        />
-      )}
-
-      {/* 9. Footer (Rodapé) - Manter seção de contato existente */}
-      {settings.section_contact_visible !== false && (
-        <section id="contato" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              {settings.contact_title || 'Entre em Contato'}
-            </h2>
-            <p className="text-xl text-gray-600">
-              {settings.contact_description || 'Estamos aqui para ajudar você!'}
-            </p>
-            <div className="w-24 h-1 bg-black mx-auto mt-6" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {/* WhatsApp */}
-            <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow">
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-2">WhatsApp</h3>
-              <p className="text-gray-600 mb-4">Fale conosco agora</p>
-              <a href="https://wa.me/5534984136291" target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600 font-semibold">
-                (34) 98413-6291
-              </a>
-            </div>
-
-            {/* Email */}
-            <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow">
-              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-2">Email</h3>
-              <p className="text-gray-600 mb-4">Envie uma mensagem</p>
-              <a href="mailto:contato@smarttimeprime.com.br" className="text-blue-500 hover:text-blue-600 font-semibold text-xs block">
-                contato@smarttimeprime.com.br
-              </a>
-            </div>
-
-            {/* Horário */}
-            <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow">
-              <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-2">Horário</h3>
-              <p className="text-gray-600 text-sm mb-1">Segunda a Sexta</p>
-              <p className="font-semibold">09:00 - 20:00</p>
-              <p className="text-gray-600 text-sm mt-2">Sábado</p>
-              <p className="font-semibold">09:00 - 19:00</p>
-              <p className="text-gray-600 text-sm mt-2">Domingo</p>
-              <p className="font-semibold text-red-600">Fechado</p>
-            </div>
-
-            {/* Localização */}
-            <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow">
-              <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold mb-2">Localização</h3>
-              <p className="text-gray-700 text-sm font-medium mb-1">Av. Imbaúba, 1676</p>
-              <p className="text-gray-600 text-xs mb-1">Chácaras Tubalina e Quartel</p>
-              <p className="text-gray-700 text-sm font-medium">Uberlândia - MG</p>
-              <p className="text-gray-600 text-xs">CEP: 38413-108</p>
-              <a 
-                href={mapsLink || 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6'} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-block mt-3 text-red-500 hover:text-red-600 font-semibold text-xs"
-              >
-                Ver no Mapa →
-              </a>
-            </div>
-          </div>
-        </div>
-        </section>
-      )}
+      {/* Renderizar seções na ordem definida */}
+      {sectionOrder.map((sectionId) => sectionComponents[sectionId]).filter(Boolean)}
 
       {/* FAQ Section */}
       <FAQSection faqs={faqsToShow as any} />

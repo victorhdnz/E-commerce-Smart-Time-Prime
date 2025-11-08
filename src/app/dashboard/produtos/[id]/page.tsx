@@ -25,6 +25,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [existingCategories, setExistingCategories] = useState<string[]>([])
+  const [categoryTopics, setCategoryTopics] = useState<Array<{ topic_key: string; topic_label: string; topic_type: 'rating' | 'text' }>>([])
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -47,6 +49,76 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   })
 
   const supabase = createClient()
+
+  // Carregar categorias existentes
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('category')
+          .not('category', 'is', null)
+          .neq('category', '')
+
+        if (!error && data) {
+          const uniqueCategories = [...new Set(data.map((p: any) => p.category).filter(Boolean))] as string[]
+          setExistingCategories(uniqueCategories.sort())
+        }
+      } catch (error) {
+        console.error('Erro ao carregar categorias:', error)
+      }
+    }
+
+    loadCategories()
+  }, [])
+
+  // Carregar tópicos pré-definidos da categoria quando categoria mudar
+  useEffect(() => {
+    const loadCategoryTopics = async () => {
+      if (!formData.category) {
+        setCategoryTopics([])
+        return
+      }
+
+      try {
+        const { data: topicsData, error: topicsError } = await supabase
+          .from('category_topics')
+          .select('*')
+          .eq('category_name', formData.category)
+          .order('display_order', { ascending: true })
+
+        if (!topicsError && topicsData && topicsData.length > 0) {
+          setCategoryTopics(topicsData.map(topic => ({
+            topic_key: topic.topic_key,
+            topic_label: topic.topic_label,
+            topic_type: topic.topic_type
+          })))
+
+          // Adicionar novos tópicos que não existem nas especificações
+          const existingKeys = new Set(formData.specifications.map(s => s.key))
+          const newTopics = topicsData
+            .filter(topic => !existingKeys.has(topic.topic_key))
+            .map(topic => ({
+              key: topic.topic_key,
+              value: topic.topic_type === 'rating' ? '0' : ''
+            }))
+
+          if (newTopics.length > 0) {
+            setFormData(prev => ({
+              ...prev,
+              specifications: [...prev.specifications, ...newTopics]
+            }))
+          }
+        } else {
+          setCategoryTopics([])
+        }
+      } catch (error) {
+        console.error('Erro ao carregar tópicos da categoria:', error)
+      }
+    }
+
+    loadCategoryTopics()
+  }, [formData.category])
 
   useEffect(() => {
     let mounted = true
@@ -318,12 +390,38 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                   Este código ficará visível apenas no dashboard para referência interna
                 </p>
 
-                <Input
-                  label="Categoria"
-                  value={formData.category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                  placeholder="Ex: Relógios, Acessórios"
-                />
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Categoria *
+                  </label>
+                  <select
+                    value={formData.category}
+                    onChange={async (e) => {
+                      const selectedCategory = e.target.value
+                      if (selectedCategory === '__new__') {
+                        const newCategory = prompt('Digite o nome da nova categoria:')
+                        if (newCategory && newCategory.trim()) {
+                          const trimmedCategory = newCategory.trim()
+                          // Adicionar a nova categoria à lista
+                          setExistingCategories(prev => [...prev, trimmedCategory].sort())
+                          // Definir a categoria no formData
+                          setFormData(prev => ({ ...prev, category: trimmedCategory }))
+                        }
+                      } else {
+                        setFormData(prev => ({ ...prev, category: selectedCategory }))
+                      }
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                  >
+                    <option value="">Selecione ou crie uma categoria</option>
+                    {existingCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                    <option value="__new__">+ Criar nova categoria</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -567,58 +665,112 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Especificações Técnicas</h2>
-                <Button
-                  onClick={() => {
-                    setFormData({
-                      ...formData,
-                      specifications: [...formData.specifications, { key: '', value: '' }],
-                    })
-                  }}
-                  size="sm"
-                >
-                  <Plus size={16} className="mr-2" />
-                  Adicionar
-                </Button>
+                {categoryTopics.length === 0 && (
+                  <Button
+                    onClick={() => {
+                      setFormData({
+                        ...formData,
+                        specifications: [...formData.specifications, { key: '', value: '' }],
+                      })
+                    }}
+                    size="sm"
+                  >
+                    <Plus size={16} className="mr-2" />
+                    Adicionar
+                  </Button>
+                )}
               </div>
 
+              {categoryTopics.length > 0 && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Nota:</strong> Esta categoria possui tópicos pré-definidos. Você pode apenas editar os valores (estrelas ou texto), não pode adicionar novos tópicos.
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-3">
-                {formData.specifications.map((spec, index) => (
-                  <div key={index} className="flex gap-3">
-                    <Input
-                      placeholder="Característica"
-                      value={spec.key}
-                      onChange={(e) => {
-                        const newSpecs = [...formData.specifications]
-                        newSpecs[index].key = e.target.value
-                        setFormData({ ...formData, specifications: newSpecs })
-                      }}
-                    />
-                    <div className="flex items-center gap-4">
-                      <StarRating
-                        value={spec.value ? parseInt(spec.value) || 0 : 0}
-                        onChange={(rating) => {
-                          const newSpecs = [...formData.specifications]
-                          newSpecs[index].value = rating.toString()
-                          setFormData({ ...formData, specifications: newSpecs })
-                        }}
-                        size={20}
-                      />
+                {formData.specifications.map((spec, index) => {
+                  const topic = categoryTopics.find(t => t.topic_key === spec.key)
+                  const isRating = topic?.topic_type === 'rating' || (!topic && spec.value && parseInt(spec.value) >= 1 && parseInt(spec.value) <= 5)
+                  
+                  return (
+                    <div key={index} className="flex gap-3 items-center">
+                      <div className="flex-1">
+                        {topic ? (
+                          <div className="px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                            <span className="font-semibold text-gray-700">{topic.topic_label}</span>
+                            {topic.topic_type === 'rating' && (
+                              <span className="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">
+                                Estrelas
+                              </span>
+                            )}
+                            {topic.topic_type === 'text' && (
+                              <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                                Texto
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <Input
+                            placeholder="Característica"
+                            value={spec.key}
+                            onChange={(e) => {
+                              const newSpecs = [...formData.specifications]
+                              newSpecs[index].key = e.target.value
+                              setFormData({ ...formData, specifications: newSpecs })
+                            }}
+                            disabled={categoryTopics.length > 0}
+                          />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        {isRating ? (
+                          <div className="flex items-center gap-4">
+                            <StarRating
+                              value={spec.value ? parseInt(spec.value) || 0 : 0}
+                              onChange={(rating) => {
+                                const newSpecs = [...formData.specifications]
+                                newSpecs[index].value = rating.toString()
+                                setFormData({ ...formData, specifications: newSpecs })
+                              }}
+                              size={20}
+                            />
+                          </div>
+                        ) : (
+                          <Input
+                            placeholder="Valor (texto)"
+                            value={spec.value}
+                            onChange={(e) => {
+                              const newSpecs = [...formData.specifications]
+                              newSpecs[index].value = e.target.value
+                              setFormData({ ...formData, specifications: newSpecs })
+                            }}
+                          />
+                        )}
+                      </div>
+                      {categoryTopics.length === 0 && (
+                        <button
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              specifications: formData.specifications.filter((_, i) => i !== index),
+                            })
+                          }}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
                     </div>
-                    <button
-                      onClick={() => {
-                        setFormData({
-                          ...formData,
-                          specifications: formData.specifications.filter((_, i) => i !== index),
-                        })
-                      }}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                ))}
+                  )
+                })}
                 {formData.specifications.length === 0 && (
-                  <p className="text-center text-gray-500 py-4">Nenhuma especificação adicionada</p>
+                  <p className="text-center text-gray-500 py-4">
+                    {categoryTopics.length > 0 
+                      ? 'Nenhum tópico pré-definido para esta categoria. Configure os tópicos na página "Tópicos de Classificação".'
+                      : 'Nenhuma especificação adicionada'}
+                  </p>
                 )}
               </div>
             </div>

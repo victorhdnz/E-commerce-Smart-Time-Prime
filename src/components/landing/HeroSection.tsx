@@ -13,6 +13,8 @@ interface HeroSectionProps {
   subtitle?: string
   ctaText?: string
   ctaLink?: string
+  heroButtonText?: string
+  heroButtonLink?: string
   images?: string[]
   backgroundColor?: string
   textColor?: string
@@ -29,6 +31,7 @@ interface HeroSectionProps {
     subtitle?: boolean
     timer?: boolean
     cta?: boolean
+    heroButton?: boolean
   }
 }
 
@@ -37,6 +40,8 @@ export const HeroSection = ({
   subtitle = '🚨 A BLACK FRIDAY CHEGOU!\nSmartwatch Série 11 com até 50% OFF + 4 BRINDES EXCLUSIVOS\n📦 Entrega em até 24h direto do Shopping Planalto – Uberlândia/MG',
   ctaText = '💬 QUERO MEU SÉRIE 11 AGORA!',
   ctaLink,
+  heroButtonText,
+  heroButtonLink,
   images = [],
   backgroundColor, // Será ignorado, sempre usará preto
   textColor, // Será ignorado, sempre usará branco
@@ -53,6 +58,7 @@ export const HeroSection = ({
     subtitle: true,
     timer: true,
     cta: true,
+    heroButton: true,
   },
 }: HeroSectionProps) => {
   // Cores fixas da empresa (preto e branco)
@@ -316,7 +322,7 @@ export const HeroSection = ({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1, duration: 0.6 }}
-                  className="flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20"
+                  className="flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full px-4 py-2 border border-white/20 relative z-20"
                 >
                   <span className="text-xl">⏰</span>
                   <span className="font-semibold">
@@ -347,6 +353,23 @@ export const HeroSection = ({
                 )}
               </motion.div>
             )}
+
+            {/* Hero Button (Novo botão editável) */}
+            {elementVisibility.heroButton && heroButtonText && heroButtonLink && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.4, duration: 0.8 }}
+                className="mt-6"
+              >
+                <Link href={heroButtonLink} target={heroButtonLink.startsWith('http') ? '_blank' : '_self'} rel={heroButtonLink.startsWith('http') ? 'noopener noreferrer' : undefined}>
+                  <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-black transition-all">
+                    {heroButtonText}
+                    <ChevronRight className="ml-2" size={20} />
+                  </Button>
+                </Link>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </div>
@@ -356,7 +379,7 @@ export const HeroSection = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 1 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30"
       >
         <motion.div
           animate={{ y: [0, 10, 0] }}

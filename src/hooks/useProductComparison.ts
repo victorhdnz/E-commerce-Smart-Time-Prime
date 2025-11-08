@@ -23,8 +23,8 @@ export const useProductComparison = create<ComparisonStore>()(
         if (products.find(p => p.id === product.id)) {
           return
         }
-        // Limitar a 4 produtos
-        if (products.length >= 4) {
+        // Limitar a 2 produtos
+        if (products.length >= 2) {
           return
         }
         set({ products: [...products, product] })
@@ -39,7 +39,7 @@ export const useProductComparison = create<ComparisonStore>()(
       },
       
       canAddMore: () => {
-        return get().products.length < 4
+        return get().products.length < 2
       },
     }),
     {

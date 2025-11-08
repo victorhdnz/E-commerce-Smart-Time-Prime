@@ -282,6 +282,12 @@ export default function DashboardProductsPage() {
                 Brindes & Combos
               </Button>
             </Link>
+            <Link href="/dashboard/produtos/topicos-classificacao">
+              <Button variant="outline" size="lg">
+                <Star size={20} className="mr-2" />
+                Tópicos de Classificação
+              </Button>
+            </Link>
             <Link href="/dashboard/produtos/novo">
               <Button size="lg">
                 <Plus size={20} className="mr-2" />
@@ -529,12 +535,22 @@ export default function DashboardProductsPage() {
                             <Eye size={18} />
                           )}
                         </button>
-                        <Link
-                          href={`/dashboard/produtos/${product.id}`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Edit size={18} />
-                        </Link>
+                        {product.category === 'Combos' ? (
+                          <Link
+                            href="/dashboard/produtos/brindes-combos"
+                            className="text-blue-600 hover:text-blue-900"
+                            title="Editar combo (redireciona para página de combos)"
+                          >
+                            <Edit size={18} />
+                          </Link>
+                        ) : (
+                          <Link
+                            href={`/dashboard/produtos/${product.id}`}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <Edit size={18} />
+                          </Link>
+                        )}
                         <button
                           onClick={() => deleteProduct(product.id)}
                           className="text-red-600 hover:text-red-900"
