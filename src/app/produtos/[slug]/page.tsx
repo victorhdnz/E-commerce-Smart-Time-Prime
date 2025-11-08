@@ -370,11 +370,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         <div>
           <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
 
-          {product.short_description && (
-            <p className="text-lg text-gray-600 mb-6">
-              {product.short_description}
-            </p>
-          )}
 
           {/* Price */}
           <div className="mb-6">
@@ -933,12 +928,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 <div className="flex items-center">
                   <RefreshCw size={20} className="mr-3 flex-shrink-0" />
                   <span>{product.benefits.returns.text || 'Troca grátis em 7 dias'}</span>
-                </div>
-              )}
-              {product.benefits.gift?.enabled && (
-                <div className="flex items-center">
-                  <span className="text-xl mr-3 flex-shrink-0">🎁</span>
-                  <span>{product.benefits.gift.text || 'Brinde exclusivo incluído'}</span>
                 </div>
               )}
             </div>

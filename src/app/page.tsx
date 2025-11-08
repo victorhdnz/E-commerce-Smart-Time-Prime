@@ -10,6 +10,7 @@ import { ValuePackage } from '@/components/landing/ValuePackage'
 import { StorySection } from '@/components/landing/StorySection'
 import { AboutUsSection } from '@/components/landing/AboutUsSection'
 import { ContactSection } from '@/components/landing/ContactSection'
+import { SectionTransition } from '@/components/landing/SectionTransition'
 import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
 import { createServerClient } from '@/lib/supabase/server'
 
@@ -402,30 +403,113 @@ export default async function Home() {
         />
       )}
 
-      {/* Renderizar seções na ordem definida */}
-      {sectionOrder.map((sectionId) => sectionComponents[sectionId]).filter(Boolean)}
+      {/* Renderizar seções na ordem definida com transições */}
+      {(() => {
+        // Filtrar apenas seções visíveis
+        const visibleSections = sectionOrder.filter(id => sectionComponents[id] !== null)
+        
+        // Obter cores de fundo das seções
+        const getSectionBgColor = (id: string): string | undefined => {
+          switch (id) {
+            case 'hero':
+              return settings.hero_bg_color || '#000000'
+            case 'media_showcase':
+              return settings.media_showcase_bg_color || '#ffffff'
+            case 'value_package':
+              return settings.value_package_bg_color || '#f5f5f5'
+            case 'social_proof':
+              return settings.social_proof_bg_color || '#ffffff'
+            case 'story':
+              return settings.story_bg_color || '#ffffff'
+            case 'whatsapp_vip':
+              return settings.whatsapp_vip_bg_color || '#000000'
+            case 'about_us':
+              return settings.about_us_bg_color || '#ffffff'
+            case 'contact':
+              return settings.contact_bg_color || '#f5f5f5'
+            default:
+              return undefined
+          }
+        }
+
+        return visibleSections.map((sectionId, index) => {
+          const section = sectionComponents[sectionId]
+          if (!section) return null
+
+          const isFirst = index === 0
+          const isLast = index === visibleSections.length - 1
+          const previousSectionId = index > 0 ? visibleSections[index - 1] : null
+          const nextSectionId = index < visibleSections.length - 1 ? visibleSections[index + 1] : null
+
+          return (
+            <SectionTransition
+              key={sectionId}
+              backgroundColor={getSectionBgColor(sectionId)}
+              previousBgColor={previousSectionId ? getSectionBgColor(previousSectionId) : undefined}
+              nextBgColor={nextSectionId ? getSectionBgColor(nextSectionId) : undefined}
+              isFirst={isFirst}
+              isLast={isLast}
+            >
+              {section}
+            </SectionTransition>
+          )
+        })
+      })()}
 
       {/* FAQ Section */}
-      <FAQSection faqs={faqsToShow as any} />
-
+      <SectionTransition
+        backgroundColor="#ffffff"
+        previousBgColor={sectionOrder.length > 0 ? (() => {
+          const lastSectionId = sectionOrder[sectionOrder.length - 1]
+          switch (lastSectionId) {
+            case 'hero':
+              return settings.hero_bg_color || '#000000'
+            case 'media_showcase':
+              return settings.media_showcase_bg_color || '#ffffff'
+            case 'value_package':
+              return settings.value_package_bg_color || '#f5f5f5'
+            case 'social_proof':
+              return settings.social_proof_bg_color || '#ffffff'
+            case 'story':
+              return settings.story_bg_color || '#ffffff'
+            case 'whatsapp_vip':
+              return settings.whatsapp_vip_bg_color || '#000000'
+            case 'about_us':
+              return settings.about_us_bg_color || '#ffffff'
+            case 'contact':
+              return settings.contact_bg_color || '#f5f5f5'
+            default:
+              return '#ffffff'
+          }
+        })() : '#ffffff'}
+        nextBgColor="#000000"
+      >
+        <FAQSection faqs={faqsToShow as any} />
+      </SectionTransition>
 
       {/* CTA Section */}
-      <section className="py-20 bg-black text-white mb-0">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Encontre o Produto Perfeito para Você
-          </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Explore nossa coleção completa com produtos exclusivos e de qualidade premium.
-          </p>
-          <a
-            href="/produtos"
-            className="inline-block bg-white text-black px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors"
-          >
-            Ver Todos os Produtos
-          </a>
-        </div>
-      </section>
+      <SectionTransition
+        backgroundColor="#000000"
+        previousBgColor="#ffffff"
+        isLast={true}
+      >
+        <section className="py-20 bg-black text-white mb-0">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Encontre o Produto Perfeito para Você
+            </h2>
+            <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
+              Explore nossa coleção completa com produtos exclusivos e de qualidade premium.
+            </p>
+            <a
+              href="/produtos"
+              className="inline-block bg-white text-black px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors"
+            >
+              Ver Todos os Produtos
+            </a>
+          </div>
+        </section>
+      </SectionTransition>
     </div>
   )
 }
