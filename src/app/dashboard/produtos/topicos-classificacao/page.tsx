@@ -33,6 +33,8 @@ export default function CategoryTopicsPage() {
   const [topics, setTopics] = useState<CategoryTopic[]>([])
   const [editingTopic, setEditingTopic] = useState<CategoryTopic | null>(null)
   const [newTopic, setNewTopic] = useState({ key: '', label: '', type: 'rating' as 'rating' | 'text' })
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -179,6 +181,29 @@ export default function CategoryTopicsPage() {
     }
   }
 
+  const handleCreateCategory = () => {
+    if (!newCategoryName.trim()) {
+      toast.error('Digite o nome da categoria')
+      return
+    }
+
+    const categoryName = newCategoryName.trim()
+    
+    // Verificar se a categoria já existe
+    if (categories.includes(categoryName)) {
+      toast.error('Esta categoria já existe')
+      return
+    }
+
+    // Adicionar à lista de categorias
+    const updatedCategories = [...categories, categoryName].sort()
+    setCategories(updatedCategories)
+    setSelectedCategory(categoryName)
+    setShowNewCategoryInput(false)
+    setNewCategoryName('')
+    toast.success(`Categoria "${categoryName}" criada com sucesso!`)
+  }
+
   const handleUpdateProductTopics = async () => {
     if (!selectedCategory) {
       toast.error('Selecione uma categoria primeiro')
@@ -266,40 +291,82 @@ export default function CategoryTopicsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-lg shadow-md p-6 mb-8"
         >
-          <h2 className="text-2xl font-bold mb-4">Selecionar Categoria</h2>
-          <div className="flex gap-4 items-end">
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-2">
-                Categoria
-              </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-              >
-                <option value="">Selecione uma categoria</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {selectedCategory && (
+          <h2 className="text-2xl font-bold mb-4">Selecionar ou Criar Categoria</h2>
+          
+          {!showNewCategoryInput ? (
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-2">
+                  Categoria
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                >
+                  <option value="">Selecione uma categoria</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <Button
                 onClick={() => {
-                  const newCategory = prompt('Digite o nome da nova categoria:')
-                  if (newCategory && newCategory.trim()) {
-                    setCategories([...categories, newCategory.trim()].sort())
-                    setSelectedCategory(newCategory.trim())
-                  }
+                  setShowNewCategoryInput(true)
+                  setNewCategoryName('')
                 }}
                 variant="outline"
               >
-                + Nova Categoria
+                <Plus size={18} className="mr-2" />
+                Criar Nova Categoria
               </Button>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex gap-4 items-end">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium mb-2">
+                    Nome da Nova Categoria
+                  </label>
+                  <Input
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Ex: Relógios Inteligentes"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newCategoryName.trim()) {
+                        handleCreateCategory()
+                      } else if (e.key === 'Escape') {
+                        setShowNewCategoryInput(false)
+                        setNewCategoryName('')
+                      }
+                    }}
+                  />
+                </div>
+                <Button
+                  onClick={handleCreateCategory}
+                  disabled={!newCategoryName.trim()}
+                >
+                  <Save size={18} className="mr-2" />
+                  Criar
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowNewCategoryInput(false)
+                    setNewCategoryName('')
+                  }}
+                  variant="outline"
+                >
+                  <X size={18} className="mr-2" />
+                  Cancelar
+                </Button>
+              </div>
+              <p className="text-sm text-gray-500">
+                Digite o nome da nova categoria e clique em "Criar". Você poderá configurar os tópicos em seguida.
+              </p>
+            </div>
+          )}
         </motion.div>
 
         {selectedCategory && (

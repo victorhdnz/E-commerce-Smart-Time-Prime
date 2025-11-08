@@ -360,41 +360,65 @@ export const HeroSection = ({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.4, duration: 0.8 }}
-                className="mt-6"
+                className="mt-6 relative z-10"
               >
                 <Link href={heroButtonLink} target={heroButtonLink.startsWith('http') ? '_blank' : '_self'} rel={heroButtonLink.startsWith('http') ? 'noopener noreferrer' : undefined}>
-                  <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-black transition-all">
+                  <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-black transition-all relative z-10">
                     {heroButtonText}
                     <ChevronRight className="ml-2" size={20} />
                   </Button>
                 </Link>
+                
+                {/* Scroll Indicator - abaixo do botão */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.6, duration: 1 }}
+                  className="absolute top-full left-1/2 transform -translate-x-1/2 mt-6 z-50"
+                >
+                  <motion.div
+                    animate={{ y: [0, 10, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="w-6 h-10 border-2 rounded-full flex items-start justify-center p-2"
+                    style={{ borderColor: finalTextColor }}
+                  >
+                    <motion.div
+                      animate={{ opacity: [0, 1, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ backgroundColor: finalTextColor }}
+                    />
+                  </motion.div>
+                </motion.div>
+              </motion.div>
+            )}
+            
+            {/* Scroll Indicator - apenas se não houver botão hero */}
+            {(!elementVisibility.heroButton || !heroButtonText || !heroButtonLink) && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1, duration: 1 }}
+                className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50"
+              >
+                <motion.div
+                  animate={{ y: [0, 10, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="w-6 h-10 border-2 rounded-full flex items-start justify-center p-2"
+                  style={{ borderColor: finalTextColor }}
+                >
+                  <motion.div
+                    animate={{ opacity: [0, 1, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: finalTextColor }}
+                  />
+                </motion.div>
               </motion.div>
             )}
           </motion.div>
         </div>
       </div>
-
-      {/* Scroll Indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 1 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30"
-      >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-6 h-10 border-2 rounded-full flex items-start justify-center p-2"
-          style={{ borderColor: finalTextColor }}
-        >
-          <motion.div
-            animate={{ opacity: [0, 1, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: finalTextColor }}
-          />
-        </motion.div>
-      </motion.div>
     </section>
   )
 }

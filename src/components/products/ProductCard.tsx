@@ -302,8 +302,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         )}
 
         {/* Price */}
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
             {needsAddress && !locationLoading ? (
               <button
                 onClick={(e) => {
@@ -318,29 +318,29 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 className="relative cursor-pointer group w-full text-left"
               >
                 {/* Preço embaçado com olho */}
-                <div className="flex items-center gap-2">
-                  <Eye size={20} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
-                  <span className="text-xl font-bold text-gray-400 blur-sm select-none">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Eye size={18} className="text-gray-500 group-hover:text-blue-600 transition-colors flex-shrink-0" />
+                  <span className="text-lg sm:text-xl font-bold text-gray-400 blur-sm select-none truncate">
                     {formatCurrency(product.local_price || product.national_price)}
                   </span>
-                  <MapPin size={16} className="text-gray-400" />
+                  <MapPin size={14} className="text-gray-400 flex-shrink-0" />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   Clique para revelar o preço
                 </p>
               </button>
             ) : (
-              <div>
+              <div className="min-w-0">
                 {/* Preço revelado - sem olho */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-lg sm:text-xl font-bold truncate">
                     {locationLoading 
                       ? 'Carregando...' 
                       : formatCurrency(getProductPrice(product, isUberlandia))}
                   </span>
                 </div>
                 {!needsAddress && !locationLoading && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1 truncate">
                     {isUberlandia ? '💚 Preço Local (Uberlândia)' : '🌐 Preço Nacional'}
                   </p>
                 )}
@@ -348,7 +348,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             )}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 sm:gap-2 flex-shrink-0">
             <button
               onClick={(e) => {
                 e.preventDefault()
@@ -367,22 +367,22 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 toast.success('Produto adicionado à comparação!')
               }}
               disabled={!canAddMore() && !isInComparison}
-              className={`p-2 rounded-full transition-all hover:scale-110 disabled:bg-gray-400 disabled:cursor-not-allowed ${
+              className={`p-1.5 sm:p-2 rounded-full transition-all hover:scale-110 disabled:bg-gray-400 disabled:cursor-not-allowed flex-shrink-0 ${
                 isInComparison 
                   ? 'bg-green-600 text-white' 
                   : 'bg-gray-700 text-white hover:bg-gray-600'
               }`}
               title={isInComparison ? 'Ver comparação' : canAddMore() ? 'Adicionar à comparação' : 'Limite de comparação atingido'}
             >
-              <GitCompare size={18} />
+              <GitCompare size={16} className="sm:w-[18px] sm:h-[18px]" />
             </button>
             <button
               onClick={handleAddToCart}
               disabled={product.stock === 0}
-              className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all hover:scale-110 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="p-1.5 sm:p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all hover:scale-110 disabled:bg-gray-400 disabled:cursor-not-allowed flex-shrink-0"
               title={product.stock === 0 ? 'Produto esgotado' : 'Adicionar ao carrinho'}
             >
-              <ShoppingCart size={20} />
+              <ShoppingCart size={16} className="sm:w-[20px] sm:h-[20px]" />
             </button>
           </div>
         </div>
