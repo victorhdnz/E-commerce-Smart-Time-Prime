@@ -67,7 +67,6 @@ interface LandingSettings {
   value_package_sale_price: string
   value_package_delivery_text: string
   value_package_button_text: string
-  value_package_button_link: string // Novo campo para link de redirecionamento
   value_package_whatsapp_number: string
   value_package_discount_text: string
   value_package_promotion_text: string
@@ -257,7 +256,6 @@ export default function EditLandingPage() {
           value_package_sale_price: 'R$ 299',
           value_package_delivery_text: '📍 Entrega em até 24h para Uberlândia',
           value_package_button_text: '💬 GARANTIR MEU DESCONTO AGORA!',
-          value_package_button_link: 'https://chat.whatsapp.com/EVPNbUpwsjW7FMlerVRDqo?mode=wwt', // Link padrão do WhatsApp VIP
           value_package_whatsapp_number: '5534984136291',
     value_package_discount_text: '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
     value_package_promotion_text: '🕒 Promoção válida enquanto durar o estoque.',
@@ -514,42 +512,16 @@ export default function EditLandingPage() {
 
   const loadSettings = async () => {
     try {
-      // Buscar configurações gerais e link do WhatsApp VIP
-      const [generalResult, whatsappResult] = await Promise.all([
-        supabase
-          .from('site_settings')
-          .select('value')
-          .eq('key', 'general')
-          .maybeSingle(),
-        supabase
-          .from('site_settings')
-          .select('value')
-          .eq('key', 'whatsapp_vip_group_link')
-          .maybeSingle()
-      ])
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'general')
+        .maybeSingle()
 
-      const { data: generalData, error: generalError } = generalResult
-      const { data: whatsappData, error: whatsappError } = whatsappResult
+      if (error) throw error
 
-      if (generalError) throw generalError
-
-      // Extrair link do WhatsApp VIP
-      let whatsappVipLink = 'https://chat.whatsapp.com/EVPNbUpwsjW7FMlerVRDqo?mode=wwt' // Link padrão
-      if (whatsappData?.value) {
-        if (typeof whatsappData.value === 'string') {
-          try {
-            const parsed = JSON.parse(whatsappData.value)
-            whatsappVipLink = typeof parsed === 'string' ? parsed : whatsappVipLink
-          } catch {
-            whatsappVipLink = whatsappData.value
-          }
-        } else if (typeof whatsappData.value === 'object') {
-          whatsappVipLink = String(whatsappData.value)
-        }
-      }
-
-      if (generalData?.value) {
-        const savedSettings = generalData.value as any
+      if (data?.value) {
+        const savedSettings = data.value as any
         // Usar valores padrão apenas se não houver no banco
         setSettings({
           // Hero
@@ -632,8 +604,6 @@ export default function EditLandingPage() {
           value_package_sale_price: savedSettings.value_package_sale_price || 'R$ 299',
           value_package_delivery_text: savedSettings.value_package_delivery_text || '📍 Entrega em até 24h para Uberlândia',
           value_package_button_text: savedSettings.value_package_button_text || '💬 GARANTIR MEU DESCONTO AGORA!',
-          // Preencher com link do WhatsApp VIP se estiver vazio
-          value_package_button_link: savedSettings.value_package_button_link || whatsappVipLink,
           value_package_whatsapp_number: savedSettings.value_package_whatsapp_number || '5534984136291',
           value_package_discount_text: savedSettings.value_package_discount_text || '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
           value_package_promotion_text: savedSettings.value_package_promotion_text || '🕒 Promoção válida enquanto durar o estoque.',
@@ -1539,17 +1509,8 @@ export default function EditLandingPage() {
                 }
                 placeholder="💬 GARANTIR MEU DESCONTO AGORA!"
               />
-
-              <Input
-                label="Link de Redirecionamento do Botão (opcional)"
-                value={settings.value_package_button_link}
-                onChange={(e) =>
-                  setSettings({ ...settings, value_package_button_link: e.target.value })
-                }
-                placeholder="Ex: /produtos ou /produtos/relogio-smartwatch"
-              />
               <p className="text-xs text-gray-500 -mt-2">
-                Link padrão: WhatsApp VIP. Pode ser um link interno (ex: /produtos) ou externo (ex: https://chat.whatsapp.com/...)
+                O botão redireciona automaticamente para a seção de cadastro do WhatsApp VIP.
               </p>
             </div>
           </motion.div>
