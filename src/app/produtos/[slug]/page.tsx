@@ -37,6 +37,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const [comboData, setComboData] = useState<any>(null)
   const [comboItems, setComboItems] = useState<Array<{ product: Product; quantity: number }>>([])
   const [showFullDescription, setShowFullDescription] = useState(false)
+  const [orderedSpecifications, setOrderedSpecifications] = useState<any[]>([])
 
   const supabase = createClient()
 
@@ -132,6 +133,44 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       
       // Garantir que productData.images seja um array válido
       productData.images = images
+
+      // Ordenar especificações pela ordem definida nos tópicos da categoria
+      if (productData.specifications && Array.isArray(productData.specifications) && productData.specifications.length > 0 && productData.category) {
+        try {
+          const { data: topicsData } = await supabase
+            .from('category_topics')
+            .select('topic_key, display_order')
+            .eq('category_name', productData.category)
+            .order('display_order', { ascending: true })
+          
+          if (topicsData && topicsData.length > 0) {
+            // Criar mapa de ordem dos tópicos
+            const topicOrderMap = new Map<string, number>()
+            topicsData.forEach((topic, index) => {
+              topicOrderMap.set(topic.topic_key, topic.display_order ?? index)
+            })
+            
+            // Ordenar especificações pela ordem definida nos tópicos
+            const sortedSpecs = [...productData.specifications].sort((a, b) => {
+              const orderA = topicOrderMap.get(a.key) ?? 999
+              const orderB = topicOrderMap.get(b.key) ?? 999
+              return orderA - orderB
+            })
+            
+            setOrderedSpecifications(sortedSpecs)
+            productData.specifications = sortedSpecs
+          } else {
+            // Se não houver tópicos definidos, manter ordem original
+            setOrderedSpecifications(productData.specifications)
+          }
+        } catch (error) {
+          console.error('Erro ao ordenar especificações:', error)
+          // Em caso de erro, manter ordem original
+          setOrderedSpecifications(productData.specifications)
+        }
+      } else {
+        setOrderedSpecifications(productData.specifications || [])
+      }
 
       setProduct(productData as any)
 
@@ -934,11 +973,11 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           )}
 
           {/* Specifications */}
-          {product.specifications && Array.isArray(product.specifications) && product.specifications.length > 0 && (
+          {orderedSpecifications && Array.isArray(orderedSpecifications) && orderedSpecifications.length > 0 && (
             <div className="border-t pt-6 mt-6">
               <h3 className="text-2xl font-bold mb-4">Especificações Técnicas</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {product.specifications.map((spec: any, index: number) => {
+                {orderedSpecifications.map((spec: any, index: number) => {
                   const rating = parseInt(spec.value) || 0
                   const isRating = rating >= 1 && rating <= 5
                   

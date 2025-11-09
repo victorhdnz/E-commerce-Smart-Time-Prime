@@ -350,6 +350,9 @@ export default function ConfiguracoesPage() {
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                 />
+                <p className="text-xs text-gray-500 mt-2">
+                  Esta descrição aparecerá quando o link do site for compartilhado no WhatsApp, redes sociais e outros lugares. Use uma descrição atrativa e informativa.
+                </p>
               </div>
             </div>
           </motion.div>

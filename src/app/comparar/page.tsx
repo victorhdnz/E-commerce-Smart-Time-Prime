@@ -43,12 +43,10 @@ export default function ComparePage() {
       }
 
       // Buscar campos de comparação usando as especificações dos produtos
-      // Comparar por nome da especificação, não por posição
       const allSpecKeys = new Set<string>()
       products.forEach(product => {
         if (product.specifications) {
           product.specifications.forEach(spec => {
-            // Adicionar por nome (key), permitindo duplicatas se necessário
             if (spec.key && spec.key.trim()) {
               allSpecKeys.add(spec.key.trim())
             }
@@ -59,9 +57,48 @@ export default function ComparePage() {
       // Campos padrão sempre presentes
       const defaultFields = ['Nome', 'Preço', 'Categoria', 'Estoque']
       
-      // Combinar campos padrão com especificações (ordenadas alfabeticamente)
-      const sortedSpecs = Array.from(allSpecKeys).sort()
-      setComparisonFields([...defaultFields, ...sortedSpecs])
+      // Buscar ordem dos tópicos da categoria (se todos os produtos forem da mesma categoria)
+      const categories = new Set(products.map(p => p.category).filter(Boolean))
+      let orderedSpecs: string[] = []
+      
+      // Se todos os produtos são da mesma categoria, usar a ordem definida nos tópicos
+      if (categories.size === 1) {
+        const category = Array.from(categories)[0]
+        try {
+          const { data: topicsData } = await supabase
+            .from('category_topics')
+            .select('topic_key, display_order')
+            .eq('category_name', category)
+            .order('display_order', { ascending: true })
+          
+          if (topicsData && topicsData.length > 0) {
+            // Criar mapa de ordem dos tópicos
+            const topicOrderMap = new Map<string, number>()
+            topicsData.forEach((topic, index) => {
+              topicOrderMap.set(topic.topic_key, topic.display_order ?? index)
+            })
+            
+            // Ordenar especificações pela ordem definida nos tópicos
+            orderedSpecs = Array.from(allSpecKeys).sort((a, b) => {
+              const orderA = topicOrderMap.get(a) ?? 999
+              const orderB = topicOrderMap.get(b) ?? 999
+              return orderA - orderB
+            })
+          } else {
+            // Se não houver tópicos definidos, ordenar alfabeticamente
+            orderedSpecs = Array.from(allSpecKeys).sort()
+          }
+        } catch (error) {
+          console.error('Erro ao buscar ordem dos tópicos:', error)
+          // Em caso de erro, ordenar alfabeticamente
+          orderedSpecs = Array.from(allSpecKeys).sort()
+        }
+      } else {
+        // Se produtos de categorias diferentes, ordenar alfabeticamente
+        orderedSpecs = Array.from(allSpecKeys).sort()
+      }
+      
+      setComparisonFields([...defaultFields, ...orderedSpecs])
       setLoading(false)
     } catch (error) {
       console.error('Erro ao carregar campos de comparação:', error)
