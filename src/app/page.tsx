@@ -23,7 +23,7 @@ async function getPageData() {
     // Buscar tudo em paralelo (sem timeout para não causar lentidão)
     const results = await Promise.allSettled([
       supabase.from('site_settings').select('*').eq('key', 'general').maybeSingle(),
-      supabase.from('site_settings').select('contact_maps_link').limit(1).maybeSingle(), // Buscar link do Google Maps
+      supabase.from('site_settings').select('contact_maps_link, contact_whatsapp').limit(1).maybeSingle(), // Buscar link do Google Maps e WhatsApp
       supabase.from('products').select('*, colors:product_colors(*)').eq('is_featured', true).eq('is_active', true).limit(8),
       supabase.from('reviews').select('*').eq('is_approved', true).order('created_at', { ascending: false }).limit(6),
       supabase.from('faqs').select('*').eq('is_active', true).order('order_position', { ascending: true }),
@@ -66,9 +66,10 @@ async function getPageData() {
     // Se não tiver link no banco, usar o padrão do componente
     // O componente já tem o link hardcoded como fallback
 
-    // Extrair link do Google Maps
+    // Extrair link do Google Maps e WhatsApp
     const mapsLinkData = mapsLinkResult.status === 'fulfilled' ? mapsLinkResult.value.data : null
     const mapsLink = mapsLinkData?.contact_maps_link || 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6'
+    const contactWhatsApp = mapsLinkData?.contact_whatsapp || '+55 34 8413-6291'
 
     // Extrair configuração de cadastro obrigatório
     const requireRegistrationData = requireRegistrationResult.status === 'fulfilled' ? requireRegistrationResult.value.data : null
@@ -97,6 +98,7 @@ async function getPageData() {
       whatsappVipRequireRegistration: requireRegistration,
       sectionOrder: sectionOrder,
       mapsLink: mapsLink,
+      contactWhatsApp: contactWhatsApp,
     }
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
@@ -110,12 +112,14 @@ async function getPageData() {
       faqs: [],
       activeLayout: null,
       combos: [],
+      mapsLink: 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6',
+      contactWhatsApp: '+55 34 8413-6291',
     }
   }
 }
 
 export default async function Home() {
-  const { siteSettings, products, reviews, faqs, activeLayout, combos, whatsappVipLink, whatsappVipRequireRegistration, sectionOrder, mapsLink } = await getPageData()
+  const { siteSettings, products, reviews, faqs, activeLayout, combos, whatsappVipLink, whatsappVipRequireRegistration, sectionOrder, mapsLink, contactWhatsApp } = await getPageData()
 
   // Extrair configurações do formato key-value
   const settings = siteSettings?.value || {}
@@ -369,6 +373,7 @@ export default async function Home() {
         title={settings.contact_title}
         description={settings.contact_description}
         mapsLink={mapsLink}
+        whatsapp={contactWhatsApp}
       />
     ) : null,
   }

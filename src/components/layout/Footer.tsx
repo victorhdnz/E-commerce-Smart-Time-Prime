@@ -17,7 +17,7 @@ export const Footer = () => {
     address_city?: string
     address_state?: string
     address_zip?: string
-    contact_phone?: string
+    contact_whatsapp?: string
     contact_email?: string
   } | null>(null)
 
@@ -27,7 +27,7 @@ export const Footer = () => {
         const supabase = createClient()
         const { data, error } = await supabase
           .from('site_settings')
-          .select('site_name, footer_text, copyright_text, instagram_url, facebook_url, address_street, address_city, address_state, address_zip, contact_phone, contact_email')
+          .select('site_name, footer_text, copyright_text, instagram_url, facebook_url, address_street, address_city, address_state, address_zip, contact_whatsapp, contact_email')
           .limit(1)
           .maybeSingle()
 
@@ -131,8 +131,8 @@ export const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-center space-x-2 text-gray-400">
                 <Phone size={18} />
-                <a href={`https://wa.me/${siteSettings?.contact_phone?.replace(/\D/g, '') || '5534984136291'}`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
-                  {siteSettings?.contact_phone || '(34) 98413-6291'}
+                <a href={`https://wa.me/${siteSettings?.contact_whatsapp?.replace(/\D/g, '') || '5534984136291'}`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                  {siteSettings?.contact_whatsapp || '(34) 98413-6291'}
                 </a>
               </li>
               <li className="flex items-center space-x-2 text-gray-400">

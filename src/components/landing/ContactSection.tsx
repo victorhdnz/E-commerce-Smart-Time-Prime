@@ -4,9 +4,10 @@ interface ContactSectionProps {
   title?: string
   description?: string
   mapsLink?: string
+  whatsapp?: string
 }
 
-export function ContactSection({ title, description, mapsLink }: ContactSectionProps) {
+export function ContactSection({ title, description, mapsLink, whatsapp = '+55 34 8413-6291' }: ContactSectionProps) {
   return (
     <section id="contato" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -30,8 +31,8 @@ export function ContactSection({ title, description, mapsLink }: ContactSectionP
             </div>
             <h3 className="text-xl font-bold mb-2">WhatsApp</h3>
             <p className="text-gray-600 mb-4">Fale conosco agora</p>
-            <a href="https://wa.me/5534984136291" target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600 font-semibold">
-              (34) 98413-6291
+            <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600 font-semibold">
+              {whatsapp}
             </a>
           </div>
 

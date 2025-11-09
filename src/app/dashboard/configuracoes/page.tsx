@@ -20,7 +20,6 @@ interface SiteConfig {
   footer_text: string
   copyright_text: string
   contact_email: string
-  contact_phone: string
   contact_whatsapp: string
   contact_maps_link: string
   instagram_url: string
@@ -45,7 +44,6 @@ export default function ConfiguracoesPage() {
     footer_text: 'Produtos de qualidade com design moderno e elegante.',
     copyright_text: 'Todos os direitos reservados.',
     contact_email: 'contato@smarttimeprime.com.br',
-    contact_phone: '+55 34 8413-6291',
     contact_whatsapp: '+55 34 8413-6291',
     contact_maps_link: 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6',
     instagram_url: 'https://www.instagram.com/smarttimeprime',
@@ -98,7 +96,6 @@ export default function ConfiguracoesPage() {
             footer_text: fallbackData.footer_text || config.footer_text,
             copyright_text: fallbackData.copyright_text || config.copyright_text,
             contact_email: fallbackData.contact_email || config.contact_email,
-            contact_phone: fallbackData.contact_phone || config.contact_phone,
             contact_whatsapp: fallbackData.contact_whatsapp || config.contact_whatsapp,
             contact_maps_link: fallbackData.contact_maps_link || config.contact_maps_link,
             instagram_url: fallbackData.instagram_url || config.instagram_url,
@@ -120,7 +117,6 @@ export default function ConfiguracoesPage() {
           footer_text: data.footer_text || config.footer_text,
           copyright_text: data.copyright_text || config.copyright_text,
           contact_email: data.contact_email || config.contact_email,
-          contact_phone: data.contact_phone || config.contact_phone,
           contact_whatsapp: data.contact_whatsapp || config.contact_whatsapp,
           contact_maps_link: data.contact_maps_link || config.contact_maps_link,
           instagram_url: data.instagram_url || config.instagram_url,
@@ -176,7 +172,6 @@ export default function ConfiguracoesPage() {
         footer_text: config.footer_text,
         copyright_text: config.copyright_text,
         contact_email: config.contact_email,
-        contact_phone: config.contact_phone,
         contact_whatsapp: config.contact_whatsapp,
         contact_maps_link: config.contact_maps_link,
         instagram_url: config.instagram_url,
@@ -378,15 +373,6 @@ export default function ConfiguracoesPage() {
               />
 
               <Input
-                label="Telefone"
-                value={config.contact_phone}
-                onChange={(e) =>
-                  setConfig({ ...config, contact_phone: e.target.value })
-                }
-                placeholder="+55 34 8413-6291"
-              />
-
-              <Input
                 label="WhatsApp"
                 value={config.contact_whatsapp}
                 onChange={(e) =>
@@ -394,6 +380,9 @@ export default function ConfiguracoesPage() {
                 }
                 placeholder="+55 34 8413-6291"
               />
+              <p className="text-xs text-gray-500 -mt-2">
+                Este WhatsApp aparecerá no rodapé e na seção de Contato.
+              </p>
 
               <Input
                 label="Link do Google Maps"
