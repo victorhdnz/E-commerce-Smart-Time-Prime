@@ -107,7 +107,6 @@ https://e-commerce-smart-time-prime-ef8c.vercel.app
 
 ## ⚠️ Importante
 
-- **Não adicione** URLs que não existem (como `/api/bling/callback` nesta seção - isso é só para Bling)
 - **Adicione APENAS** as URLs listadas acima
 - O domínio deve ser **exatamente** `https://www.smarttimeprime.com.br` (com ou sem `www` depende do que você configurou)
 

@@ -122,41 +122,19 @@ export default function DashboardSalesPage() {
 
       if (siteError) throw siteError
 
-      // Buscar pedidos do Bling via API
-      let blingOrders: any[] = []
-      try {
-        const blingResponse = await fetch('/api/bling/orders')
-        if (blingResponse.ok) {
-          const blingData = await blingResponse.json()
-          if (blingData.success && blingData.orders) {
-            // Filtrar pedidos do Bling pelo período
-            blingOrders = blingData.orders.filter((order: any) => {
-              const orderDate = new Date(order.data)
-              return orderDate >= new Date(dateRange.start) && orderDate <= new Date(dateRange.end)
-            })
-          }
-        }
-      } catch (error) {
-        console.error('Erro ao buscar pedidos do Bling:', error)
-      }
-
-      // Combinar pedidos
-      const allOrders = [
-        ...(siteOrders || []).map((order: any) => ({
-          id: order.id,
-          numero: order.order_number || order.id.substring(0, 8),
-          data: order.created_at,
-          situacao: order.status,
-          total: parseFloat(order.total.toString()),
-          cliente: {
-            nome: order.profiles?.full_name || 'Cliente',
-            email: order.profiles?.email,
-          },
-          origem: 'site',
-          endereco: order.shipping_address,
-        })),
-        ...blingOrders,
-      ].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+      // Mapear pedidos do site
+      const allOrders = (siteOrders || []).map((order: any) => ({
+        id: order.id,
+        numero: order.order_number || order.id.substring(0, 8),
+        data: order.created_at,
+        situacao: order.status,
+        total: parseFloat(order.total.toString()),
+        cliente: {
+          nome: order.profiles?.full_name || 'Cliente',
+          email: order.profiles?.email,
+        },
+        endereco: order.shipping_address,
+      })).sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
 
       // Calcular totais
       const totalSales = allOrders.reduce((sum, order) => sum + (order.total || 0), 0)
@@ -167,13 +145,11 @@ export default function DashboardSalesPage() {
       allOrders.forEach((order) => {
         let location = 'Não informado'
         
-        if (order.origem === 'site' && order.endereco) {
+        if (order.endereco) {
           const addr = typeof order.endereco === 'string' 
             ? JSON.parse(order.endereco) 
             : order.endereco
           location = `${addr.city || ''}/${addr.state || ''}`.trim() || 'Não informado'
-        } else if (order.cliente?.cidade) {
-          location = `${order.cliente.cidade}/${order.cliente.uf || ''}`.trim() || 'Não informado'
         }
 
         if (!salesByLocation[location]) {
@@ -210,17 +186,17 @@ export default function DashboardSalesPage() {
 
   const handleExportCSV = () => {
     // Cabeçalho com separador ponto-e-vírgula (padrão brasileiro)
-    const headers = ['Data', 'Número', 'Cliente', 'Total', 'Status', 'Origem', 'Localidade']
+    const headers = ['Data', 'Número', 'Cliente', 'Total', 'Status', 'Localidade']
     const rows = salesData.orders.map(order => {
       const date = new Date(order.data).toLocaleDateString('pt-BR')
-      const location = order.origem === 'site' && order.endereco
+      const location = order.endereco
         ? (() => {
             const addr = typeof order.endereco === 'string' 
               ? JSON.parse(order.endereco) 
               : order.endereco
             return `${addr.city || ''}/${addr.state || ''}`.trim() || 'Não informado'
           })()
-        : (order.cliente?.cidade ? `${order.cliente.cidade}/${order.cliente.uf || ''}` : 'Não informado')
+        : 'Não informado'
       
       return [
         escapeCSVField(date),
@@ -228,7 +204,6 @@ export default function DashboardSalesPage() {
         escapeCSVField(order.cliente?.nome || 'Cliente'),
         order.total?.toFixed(2).replace('.', ',') || '0,00',
         escapeCSVField(order.situacao || order.status || ''),
-        escapeCSVField(order.origem || 'site'),
         escapeCSVField(location),
       ]
     })
@@ -273,7 +248,7 @@ export default function DashboardSalesPage() {
           <div>
             <h1 className="text-4xl font-bold mb-2">Vendas e Pedidos</h1>
             <p className="text-gray-600">
-              Visualize e filtre todas as vendas do e-commerce e do Bling
+              Visualize e filtre todas as vendas do e-commerce
             </p>
           </div>
           <Button onClick={handleExportCSV} variant="outline">
@@ -416,21 +391,18 @@ export default function DashboardSalesPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Origem
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {salesData.orders.map((order) => {
-                    const location = order.origem === 'site' && order.endereco
+                    const location = order.endereco
                       ? (() => {
                           const addr = typeof order.endereco === 'string' 
                             ? JSON.parse(order.endereco) 
                             : order.endereco
                           return `${addr.city || ''}/${addr.state || ''}`.trim() || 'Não informado'
                         })()
-                      : (order.cliente?.cidade ? `${order.cliente.cidade}/${order.cliente.uf || ''}` : 'Não informado')
+                      : 'Não informado'
                     
                     return (
                       <tr key={order.id || order.numero} className="hover:bg-gray-50">
@@ -466,15 +438,6 @@ export default function DashboardSalesPage() {
                               : 'bg-green-100 text-green-800'
                           }`}>
                             {order.situacao || order.status || 'pendente'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                            order.origem === 'site' 
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-purple-100 text-purple-800'
-                          }`}>
-                            {order.origem === 'site' ? 'E-commerce' : 'Bling'}
                           </span>
                         </td>
                       </tr>

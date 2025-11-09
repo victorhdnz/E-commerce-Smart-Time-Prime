@@ -244,13 +244,6 @@ O script SQL já cria um layout padrão. Para adicionar mais:
 3. Adicione no `.env.local`
 4. Implemente em `src/lib/utils/shipping.ts`
 
-### Bling (Gestão de Estoque)
-
-1. Crie conta em [bling.com.br](https://bling.com.br)
-2. Gere API Key
-3. Adicione no `.env.local`
-4. Crie webhook para sincronizar estoque
-
 ---
 
 ## 9️⃣ Testes

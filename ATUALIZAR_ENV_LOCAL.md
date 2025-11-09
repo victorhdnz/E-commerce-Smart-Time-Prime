@@ -7,22 +7,14 @@ Atualize seu arquivo `.env.local` com as seguintes variáveis usando o domínio 
 ```env
 # URL do site (OBRIGATÓRIO - usar domínio personalizado)
 NEXT_PUBLIC_SITE_URL=https://www.smarttimeprime.com.br
-
-# Bling OAuth - Redirect URI (opcional, usado como fallback se não configurado)
-BLING_REDIRECT_URI=https://www.smarttimeprime.com.br/api/bling/callback
-
-# Bling Webhook - URL (opcional, usado como fallback se não configurado)
-BLING_WEBHOOK_URL=https://www.smarttimeprime.com.br/api/bling/webhook
 ```
 
 ## 📝 Como Atualizar
 
 1. Abra o arquivo `.env.local` na raiz do projeto
-2. Procure pelas seguintes variáveis e atualize:
+2. Procure pela seguinte variável e atualize:
    - `NEXT_PUBLIC_SITE_URL` → deve ser `https://www.smarttimeprime.com.br`
-   - `BLING_REDIRECT_URI` → deve ser `https://www.smarttimeprime.com.br/api/bling/callback`
-   - `BLING_WEBHOOK_URL` → deve ser `https://www.smarttimeprime.com.br/api/bling/webhook`
-3. Se alguma dessas variáveis não existir, adicione-as
+3. Se essa variável não existir, adicione-a
 4. Salve o arquivo
 
 ## ⚠️ Importante
@@ -60,14 +52,6 @@ NEXT_PUBLIC_SITE_URL=https://www.smarttimeprime.com.br
 NEXT_PUBLIC_SUPABASE_URL=seu_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=seu_anon_key
 SUPABASE_SERVICE_ROLE_KEY=seu_service_role_key
-
-# ============================================
-# Bling Integration
-# ============================================
-BLING_CLIENT_ID=seu_client_id
-BLING_CLIENT_SECRET=seu_client_secret
-BLING_REDIRECT_URI=https://www.smarttimeprime.com.br/api/bling/callback
-BLING_WEBHOOK_URL=https://www.smarttimeprime.com.br/api/bling/webhook
 
 # ============================================
 # Cloudinary
