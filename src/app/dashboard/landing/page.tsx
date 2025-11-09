@@ -1037,16 +1037,7 @@ export default function EditLandingPage() {
               />
 
               <Input
-                label="Texto do Botão Principal"
-                value={settings.hero_cta_text}
-                onChange={(e) =>
-                  setSettings({ ...settings, hero_cta_text: e.target.value })
-                }
-                placeholder="💬 QUERO MEU SÉRIE 11 AGORA!"
-              />
-
-              <Input
-                label="Texto do Botão Secundário (Hero)"
+                label="Texto do Botão (Hero)"
                 value={settings.hero_button_text}
                 onChange={(e) =>
                   setSettings({ ...settings, hero_button_text: e.target.value })
@@ -1055,7 +1046,7 @@ export default function EditLandingPage() {
               />
 
               <Input
-                label="Link do Botão Secundário (Hero)"
+                label="Link do Botão (Hero)"
                 value={settings.hero_button_link}
                 onChange={(e) =>
                   setSettings({ ...settings, hero_button_link: e.target.value })
