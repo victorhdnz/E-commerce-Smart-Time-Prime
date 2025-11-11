@@ -803,26 +803,26 @@ export default function BrindesECombosPage() {
                         </div>
 
                         <div className="space-y-2">
-                          {(combo.discount_percentage_local || combo.discount_percentage_national || combo.discount_amount_local || combo.discount_amount_national) && (
+                          {((combo.discount_percentage_local ?? 0) > 0 || (combo.discount_percentage_national ?? 0) > 0 || (combo.discount_amount_local ?? 0) > 0 || (combo.discount_amount_national ?? 0) > 0) && (
                             <div className="flex flex-col gap-1 text-sm">
-                              {(combo.discount_percentage_local || combo.discount_amount_local) && (
+                              {((combo.discount_percentage_local ?? 0) > 0 || (combo.discount_amount_local ?? 0) > 0) && (
                                 <div className="flex items-center gap-2">
                                   <Percent size={14} className="text-green-600" />
                                   <span className="text-green-600 font-semibold">
-                                    Local: {combo.discount_percentage_local > 0 
+                                    Local: {(combo.discount_percentage_local ?? 0) > 0 
                                       ? `${combo.discount_percentage_local}%`
-                                      : formatCurrency(combo.discount_amount_local || 0)
+                                      : formatCurrency(combo.discount_amount_local ?? 0)
                                     }
                                   </span>
                                 </div>
                               )}
-                              {(combo.discount_percentage_national || combo.discount_amount_national) && (
+                              {((combo.discount_percentage_national ?? 0) > 0 || (combo.discount_amount_national ?? 0) > 0) && (
                                 <div className="flex items-center gap-2">
                                   <Percent size={14} className="text-blue-600" />
                                   <span className="text-blue-600 font-semibold">
-                                    Nacional: {combo.discount_percentage_national > 0 
+                                    Nacional: {(combo.discount_percentage_national ?? 0) > 0 
                                       ? `${combo.discount_percentage_national}%`
-                                      : formatCurrency(combo.discount_amount_national || 0)
+                                      : formatCurrency(combo.discount_amount_national ?? 0)
                                     }
                                   </span>
                                 </div>
