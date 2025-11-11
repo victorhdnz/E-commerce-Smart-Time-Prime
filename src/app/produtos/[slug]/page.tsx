@@ -691,13 +691,38 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                           </p>
                         )}
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-sm font-bold text-green-700">
-                            {formatCurrency(item.product.local_price || item.product.national_price)}
-                          </span>
-                          {item.quantity > 1 && (
-                            <span className="text-xs text-gray-500">
-                              (cada)
-                            </span>
+                          {needsAddress && !locationLoading && isAuthenticated ? (
+                            <button
+                              onClick={handleUnlockPrice}
+                              className="relative cursor-pointer group text-left"
+                            >
+                              <div className="flex items-center gap-1">
+                                <Eye size={14} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
+                                <span className="text-sm font-bold text-gray-400 blur-sm select-none">
+                                  {formatCurrency(item.product.local_price || item.product.national_price)}
+                                </span>
+                                <MapPin size={12} className="text-gray-400" />
+                              </div>
+                            </button>
+                          ) : !isAuthenticated ? (
+                            <div className="text-left">
+                              <span className="text-sm font-bold text-gray-400 blur-sm select-none">
+                                {formatCurrency(item.product.local_price || item.product.national_price)}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-green-700">
+                                {locationLoading 
+                                  ? 'Carregando...' 
+                                  : formatCurrency(getProductPrice(item.product, isUberlandia))}
+                              </span>
+                              {item.quantity > 1 && (
+                                <span className="text-xs text-gray-500">
+                                  (cada)
+                                </span>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -737,11 +762,28 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                   <div className="mt-4 p-4 bg-white rounded-lg border border-green-300">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-semibold text-gray-700">Total dos produtos separados:</span>
-                      <span className="text-lg font-bold text-gray-900">
-                        {formatCurrency(totalOriginalPrice)}
-                      </span>
+                      {needsAddress && !locationLoading && isAuthenticated ? (
+                        <button
+                          onClick={handleUnlockPrice}
+                          className="relative cursor-pointer group text-left"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Eye size={18} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
+                            <span className="text-lg font-bold text-gray-400 blur-sm select-none">
+                              {formatCurrency(totalOriginalPrice)}
+                            </span>
+                            <MapPin size={16} className="text-gray-400" />
+                          </div>
+                        </button>
+                      ) : (
+                        <span className="text-lg font-bold text-gray-900">
+                          {locationLoading 
+                            ? 'Carregando...' 
+                            : formatCurrency(totalOriginalPrice)}
+                        </span>
+                      )}
                     </div>
-                    {(discountPercentage > 0 || discountAmount > 0) && (
+                    {!needsAddress && !locationLoading && (discountPercentage > 0 || discountAmount > 0) && (
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-semibold text-green-600">Desconto do combo:</span>
                         <span className="text-lg font-bold text-green-600">
