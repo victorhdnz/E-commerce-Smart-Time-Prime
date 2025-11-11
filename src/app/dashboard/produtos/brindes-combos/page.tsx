@@ -34,6 +34,10 @@ interface Combo {
   description: string
   discount_percentage: number
   discount_amount: number
+  discount_percentage_local?: number
+  discount_amount_local?: number
+  discount_percentage_national?: number
+  discount_amount_national?: number
   final_price: number
   is_active: boolean
   is_featured: boolean
@@ -71,8 +75,10 @@ export default function BrindesECombosPage() {
   const [comboForm, setComboForm] = useState({
     name: '',
     description: '',
-    discount_percentage: 0,
-    discount_amount: 0,
+    discount_percentage_local: 0,
+    discount_amount_local: 0,
+    discount_percentage_national: 0,
+    discount_amount_national: 0,
     local_price: '',
     national_price: '',
     items: [] as { product_id: string; quantity: number }[]
@@ -221,11 +227,11 @@ export default function BrindesECombosPage() {
       return sum + (product?.local_price || 0) * item.quantity
     }, 0)
 
-    if (comboForm.discount_percentage > 0) {
-      return totalPrice * (1 - comboForm.discount_percentage / 100)
+    if (comboForm.discount_percentage_local > 0) {
+      return totalPrice * (1 - comboForm.discount_percentage_local / 100)
     }
     
-    return totalPrice - comboForm.discount_amount
+    return Math.max(0, totalPrice - comboForm.discount_amount_local)
   }
 
   const calculateNationalPrice = () => {
@@ -234,11 +240,11 @@ export default function BrindesECombosPage() {
       return sum + (product?.national_price || product?.local_price || 0) * item.quantity
     }, 0)
 
-    if (comboForm.discount_percentage > 0) {
-      return totalPrice * (1 - comboForm.discount_percentage / 100)
+    if (comboForm.discount_percentage_national > 0) {
+      return totalPrice * (1 - comboForm.discount_percentage_national / 100)
     }
     
-    return totalPrice - comboForm.discount_amount
+    return Math.max(0, totalPrice - comboForm.discount_amount_national)
   }
 
   const calculateComboPrice = () => {
@@ -272,7 +278,7 @@ export default function BrindesECombosPage() {
         }))
       }
     }
-  }, [comboForm.items, comboForm.discount_percentage, comboForm.discount_amount])
+  }, [comboForm.items, comboForm.discount_percentage_local, comboForm.discount_amount_local, comboForm.discount_percentage_national, comboForm.discount_amount_national])
 
   const handleSaveCombo = async () => {
     if (!comboForm.name || comboForm.items.length === 0) {
@@ -308,12 +314,16 @@ export default function BrindesECombosPage() {
       const firstProduct = products.find(p => p.id === firstItem.product_id)
       const comboImages = firstProduct?.images || []
       
-      let comboData = {
+      let comboData: any = {
         name: comboForm.name,
         description: comboForm.description,
         slug: slug,
-        discount_percentage: comboForm.discount_percentage,
-        discount_amount: comboForm.discount_amount,
+        discount_percentage: 0, // Mantido para compatibilidade
+        discount_amount: 0, // Mantido para compatibilidade
+        discount_percentage_local: comboForm.discount_percentage_local || 0,
+        discount_amount_local: comboForm.discount_amount_local || 0,
+        discount_percentage_national: comboForm.discount_percentage_national || 0,
+        discount_amount_national: comboForm.discount_amount_national || 0,
         final_price: finalPrice,
         is_active: true,
         is_featured: false
@@ -432,8 +442,10 @@ export default function BrindesECombosPage() {
     setComboForm({
       name: '',
       description: '',
-      discount_percentage: 0,
-      discount_amount: 0,
+      discount_percentage_local: 0,
+      discount_amount_local: 0,
+      discount_percentage_national: 0,
+      discount_amount_national: 0,
       local_price: '',
       national_price: '',
       items: []
@@ -469,9 +481,11 @@ export default function BrindesECombosPage() {
     
     setComboForm({
       name: combo.name,
-      description: combo.description,
-      discount_percentage: combo.discount_percentage,
-      discount_amount: combo.discount_amount,
+      description: combo.description || '',
+      discount_percentage_local: combo.discount_percentage_local || 0,
+      discount_amount_local: combo.discount_amount_local || 0,
+      discount_percentage_national: combo.discount_percentage_national || 0,
+      discount_amount_national: combo.discount_amount_national || 0,
       local_price: localPrice,
       national_price: nationalPrice,
       items: combo.combo_items?.map(item => ({
@@ -789,12 +803,30 @@ export default function BrindesECombosPage() {
                         </div>
 
                         <div className="space-y-2">
-                          {combo.discount_percentage > 0 && (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Percent size={14} className="text-green-600" />
-                              <span className="text-green-600 font-semibold">
-                                {combo.discount_percentage}% de desconto
-                              </span>
+                          {(combo.discount_percentage_local || combo.discount_percentage_national || combo.discount_amount_local || combo.discount_amount_national) && (
+                            <div className="flex flex-col gap-1 text-sm">
+                              {(combo.discount_percentage_local || combo.discount_amount_local) && (
+                                <div className="flex items-center gap-2">
+                                  <Percent size={14} className="text-green-600" />
+                                  <span className="text-green-600 font-semibold">
+                                    Local: {combo.discount_percentage_local > 0 
+                                      ? `${combo.discount_percentage_local}%`
+                                      : formatCurrency(combo.discount_amount_local || 0)
+                                    }
+                                  </span>
+                                </div>
+                              )}
+                              {(combo.discount_percentage_national || combo.discount_amount_national) && (
+                                <div className="flex items-center gap-2">
+                                  <Percent size={14} className="text-blue-600" />
+                                  <span className="text-blue-600 font-semibold">
+                                    Nacional: {combo.discount_percentage_national > 0 
+                                      ? `${combo.discount_percentage_national}%`
+                                      : formatCurrency(combo.discount_amount_national || 0)
+                                    }
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           )}
                           <div className="text-lg font-bold text-green-600">
@@ -949,81 +981,124 @@ export default function BrindesECombosPage() {
               </div>
             </div>
 
-            {/* Discount */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Desconto (%)</label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={comboForm.discount_percentage}
-                  onChange={(e) => setComboForm(prev => ({ 
-                    ...prev, 
-                    discount_percentage: Number(e.target.value),
-                    discount_amount: 0 
-                  }))}
-                  placeholder="0"
-                />
+            {/* Discount Local */}
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-semibold mb-4">Desconto para Preço Local (Uberlândia)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Desconto (%)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={comboForm.discount_percentage_local}
+                    onChange={(e) => setComboForm(prev => ({ 
+                      ...prev, 
+                      discount_percentage_local: Number(e.target.value),
+                      discount_amount_local: 0 
+                    }))}
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Desconto (R$)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={comboForm.discount_amount_local}
+                    onChange={(e) => setComboForm(prev => ({ 
+                      ...prev, 
+                      discount_amount_local: Number(e.target.value),
+                      discount_percentage_local: 0 
+                    }))}
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Desconto (R$)</label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={comboForm.discount_amount}
-                  onChange={(e) => setComboForm(prev => ({ 
-                    ...prev, 
-                    discount_amount: Number(e.target.value),
-                    discount_percentage: 0 
-                  }))}
-                  placeholder="0.00"
-                />
+            </div>
+
+            {/* Discount National */}
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-semibold mb-4">Desconto para Preço Nacional</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Desconto (%)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={comboForm.discount_percentage_national}
+                    onChange={(e) => setComboForm(prev => ({ 
+                      ...prev, 
+                      discount_percentage_national: Number(e.target.value),
+                      discount_amount_national: 0 
+                    }))}
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Desconto (R$)</label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={comboForm.discount_amount_national}
+                    onChange={(e) => setComboForm(prev => ({ 
+                      ...prev, 
+                      discount_amount_national: Number(e.target.value),
+                      discount_percentage_national: 0 
+                    }))}
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
             </div>
 
             {/* Prices */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Preço Local (Uberlândia) <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={comboForm.local_price}
-                  onChange={(e) => setComboForm(prev => ({ 
-                    ...prev, 
-                    local_price: e.target.value 
-                  }))}
-                  placeholder="0.00"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Preço calculado automaticamente. Você pode editar manualmente.
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Preço Nacional <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={comboForm.national_price}
-                  onChange={(e) => setComboForm(prev => ({ 
-                    ...prev, 
-                    national_price: e.target.value 
-                  }))}
-                  placeholder="0.00"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Preço calculado automaticamente. Você pode editar manualmente.
-                </p>
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-semibold mb-4">Preços Finais</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Preço Local (Uberlândia) <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={comboForm.local_price}
+                    onChange={(e) => setComboForm(prev => ({ 
+                      ...prev, 
+                      local_price: e.target.value 
+                    }))}
+                    placeholder="0.00"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Preço calculado automaticamente com desconto aplicado. Você pode editar manualmente.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Preço Nacional <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={comboForm.national_price}
+                    onChange={(e) => setComboForm(prev => ({ 
+                      ...prev, 
+                      national_price: e.target.value 
+                    }))}
+                    placeholder="0.00"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Preço calculado automaticamente com desconto aplicado. Você pode editar manualmente.
+                  </p>
+                </div>
               </div>
             </div>
 

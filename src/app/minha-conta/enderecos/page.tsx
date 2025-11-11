@@ -382,6 +382,34 @@ export default function MyAddressesPage() {
       >
         <div className="space-y-4">
           <Input
+            label="CEP"
+            value={formData.cep}
+            onChange={async (e) => {
+              const value = e.target.value
+              // Formatar CEP (xxxxx-xxx)
+              const formatted = value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')
+              setFormData({ ...formData, cep: formatted })
+              
+              // Buscar CEP automaticamente quando tiver 8 dígitos
+              if (formatted.replace(/\D/g, '').length === 8) {
+                const cepData = await fetchCEP(formatted)
+                if (cepData) {
+                  setFormData({
+                    ...formData,
+                    cep: formatted,
+                    street: cepData.street,
+                    neighborhood: cepData.neighborhood,
+                    city: cepData.city,
+                    state: cepData.state,
+                  })
+                  toast.success('Endereço preenchido automaticamente!')
+                }
+              }
+            }}
+            placeholder="Ex: 38400-000"
+            maxLength={9}
+          />
+          <Input
             label="Rua"
             value={formData.street}
             onChange={(e) => setFormData({ ...formData, street: e.target.value })}
@@ -420,34 +448,6 @@ export default function MyAddressesPage() {
               maxLength={2}
             />
           </div>
-          <Input
-            label="CEP"
-            value={formData.cep}
-            onChange={async (e) => {
-              const value = e.target.value
-              // Formatar CEP (xxxxx-xxx)
-              const formatted = value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2')
-              setFormData({ ...formData, cep: formatted })
-              
-              // Buscar CEP automaticamente quando tiver 8 dígitos
-              if (formatted.replace(/\D/g, '').length === 8) {
-                const cepData = await fetchCEP(formatted)
-                if (cepData) {
-                  setFormData({
-                    ...formData,
-                    cep: formatted,
-                    street: cepData.street,
-                    neighborhood: cepData.neighborhood,
-                    city: cepData.city,
-                    state: cepData.state,
-                  })
-                  toast.success('Endereço preenchido automaticamente!')
-                }
-              }
-            }}
-            placeholder="Ex: 38400-000"
-            maxLength={9}
-          />
           <div className="flex items-center">
             <input
               type="checkbox"

@@ -254,22 +254,31 @@ export default function CartPage() {
                               </span>
                             )}
                           </div>
-                          {comboData?.combo && (
-                            <div className="mt-2 p-2 bg-white rounded border border-green-300">
-                              <div className="text-xs space-y-1">
-                                {comboData.combo.discount_percentage > 0 && (
-                                  <p className="text-green-700 font-semibold">
-                                    💰 Desconto: {comboData.combo.discount_percentage}% OFF
-                                  </p>
-                                )}
-                                {comboData.combo.discount_amount > 0 && (
-                                  <p className="text-green-700 font-semibold">
-                                    💰 Desconto: {formatCurrency(comboData.combo.discount_amount)}
-                                  </p>
-                                )}
+                          {comboData?.combo && (() => {
+                            const discountPercentage = isUberlandia
+                              ? (comboData.combo.discount_percentage_local || 0)
+                              : (comboData.combo.discount_percentage_national || 0)
+                            const discountAmount = isUberlandia
+                              ? (comboData.combo.discount_amount_local || 0)
+                              : (comboData.combo.discount_amount_national || 0)
+                            
+                            return (
+                              <div className="mt-2 p-2 bg-white rounded border border-green-300">
+                                <div className="text-xs space-y-1">
+                                  {discountPercentage > 0 && (
+                                    <p className="text-green-700 font-semibold">
+                                      💰 Desconto: {discountPercentage}% OFF
+                                    </p>
+                                  )}
+                                  {discountAmount > 0 && discountPercentage === 0 && (
+                                    <p className="text-green-700 font-semibold">
+                                      💰 Desconto: {formatCurrency(discountAmount)}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )
+                          })()}
                         </div>
                       )}
                     </div>

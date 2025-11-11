@@ -714,41 +714,82 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               </div>
               
               {/* Combo Summary */}
-              {comboData && (
-                <div className="mt-4 p-4 bg-white rounded-lg border border-green-300">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-gray-700">Total dos produtos separados:</span>
-                    <span className="text-lg font-bold text-gray-900">
-                      {formatCurrency(comboItems.reduce((sum, item) => {
-                        const itemPrice = item.product.local_price || item.product.national_price
-                        return sum + (itemPrice * item.quantity)
-                      }, 0))}
-                    </span>
-                  </div>
-                  {comboData.discount_amount > 0 && (
+              {comboData && (() => {
+                const totalOriginalPrice = comboItems.reduce((sum, item) => {
+                  const itemPrice = getProductPrice(item.product, isUberlandia)
+                  return sum + (itemPrice * item.quantity)
+                }, 0)
+                
+                const discountPercentage = isUberlandia 
+                  ? (comboData.discount_percentage_local || 0)
+                  : (comboData.discount_percentage_national || 0)
+                const discountAmount = isUberlandia
+                  ? (comboData.discount_amount_local || 0)
+                  : (comboData.discount_amount_national || 0)
+                
+                const finalPrice = getProductPrice(product, isUberlandia)
+                
+                const calculatedDiscount = discountPercentage > 0
+                  ? totalOriginalPrice * (discountPercentage / 100)
+                  : discountAmount
+                
+                return (
+                  <div className="mt-4 p-4 bg-white rounded-lg border border-green-300">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-semibold text-green-600">Desconto do combo:</span>
-                      <span className="text-lg font-bold text-green-600">
-                        - {formatCurrency(comboData.discount_amount)}
+                      <span className="text-sm font-semibold text-gray-700">Total dos produtos separados:</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        {formatCurrency(totalOriginalPrice)}
                       </span>
                     </div>
-                  )}
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-                    <span className="text-lg font-bold text-green-900">Preço do combo:</span>
-                    <span className="text-2xl font-bold text-green-700">
-                      {formatCurrency(comboData.final_price || product.local_price || product.national_price)}
-                    </span>
+                    {(discountPercentage > 0 || discountAmount > 0) && (
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-semibold text-green-600">Desconto do combo:</span>
+                        <span className="text-lg font-bold text-green-600">
+                          {discountPercentage > 0 
+                            ? `- ${discountPercentage}% (${formatCurrency(calculatedDiscount)})`
+                            : `- ${formatCurrency(discountAmount)}`
+                          }
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                      <span className="text-lg font-bold text-green-900">Preço do combo:</span>
+                      {needsAddress && !locationLoading && isAuthenticated ? (
+                        <button
+                          onClick={handleUnlockPrice}
+                          className="relative cursor-pointer group text-left"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Eye size={24} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
+                            <span className="text-2xl font-bold text-gray-400 blur-sm select-none">
+                              {formatCurrency(finalPrice)}
+                            </span>
+                            <MapPin size={20} className="text-gray-400" />
+                          </div>
+                        </button>
+                      ) : (
+                        <div className="text-left">
+                          <span className="text-2xl font-bold text-green-700">
+                            {locationLoading 
+                              ? 'Carregando...' 
+                              : formatCurrency(finalPrice)}
+                          </span>
+                          {!needsAddress && !locationLoading && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {isUberlandia ? '💚 Preço Local (Uberlândia)' : '🌐 Preço Nacional'}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {!needsAddress && !locationLoading && (discountPercentage > 0 || discountAmount > 0) && (
+                      <p className="text-xs text-gray-600 mt-2 text-center">
+                        💰 Você economiza {formatCurrency(totalOriginalPrice - finalPrice)} com este combo!
+                      </p>
+                    )}
                   </div>
-                  {comboData.discount_amount > 0 && (
-                    <p className="text-xs text-gray-600 mt-2 text-center">
-                      💰 Você economiza {formatCurrency(comboItems.reduce((sum, item) => {
-                        const itemPrice = item.product.local_price || item.product.national_price
-                        return sum + (itemPrice * item.quantity)
-                      }, 0) - (comboData.final_price || product.local_price || product.national_price))} com este combo!
-                    </p>
-                  )}
-                </div>
-              )}
+                )
+              })()}
             </div>
           )}
 

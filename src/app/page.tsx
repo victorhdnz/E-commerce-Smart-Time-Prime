@@ -34,7 +34,7 @@ async function getPageData() {
           id,
           product_id,
           quantity,
-          product:products (id, name, local_price, images)
+          product:products (id, name, local_price, national_price, images)
         )
       `).eq('is_featured', true).eq('is_active', true).limit(6),
       supabase.from('site_settings').select('value').eq('key', 'whatsapp_vip_group_link').maybeSingle(),

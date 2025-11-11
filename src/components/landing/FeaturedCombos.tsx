@@ -1,12 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Package, Star, Percent, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Package, Star, Percent, ShoppingCart, ChevronLeft, ChevronRight, Eye, MapPin } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format'
+import { getProductPrice } from '@/lib/utils/price'
 import { useCart } from '@/hooks/useCart'
+import { useUserLocation } from '@/hooks/useUserLocation'
+import { useAuth } from '@/hooks/useAuth'
 import { Product } from '@/types'
+import { createClient } from '@/lib/supabase/client'
+import { createPortal } from 'react-dom'
+import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface ComboItem {
   id: string
@@ -24,12 +31,17 @@ interface Combo {
   id: string
   name: string
   description: string
+  slug?: string
   discount_percentage: number
   discount_amount: number
   final_price: number
   is_active: boolean
   is_featured: boolean
   combo_items?: ComboItem[]
+  comboProduct?: {
+    local_price: number
+    national_price: number
+  }
 }
 
 interface FeaturedCombosProps {
@@ -44,7 +56,49 @@ export const FeaturedCombos = ({
   subtitle = 'Economize mais comprando nossos kits promocionais',
 }: FeaturedCombosProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [comboProducts, setComboProducts] = useState<Record<string, { local_price: number; national_price: number }>>({})
+  const [showAddressModal, setShowAddressModal] = useState(false)
   const { addItem } = useCart()
+  const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
+  const supabase = createClient()
+
+  // Buscar produtos combo para obter preços baseados na localização
+  useEffect(() => {
+    const loadComboProducts = async () => {
+      const productsMap: Record<string, { local_price: number; national_price: number }> = {}
+      
+      await Promise.all(
+        combos.map(async (combo) => {
+          if (!combo.slug) return
+          try {
+            const { data: productData } = await supabase
+              .from('products')
+              .select('local_price, national_price')
+              .eq('slug', combo.slug)
+              .eq('category', 'Combos')
+              .maybeSingle()
+            
+            if (productData) {
+              productsMap[combo.id] = {
+                local_price: productData.local_price || 0,
+                national_price: productData.national_price || 0
+              }
+            }
+          } catch (error) {
+            console.error('Erro ao buscar produto combo:', error)
+          }
+        })
+      )
+      
+      setComboProducts(productsMap)
+    }
+    
+    if (combos.length > 0) {
+      loadComboProducts()
+    }
+  }, [combos, supabase])
 
   if (!combos || combos.length === 0) {
     return null
@@ -69,13 +123,26 @@ export const FeaturedCombos = ({
 
   const calculateOriginalPrice = (combo: Combo) => {
     return combo.combo_items?.reduce((sum, item) => {
-      return sum + (item.product?.local_price || 0) * item.quantity
+      if (!item.product) return sum
+      const itemPrice = getProductPrice(item.product as Product, isUberlandia)
+      return sum + itemPrice * item.quantity
     }, 0) || 0
   }
 
   const calculateSavings = (combo: Combo) => {
     const originalPrice = calculateOriginalPrice(combo)
-    return originalPrice - combo.final_price
+    const comboProduct = comboProducts[combo.id]
+    const finalPrice = comboProduct 
+      ? getProductPrice(comboProduct as any, isUberlandia)
+      : combo.final_price
+    return originalPrice - finalPrice
+  }
+
+  const getComboFinalPrice = (combo: Combo) => {
+    const comboProduct = comboProducts[combo.id]
+    return comboProduct 
+      ? getProductPrice(comboProduct as any, isUberlandia)
+      : combo.final_price
   }
 
   const handleAddComboToCart = (combo: Combo) => {
@@ -189,7 +256,7 @@ export const FeaturedCombos = ({
 
                   {/* Pricing */}
                   <div className="space-y-2 mb-4">
-                    {originalPrice > combo.final_price && (
+                    {!needsAddress && !locationLoading && originalPrice > finalPrice && (
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-500">Preço individual:</span>
                         <span className="text-gray-500 line-through">
@@ -198,7 +265,7 @@ export const FeaturedCombos = ({
                       </div>
                     )}
                     
-                    {discountPercentage > 0 && (
+                    {!needsAddress && !locationLoading && discountPercentage > 0 && (
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-green-600 font-semibold flex items-center gap-1">
                           <Percent size={14} />
@@ -212,9 +279,42 @@ export const FeaturedCombos = ({
 
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-semibold">Preço do combo:</span>
-                      <span className="text-2xl font-bold text-green-600">
-                        {formatCurrency(combo.final_price)}
-                      </span>
+                      {needsAddress && !locationLoading && isAuthenticated ? (
+                        <button
+                          onClick={() => setShowAddressModal(true)}
+                          className="relative cursor-pointer group text-left"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Eye size={20} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
+                            <span className="text-2xl font-bold text-gray-400 blur-sm select-none">
+                              {formatCurrency(finalPrice)}
+                            </span>
+                            <MapPin size={16} className="text-gray-400" />
+                          </div>
+                        </button>
+                      ) : !isAuthenticated ? (
+                        <div className="text-left">
+                          <span className="text-2xl font-bold text-gray-400 blur-sm select-none">
+                            {formatCurrency(finalPrice)}
+                          </span>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Faça login para ver o preço
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="text-left">
+                          <span className="text-2xl font-bold text-green-600">
+                            {locationLoading 
+                              ? 'Carregando...' 
+                              : formatCurrency(finalPrice)}
+                          </span>
+                          {!needsAddress && !locationLoading && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {isUberlandia ? '💚 Preço Local (Uberlândia)' : '🌐 Preço Nacional'}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -256,9 +356,69 @@ export const FeaturedCombos = ({
              </div>
            )}
          </div>
-
-
       </div>
+
+      {/* Modal de Cadastro de Endereço */}
+      {typeof window !== 'undefined' && showAddressModal && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowAddressModal(false)
+            }
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-in fade-in zoom-in duration-200"
+          >
+            <button
+              onClick={() => setShowAddressModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+              aria-label="Fechar"
+            >
+              ✕
+            </button>
+            
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                <MapPin size={40} className="text-blue-600" />
+              </div>
+              
+              <div>
+                <h2 className="text-2xl font-bold mb-2">
+                  Cadastre seu endereço
+                </h2>
+                <p className="text-gray-600">
+                  Para visualizar o preço do combo, precisamos do seu endereço
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={() => {
+                    setShowAddressModal(false)
+                    router.push('/minha-conta/enderecos')
+                  }}
+                  className="flex-1"
+                  size="lg"
+                >
+                  <MapPin size={18} className="mr-2" />
+                  Cadastrar Endereço
+                </Button>
+                <Button
+                  onClick={() => setShowAddressModal(false)}
+                  variant="outline"
+                  size="lg"
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </section>
   )
 }
