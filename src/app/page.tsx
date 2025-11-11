@@ -303,6 +303,8 @@ export default async function Home() {
         salePrice={settings.value_package_sale_price}
         deliveryText={settings.value_package_delivery_text}
         buttonText={settings.value_package_button_text}
+        useCustomLink={settings.value_package_use_custom_link}
+        buttonLink={settings.value_package_button_link}
         endDate={timerEnabled ? timerEndDate : undefined}
         elementVisibility={{
           title: settings.value_package_title_visible !== false,

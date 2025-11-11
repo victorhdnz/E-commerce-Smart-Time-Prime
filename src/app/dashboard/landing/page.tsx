@@ -67,6 +67,8 @@ interface LandingSettings {
   value_package_sale_price: string
   value_package_delivery_text: string
   value_package_button_text: string
+  value_package_use_custom_link: boolean
+  value_package_button_link: string
   value_package_whatsapp_number: string
   value_package_discount_text: string
   value_package_promotion_text: string
@@ -256,6 +258,8 @@ export default function EditLandingPage() {
           value_package_sale_price: 'R$ 299',
           value_package_delivery_text: '📍 Entrega em até 24h para Uberlândia',
           value_package_button_text: '💬 GARANTIR MEU DESCONTO AGORA!',
+          value_package_use_custom_link: false,
+          value_package_button_link: '',
           value_package_whatsapp_number: '5534984136291',
     value_package_discount_text: '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
     value_package_promotion_text: '🕒 Promoção válida enquanto durar o estoque.',
@@ -604,6 +608,8 @@ export default function EditLandingPage() {
           value_package_sale_price: savedSettings.value_package_sale_price || 'R$ 299',
           value_package_delivery_text: savedSettings.value_package_delivery_text || '📍 Entrega em até 24h para Uberlândia',
           value_package_button_text: savedSettings.value_package_button_text || '💬 GARANTIR MEU DESCONTO AGORA!',
+          value_package_use_custom_link: savedSettings.value_package_use_custom_link !== undefined ? savedSettings.value_package_use_custom_link : false,
+          value_package_button_link: savedSettings.value_package_button_link || '',
           value_package_whatsapp_number: savedSettings.value_package_whatsapp_number || '5534984136291',
           value_package_discount_text: savedSettings.value_package_discount_text || '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
           value_package_promotion_text: savedSettings.value_package_promotion_text || '🕒 Promoção válida enquanto durar o estoque.',
@@ -1509,9 +1515,37 @@ export default function EditLandingPage() {
                 }
                 placeholder="💬 GARANTIR MEU DESCONTO AGORA!"
               />
-              <p className="text-xs text-gray-500 -mt-2">
-                O botão redireciona automaticamente para a seção de cadastro do WhatsApp VIP.
-              </p>
+              
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={settings.value_package_use_custom_link}
+                    onChange={(e) =>
+                      setSettings({ ...settings, value_package_use_custom_link: e.target.checked })
+                    }
+                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                  />
+                  <span className="text-sm font-medium">Usar link customizado (em vez de rolar para WhatsApp VIP)</span>
+                </label>
+                
+                {settings.value_package_use_custom_link && (
+                  <Input
+                    label="Link de Redirecionamento"
+                    value={settings.value_package_button_link}
+                    onChange={(e) =>
+                      setSettings({ ...settings, value_package_button_link: e.target.value })
+                    }
+                    placeholder="Ex: /produtos/serie-11 ou https://exemplo.com"
+                  />
+                )}
+                
+                {!settings.value_package_use_custom_link && (
+                  <p className="text-xs text-gray-500">
+                    O botão redireciona automaticamente para a seção de cadastro do WhatsApp VIP.
+                  </p>
+                )}
+              </div>
             </div>
           </motion.div>
 

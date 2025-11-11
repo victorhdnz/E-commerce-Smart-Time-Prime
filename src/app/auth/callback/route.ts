@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         .insert({
           id: user.id,
           email: user.email || '',
-          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+          full_name: null, // Deixar em branco para o usuário preencher depois
           avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
           role: 'customer'
         })

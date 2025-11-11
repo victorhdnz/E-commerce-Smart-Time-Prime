@@ -39,6 +39,7 @@ interface Combo {
   discount_percentage_national?: number
   discount_amount_national?: number
   final_price: number
+  available_quantity?: number
   is_active: boolean
   is_featured: boolean
   slug?: string
@@ -81,6 +82,7 @@ export default function BrindesECombosPage() {
     discount_amount_national: 0,
     local_price: '',
     national_price: '',
+    available_quantity: 0,
     items: [] as { product_id: string; quantity: number }[]
   })
 
@@ -325,6 +327,7 @@ export default function BrindesECombosPage() {
         discount_percentage_national: comboForm.discount_percentage_national || 0,
         discount_amount_national: comboForm.discount_amount_national || 0,
         final_price: finalPrice,
+        available_quantity: comboForm.available_quantity || 0,
         is_active: true,
         is_featured: false
       }
@@ -448,6 +451,7 @@ export default function BrindesECombosPage() {
       discount_amount_national: 0,
       local_price: '',
       national_price: '',
+      available_quantity: 0,
       items: []
     })
     setEditingCombo(null)
@@ -488,6 +492,7 @@ export default function BrindesECombosPage() {
       discount_amount_national: combo.discount_amount_national || 0,
       local_price: localPrice,
       national_price: nationalPrice,
+      available_quantity: combo.available_quantity || 0,
       items: combo.combo_items?.map(item => ({
         product_id: item.product_id,
         quantity: item.quantity
@@ -1099,6 +1104,29 @@ export default function BrindesECombosPage() {
                     Preço calculado automaticamente com desconto aplicado. Você pode editar manualmente.
                   </p>
                 </div>
+              </div>
+            </div>
+
+            {/* Available Quantity */}
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-semibold mb-4">Quantidade Disponível</h3>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Unidades Disponíveis
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={comboForm.available_quantity}
+                  onChange={(e) => setComboForm(prev => ({ 
+                    ...prev, 
+                    available_quantity: Number(e.target.value) || 0
+                  }))}
+                  placeholder="0"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Quantidade de unidades deste combo disponíveis para venda. Deixe 0 para ilimitado.
+                </p>
               </div>
             </div>
 

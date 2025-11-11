@@ -145,14 +145,14 @@ export default function CartPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
-                  className={`rounded-lg shadow-md p-4 flex gap-4 ${
+                  className={`rounded-lg shadow-md p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:gap-4 ${
                     item.is_gift ? 'bg-green-50 border-2 border-green-200' : 
                     isCombo ? 'bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200' : 
                     'bg-white'
                   }`}
                 >
                 {/* Image */}
-                <div className="w-24 h-24 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 relative">
+                <div className="w-full sm:w-24 h-48 sm:h-24 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 relative">
                   {isCombo && comboItems && comboItems.length > 0 ? (
                     <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 p-1 flex items-center justify-center">
                       <div className="grid grid-cols-2 gap-0.5 w-full h-full">
@@ -217,15 +217,15 @@ export default function CartPage() {
                 </div>
 
                 {/* Info */}
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-lg">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-base sm:text-lg break-words">
                           {item.product.name}
                         </h3>
                         {isCombo && (
-                          <span className="inline-flex items-center gap-1 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+                          <span className="inline-flex items-center gap-1 bg-green-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold flex-shrink-0">
                             <Package size={12} />
                             Combo
                           </span>
@@ -239,12 +239,12 @@ export default function CartPage() {
                       {isCombo && comboItems && comboItems.length > 0 && (
                         <div className="mt-2 space-y-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <Package size={14} className="text-green-600" />
+                            <Package size={14} className="text-green-600 flex-shrink-0" />
                             <span className="text-xs font-semibold text-green-600">Produtos incluídos:</span>
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {comboItems.slice(0, 3).map((comboItem, idx) => (
-                              <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                              <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded break-words">
                                 {comboItem.quantity > 1 && `${comboItem.quantity}x `}{comboItem.product?.name || 'Produto'}
                               </span>
                             ))}
@@ -262,8 +262,10 @@ export default function CartPage() {
                               ? (comboData.combo.discount_amount_local || 0)
                               : (comboData.combo.discount_amount_national || 0)
                             
+                            if (discountPercentage === 0 && discountAmount === 0) return null
+                            
                             return (
-                              <div className="mt-2 p-2 bg-white rounded border border-green-300">
+                              <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
                                 <div className="text-xs space-y-1">
                                   {discountPercentage > 0 && (
                                     <p className="text-green-700 font-semibold">
@@ -296,9 +298,9 @@ export default function CartPage() {
                 </div>
 
                 {/* Quantity & Price */}
-                <div className="flex flex-col items-end gap-2">
+                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-2 w-full sm:w-auto">
                   {/* Price */}
-                  <div className="text-right">
+                  <div className="text-right sm:text-right">
                     {item.is_gift ? (
                       <>
                         <p className="text-sm text-gray-500 line-through">
@@ -318,16 +320,16 @@ export default function CartPage() {
                           }
                           setShowAddressModal(true)
                         }}
-                        className="relative cursor-pointer group text-left"
+                        className="relative cursor-pointer group text-left sm:text-right"
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 justify-end sm:justify-end">
                           <Eye size={18} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
                           <span className="text-lg font-bold text-gray-400 blur-sm select-none">
                             {formatCurrency(item.product.local_price * item.quantity)}
                           </span>
                           <MapPin size={14} className="text-gray-400" />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 mt-1 text-right">
                           Clique para revelar o preço
                         </p>
                       </button>
@@ -338,48 +340,48 @@ export default function CartPage() {
                     )}
                   </div>
 
-                  {/* Quantity Controls */}
-                  {!item.is_gift && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() =>
-                          updateQuantity(
-                            item.product.id,
-                            item.quantity - 1,
-                            item.color?.id
-                          )
-                        }
-                        className="p-1 rounded-full hover:bg-gray-100"
-                      >
-                        <Minus size={16} />
-                      </button>
-                      <span className="w-12 text-center font-semibold">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() =>
-                          updateQuantity(
-                            item.product.id,
-                            item.quantity + 1,
-                            item.color?.id
-                          )
-                        }
-                        className="p-1 rounded-full hover:bg-gray-100"
-                      >
-                        <Plus size={16} />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Remove Button */}
-                  {!item.is_gift && (
-                    <button
-                      onClick={() => removeItem(item.product.id, item.color?.id)}
-                      className="text-red-600 hover:text-red-800 mt-2"
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  )}
+                  {/* Quantity Controls & Remove */}
+                  <div className="flex items-center gap-2">
+                    {!item.is_gift && (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() =>
+                              updateQuantity(
+                                item.product.id,
+                                item.quantity - 1,
+                                item.color?.id
+                              )
+                            }
+                            className="p-1 rounded-full hover:bg-gray-100"
+                          >
+                            <Minus size={16} />
+                          </button>
+                          <span className="w-12 text-center font-semibold">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() =>
+                              updateQuantity(
+                                item.product.id,
+                                item.quantity + 1,
+                                item.color?.id
+                              )
+                            }
+                            className="p-1 rounded-full hover:bg-gray-100"
+                          >
+                            <Plus size={16} />
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => removeItem(item.product.id, item.color?.id)}
+                          className="text-red-600 hover:text-red-800 ml-2"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
                 </motion.div>
               )

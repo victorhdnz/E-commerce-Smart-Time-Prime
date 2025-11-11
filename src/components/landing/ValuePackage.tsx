@@ -17,6 +17,7 @@ interface ValuePackageProps {
   salePrice?: string
   deliveryText?: string
   buttonText?: string
+  useCustomLink?: boolean
   buttonLink?: string // Novo campo para link de redirecionamento
   whatsappNumber?: string
   discountText?: string
@@ -52,6 +53,7 @@ export const ValuePackage = ({
   salePrice = 'R$ 299',
   deliveryText = '📍 Entrega em até 24h para Uberlândia',
   buttonText = '💬 GARANTIR MEU DESCONTO AGORA!',
+  useCustomLink = false,
   buttonLink, // Novo campo para link de redirecionamento
   whatsappNumber = '5534984136291',
   discountText = '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
@@ -97,7 +99,8 @@ export const ValuePackage = ({
   }, [endDate])
 
   const handleClick = () => {
-    if (buttonLink) {
+    if (useCustomLink && buttonLink) {
+      // Se está usando link customizado e tem link definido
       // Se é um link interno, usar Link do Next.js
       if (buttonLink.startsWith('/')) {
         window.location.href = buttonLink
