@@ -193,7 +193,8 @@ export const FeaturedCombos = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {getCurrentCombos().map((combo, index) => {
             const originalPrice = calculateOriginalPrice(combo)
-            const savings = calculateSavings(combo)
+            const finalPrice = getComboFinalPrice(combo)
+            const savings = originalPrice - finalPrice
             const discountPercentage = originalPrice > 0 ? Math.round((savings / originalPrice) * 100) : 0
 
             return (
