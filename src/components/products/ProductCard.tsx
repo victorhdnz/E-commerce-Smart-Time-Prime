@@ -320,7 +320,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 {/* Preço embaçado com olho */}
                 <div className="flex items-center gap-2 min-w-0">
                   <Eye size={18} className="text-gray-500 group-hover:text-blue-600 transition-colors flex-shrink-0" />
-                  <span className="text-lg sm:text-xl font-bold text-gray-400 blur-sm select-none truncate">
+                  <span className="text-lg sm:text-xl font-bold text-gray-400 blur-sm select-none">
                     {formatCurrency(product.local_price || product.national_price)}
                   </span>
                   <MapPin size={14} className="text-gray-400 flex-shrink-0" />
@@ -333,7 +333,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               <div className="min-w-0">
                 {/* Preço revelado - sem olho */}
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-lg sm:text-xl font-bold truncate">
+                  <span className="text-lg sm:text-xl font-bold">
                     {locationLoading 
                       ? 'Carregando...' 
                       : formatCurrency(getProductPrice(product, isUberlandia))}

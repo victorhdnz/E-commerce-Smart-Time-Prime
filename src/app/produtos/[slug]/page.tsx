@@ -255,7 +255,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     }
   }
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!isAuthenticated) {
       router.push('/login')
       return
@@ -269,15 +269,32 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       return
     }
 
-    // Se for um combo, adicionar o produto combo em si (não os produtos individuais)
-    if (comboItems.length > 0) {
-      addItem(product, selectedColor || undefined, quantity)
-      toast.success('Combo adicionado ao carrinho!')
-    } else {
-      addItem(product, selectedColor || undefined, quantity)
-      // Os brindes são adicionados automaticamente pelo hook useCart
-      // Não precisamos adicionar manualmente aqui para evitar duplicação
-      toast.success('Produto adicionado ao carrinho!')
+    // Verificar estoque antes de adicionar
+    const availableStock = selectedColor?.stock !== undefined ? selectedColor.stock : product.stock
+    if (availableStock <= 0) {
+      toast.error('Produto esgotado')
+      return
+    }
+
+    if (quantity > availableStock) {
+      toast.error(`Estoque insuficiente. Disponível: ${availableStock} unidade(s)`)
+      setQuantity(availableStock)
+      return
+    }
+
+    try {
+      // Se for um combo, adicionar o produto combo em si (não os produtos individuais)
+      if (comboItems.length > 0) {
+        await addItem(product, selectedColor || undefined, quantity)
+        toast.success('Combo adicionado ao carrinho!')
+      } else {
+        await addItem(product, selectedColor || undefined, quantity)
+        // Os brindes são adicionados automaticamente pelo hook useCart
+        // Não precisamos adicionar manualmente aqui para evitar duplicação
+        toast.success('Produto adicionado ao carrinho!')
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao adicionar ao carrinho')
     }
   }
 
@@ -826,7 +843,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                     </div>
                     {!needsAddress && !locationLoading && (discountPercentage > 0 || discountAmount > 0) && (
                       <p className="text-xs text-gray-600 mt-2 text-center">
-                        💰 Você economiza {formatCurrency(totalOriginalPrice - finalPrice)} com este combo!
+                        💰 Você economiza {formatCurrency(calculatedDiscount)} com este combo!
                       </p>
                     )}
                   </div>
@@ -897,7 +914,17 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
           {/* Quantity */}
           <div className="mb-6">
-            <h3 className="font-semibold mb-3">Quantidade</h3>
+            <h3 className="font-semibold mb-3">
+              Quantidade
+              {(() => {
+                const availableStock = selectedColor?.stock !== undefined ? selectedColor.stock : product.stock
+                return (
+                  <span className="ml-2 text-sm font-normal text-gray-600">
+                    ({availableStock} {availableStock === 1 ? 'unidade' : 'unidades'} disponível{availableStock === 1 ? '' : 'eis'})
+                  </span>
+                )
+              })()}
+            </h3>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -909,9 +936,12 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 {quantity}
               </span>
               <button
-                onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                onClick={() => {
+                  const availableStock = selectedColor?.stock !== undefined ? selectedColor.stock : product.stock
+                  setQuantity(Math.min(availableStock, quantity + 1))
+                }}
                 className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-black transition-colors"
-                disabled={quantity >= product.stock}
+                disabled={quantity >= (selectedColor?.stock !== undefined ? selectedColor.stock : product.stock)}
               >
                 +
               </button>

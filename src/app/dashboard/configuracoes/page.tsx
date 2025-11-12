@@ -12,6 +12,7 @@ import { Save, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
 interface SiteConfig {
   site_name: string
@@ -28,6 +29,7 @@ interface SiteConfig {
   address_city: string
   address_state: string
   address_zip: string
+  loading_emoji: string
 }
 
 export default function ConfiguracoesPage() {
@@ -52,6 +54,7 @@ export default function ConfiguracoesPage() {
     address_city: 'Uberlândia',
     address_state: 'MG',
     address_zip: '38413-108',
+    loading_emoji: '⌚',
   })
 
   useEffect(() => {
@@ -104,6 +107,7 @@ export default function ConfiguracoesPage() {
             address_city: fallbackData.address_city || config.address_city,
             address_state: fallbackData.address_state || config.address_state,
             address_zip: fallbackData.address_zip || config.address_zip,
+            loading_emoji: fallbackData.loading_emoji || config.loading_emoji,
           })
         }
         return
@@ -125,6 +129,7 @@ export default function ConfiguracoesPage() {
           address_city: data.address_city || config.address_city,
           address_state: data.address_state || config.address_state,
           address_zip: data.address_zip || config.address_zip,
+          loading_emoji: data.loading_emoji || config.loading_emoji,
         })
       }
     } catch (error) {
@@ -180,6 +185,7 @@ export default function ConfiguracoesPage() {
         address_city: config.address_city,
         address_state: config.address_state,
         address_zip: config.address_zip,
+        loading_emoji: config.loading_emoji,
         updated_at: new Date().toISOString(),
       }
 
@@ -268,7 +274,7 @@ export default function ConfiguracoesPage() {
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+        <LoadingSpinner size="md" />
       </div>
     )
   }
@@ -478,6 +484,47 @@ export default function ConfiguracoesPage() {
                 }
                 placeholder="38413-108"
               />
+            </div>
+          </motion.div>
+
+          {/* Loading Emoji Settings */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h2 className="text-2xl font-bold mb-6">Emoji de Carregamento</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Emoji para Animações de Carregamento
+                </label>
+                <Input
+                  value={config.loading_emoji}
+                  onChange={(e) =>
+                    setConfig({ ...config, loading_emoji: e.target.value })
+                  }
+                  placeholder="⌚"
+                  maxLength={2}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Emoji que aparece nas animações de carregamento do site (ex: ⌚, ⏰, 🔄)
+                </p>
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <p className="text-sm font-medium mb-2">Preview:</p>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-xl">{config.loading_emoji || '⌚'}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600">Animação de carregamento</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </motion.div>
 

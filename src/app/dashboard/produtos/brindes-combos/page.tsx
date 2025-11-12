@@ -256,31 +256,26 @@ export default function BrindesECombosPage() {
 
   // Atualizar preços calculados quando os itens ou desconto mudarem
   useEffect(() => {
-    if (comboForm.items.length > 0) {
+    if (comboForm.items.length > 0 && comboForm.items.every(item => item.product_id)) {
       const calculatedLocal = calculateLocalPrice()
       const calculatedNational = calculateNationalPrice()
       
-      // Atualizar preços apenas se os campos estiverem vazios ou se o usuário não tiver editado manualmente
-      // Verificar se o valor atual é igual ao calculado anteriormente (para não sobrescrever edições manuais)
-      const currentLocal = parseFloat(comboForm.local_price) || 0
-      const currentNational = parseFloat(comboForm.national_price) || 0
-      
-      // Se os campos estão vazios ou se o valor atual é muito próximo do calculado (dentro de 0.01 de diferença)
-      // Isso permite que o usuário edite manualmente sem que seja sobrescrito
-      if (!comboForm.local_price || Math.abs(currentLocal - calculatedLocal) < 0.01) {
-        setComboForm(prev => ({
-          ...prev,
-          local_price: calculatedLocal.toFixed(2)
-        }))
-      }
-      if (!comboForm.national_price || Math.abs(currentNational - calculatedNational) < 0.01) {
-        setComboForm(prev => ({
-          ...prev,
-          national_price: calculatedNational.toFixed(2)
-        }))
-      }
+      // Sempre atualizar os preços quando os produtos ou descontos mudarem
+      // O usuário ainda pode editar manualmente depois
+      setComboForm(prev => ({
+        ...prev,
+        local_price: calculatedLocal > 0 ? calculatedLocal.toFixed(2) : prev.local_price,
+        national_price: calculatedNational > 0 ? calculatedNational.toFixed(2) : prev.national_price
+      }))
+    } else if (comboForm.items.length === 0) {
+      // Limpar preços se não houver produtos
+      setComboForm(prev => ({
+        ...prev,
+        local_price: '',
+        national_price: ''
+      }))
     }
-  }, [comboForm.items, comboForm.discount_percentage_local, comboForm.discount_amount_local, comboForm.discount_percentage_national, comboForm.discount_amount_national])
+  }, [comboForm.items.map(item => `${item.product_id}-${item.quantity}`).join(','), comboForm.discount_percentage_local, comboForm.discount_amount_local, comboForm.discount_percentage_national, comboForm.discount_amount_national])
 
   const handleSaveCombo = async () => {
     if (!comboForm.name || comboForm.items.length === 0) {
@@ -986,6 +981,60 @@ export default function BrindesECombosPage() {
               </div>
             </div>
 
+            {/* Products - MOVED TO TOP */}
+            <div className="border-t pt-4">
+              <div className="flex justify-between items-center mb-4">
+                <label className="block text-sm font-medium">Produtos do Combo</label>
+                <Button size="sm" onClick={addComboItem}>
+                  <Plus size={16} className="mr-1" />
+                  Adicionar Produto
+                </Button>
+              </div>
+
+              <div className="space-y-3">
+                {comboForm.items.map((item, index) => (
+                  <div key={index} className="flex gap-3 items-end">
+                    <div className="flex-1">
+                      <select
+                        value={item.product_id}
+                        onChange={(e) => updateComboItem(index, 'product_id', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      >
+                        <option value="">Selecione um produto</option>
+                        {products.map((product) => (
+                          <option key={product.id} value={product.id}>
+                            {product.name} - {formatCurrency(product.local_price)}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="w-24">
+                      <Input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => updateComboItem(index, 'quantity', Number(e.target.value))}
+                        placeholder="Qtd"
+                      />
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeComboItem(index)}
+                      className="text-red-600 border-red-300 hover:bg-red-50"
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </div>
+                ))}
+                {comboForm.items.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-4">
+                    Adicione produtos ao combo para começar
+                  </p>
+                )}
+              </div>
+            </div>
+
             {/* Discount Local */}
             <div className="border-t pt-4">
               <h3 className="text-lg font-semibold mb-4">Desconto para Preço Local (Uberlândia)</h3>
@@ -999,7 +1048,7 @@ export default function BrindesECombosPage() {
                     value={comboForm.discount_percentage_local}
                     onChange={(e) => setComboForm(prev => ({ 
                       ...prev, 
-                      discount_percentage_local: Number(e.target.value),
+                      discount_percentage_local: Number(e.target.value) || 0,
                       discount_amount_local: 0 
                     }))}
                     placeholder="0"
@@ -1014,7 +1063,7 @@ export default function BrindesECombosPage() {
                     value={comboForm.discount_amount_local}
                     onChange={(e) => setComboForm(prev => ({ 
                       ...prev, 
-                      discount_amount_local: Number(e.target.value),
+                      discount_amount_local: Number(e.target.value) || 0,
                       discount_percentage_local: 0 
                     }))}
                     placeholder="0.00"
@@ -1036,7 +1085,7 @@ export default function BrindesECombosPage() {
                     value={comboForm.discount_percentage_national}
                     onChange={(e) => setComboForm(prev => ({ 
                       ...prev, 
-                      discount_percentage_national: Number(e.target.value),
+                      discount_percentage_national: Number(e.target.value) || 0,
                       discount_amount_national: 0 
                     }))}
                     placeholder="0"
@@ -1051,7 +1100,7 @@ export default function BrindesECombosPage() {
                     value={comboForm.discount_amount_national}
                     onChange={(e) => setComboForm(prev => ({ 
                       ...prev, 
-                      discount_amount_national: Number(e.target.value),
+                      discount_amount_national: Number(e.target.value) || 0,
                       discount_percentage_national: 0 
                     }))}
                     placeholder="0.00"
@@ -1127,55 +1176,6 @@ export default function BrindesECombosPage() {
                 <p className="text-xs text-gray-500 mt-1">
                   Quantidade de unidades deste combo disponíveis para venda. Deixe 0 para ilimitado.
                 </p>
-              </div>
-            </div>
-
-            {/* Products */}
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <label className="block text-sm font-medium">Produtos do Combo</label>
-                <Button size="sm" onClick={addComboItem}>
-                  <Plus size={16} className="mr-1" />
-                  Adicionar Produto
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                {comboForm.items.map((item, index) => (
-                  <div key={index} className="flex gap-3 items-end">
-                    <div className="flex-1">
-                      <select
-                        value={item.product_id}
-                        onChange={(e) => updateComboItem(index, 'product_id', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                      >
-                        <option value="">Selecione um produto</option>
-                        {products.map((product) => (
-                          <option key={product.id} value={product.id}>
-                            {product.name} - {formatCurrency(product.local_price)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="w-24">
-                      <Input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) => updateComboItem(index, 'quantity', Number(e.target.value))}
-                        placeholder="Qtd"
-                      />
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeComboItem(index)}
-                      className="text-red-600 border-red-300 hover:bg-red-50"
-                    >
-                      <Trash2 size={16} />
-                    </Button>
-                  </div>
-                ))}
               </div>
             </div>
 

@@ -21,6 +21,27 @@ export const useCart = create<CartStore>()(
       items: [],
 
       addItem: async (product, color, quantity = 1) => {
+        // Verificar estoque disponível
+        const availableStock = color?.stock !== undefined ? color.stock : product.stock
+        const existingItem = get().items.find(
+          (item) =>
+            item.product.id === product.id &&
+            item.color?.id === color?.id &&
+            !item.is_gift
+        )
+        
+        const currentQuantity = existingItem ? existingItem.quantity : 0
+        const requestedQuantity = currentQuantity + quantity
+        
+        // Limitar quantidade ao estoque disponível
+        if (requestedQuantity > availableStock) {
+          const maxAllowed = availableStock - currentQuantity
+          if (maxAllowed <= 0) {
+            throw new Error(`Estoque insuficiente. Disponível: ${availableStock} unidade(s)`)
+          }
+          quantity = maxAllowed
+        }
+
         // Adicionar produto principal
         set((state) => {
           const existingItem = state.items.find(
@@ -96,6 +117,22 @@ export const useCart = create<CartStore>()(
         if (quantity <= 0) {
           get().removeItem(productId, colorId)
           return
+        }
+
+        // Verificar estoque disponível
+        const item = get().items.find(
+          (item) => item.product.id === productId && item.color?.id === colorId
+        )
+        
+        if (item) {
+          const availableStock = item.color?.stock !== undefined 
+            ? item.color.stock 
+            : item.product.stock
+          
+          // Limitar quantidade ao estoque disponível
+          if (quantity > availableStock) {
+            throw new Error(`Estoque insuficiente. Disponível: ${availableStock} unidade(s)`)
+          }
         }
 
         set((state) => ({

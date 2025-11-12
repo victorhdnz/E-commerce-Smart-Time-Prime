@@ -18,9 +18,11 @@ import {
   UserCheck,
   MessageCircle,
   FileText,
+  Tag,
 } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils/format'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 interface DashboardStats {
   todaySales: number
   newOrders: number
@@ -189,7 +191,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+        <LoadingSpinner size="md" />
       </div>
     )
   }
@@ -281,6 +283,13 @@ export default function DashboardPage() {
       icon: FileText,
       href: '/dashboard/termos',
       color: 'bg-blue-600',
+    },
+    {
+      title: 'Cupons de Desconto',
+      description: 'Criar e gerenciar cupons promocionais',
+      icon: Tag,
+      href: '/dashboard/cupons',
+      color: 'bg-pink-500',
     },
   ]
 
