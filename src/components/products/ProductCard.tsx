@@ -339,11 +339,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                       : formatCurrency(getProductPrice(product, isUberlandia))}
                   </span>
                 </div>
-                {!needsAddress && !locationLoading && (
-                  <p className="text-xs text-gray-500 mt-1 truncate">
-                    {isUberlandia ? '💚 Preço Local (Uberlândia)' : '🌐 Preço Nacional'}
-                  </p>
-                )}
               </div>
             )}
           </div>

@@ -463,11 +463,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                     ? 'Carregando...' 
                     : formatCurrency(getProductPrice(product, isUberlandia))}
                 </span>
-                {!needsAddress && !locationLoading && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    {isUberlandia ? '💚 Preço Local (Uberlândia)' : '🌐 Preço Nacional'}
-                  </p>
-                )}
               </div>
             )}
           </div>
@@ -833,11 +828,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                               ? 'Carregando...' 
                               : formatCurrency(finalPrice)}
                           </span>
-                          {!needsAddress && !locationLoading && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              {isUberlandia ? '💚 Preço Local (Uberlândia)' : '🌐 Preço Nacional'}
-                            </p>
-                          )}
                         </div>
                       )}
                     </div>

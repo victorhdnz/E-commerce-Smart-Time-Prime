@@ -183,9 +183,6 @@ export default function CartPage() {
     let discount = 0
     if (appliedCoupon.discount_type === 'percentage') {
       discount = subtotal * (appliedCoupon.discount_value / 100)
-      if (appliedCoupon.max_discount_amount && discount > appliedCoupon.max_discount_amount) {
-        discount = appliedCoupon.max_discount_amount
-      }
     } else {
       discount = appliedCoupon.discount_value
     }

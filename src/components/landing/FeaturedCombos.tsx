@@ -309,11 +309,6 @@ export const FeaturedCombos = ({
                               ? 'Carregando...' 
                               : formatCurrency(finalPrice)}
                           </span>
-                          {!needsAddress && !locationLoading && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              {isUberlandia ? '💚 Preço Local (Uberlândia)' : '🌐 Preço Nacional'}
-                            </p>
-                          )}
                         </div>
                       )}
                     </div>

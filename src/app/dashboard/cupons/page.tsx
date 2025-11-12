@@ -20,7 +20,6 @@ interface Coupon {
   discount_type: 'percentage' | 'fixed'
   discount_value: number
   min_purchase_amount: number
-  max_discount_amount?: number
   usage_limit?: number
   used_count: number
   is_active: boolean
@@ -43,7 +42,6 @@ export default function CouponsPage() {
     discount_type: 'percentage' as 'percentage' | 'fixed',
     discount_value: 0,
     min_purchase_amount: 0,
-    max_discount_amount: 0,
     usage_limit: 0,
     is_active: true,
     valid_from: new Date().toISOString().split('T')[0],
@@ -88,7 +86,6 @@ export default function CouponsPage() {
       discount_type: 'percentage',
       discount_value: 0,
       min_purchase_amount: 0,
-      max_discount_amount: 0,
       usage_limit: 0,
       is_active: true,
       valid_from: new Date().toISOString().split('T')[0],
@@ -115,37 +112,68 @@ export default function CouponsPage() {
         name: couponForm.name,
         description: couponForm.description || null,
         discount_type: couponForm.discount_type,
-        discount_value: couponForm.discount_value,
-        min_purchase_amount: couponForm.min_purchase_amount || 0,
-        max_discount_amount: couponForm.max_discount_amount || null,
-        usage_limit: couponForm.usage_limit || null,
+        discount_value: Number(couponForm.discount_value),
+        min_purchase_amount: Number(couponForm.min_purchase_amount) || 0,
+        usage_limit: couponForm.usage_limit > 0 ? Number(couponForm.usage_limit) : null,
         is_active: couponForm.is_active,
         valid_from: new Date(couponForm.valid_from).toISOString(),
         valid_until: couponForm.valid_until ? new Date(couponForm.valid_until).toISOString() : null
       }
 
       if (editingCoupon) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('coupons')
           .update(couponData)
           .eq('id', editingCoupon.id)
-
-        if (error) throw error
-        toast.success('Cupom atualizado!')
-      } else {
-        const { error } = await supabase
-          .from('coupons')
-          .insert(couponData)
+          .select()
 
         if (error) {
+          console.error('Erro detalhado ao atualizar cupom:', {
+            error,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint
+          })
+          throw new Error(error.message || `Erro ao atualizar cupom: ${error.code || 'Desconhecido'}`)
+        }
+        
+        if (!data || data.length === 0) {
+          throw new Error('Nenhum registro foi atualizado. Verifique as políticas RLS.')
+        }
+        
+        toast.success('Cupom atualizado!')
+      } else {
+        const { data, error } = await supabase
+          .from('coupons')
+          .insert(couponData)
+          .select()
+
+        if (error) {
+          console.error('Erro detalhado ao criar cupom:', {
+            error,
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            couponData
+          })
           if (error.code === '23505') {
             toast.error('Código do cupom já existe')
+            return
+          } else if (error.code === '42501') {
+            toast.error('Sem permissão para criar cupom. Verifique as políticas RLS.')
+            return
           } else {
-            throw error
+            throw new Error(error.message || `Erro ao criar cupom: ${error.code || 'Desconhecido'}`)
           }
-        } else {
-          toast.success('Cupom criado!')
         }
+        
+        if (!data || data.length === 0) {
+          throw new Error('Cupom não foi criado. Verifique as políticas RLS.')
+        }
+        
+        toast.success('Cupom criado!')
       }
 
       setShowModal(false)
@@ -153,7 +181,8 @@ export default function CouponsPage() {
       loadCoupons()
     } catch (error: any) {
       console.error('Erro ao salvar cupom:', error)
-      toast.error(error.message || 'Erro ao salvar cupom')
+      const errorMessage = error.message || error.toString() || 'Erro ao salvar cupom'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -168,7 +197,6 @@ export default function CouponsPage() {
       discount_type: coupon.discount_type,
       discount_value: coupon.discount_value,
       min_purchase_amount: coupon.min_purchase_amount,
-      max_discount_amount: coupon.max_discount_amount || 0,
       usage_limit: coupon.usage_limit || 0,
       is_active: coupon.is_active,
       valid_from: new Date(coupon.valid_from).toISOString().split('T')[0],
@@ -455,25 +483,6 @@ export default function CouponsPage() {
                 Valor mínimo que o cliente precisa gastar para usar este cupom
               </p>
             </div>
-
-            {couponForm.discount_type === 'percentage' && (
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Desconto Máximo (R$)
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={couponForm.max_discount_amount}
-                  onChange={(e) => setCouponForm(prev => ({ ...prev, max_discount_amount: Number(e.target.value) }))}
-                  placeholder="0.00"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Limite máximo de desconto (deixe 0 para ilimitado)
-                </p>
-              </div>
-            )}
 
             <div>
               <label className="block text-sm font-medium mb-2">
