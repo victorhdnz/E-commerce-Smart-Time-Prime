@@ -23,7 +23,6 @@ async function getPageData() {
     // Buscar tudo em paralelo (sem timeout para não causar lentidão)
     const results = await Promise.allSettled([
       supabase.from('site_settings').select('*').eq('key', 'general').maybeSingle(),
-      supabase.from('site_settings').select('contact_maps_link, contact_whatsapp').limit(1).maybeSingle(), // Buscar link do Google Maps e WhatsApp
       supabase.from('products').select('*, colors:product_colors(*)').eq('is_featured', true).eq('is_active', true).limit(8),
       supabase.from('reviews').select('*').eq('is_approved', true).order('created_at', { ascending: false }).limit(6),
       supabase.from('faqs').select('*').eq('is_active', true).order('order_position', { ascending: true }),
@@ -42,7 +41,7 @@ async function getPageData() {
       supabase.from('site_settings').select('value').eq('key', 'landing_section_order').maybeSingle(),
     ])
 
-    const [settingsResult, mapsLinkResult, productsResult, reviewsResult, faqsResult, layoutResult, combosResult, whatsappLinkResult, requireRegistrationResult, sectionOrderResult] = results
+    const [settingsResult, productsResult, reviewsResult, faqsResult, layoutResult, combosResult, whatsappLinkResult, requireRegistrationResult, sectionOrderResult] = results
 
     // Extrair link do WhatsApp (pode vir do banco ou usar o padrão do código)
     const whatsappLinkData = whatsappLinkResult.status === 'fulfilled' ? whatsappLinkResult.value.data : null
@@ -66,10 +65,11 @@ async function getPageData() {
     // Se não tiver link no banco, usar o padrão do componente
     // O componente já tem o link hardcoded como fallback
 
-    // Extrair link do Google Maps e WhatsApp
-    const mapsLinkData = mapsLinkResult.status === 'fulfilled' ? mapsLinkResult.value.data : null
-    const mapsLink = mapsLinkData?.contact_maps_link || 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6'
-    const contactWhatsApp = mapsLinkData?.contact_whatsapp || '+55 34 8413-6291'
+    // Extrair link do Google Maps e WhatsApp das configurações gerais
+    const settingsData = settingsResult.status === 'fulfilled' ? settingsResult.value.data : null
+    const generalSettings = settingsData?.value || {}
+    const mapsLink = generalSettings.contact_maps_link || 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6'
+    const contactWhatsApp = generalSettings.contact_whatsapp || '+55 34 8413-6291'
 
     // Extrair configuração de cadastro obrigatório
     const requireRegistrationData = requireRegistrationResult.status === 'fulfilled' ? requireRegistrationResult.value.data : null
@@ -82,7 +82,7 @@ async function getPageData() {
 
     // Extrair ordem das seções
     const sectionOrderData = sectionOrderResult.status === 'fulfilled' ? sectionOrderResult.value.data : null
-    let sectionOrder: string[] = ['hero', 'media_showcase', 'value_package', 'social_proof', 'story', 'whatsapp_vip', 'about_us', 'contact']
+    let sectionOrder: string[] = ['hero', 'media_showcase', 'value_package', 'social_proof', 'story', 'whatsapp_vip', 'about_us', 'contact', 'faq']
     if (sectionOrderData?.value && Array.isArray(sectionOrderData.value)) {
       sectionOrder = sectionOrderData.value
     }
@@ -106,7 +106,7 @@ async function getPageData() {
     return {
       siteSettings: null,
       whatsappVipRequireRegistration: true,
-      sectionOrder: ['hero', 'media_showcase', 'value_package', 'social_proof', 'story', 'whatsapp_vip', 'about_us', 'contact'],
+      sectionOrder: ['hero', 'media_showcase', 'value_package', 'social_proof', 'story', 'whatsapp_vip', 'about_us', 'contact', 'faq'],
       products: [],
       reviews: [],
       faqs: [],
@@ -374,8 +374,28 @@ export default async function Home() {
         key="contact"
         title={settings.contact_title}
         description={settings.contact_description}
-        mapsLink={mapsLink}
-        whatsapp={contactWhatsApp}
+        mapsLink={settings.contact_maps_link || mapsLink}
+        whatsapp={settings.contact_whatsapp || contactWhatsApp}
+        email={settings.contact_email}
+        elementVisibility={{
+          title: settings.contact_title_visible !== false,
+          description: settings.contact_description_visible !== false,
+          whatsapp: settings.contact_whatsapp_visible !== false,
+          email: settings.contact_email_visible !== false,
+          schedule: settings.contact_schedule_visible !== false,
+          location: settings.contact_location_visible !== false,
+        }}
+      />
+    ) : null,
+    faq: settings.section_faq_visible !== false ? (
+      <FAQSection
+        key="faq"
+        faqs={faqsToShow as any}
+        title={settings.faq_title || 'Perguntas Frequentes'}
+        backgroundColor={settings.faq_bg_color || '#ffffff'}
+        elementVisibility={{
+          title: settings.faq_title_visible !== false,
+        }}
       />
     ) : null,
   }
@@ -433,6 +453,8 @@ export default async function Home() {
               return settings.about_us_bg_color || '#ffffff'
             case 'contact':
               return settings.contact_bg_color || '#f5f5f5'
+            case 'faq':
+              return settings.faq_bg_color || '#ffffff'
             default:
               return undefined
           }
@@ -461,37 +483,6 @@ export default async function Home() {
           )
         })
       })()}
-
-      {/* FAQ Section */}
-      <SectionTransition
-        backgroundColor="#ffffff"
-        previousBgColor={sectionOrder.length > 0 ? (() => {
-          const lastSectionId = sectionOrder[sectionOrder.length - 1]
-          switch (lastSectionId) {
-            case 'hero':
-              return settings.hero_bg_color || '#000000'
-            case 'media_showcase':
-              return settings.media_showcase_bg_color || '#ffffff'
-            case 'value_package':
-              return settings.value_package_bg_color || '#f5f5f5'
-            case 'social_proof':
-              return settings.social_proof_bg_color || '#ffffff'
-            case 'story':
-              return settings.story_bg_color || '#ffffff'
-            case 'whatsapp_vip':
-              return settings.whatsapp_vip_bg_color || '#000000'
-            case 'about_us':
-              return settings.about_us_bg_color || '#ffffff'
-            case 'contact':
-              return settings.contact_bg_color || '#f5f5f5'
-            default:
-              return '#ffffff'
-          }
-        })() : '#ffffff'}
-        nextBgColor="#000000"
-      >
-        <FAQSection faqs={faqsToShow as any} />
-      </SectionTransition>
 
       {/* CTA Section */}
       <SectionTransition

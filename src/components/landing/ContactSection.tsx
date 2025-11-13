@@ -5,24 +5,54 @@ interface ContactSectionProps {
   description?: string
   mapsLink?: string
   whatsapp?: string
+  email?: string
+  elementVisibility?: {
+    title?: boolean
+    description?: boolean
+    whatsapp?: boolean
+    email?: boolean
+    schedule?: boolean
+    location?: boolean
+  }
 }
 
-export function ContactSection({ title, description, mapsLink, whatsapp = '+55 34 8413-6291' }: ContactSectionProps) {
+export function ContactSection({ 
+  title, 
+  description, 
+  mapsLink, 
+  whatsapp = '+55 34 8413-6291',
+  email = 'contato@smarttimeprime.com.br',
+  elementVisibility = {
+    title: true,
+    description: true,
+    whatsapp: true,
+    email: true,
+    schedule: true,
+    location: true,
+  }
+}: ContactSectionProps) {
   return (
     <section id="contato" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            {title || 'Entre em Contato'}
-          </h2>
-          <p className="text-xl text-gray-600">
-            {description || 'Estamos aqui para ajudar você!'}
-          </p>
-          <div className="w-24 h-1 bg-black mx-auto mt-6" />
+          {elementVisibility.title && (
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              {title || 'Entre em Contato'}
+            </h2>
+          )}
+          {elementVisibility.description && (
+            <>
+              <p className="text-xl text-gray-600">
+                {description || 'Estamos aqui para ajudar você!'}
+              </p>
+              <div className="w-24 h-1 bg-black mx-auto mt-6" />
+            </>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {/* WhatsApp */}
+          {elementVisibility.whatsapp && (
           <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow">
             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -35,8 +65,10 @@ export function ContactSection({ title, description, mapsLink, whatsapp = '+55 3
               {whatsapp}
             </a>
           </div>
+          )}
 
           {/* Email */}
+          {elementVisibility.email && (
           <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow">
             <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,12 +77,14 @@ export function ContactSection({ title, description, mapsLink, whatsapp = '+55 3
             </div>
             <h3 className="text-xl font-bold mb-2">Email</h3>
             <p className="text-gray-600 mb-4">Envie uma mensagem</p>
-            <a href="mailto:contato@smarttimeprime.com.br" className="text-blue-500 hover:text-blue-600 font-semibold text-xs block">
-              contato@smarttimeprime.com.br
+            <a href={`mailto:${email}`} className="text-blue-500 hover:text-blue-600 font-semibold text-xs block">
+              {email}
             </a>
           </div>
+          )}
 
           {/* Horário */}
+          {elementVisibility.schedule && (
           <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow">
             <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,8 +99,10 @@ export function ContactSection({ title, description, mapsLink, whatsapp = '+55 3
             <p className="text-gray-600 text-sm mt-2">Domingo</p>
             <p className="font-semibold text-red-600">Fechado</p>
           </div>
+          )}
 
           {/* Localização */}
+          {elementVisibility.location && (
           <div className="text-center p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow">
             <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,6 +124,7 @@ export function ContactSection({ title, description, mapsLink, whatsapp = '+55 3
               Ver no Mapa →
             </a>
           </div>
+          )}
         </div>
       </div>
     </section>

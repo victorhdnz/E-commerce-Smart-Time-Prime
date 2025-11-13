@@ -10,7 +10,6 @@ import {
   DollarSign,
   Package,
   Layout,
-  MessageSquare,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -241,13 +240,6 @@ export default function DashboardPage() {
       icon: Layout,
       href: '/dashboard/landing',
       color: 'bg-purple-500',
-    },
-    {
-      title: 'FAQ',
-      description: 'Editar perguntas frequentes',
-      icon: MessageSquare,
-      href: '/dashboard/faq',
-      color: 'bg-yellow-500',
     },
     {
       title: 'Clientes',

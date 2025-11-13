@@ -8,26 +8,36 @@ import { FAQ } from '@/types'
 interface FAQSectionProps {
   faqs: FAQ[]
   title?: string
+  backgroundColor?: string
+  elementVisibility?: {
+    title?: boolean
+  }
 }
 
 export const FAQSection = ({
   faqs,
   title = 'Perguntas Frequentes',
+  backgroundColor = '#ffffff',
+  elementVisibility = {
+    title: true,
+  },
 }: FAQSectionProps) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20" style={{ backgroundColor }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">{title}</h2>
-          <div className="w-24 h-1 bg-black mx-auto" />
-        </motion.div>
+        {elementVisibility.title !== false && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">{title}</h2>
+            <div className="w-24 h-1 bg-black mx-auto" />
+          </motion.div>
+        )}
 
         <div className="max-w-3xl mx-auto space-y-4">
           {faqs.map((faq, index) => (

@@ -10,12 +10,14 @@ import { VideoUploader } from '@/components/ui/VideoUploader'
 import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Save, Plus, Trash2, GripVertical } from 'lucide-react'
+import { Save, Plus, Trash2, GripVertical, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import { createClient } from '@/lib/supabase/client'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
+import { Modal } from '@/components/ui/Modal'
+import { FAQ } from '@/types'
 
 interface LandingSettings {
   // Hero Section (expandido)
@@ -110,6 +112,19 @@ interface LandingSettings {
   // Contact Section
   contact_title: string
   contact_description: string
+  contact_email: string
+  contact_whatsapp: string
+  contact_maps_link: string
+  contact_title_visible: boolean
+  contact_description_visible: boolean
+  contact_whatsapp_visible: boolean
+  contact_email_visible: boolean
+  contact_schedule_visible: boolean
+  contact_location_visible: boolean
+  
+  // FAQ Section
+  faq_title: string
+  faq_bg_color: string
   
     // Controles de visibilidade das seções
   section_hero_visible: boolean
@@ -120,6 +135,7 @@ interface LandingSettings {
   section_whatsapp_vip_visible: boolean
   section_about_us_visible: boolean
   section_contact_visible: boolean
+  section_faq_visible: boolean
   
   // Controles de visibilidade de elementos individuais
   // Hero Section
@@ -160,6 +176,9 @@ interface LandingSettings {
   about_us_images_visible: boolean
   about_us_location_visible: boolean
   
+  // FAQ Section
+  faq_title_visible: boolean
+  
   // Section visibility defaults (novos campos)
   section_hero_visible_default: boolean
   section_media_showcase_visible_default: boolean
@@ -169,6 +188,7 @@ interface LandingSettings {
   section_whatsapp_vip_visible_default: boolean
   section_about_us_visible_default: boolean
   section_contact_visible_default: boolean
+  section_faq_visible_default: boolean
   
   // About antigo (compatibilidade)
   about_title: string
@@ -191,6 +211,13 @@ export default function EditLandingPage() {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [faqs, setFaqs] = useState<FAQ[]>([])
+  const [isFaqModalOpen, setIsFaqModalOpen] = useState(false)
+  const [editingFaq, setEditingFaq] = useState<FAQ | null>(null)
+  const [faqFormData, setFaqFormData] = useState({
+    question: '',
+    answer: '',
+  })
   const [sectionOrder, setSectionOrder] = useState<string[]>([
     'hero',
     'media_showcase',
@@ -199,7 +226,8 @@ export default function EditLandingPage() {
     'story',
     'whatsapp_vip',
     'about_us',
-    'contact'
+    'contact',
+    'faq'
   ])
   const [settings, setSettings] = useState<LandingSettings>({
     // Hero
@@ -314,6 +342,18 @@ export default function EditLandingPage() {
     // Contact
     contact_title: 'Entre em Contato',
     contact_description: 'Estamos aqui para ajudar você!',
+    contact_email: 'contato@smarttimeprime.com.br',
+    contact_whatsapp: '+55 34 8413-6291',
+    contact_maps_link: 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6',
+    contact_title_visible: true,
+    contact_description_visible: true,
+    contact_whatsapp_visible: true,
+    contact_email_visible: true,
+    contact_schedule_visible: true,
+    contact_location_visible: true,
+    // FAQ
+    faq_title: 'Perguntas Frequentes',
+    faq_bg_color: '#ffffff',
     // Controles de visibilidade das seções (padrão: todas visíveis)
     section_hero_visible: true,
     section_media_showcase_visible: true,
@@ -323,6 +363,7 @@ export default function EditLandingPage() {
     section_whatsapp_vip_visible: true,
     section_about_us_visible: true,
     section_contact_visible: true,
+    section_faq_visible: true,
     // Section visibility defaults (novos campos)
     section_hero_visible_default: true,
     section_media_showcase_visible_default: true,
@@ -332,6 +373,7 @@ export default function EditLandingPage() {
     section_whatsapp_vip_visible_default: true,
     section_about_us_visible_default: true,
     section_contact_visible_default: true,
+    section_faq_visible_default: true,
     // Controles de visibilidade de elementos individuais (padrão: todos visíveis)
     // Hero Section
     hero_badge_visible: true,
@@ -365,6 +407,8 @@ export default function EditLandingPage() {
     about_us_description_visible: true,
     about_us_images_visible: true,
     about_us_location_visible: true,
+    // FAQ Section
+    faq_title_visible: true,
     // About antigo
     about_title: '',
     about_description: '',
@@ -388,6 +432,7 @@ export default function EditLandingPage() {
 
     loadSettings()
     loadSectionOrder()
+    loadFaqs()
   }, [isAuthenticated, isEditor, authLoading])
 
   const loadSectionOrder = async () => {
@@ -423,6 +468,103 @@ export default function EditLandingPage() {
     } catch (error) {
       console.error('Erro ao salvar ordem das seções:', error)
       toast.error('Erro ao salvar ordem das seções')
+    }
+  }
+
+  const loadFaqs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('faqs')
+        .select('*')
+        .order('order_position', { ascending: true })
+
+      if (error) throw error
+      setFaqs(data as FAQ[] || [])
+    } catch (error) {
+      console.error('Erro ao carregar FAQs:', error)
+      toast.error('Erro ao carregar FAQs')
+    }
+  }
+
+  const handleOpenFaqModal = (faq?: FAQ) => {
+    if (faq) {
+      setEditingFaq(faq)
+      setFaqFormData({
+        question: faq.question,
+        answer: faq.answer,
+      })
+    } else {
+      setEditingFaq(null)
+      setFaqFormData({
+        question: '',
+        answer: '',
+      })
+    }
+    setIsFaqModalOpen(true)
+  }
+
+  const handleSaveFaq = async () => {
+    if (!faqFormData.question || !faqFormData.answer) {
+      toast.error('Preencha todos os campos')
+      return
+    }
+
+    try {
+      if (editingFaq) {
+        const { error } = await supabase
+          .from('faqs')
+          .update(faqFormData)
+          .eq('id', editingFaq.id)
+
+        if (error) throw error
+        toast.success('FAQ atualizada')
+      } else {
+        const { error } = await supabase.from('faqs').insert({
+          ...faqFormData,
+          order_position: faqs.length,
+          is_active: true,
+        })
+
+        if (error) throw error
+        toast.success('FAQ criada')
+      }
+
+      setIsFaqModalOpen(false)
+      loadFaqs()
+    } catch (error: any) {
+      console.error('Erro ao salvar FAQ:', error)
+      toast.error(`Erro ao salvar FAQ: ${error.message || 'Erro desconhecido'}`)
+    }
+  }
+
+  const handleDeleteFaq = async (faqId: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta FAQ?')) return
+
+    try {
+      const { error } = await supabase.from('faqs').delete().eq('id', faqId)
+
+      if (error) throw error
+      toast.success('FAQ excluída')
+      loadFaqs()
+    } catch (error: any) {
+      console.error('Erro ao excluir FAQ:', error)
+      toast.error(`Erro ao excluir FAQ: ${error.message || 'Erro desconhecido'}`)
+    }
+  }
+
+  const toggleFaqStatus = async (faqId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('faqs')
+        .update({ is_active: !currentStatus })
+        .eq('id', faqId)
+
+      if (error) throw error
+      toast.success('Status atualizado')
+      loadFaqs()
+    } catch (error: any) {
+      console.error('Erro ao atualizar status:', error)
+      toast.error(`Erro ao atualizar status: ${error.message || 'Erro desconhecido'}`)
     }
   }
 
@@ -498,7 +640,21 @@ export default function EditLandingPage() {
     contact: {
       label: 'Contato',
       key: 'section_contact_visible',
-      elements: []
+      elements: [
+        { key: 'contact_title_visible', label: 'Título' },
+        { key: 'contact_description_visible', label: 'Descrição' },
+        { key: 'contact_whatsapp_visible', label: 'WhatsApp' },
+        { key: 'contact_email_visible', label: 'Email' },
+        { key: 'contact_schedule_visible', label: 'Horário' },
+        { key: 'contact_location_visible', label: 'Localização' },
+      ]
+    },
+    faq: {
+      label: 'Perguntas Frequentes',
+      key: 'section_faq_visible',
+      elements: [
+        { key: 'faq_title_visible', label: 'Título' },
+      ]
     }
   }
 
@@ -666,6 +822,18 @@ export default function EditLandingPage() {
           // Contact
           contact_title: savedSettings.contact_title || 'Entre em Contato',
           contact_description: savedSettings.contact_description || 'Estamos aqui para ajudar você!',
+          contact_email: savedSettings.contact_email || 'contato@smarttimeprime.com.br',
+          contact_whatsapp: savedSettings.contact_whatsapp || '+55 34 8413-6291',
+          contact_maps_link: savedSettings.contact_maps_link || 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6',
+          contact_title_visible: savedSettings.contact_title_visible !== undefined ? savedSettings.contact_title_visible : true,
+          contact_description_visible: savedSettings.contact_description_visible !== undefined ? savedSettings.contact_description_visible : true,
+          contact_whatsapp_visible: savedSettings.contact_whatsapp_visible !== undefined ? savedSettings.contact_whatsapp_visible : true,
+          contact_email_visible: savedSettings.contact_email_visible !== undefined ? savedSettings.contact_email_visible : true,
+          contact_schedule_visible: savedSettings.contact_schedule_visible !== undefined ? savedSettings.contact_schedule_visible : true,
+          contact_location_visible: savedSettings.contact_location_visible !== undefined ? savedSettings.contact_location_visible : true,
+          // FAQ
+          faq_title: savedSettings.faq_title || 'Perguntas Frequentes',
+          faq_bg_color: savedSettings.faq_bg_color || '#ffffff',
           // Controles de visibilidade das seções
           section_hero_visible: savedSettings.section_hero_visible !== undefined ? savedSettings.section_hero_visible : true,
           section_media_showcase_visible: savedSettings.section_media_showcase_visible !== undefined ? savedSettings.section_media_showcase_visible : true,
@@ -675,6 +843,7 @@ export default function EditLandingPage() {
           section_whatsapp_vip_visible: savedSettings.section_whatsapp_vip_visible !== undefined ? savedSettings.section_whatsapp_vip_visible : true,
           section_about_us_visible: savedSettings.section_about_us_visible !== undefined ? savedSettings.section_about_us_visible : true,
           section_contact_visible: savedSettings.section_contact_visible !== undefined ? savedSettings.section_contact_visible : true,
+          section_faq_visible: savedSettings.section_faq_visible !== undefined ? savedSettings.section_faq_visible : true,
           // Section visibility defaults (novos campos)
           section_hero_visible_default: savedSettings.section_hero_visible_default !== undefined ? savedSettings.section_hero_visible_default : true,
           section_media_showcase_visible_default: savedSettings.section_media_showcase_visible_default !== undefined ? savedSettings.section_media_showcase_visible_default : true,
@@ -684,6 +853,7 @@ export default function EditLandingPage() {
           section_whatsapp_vip_visible_default: savedSettings.section_whatsapp_vip_visible_default !== undefined ? savedSettings.section_whatsapp_vip_visible_default : true,
           section_about_us_visible_default: savedSettings.section_about_us_visible_default !== undefined ? savedSettings.section_about_us_visible_default : true,
           section_contact_visible_default: savedSettings.section_contact_visible_default !== undefined ? savedSettings.section_contact_visible_default : true,
+          section_faq_visible_default: savedSettings.section_faq_visible_default !== undefined ? savedSettings.section_faq_visible_default : true,
           // Controles de visibilidade de elementos individuais
           // Hero Section
           hero_badge_visible: savedSettings.hero_badge_visible !== undefined ? savedSettings.hero_badge_visible : true,
@@ -717,6 +887,8 @@ export default function EditLandingPage() {
           about_us_description_visible: savedSettings.about_us_description_visible !== undefined ? savedSettings.about_us_description_visible : true,
           about_us_images_visible: savedSettings.about_us_images_visible !== undefined ? savedSettings.about_us_images_visible : true,
           about_us_location_visible: savedSettings.about_us_location_visible !== undefined ? savedSettings.about_us_location_visible : true,
+          // FAQ Section
+          faq_title_visible: savedSettings.faq_title_visible !== undefined ? savedSettings.faq_title_visible : true,
           // About antigo (compatibilidade)
           about_title: savedSettings.about_title || savedSettings.about_us_title || '',
           about_description: savedSettings.about_description || savedSettings.about_us_description || '',
@@ -1126,6 +1298,222 @@ export default function EditLandingPage() {
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                 />
+              </div>
+
+              <Input
+                label="E-mail"
+                type="email"
+                value={settings.contact_email}
+                onChange={(e) =>
+                  setSettings({ ...settings, contact_email: e.target.value })
+                }
+                placeholder="contato@smarttimeprime.com.br"
+              />
+              <p className="text-xs text-gray-500 -mt-2">
+                Este e-mail aparecerá na seção de Contato.
+              </p>
+
+              <Input
+                label="WhatsApp"
+                value={settings.contact_whatsapp}
+                onChange={(e) =>
+                  setSettings({ ...settings, contact_whatsapp: e.target.value })
+                }
+                placeholder="+55 34 8413-6291"
+              />
+              <p className="text-xs text-gray-500 -mt-2">
+                Este WhatsApp aparecerá no rodapé e na seção de Contato.
+              </p>
+
+              <Input
+                label="Link do Google Maps"
+                value={settings.contact_maps_link}
+                onChange={(e) =>
+                  setSettings({ ...settings, contact_maps_link: e.target.value })
+                }
+                placeholder="https://maps.app.goo.gl/..."
+              />
+              <p className="text-xs text-gray-500 -mt-2">
+                Link do Google Maps para a localização da loja
+              </p>
+
+              {/* Checkboxes de visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { key: 'contact_title_visible', label: 'Título' },
+                    { key: 'contact_description_visible', label: 'Descrição' },
+                    { key: 'contact_whatsapp_visible', label: 'WhatsApp' },
+                    { key: 'contact_email_visible', label: 'Email' },
+                    { key: 'contact_schedule_visible', label: 'Horário' },
+                    { key: 'contact_location_visible', label: 'Localização' },
+                  ].map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* FAQ Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">❓ Perguntas Frequentes (FAQ)</h2>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.section_faq_visible ?? true}
+                  onChange={(e) =>
+                    setSettings({ ...settings, section_faq_visible: e.target.checked })
+                  }
+                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                />
+                <span className="text-sm font-medium">Ativar Seção</span>
+              </label>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Configurações da Seção */}
+              <div className="border-b pb-6">
+                <h3 className="text-lg font-semibold mb-4">Configurações da Seção</h3>
+                <div className="space-y-4">
+                  <Input
+                    label="Título da Seção"
+                    value={settings.faq_title}
+                    onChange={(e) =>
+                      setSettings({ ...settings, faq_title: e.target.value })
+                    }
+                    placeholder="Ex: Perguntas Frequentes"
+                  />
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Cor de Fundo
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="color"
+                        value={settings.faq_bg_color || '#ffffff'}
+                        onChange={(e) =>
+                          setSettings({ ...settings, faq_bg_color: e.target.value })
+                        }
+                        className="w-16 h-10 border border-gray-300 rounded cursor-pointer"
+                      />
+                      <Input
+                        value={settings.faq_bg_color || '#ffffff'}
+                        onChange={(e) =>
+                          setSettings({ ...settings, faq_bg_color: e.target.value })
+                        }
+                        placeholder="#ffffff"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Checkboxes de visibilidade de elementos individuais */}
+                  <div className="border rounded-lg p-4 bg-gray-50">
+                    <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={settings.faq_title_visible ?? true}
+                          onChange={(e) =>
+                            setSettings({ ...settings, faq_title_visible: e.target.checked })
+                          }
+                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                        />
+                        <span>Título</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gerenciamento de FAQs */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Gerenciar FAQs</h3>
+                  <Button size="sm" onClick={() => handleOpenFaqModal()}>
+                    <Plus size={18} className="mr-2" />
+                    Nova FAQ
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {faqs.length === 0 ? (
+                    <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                      <div className="text-4xl mb-3">❓</div>
+                      <h4 className="text-lg font-semibold mb-2">Nenhuma FAQ cadastrada</h4>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Comece adicionando sua primeira pergunta frequente
+                      </p>
+                      <Button size="sm" onClick={() => handleOpenFaqModal()}>
+                        <Plus size={16} className="mr-2" />
+                        Adicionar FAQ
+                      </Button>
+                    </div>
+                  ) : (
+                    faqs.map((faq) => (
+                      <div
+                        key={faq.id}
+                        className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="font-semibold text-gray-900">{faq.question}</h4>
+                              <div className="flex items-center gap-2">
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={faq.is_active}
+                                    onChange={() =>
+                                      toggleFaqStatus(faq.id, faq.is_active)
+                                    }
+                                    className="sr-only peer"
+                                  />
+                                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                                </label>
+                                <button
+                                  onClick={() => handleOpenFaqModal(faq)}
+                                  className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                                  title="Editar"
+                                >
+                                  <Edit size={16} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteFaq(faq.id)}
+                                  className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+                                  title="Excluir"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-700">{faq.answer}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -2059,6 +2447,52 @@ export default function EditLandingPage() {
 
         </div>
       </div>
+
+      {/* Modal de FAQ */}
+      <Modal
+        isOpen={isFaqModalOpen}
+        onClose={() => setIsFaqModalOpen(false)}
+        title={editingFaq ? 'Editar FAQ' : 'Nova FAQ'}
+      >
+        <div className="space-y-4">
+          <Input
+            label="Pergunta"
+            value={faqFormData.question}
+            onChange={(e) =>
+              setFaqFormData({ ...faqFormData, question: e.target.value })
+            }
+            placeholder="Ex: Como funciona a garantia?"
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Resposta
+            </label>
+            <textarea
+              value={faqFormData.answer}
+              onChange={(e) =>
+                setFaqFormData({ ...faqFormData, answer: e.target.value })
+              }
+              placeholder="Digite a resposta..."
+              rows={5}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+            />
+          </div>
+
+          <div className="flex gap-3">
+            <Button onClick={handleSaveFaq} className="flex-1">
+              Salvar
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsFaqModalOpen(false)}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

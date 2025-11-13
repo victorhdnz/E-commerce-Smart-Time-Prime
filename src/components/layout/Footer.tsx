@@ -27,8 +27,8 @@ export const Footer = () => {
         const supabase = createClient()
         const { data, error } = await supabase
           .from('site_settings')
-          .select('site_name, footer_text, copyright_text, instagram_url, facebook_url, address_street, address_city, address_state, address_zip, contact_whatsapp, contact_email')
-          .limit(1)
+          .select('*')
+          .eq('key', 'general')
           .maybeSingle()
 
         if (error && error.code !== 'PGRST116') {
@@ -36,8 +36,22 @@ export const Footer = () => {
           return
         }
 
-        if (data) {
-          setSiteSettings(data)
+        if (data?.value) {
+          // Extrair dados do objeto value
+          const generalSettings = data.value
+          setSiteSettings({
+            site_name: generalSettings.site_name,
+            footer_text: generalSettings.footer_text,
+            copyright_text: generalSettings.copyright_text,
+            instagram_url: generalSettings.instagram_url,
+            facebook_url: generalSettings.facebook_url,
+            address_street: generalSettings.address_street,
+            address_city: generalSettings.address_city,
+            address_state: generalSettings.address_state,
+            address_zip: generalSettings.address_zip,
+            contact_whatsapp: generalSettings.contact_whatsapp,
+            contact_email: generalSettings.contact_email,
+          })
         }
       } catch (error) {
         console.error('Erro ao carregar configurações:', error)

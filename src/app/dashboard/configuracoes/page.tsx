@@ -22,7 +22,6 @@ interface SiteConfig {
   copyright_text: string
   contact_email: string
   contact_whatsapp: string
-  contact_maps_link: string
   instagram_url: string
   facebook_url: string
   address_street: string
@@ -47,7 +46,6 @@ export default function ConfiguracoesPage() {
     copyright_text: 'Todos os direitos reservados.',
     contact_email: 'contato@smarttimeprime.com.br',
     contact_whatsapp: '+55 34 8413-6291',
-    contact_maps_link: 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6',
     instagram_url: 'https://www.instagram.com/smarttimeprime',
     facebook_url: 'https://www.facebook.com/smarttimeprime/',
     address_street: 'Av. Imbaúba, 1676 - Loja 1046',
@@ -100,7 +98,6 @@ export default function ConfiguracoesPage() {
             copyright_text: fallbackData.copyright_text || config.copyright_text,
             contact_email: fallbackData.contact_email || config.contact_email,
             contact_whatsapp: fallbackData.contact_whatsapp || config.contact_whatsapp,
-            contact_maps_link: fallbackData.contact_maps_link || config.contact_maps_link,
             instagram_url: fallbackData.instagram_url || config.instagram_url,
             facebook_url: fallbackData.facebook_url || config.facebook_url,
             address_street: fallbackData.address_street || config.address_street,
@@ -122,7 +119,6 @@ export default function ConfiguracoesPage() {
           copyright_text: data.copyright_text || config.copyright_text,
           contact_email: data.contact_email || config.contact_email,
           contact_whatsapp: data.contact_whatsapp || config.contact_whatsapp,
-          contact_maps_link: data.contact_maps_link || config.contact_maps_link,
           instagram_url: data.instagram_url || config.instagram_url,
           facebook_url: data.facebook_url || config.facebook_url,
           address_street: data.address_street || config.address_street,
@@ -178,7 +174,6 @@ export default function ConfiguracoesPage() {
         copyright_text: config.copyright_text,
         contact_email: config.contact_email,
         contact_whatsapp: config.contact_whatsapp,
-        contact_maps_link: config.contact_maps_link,
         instagram_url: config.instagram_url,
         facebook_url: config.facebook_url,
         address_street: config.address_street,
@@ -358,14 +353,14 @@ export default function ConfiguracoesPage() {
             </div>
           </motion.div>
 
-          {/* Contact Info */}
+          {/* Contact Info (Rodapé) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Informações de Contato</h2>
+            <h2 className="text-2xl font-bold mb-6">Informações de Contato (Rodapé)</h2>
             
             <div className="space-y-4">
               <Input
@@ -377,6 +372,9 @@ export default function ConfiguracoesPage() {
                 }
                 placeholder="contato@smarttimeprime.com.br"
               />
+              <p className="text-xs text-gray-500 -mt-2">
+                Este e-mail aparecerá no rodapé do site.
+              </p>
 
               <Input
                 label="WhatsApp"
@@ -387,19 +385,7 @@ export default function ConfiguracoesPage() {
                 placeholder="+55 34 8413-6291"
               />
               <p className="text-xs text-gray-500 -mt-2">
-                Este WhatsApp aparecerá no rodapé e na seção de Contato.
-              </p>
-
-              <Input
-                label="Link do Google Maps"
-                value={config.contact_maps_link}
-                onChange={(e) =>
-                  setConfig({ ...config, contact_maps_link: e.target.value })
-                }
-                placeholder="https://maps.google.com/..."
-              />
-              <p className="text-xs text-gray-500 -mt-2">
-                Link do Google Maps para a localização da loja
+                Este WhatsApp aparecerá no rodapé do site.
               </p>
             </div>
           </motion.div>
