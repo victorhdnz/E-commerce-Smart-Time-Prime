@@ -36,21 +36,21 @@ export const Footer = () => {
           return
         }
 
-        if (data?.value) {
-          // Extrair dados do objeto value
-          const generalSettings = data.value
+        if (data) {
+          // Priorizar colunas diretas, mas também verificar dentro do JSONB value
+          const generalSettings = data.value || {}
           setSiteSettings({
-            site_name: generalSettings.site_name,
-            footer_text: generalSettings.footer_text,
-            copyright_text: generalSettings.copyright_text,
-            instagram_url: generalSettings.instagram_url,
-            facebook_url: generalSettings.facebook_url,
-            address_street: generalSettings.address_street,
-            address_city: generalSettings.address_city,
-            address_state: generalSettings.address_state,
-            address_zip: generalSettings.address_zip,
-            contact_whatsapp: generalSettings.contact_whatsapp,
-            contact_email: generalSettings.contact_email,
+            site_name: data.site_name || generalSettings.site_name,
+            footer_text: data.footer_text || generalSettings.footer_text,
+            copyright_text: data.copyright_text || generalSettings.copyright_text,
+            instagram_url: data.instagram_url || generalSettings.instagram_url,
+            facebook_url: data.facebook_url || generalSettings.facebook_url,
+            address_street: data.address_street || generalSettings.address_street,
+            address_city: data.address_city || generalSettings.address_city,
+            address_state: data.address_state || generalSettings.address_state,
+            address_zip: data.address_zip || generalSettings.address_zip,
+            contact_whatsapp: data.contact_whatsapp || generalSettings.contact_whatsapp,
+            contact_email: data.contact_email || generalSettings.contact_email,
           })
         }
       } catch (error) {

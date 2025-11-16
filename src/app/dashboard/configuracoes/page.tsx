@@ -67,65 +67,36 @@ export default function ConfiguracoesPage() {
 
   const loadConfig = async () => {
     try {
-      // Buscar primeiro registro que tenha site_name ou site_logo (configurações gerais)
-      // Ou buscar qualquer registro se não houver um específico
+      // Buscar registro com key = 'general'
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
-        .order('updated_at', { ascending: false })
-        .limit(1)
+        .eq('key', 'general')
         .maybeSingle()
 
       if (error && error.code !== 'PGRST116') {
         console.error('Erro ao buscar configurações:', error)
-        // Se não encontrar, tentar buscar qualquer registro
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('site_settings')
-          .select('*')
-          .limit(1)
-          .maybeSingle()
-
-        if (fallbackError && fallbackError.code !== 'PGRST116') {
-          throw fallbackError
-        }
-
-        if (fallbackData) {
-          setConfig({
-            site_name: fallbackData.site_name || config.site_name,
-            site_logo: fallbackData.site_logo || config.site_logo,
-            site_description: fallbackData.site_description || config.site_description,
-            footer_text: fallbackData.footer_text || config.footer_text,
-            copyright_text: fallbackData.copyright_text || config.copyright_text,
-            contact_email: fallbackData.contact_email || config.contact_email,
-            contact_whatsapp: fallbackData.contact_whatsapp || config.contact_whatsapp,
-            instagram_url: fallbackData.instagram_url || config.instagram_url,
-            facebook_url: fallbackData.facebook_url || config.facebook_url,
-            address_street: fallbackData.address_street || config.address_street,
-            address_city: fallbackData.address_city || config.address_city,
-            address_state: fallbackData.address_state || config.address_state,
-            address_zip: fallbackData.address_zip || config.address_zip,
-            loading_emoji: fallbackData.loading_emoji || config.loading_emoji,
-          })
-        }
-        return
+        throw error
       }
 
       if (data) {
+        // Priorizar colunas diretas, mas também verificar dentro do JSONB value
+        const generalSettings = data.value || {}
         setConfig({
-          site_name: data.site_name || config.site_name,
-          site_logo: data.site_logo || config.site_logo,
-          site_description: data.site_description || config.site_description,
-          footer_text: data.footer_text || config.footer_text,
-          copyright_text: data.copyright_text || config.copyright_text,
-          contact_email: data.contact_email || config.contact_email,
-          contact_whatsapp: data.contact_whatsapp || config.contact_whatsapp,
-          instagram_url: data.instagram_url || config.instagram_url,
-          facebook_url: data.facebook_url || config.facebook_url,
-          address_street: data.address_street || config.address_street,
-          address_city: data.address_city || config.address_city,
-          address_state: data.address_state || config.address_state,
-          address_zip: data.address_zip || config.address_zip,
-          loading_emoji: data.loading_emoji || config.loading_emoji,
+          site_name: data.site_name || generalSettings.site_name || config.site_name,
+          site_logo: data.site_logo || generalSettings.site_logo || config.site_logo,
+          site_description: data.site_description || generalSettings.site_description || config.site_description,
+          footer_text: data.footer_text || generalSettings.footer_text || config.footer_text,
+          copyright_text: data.copyright_text || generalSettings.copyright_text || config.copyright_text,
+          contact_email: data.contact_email || generalSettings.contact_email || config.contact_email,
+          contact_whatsapp: data.contact_whatsapp || generalSettings.contact_whatsapp || config.contact_whatsapp,
+          instagram_url: data.instagram_url || generalSettings.instagram_url || config.instagram_url,
+          facebook_url: data.facebook_url || generalSettings.facebook_url || config.facebook_url,
+          address_street: data.address_street || generalSettings.address_street || config.address_street,
+          address_city: data.address_city || generalSettings.address_city || config.address_city,
+          address_state: data.address_state || generalSettings.address_state || config.address_state,
+          address_zip: data.address_zip || generalSettings.address_zip || config.address_zip,
+          loading_emoji: data.loading_emoji || generalSettings.loading_emoji || config.loading_emoji,
         })
       }
     } catch (error) {
@@ -140,32 +111,21 @@ export default function ConfiguracoesPage() {
     try {
       console.log('Iniciando salvamento...', config)
       
-      // Buscar primeiro registro existente
+      // Buscar registro com key = 'general'
       const { data: existingData, error: checkError } = await supabase
         .from('site_settings')
-        .select('id, key')
-        .order('updated_at', { ascending: false })
-        .limit(1)
+        .select('id, key, value')
+        .eq('key', 'general')
         .maybeSingle()
 
-      // Se não encontrar, tentar buscar qualquer registro
-      let finalExistingData = existingData
-      if (!existingData && checkError?.code === 'PGRST116') {
-        const { data: fallbackData } = await supabase
-          .from('site_settings')
-          .select('id, key')
-          .limit(1)
-          .maybeSingle()
-        finalExistingData = fallbackData || null
-      }
-
-      console.log('Dados existentes encontrados:', finalExistingData)
+      console.log('Dados existentes encontrados:', existingData)
       
       if (checkError && checkError.code !== 'PGRST116') {
         console.error('Erro ao verificar dados existentes:', checkError)
-        // Não lançar erro aqui, tentar criar novo registro
+        throw checkError
       }
 
+      // Preparar dados para colunas diretas
       const updateData: any = {
         site_name: config.site_name,
         site_logo: config.site_logo || null,
@@ -184,6 +144,24 @@ export default function ConfiguracoesPage() {
         updated_at: new Date().toISOString(),
       }
 
+      // Preparar dados para JSONB value (manter consistência)
+      const valueData = {
+        site_name: config.site_name,
+        site_logo: config.site_logo || null,
+        site_description: config.site_description,
+        footer_text: config.footer_text,
+        copyright_text: config.copyright_text,
+        contact_email: config.contact_email,
+        contact_whatsapp: config.contact_whatsapp,
+        instagram_url: config.instagram_url,
+        facebook_url: config.facebook_url,
+        address_street: config.address_street,
+        address_city: config.address_city,
+        address_state: config.address_state,
+        address_zip: config.address_zip,
+        loading_emoji: config.loading_emoji,
+      }
+
       // Remover apenas campos undefined (manter null para site_logo permitir limpar)
       Object.keys(updateData).forEach(key => {
         if (updateData[key] === undefined) {
@@ -191,14 +169,17 @@ export default function ConfiguracoesPage() {
         }
       })
 
+      // Adicionar value ao updateData
+      updateData.value = valueData
+
       console.log('Dados a serem salvos:', updateData)
 
-      if (finalExistingData) {
-        // Atualizar registro existente usando o ID encontrado
+      if (existingData) {
+        // Atualizar registro existente
         const { data, error } = await supabase
           .from('site_settings')
           .update(updateData)
-          .eq('id', finalExistingData.id)
+          .eq('id', existingData.id)
           .select()
 
         console.log('Resultado da atualização:', { data, error })
