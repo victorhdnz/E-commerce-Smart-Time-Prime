@@ -387,7 +387,7 @@ export default async function Home() {
         }}
       />
     ) : null,
-    faq: (settings.section_faq_visible ?? true) !== false ? (
+    faq: (settings.section_faq_visible !== false) && faqsToShow && faqsToShow.length > 0 ? (
       <FAQSection
         key="faq"
         faqs={faqsToShow as any}
