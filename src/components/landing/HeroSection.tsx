@@ -166,7 +166,7 @@ export const HeroSection = ({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.1 }}
-                className="inline-block bg-red-600 text-white px-6 py-3 rounded-full text-lg font-bold mb-6 shadow-2xl"
+                className="inline-block bg-red-600 text-white px-3 py-1.5 md:px-6 md:py-3 rounded-full text-sm md:text-lg font-bold mb-6 shadow-2xl"
               >
                 {badgeText}
               </motion.div>
@@ -371,7 +371,7 @@ export const HeroSection = ({
                     <Button 
                       size="lg" 
                       variant="outline" 
-                      className="text-lg px-8 py-4 border-2 border-white text-white bg-transparent hover:bg-white/10 hover:border-white/80 active:bg-white/20 transition-all duration-300 relative z-10 backdrop-blur-sm group-hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                      className="text-sm md:text-lg px-4 py-2 md:px-8 md:py-4 border-2 border-white text-white bg-transparent hover:bg-white/10 hover:border-white/80 active:bg-white/20 transition-all duration-300 relative z-10 backdrop-blur-sm group-hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                     >
                       {heroButtonText}
                       <motion.div
@@ -385,7 +385,7 @@ export const HeroSection = ({
                         }}
                         className="inline-block ml-2"
                       >
-                        <ChevronRight size={20} />
+                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                       </motion.div>
                     </Button>
                     {/* Glow effect on hover */}
