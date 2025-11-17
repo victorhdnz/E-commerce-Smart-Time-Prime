@@ -14,7 +14,8 @@ import { SectionTransition } from '@/components/landing/SectionTransition'
 import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
 import { createServerClient } from '@/lib/supabase/server'
 
-export const revalidate = 60 // Revalidar a cada 60 segundos
+export const revalidate = 30 // Revalidar a cada 30 segundos para melhor performance
+export const dynamic = 'force-dynamic' // Forçar renderização dinâmica
 
 async function getPageData() {
   const supabase = createServerClient()
@@ -261,6 +262,9 @@ export default async function Home() {
         ctaText={settings.hero_cta_text || '💬 QUERO MEU SÉRIE 11 AGORA!'}
         heroButtonText={settings.hero_button_text}
         heroButtonLink={settings.hero_button_link}
+        viewerCountText={settings.hero_viewer_count_text}
+        viewerCountLink={settings.hero_viewer_count_link}
+        viewerCountEnabled={settings.hero_viewer_count_enabled !== false}
         backgroundColor={settings.hero_bg_color || '#000000'}
         textColor={settings.hero_text_color || '#FFFFFF'}
         heroImages={heroImages}
@@ -275,6 +279,7 @@ export default async function Home() {
           timer: settings.hero_timer_visible !== false,
           cta: settings.hero_cta_visible !== false,
           heroButton: settings.hero_button_visible !== false,
+          viewerCount: true,
         }}
       />
     ) : null,

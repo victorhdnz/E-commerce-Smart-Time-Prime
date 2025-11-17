@@ -27,6 +27,9 @@ interface LandingSettings {
   hero_cta_text: string
   hero_button_text: string
   hero_button_link: string
+  hero_viewer_count_text: string // Texto do status de pessoas vendo
+  hero_viewer_count_link: string // Link do botão de pessoas vendo
+  hero_viewer_count_enabled: boolean // Ativar/desativar status de pessoas vendo
   hero_bg_color: string
   hero_text_color: string
   hero_images: string[]
@@ -179,6 +182,16 @@ interface LandingSettings {
   // FAQ Section
   faq_title_visible: boolean
   
+  // Ordem dos elementos dentro de cada seção
+  hero_element_order: string[]
+  media_showcase_element_order: string[]
+  value_package_element_order: string[]
+  social_proof_element_order: string[]
+  story_element_order: string[]
+  about_us_element_order: string[]
+  contact_element_order: string[]
+  faq_element_order: string[]
+  
   // Section visibility defaults (novos campos)
   section_hero_visible_default: boolean
   section_media_showcase_visible_default: boolean
@@ -237,6 +250,9 @@ export default function EditLandingPage() {
     hero_cta_text: '',
     hero_button_text: '',
     hero_button_link: '',
+    hero_viewer_count_text: 'pessoas vendo agora',
+    hero_viewer_count_link: '',
+    hero_viewer_count_enabled: true,
     hero_bg_color: '#000000',
     hero_text_color: '#FFFFFF',
     hero_images: [],
@@ -409,6 +425,15 @@ export default function EditLandingPage() {
     about_us_location_visible: true,
     // FAQ Section
     faq_title_visible: true,
+    // Ordem dos elementos (padrão: ordem original)
+    hero_element_order: ['hero_banner_visible', 'hero_badge_visible', 'hero_title_visible', 'hero_subtitle_visible', 'hero_viewer_count', 'hero_timer_visible', 'hero_cta_visible', 'hero_button_visible'],
+    media_showcase_element_order: ['media_showcase_title_visible', 'media_showcase_features_visible', 'media_showcase_images_visible', 'media_showcase_video_visible'],
+    value_package_element_order: ['value_package_title_visible', 'value_package_image_visible', 'value_package_items_visible', 'value_package_prices_visible', 'value_package_timer_visible', 'value_package_button_visible'],
+    social_proof_element_order: ['social_proof_title_visible', 'social_proof_reviews_visible'],
+    story_element_order: ['story_title_visible', 'story_content_visible', 'story_images_visible'],
+    about_us_element_order: ['about_us_title_visible', 'about_us_description_visible', 'about_us_images_visible', 'about_us_location_visible'],
+    contact_element_order: ['contact_title_visible', 'contact_description_visible', 'contact_whatsapp_visible', 'contact_email_visible', 'contact_schedule_visible', 'contact_location_visible'],
+    faq_element_order: ['faq_title_visible'],
     // About antigo
     about_title: '',
     about_description: '',
@@ -578,6 +603,7 @@ export default function EditLandingPage() {
         { key: 'hero_badge_visible', label: 'Badge' },
         { key: 'hero_title_visible', label: 'Título' },
         { key: 'hero_subtitle_visible', label: 'Subtítulo' },
+        { key: 'hero_viewer_count', label: 'Status de Pessoas Vendo' },
         { key: 'hero_timer_visible', label: 'Cronômetro' },
         { key: 'hero_cta_visible', label: 'Botão CTA' },
         { key: 'hero_button_visible', label: 'Botão Secundário' },
@@ -670,6 +696,77 @@ export default function EditLandingPage() {
     toast.success('Ordem das seções atualizada!')
   }
 
+  const handleElementDragEnd = (sectionKey: string, result: DropResult) => {
+    if (!result.destination) return
+
+    const orderKey = `${sectionKey}_element_order` as keyof LandingSettings
+    const currentOrder = (settings[orderKey] as string[]) || []
+    const items = Array.from(currentOrder)
+    const [reorderedItem] = items.splice(result.source.index, 1)
+    items.splice(result.destination.index, 0, reorderedItem)
+
+    setSettings({ ...settings, [orderKey]: items } as any)
+    toast.success('Ordem dos elementos atualizada!')
+  }
+
+  // Componente helper para renderizar drag-and-drop de elementos
+  const ElementOrderManager = ({ sectionKey }: { sectionKey: string }) => {
+    const section = sectionMap[sectionKey]
+    if (!section || !section.elements.length) return null
+
+    const orderKey = `${sectionKey}_element_order` as keyof LandingSettings
+    const elementOrder = (settings[orderKey] as string[]) || []
+
+    return (
+      <div className="border rounded-lg p-4 bg-gray-50">
+        <p className="text-sm font-medium mb-3">Ordem e Visibilidade dos Elementos:</p>
+        <p className="text-xs text-gray-600 mb-3">Arraste para reordenar os elementos dentro desta seção</p>
+        <DragDropContext onDragEnd={(result) => handleElementDragEnd(sectionKey, result)}>
+          <Droppable droppableId={`${sectionKey}-elements`}>
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                {elementOrder.map((elementKey, index) => {
+                  const element = section.elements.find(e => e.key === elementKey)
+                  if (!element) return null
+                  
+                  return (
+                    <Draggable key={element.key} draggableId={element.key} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={`flex items-center gap-3 p-3 bg-white rounded-lg border-2 ${
+                            snapshot.isDragging ? 'border-black shadow-lg' : 'border-gray-200'
+                          }`}
+                        >
+                          <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing">
+                            <GripVertical className="w-5 h-5 text-gray-400" />
+                          </div>
+                          <label className="flex items-center gap-2 cursor-pointer flex-1">
+                            <input
+                              type="checkbox"
+                              checked={(settings as any)[element.key] ?? true}
+                              onChange={(e) =>
+                                setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                              }
+                              className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                            />
+                            <span className="text-sm font-medium">{element.label}</span>
+                          </label>
+                        </div>
+                      )}
+                    </Draggable>
+                  )
+                })}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </div>
+    )
+  }
+
   const loadSettings = async () => {
     try {
       const { data, error } = await supabase
@@ -691,6 +788,9 @@ export default function EditLandingPage() {
           hero_cta_text: savedSettings.hero_cta_text || '',
           hero_button_text: savedSettings.hero_button_text || '',
           hero_button_link: savedSettings.hero_button_link || '',
+          hero_viewer_count_text: savedSettings.hero_viewer_count_text || 'pessoas vendo agora',
+          hero_viewer_count_link: savedSettings.hero_viewer_count_link || '',
+          hero_viewer_count_enabled: savedSettings.hero_viewer_count_enabled !== undefined ? savedSettings.hero_viewer_count_enabled : true,
           hero_bg_color: savedSettings.hero_bg_color || '#000000',
           hero_text_color: savedSettings.hero_text_color || '#FFFFFF',
           hero_images: Array.isArray(savedSettings.hero_images) ? savedSettings.hero_images : [],
@@ -889,6 +989,31 @@ export default function EditLandingPage() {
           about_us_location_visible: savedSettings.about_us_location_visible !== undefined ? savedSettings.about_us_location_visible : true,
           // FAQ Section
           faq_title_visible: savedSettings.faq_title_visible !== undefined ? savedSettings.faq_title_visible : true,
+          // Ordem dos elementos
+          hero_element_order: Array.isArray(savedSettings.hero_element_order) && savedSettings.hero_element_order.length > 0 
+            ? savedSettings.hero_element_order 
+            : ['hero_banner_visible', 'hero_badge_visible', 'hero_title_visible', 'hero_subtitle_visible', 'hero_viewer_count', 'hero_timer_visible', 'hero_cta_visible', 'hero_button_visible'],
+          media_showcase_element_order: Array.isArray(savedSettings.media_showcase_element_order) && savedSettings.media_showcase_element_order.length > 0
+            ? savedSettings.media_showcase_element_order
+            : ['media_showcase_title_visible', 'media_showcase_features_visible', 'media_showcase_images_visible', 'media_showcase_video_visible'],
+          value_package_element_order: Array.isArray(savedSettings.value_package_element_order) && savedSettings.value_package_element_order.length > 0
+            ? savedSettings.value_package_element_order
+            : ['value_package_title_visible', 'value_package_image_visible', 'value_package_items_visible', 'value_package_prices_visible', 'value_package_timer_visible', 'value_package_button_visible'],
+          social_proof_element_order: Array.isArray(savedSettings.social_proof_element_order) && savedSettings.social_proof_element_order.length > 0
+            ? savedSettings.social_proof_element_order
+            : ['social_proof_title_visible', 'social_proof_reviews_visible'],
+          story_element_order: Array.isArray(savedSettings.story_element_order) && savedSettings.story_element_order.length > 0
+            ? savedSettings.story_element_order
+            : ['story_title_visible', 'story_content_visible', 'story_images_visible'],
+          about_us_element_order: Array.isArray(savedSettings.about_us_element_order) && savedSettings.about_us_element_order.length > 0
+            ? savedSettings.about_us_element_order
+            : ['about_us_title_visible', 'about_us_description_visible', 'about_us_images_visible', 'about_us_location_visible'],
+          contact_element_order: Array.isArray(savedSettings.contact_element_order) && savedSettings.contact_element_order.length > 0
+            ? savedSettings.contact_element_order
+            : ['contact_title_visible', 'contact_description_visible', 'contact_whatsapp_visible', 'contact_email_visible', 'contact_schedule_visible', 'contact_location_visible'],
+          faq_element_order: Array.isArray(savedSettings.faq_element_order) && savedSettings.faq_element_order.length > 0
+            ? savedSettings.faq_element_order
+            : ['faq_title_visible'],
           // About antigo (compatibilidade)
           about_title: savedSettings.about_title || savedSettings.about_us_title || '',
           about_description: savedSettings.about_description || savedSettings.about_us_description || '',
@@ -963,8 +1088,11 @@ export default function EditLandingPage() {
         }
       }
 
+      // Mesclar com dados existentes para preservar campos que não foram alterados
+      const existingValue = existing?.value || {}
       const settingsToSave = {
-        ...settings,
+        ...existingValue, // Preservar dados existentes
+        ...settings, // Sobrescrever com novos dados
         timer_end_date: timerEndDateISO,
       }
 
@@ -1150,33 +1278,8 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-4">
-              {/* Checkboxes de visibilidade de elementos individuais */}
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { key: 'hero_banner_visible', label: 'Banner' },
-                    { key: 'hero_badge_visible', label: 'Badge' },
-                    { key: 'hero_title_visible', label: 'Título' },
-                    { key: 'hero_subtitle_visible', label: 'Subtítulo' },
-                    { key: 'hero_timer_visible', label: 'Cronômetro' },
-                    { key: 'hero_cta_visible', label: 'Botão CTA' },
-                    { key: 'hero_button_visible', label: 'Botão Secundário' },
-                  ].map((element) => (
-                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                      <input
-                        type="checkbox"
-                        checked={(settings as any)[element.key] ?? true}
-                        onChange={(e) =>
-                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                        }
-                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                      />
-                      <span>{element.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              {/* Ordem e Visibilidade de elementos individuais */}
+              <ElementOrderManager sectionKey="hero" />
 
               <Input
                 label="Título Principal"
@@ -1228,6 +1331,44 @@ export default function EditLandingPage() {
                 }
                 placeholder="Ex: /produtos ou https://exemplo.com"
               />
+
+              {/* Status de Pessoas Vendo */}
+              <div className="pt-4 border-t">
+                <label className="flex items-center gap-3 cursor-pointer mb-4">
+                  <input
+                    type="checkbox"
+                    checked={settings.hero_viewer_count_enabled}
+                    onChange={(e) =>
+                      setSettings({ ...settings, hero_viewer_count_enabled: e.target.checked })
+                    }
+                    className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+                  />
+                  <span className="font-semibold">Ativar Status de Pessoas Vendo</span>
+                </label>
+
+                <Input
+                  label="Texto do Status (ex: 'pessoas vendo agora')"
+                  value={settings.hero_viewer_count_text}
+                  onChange={(e) =>
+                    setSettings({ ...settings, hero_viewer_count_text: e.target.value })
+                  }
+                  placeholder="pessoas vendo agora"
+                  disabled={!settings.hero_viewer_count_enabled}
+                />
+
+                <Input
+                  label="Link do Botão de Status (opcional - deixe vazio para não ter link)"
+                  value={settings.hero_viewer_count_link}
+                  onChange={(e) =>
+                    setSettings({ ...settings, hero_viewer_count_link: e.target.value })
+                  }
+                  placeholder="Ex: /produtos ou https://exemplo.com"
+                  disabled={!settings.hero_viewer_count_enabled}
+                />
+                <p className="text-xs text-gray-500 -mt-2">
+                  Se preenchido, o card de pessoas vendo se torna clicável e redireciona para este link
+                </p>
+              </div>
 
               {/* Banners Carrossel (1920x650) */}
               <div className="pt-4 border-t">
@@ -1337,32 +1478,8 @@ export default function EditLandingPage() {
                 Link do Google Maps para a localização da loja
               </p>
 
-              {/* Checkboxes de visibilidade de elementos individuais */}
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { key: 'contact_title_visible', label: 'Título' },
-                    { key: 'contact_description_visible', label: 'Descrição' },
-                    { key: 'contact_whatsapp_visible', label: 'WhatsApp' },
-                    { key: 'contact_email_visible', label: 'Email' },
-                    { key: 'contact_schedule_visible', label: 'Horário' },
-                    { key: 'contact_location_visible', label: 'Localização' },
-                  ].map((element) => (
-                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                      <input
-                        type="checkbox"
-                        checked={(settings as any)[element.key] ?? true}
-                        onChange={(e) =>
-                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                        }
-                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                      />
-                      <span>{element.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              {/* Ordem e Visibilidade de elementos individuais */}
+              <ElementOrderManager sectionKey="contact" />
             </div>
           </motion.div>
 
@@ -1426,23 +1543,8 @@ export default function EditLandingPage() {
                     </div>
                   </div>
 
-                  {/* Checkboxes de visibilidade de elementos individuais */}
-                  <div className="border rounded-lg p-4 bg-gray-50">
-                    <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <label className="flex items-center gap-2 cursor-pointer text-sm">
-                        <input
-                          type="checkbox"
-                          checked={settings.faq_title_visible ?? true}
-                          onChange={(e) =>
-                            setSettings({ ...settings, faq_title_visible: e.target.checked })
-                          }
-                          className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                        />
-                        <span>Título</span>
-                      </label>
-                    </div>
-                  </div>
+                  {/* Ordem e Visibilidade de elementos individuais */}
+                  <ElementOrderManager sectionKey="faq" />
                 </div>
               </div>
 
@@ -1544,30 +1646,8 @@ export default function EditLandingPage() {
             </p>
             
             <div className="space-y-4 mb-6">
-              {/* Checkboxes de visibilidade de elementos individuais */}
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { key: 'media_showcase_title_visible', label: 'Título' },
-                    { key: 'media_showcase_features_visible', label: 'Características' },
-                    { key: 'media_showcase_images_visible', label: 'Imagens' },
-                    { key: 'media_showcase_video_visible', label: 'Vídeo' },
-                  ].map((element) => (
-                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                      <input
-                        type="checkbox"
-                        checked={(settings as any)[element.key] ?? true}
-                        onChange={(e) =>
-                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                        }
-                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                      />
-                      <span>{element.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              {/* Ordem e Visibilidade de elementos individuais */}
+              <ElementOrderManager sectionKey="media_showcase" />
 
               <Input
                 label="Título da Seção"
@@ -1770,32 +1850,8 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-4">
-              {/* Checkboxes de visibilidade de elementos individuais */}
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { key: 'value_package_title_visible', label: 'Título' },
-                    { key: 'value_package_image_visible', label: 'Imagem' },
-                    { key: 'value_package_items_visible', label: 'Lista de Itens' },
-                    { key: 'value_package_prices_visible', label: 'Preços' },
-                    { key: 'value_package_timer_visible', label: 'Cronômetro' },
-                    { key: 'value_package_button_visible', label: 'Botão' },
-                  ].map((element) => (
-                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                      <input
-                        type="checkbox"
-                        checked={(settings as any)[element.key] ?? true}
-                        onChange={(e) =>
-                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                        }
-                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                      />
-                      <span>{element.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              {/* Ordem e Visibilidade de elementos individuais */}
+              <ElementOrderManager sectionKey="value_package" />
 
               <Input
                 label="Título"
@@ -1960,29 +2016,8 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-4">
-              {/* Checkboxes de visibilidade de elementos individuais */}
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { key: 'story_title_visible', label: 'Título' },
-                    { key: 'story_content_visible', label: 'Conteúdo' },
-                    { key: 'story_images_visible', label: 'Imagens' },
-                  ].map((element) => (
-                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                      <input
-                        type="checkbox"
-                        checked={(settings as any)[element.key] ?? true}
-                        onChange={(e) =>
-                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                        }
-                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                      />
-                      <span>{element.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              {/* Ordem e Visibilidade de elementos individuais */}
+              <ElementOrderManager sectionKey="story" />
 
               <Input
                 label="Título"
@@ -2048,30 +2083,8 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-4">
-              {/* Checkboxes de visibilidade de elementos individuais */}
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { key: 'about_us_title_visible', label: 'Título' },
-                    { key: 'about_us_description_visible', label: 'Descrição' },
-                    { key: 'about_us_images_visible', label: 'Imagens' },
-                    { key: 'about_us_location_visible', label: 'Localização' },
-                  ].map((element) => (
-                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                      <input
-                        type="checkbox"
-                        checked={(settings as any)[element.key] ?? true}
-                        onChange={(e) =>
-                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                        }
-                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                      />
-                      <span>{element.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              {/* Ordem e Visibilidade de elementos individuais */}
+              <ElementOrderManager sectionKey="about_us" />
 
               <Input
                 label="Título"
@@ -2249,28 +2262,8 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-4">
-              {/* Checkboxes de visibilidade de elementos individuais */}
-              <div className="border rounded-lg p-4 bg-gray-50">
-                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { key: 'social_proof_title_visible', label: 'Título' },
-                    { key: 'social_proof_reviews_visible', label: 'Avaliações' },
-                  ].map((element) => (
-                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                      <input
-                        type="checkbox"
-                        checked={(settings as any)[element.key] ?? true}
-                        onChange={(e) =>
-                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                        }
-                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                      />
-                      <span>{element.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              {/* Ordem e Visibilidade de elementos individuais */}
+              <ElementOrderManager sectionKey="social_proof" />
 
               <Input
                 label="Título"

@@ -169,11 +169,12 @@ export function VideoUploader({
     <div className={`space-y-4 ${className}`}>
       <div className="relative">
         {preview ? (
-          <div className="relative group">
+          <div className="relative group bg-black rounded-lg">
             <video
               src={preview}
               controls
               className="w-full h-48 object-cover rounded-lg border"
+              style={{ backgroundColor: '#000000' }}
             />
             <div className="absolute top-2 right-2">
               <Button

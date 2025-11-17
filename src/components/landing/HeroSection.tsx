@@ -20,6 +20,8 @@ interface HeroSectionProps {
   textColor?: string
   badgeText?: string
   viewerCountText?: string
+  viewerCountLink?: string
+  viewerCountEnabled?: boolean
   timerEndDate?: Date
   heroImages?: string[]
   heroBanner?: string
@@ -32,6 +34,7 @@ interface HeroSectionProps {
     timer?: boolean
     cta?: boolean
     heroButton?: boolean
+    viewerCount?: boolean
   }
 }
 
@@ -46,7 +49,9 @@ export const HeroSection = ({
   backgroundColor, // Será ignorado, sempre usará preto
   textColor, // Será ignorado, sempre usará branco
   badgeText = '🚨 A BLACK FRIDAY CHEGOU!',
-  viewerCountText,
+  viewerCountText = 'pessoas vendo agora',
+  viewerCountLink,
+  viewerCountEnabled = true,
   timerEndDate,
   heroImages = [],
   heroBanner,
@@ -59,6 +64,7 @@ export const HeroSection = ({
     timer: true,
     cta: true,
     heroButton: true,
+    viewerCount: true,
   },
 }: HeroSectionProps) => {
   // Cores fixas da empresa (preto e branco)
@@ -224,98 +230,174 @@ export const HeroSection = ({
               className="flex flex-col items-center justify-center gap-4 text-base md:text-lg"
             >
               {/* Card de Pessoas Visualizando com Status */}
-              <motion.div
-                key={viewerCount}
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                className="relative"
-              >
-                <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl backdrop-blur-md border-2 transition-all duration-300 ${
-                  viewerCount < 15
-                    ? 'bg-orange-500/20 border-orange-400/50'
-                    : viewerCount >= 20
-                    ? 'bg-red-500/20 border-red-400/50'
-                    : 'bg-green-500/20 border-green-400/50'
-                }`}>
-                  {/* Ícone de Fogo Animado */}
+              {elementVisibility.viewerCount && viewerCountEnabled && (
+                <motion.div
+                  key={viewerCount}
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                  className="relative"
+                >
+                  {viewerCountLink ? (
+                    <Link href={viewerCountLink} target={viewerCountLink.startsWith('http') ? '_blank' : '_self'} rel={viewerCountLink.startsWith('http') ? 'noopener noreferrer' : undefined}>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl backdrop-blur-md border-2 transition-all duration-300 cursor-pointer ${
+                          viewerCount < 15
+                            ? 'bg-orange-500/20 border-orange-400/50'
+                            : viewerCount >= 20
+                            ? 'bg-red-500/20 border-red-400/50'
+                            : 'bg-green-500/20 border-green-400/50'
+                        }`}
+                      >
+                        {/* Ícone de Fogo Animado */}
+                        <motion.div
+                          animate={{
+                            scale: [1, 1.2, 1],
+                            rotate: [0, 5, -5, 0],
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: 'easeInOut'
+                          }}
+                          className="text-2xl"
+                        >
+                          🔥
+                        </motion.div>
+                        
+                        {/* Número de Pessoas */}
+                        <div className="flex items-center gap-2">
+                          <motion.span
+                            key={viewerCount}
+                            initial={{ y: -10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ type: 'spring', stiffness: 300 }}
+                            className={`text-xl md:text-2xl font-black ${
+                              viewerCount < 15
+                                ? 'text-orange-300'
+                                : viewerCount >= 20
+                                ? 'text-red-300'
+                                : 'text-green-300'
+                            }`}
+                          >
+                            {viewerCount}
+                          </motion.span>
+                          <span className="text-sm md:text-base font-bold text-white">
+                            {viewerCountText}
+                          </span>
+                        </div>
+                        
+                        {/* Badge de Status */}
+                        <motion.span
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.2 }}
+                          className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                            viewerCount < 15
+                              ? 'bg-orange-500/30 text-orange-200 border-orange-400/50'
+                              : viewerCount >= 20
+                              ? 'bg-red-500/30 text-red-200 border-red-400/50'
+                              : 'bg-green-500/30 text-green-200 border-green-400/50'
+                          }`}
+                        >
+                          {viewerCount < 15
+                            ? 'POPULAR'
+                            : viewerCount >= 20
+                            ? 'ALTA DEMANDA'
+                            : 'MUITA GENTE'}
+                        </motion.span>
+                      </motion.div>
+                    </Link>
+                  ) : (
+                    <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl backdrop-blur-md border-2 transition-all duration-300 ${
+                      viewerCount < 15
+                        ? 'bg-orange-500/20 border-orange-400/50'
+                        : viewerCount >= 20
+                        ? 'bg-red-500/20 border-red-400/50'
+                        : 'bg-green-500/20 border-green-400/50'
+                    }`}>
+                      {/* Ícone de Fogo Animado */}
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.2, 1],
+                          rotate: [0, 5, -5, 0],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: 'easeInOut'
+                        }}
+                        className="text-2xl"
+                      >
+                        🔥
+                      </motion.div>
+                      
+                      {/* Número de Pessoas */}
+                      <div className="flex items-center gap-2">
+                        <motion.span
+                          key={viewerCount}
+                          initial={{ y: -10, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          transition={{ type: 'spring', stiffness: 300 }}
+                          className={`text-xl md:text-2xl font-black ${
+                            viewerCount < 15
+                              ? 'text-orange-300'
+                              : viewerCount >= 20
+                              ? 'text-red-300'
+                              : 'text-green-300'
+                          }`}
+                        >
+                          {viewerCount}
+                        </motion.span>
+                        <span className="text-sm md:text-base font-bold text-white">
+                          {viewerCountText}
+                        </span>
+                      </div>
+                      
+                      {/* Badge de Status */}
+                      <motion.span
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                          viewerCount < 15
+                            ? 'bg-orange-500/30 text-orange-200 border-orange-400/50'
+                            : viewerCount >= 20
+                            ? 'bg-red-500/30 text-red-200 border-red-400/50'
+                            : 'bg-green-500/30 text-green-200 border-green-400/50'
+                        }`}
+                      >
+                        {viewerCount < 15
+                          ? 'POPULAR'
+                          : viewerCount >= 20
+                          ? 'ALTA DEMANDA'
+                          : 'MUITA GENTE'}
+                      </motion.span>
+                    </div>
+                  )}
+                  
+                  {/* Glow Effect */}
                   <motion.div
+                    className={`absolute inset-0 rounded-2xl blur-xl -z-10 ${
+                      viewerCount < 15
+                        ? 'bg-orange-500/30'
+                        : viewerCount >= 20
+                        ? 'bg-red-500/30'
+                        : 'bg-green-500/30'
+                    }`}
                     animate={{
-                      scale: [1, 1.2, 1],
-                      rotate: [0, 5, -5, 0],
+                      opacity: [0.3, 0.6, 0.3],
                     }}
                     transition={{
                       duration: 2,
                       repeat: Infinity,
                       ease: 'easeInOut'
                     }}
-                    className="text-2xl"
-                  >
-                    🔥
-                  </motion.div>
-                  
-                  {/* Número de Pessoas */}
-                  <div className="flex items-center gap-2">
-                    <motion.span
-                      key={viewerCount}
-                      initial={{ y: -10, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ type: 'spring', stiffness: 300 }}
-                      className={`text-xl md:text-2xl font-black ${
-                        viewerCount < 15
-                          ? 'text-orange-300'
-                          : viewerCount >= 20
-                          ? 'text-red-300'
-                          : 'text-green-300'
-                      }`}
-                    >
-                      {viewerCount}
-                    </motion.span>
-                    <span className="text-sm md:text-base font-bold text-white">
-                      pessoas vendo agora
-                    </span>
-                  </div>
-                  
-                  {/* Badge de Status */}
-                  <motion.span
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
-                      viewerCount < 15
-                        ? 'bg-orange-500/30 text-orange-200 border-orange-400/50'
-                        : viewerCount >= 20
-                        ? 'bg-red-500/30 text-red-200 border-red-400/50'
-                        : 'bg-green-500/30 text-green-200 border-green-400/50'
-                    }`}
-                  >
-                    {viewerCount < 15
-                      ? 'POPULAR'
-                      : viewerCount >= 20
-                      ? 'ALTA DEMANDA'
-                      : 'MUITA GENTE'}
-                  </motion.span>
-                </div>
-                
-                {/* Glow Effect */}
-                <motion.div
-                  className={`absolute inset-0 rounded-2xl blur-xl -z-10 ${
-                    viewerCount < 15
-                      ? 'bg-orange-500/30'
-                      : viewerCount >= 20
-                      ? 'bg-red-500/30'
-                      : 'bg-green-500/30'
-                  }`}
-                  animate={{
-                    opacity: [0.3, 0.6, 0.3],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: 'easeInOut'
-                  }}
-                />
-              </motion.div>
+                  />
+                </motion.div>
+              )}
               
               {elementVisibility.timer && timerEndDate && (
                 <motion.div
@@ -332,8 +414,8 @@ export const HeroSection = ({
               )}
             </motion.div>
 
-            {/* CTA Button */}
-            {elementVisibility.cta && ctaText && !ctaText.toLowerCase().includes('garantir agora') && (
+            {/* CTA Button - Só aparece se heroButton não estiver configurado */}
+            {elementVisibility.cta && ctaText && !ctaText.toLowerCase().includes('garantir agora') && (!heroButtonText || !heroButtonLink) && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -354,7 +436,7 @@ export const HeroSection = ({
               </motion.div>
             )}
 
-            {/* Hero Button (Novo botão editável) */}
+            {/* Hero Button (Novo botão editável) - Prioridade sobre CTA */}
             {elementVisibility.heroButton && heroButtonText && heroButtonLink && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -368,29 +450,64 @@ export const HeroSection = ({
                     whileTap={{ scale: 0.95 }}
                     className="relative inline-block group"
                   >
-                    <Button 
-                      size="lg" 
-                      variant="outline" 
-                      className="text-sm md:text-lg px-4 py-2 md:px-8 md:py-4 border-2 border-white text-white bg-transparent hover:bg-white/10 hover:border-white/80 active:bg-white/20 transition-all duration-300 relative z-10 backdrop-blur-sm group-hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-                    >
-                      {heroButtonText}
-                      <motion.div
-                        animate={{
-                          x: [0, 4, 0],
-                        }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          ease: 'easeInOut'
-                        }}
-                        className="inline-block ml-2"
-                      >
-                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
-                      </motion.div>
-                    </Button>
-                    {/* Glow effect on hover */}
                     <motion.div
-                      className="absolute inset-0 rounded-lg blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-300 pointer-events-none -z-10"
+                      animate={{
+                        boxShadow: [
+                          '0 0 0px rgba(255,255,255,0)',
+                          '0 0 20px rgba(255,255,255,0.5)',
+                          '0 0 0px rgba(255,255,255,0)',
+                        ],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: 'easeInOut'
+                      }}
+                      className="rounded-lg"
+                    >
+                      <Button 
+                        size="lg" 
+                        variant="outline" 
+                        className="text-sm md:text-lg px-4 py-2 md:px-8 md:py-4 border-2 border-white text-white bg-transparent hover:bg-white/10 hover:border-white/80 active:bg-white/20 transition-all duration-300 relative z-10 backdrop-blur-sm group-hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+                      >
+                        <motion.span
+                          animate={{
+                            opacity: [1, 0.7, 1],
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: 'easeInOut'
+                          }}
+                        >
+                          {heroButtonText}
+                        </motion.span>
+                        <motion.div
+                          animate={{
+                            x: [0, 4, 0],
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: 'easeInOut'
+                          }}
+                          className="inline-block ml-2"
+                        >
+                          <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                        </motion.div>
+                      </Button>
+                    </motion.div>
+                    {/* Glow effect permanente com animação */}
+                    <motion.div
+                      className="absolute inset-0 rounded-lg blur-xl pointer-events-none -z-10"
+                      animate={{
+                        opacity: [0.3, 0.7, 0.3],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: 'easeInOut'
+                      }}
                       style={{
                         background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)',
                       }}

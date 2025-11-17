@@ -220,14 +220,14 @@ export const MediaShowcase = ({
               <div className="bg-gradient-to-br from-accent/20 to-transparent p-1 rounded-2xl">
                 <div className="bg-black rounded-xl overflow-hidden">
                   {videoUrl ? (
-                    <div className="aspect-[9/16] relative">
+                    <div className="aspect-[9/16] relative bg-black">
                       <video
                         src={videoUrl}
                         controls
                         loop
                         playsInline
                         className="w-full h-full object-cover"
-                        poster="/placeholder-video.jpg"
+                        style={{ backgroundColor: '#000000' }}
                       >
                         Seu navegador não suporta vídeo.
                       </video>
