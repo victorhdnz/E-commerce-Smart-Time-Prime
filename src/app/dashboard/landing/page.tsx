@@ -2234,17 +2234,36 @@ export default function EditLandingPage() {
             <DragDropContext onDragEnd={(result) => {
               if (!result.destination) return
               
-              // Drag de seção
-              if (result.source.droppableId === 'sections' && result.destination.droppableId === 'sections') {
-                handleDragEnd(result)
+              // Drag de seção (identificado pelo draggableId começando com "section-")
+              if (result.draggableId.startsWith('section-')) {
+                const sectionId = result.draggableId.replace('section-', '')
+                // Criar um novo result com o sectionId correto para handleDragEnd
+                const sectionResult = {
+                  ...result,
+                  draggableId: sectionId,
+                }
+                handleDragEnd(sectionResult as DropResult)
               }
-              // Drag de elemento dentro de seção
-              else if (result.source.droppableId.includes('-elements') && result.destination.droppableId.includes('-elements')) {
-                const sectionKey = result.source.droppableId.replace('-elements', '')
-                handleElementDragEnd(sectionKey, result)
+              // Drag de elemento dentro de seção (identificado pelo draggableId começando com "element-")
+              else if (result.draggableId.startsWith('element-')) {
+                // Extrair sectionId e elementKey do draggableId
+                // Formato: element-{sectionId}-{elementKey}
+                const withoutPrefix = result.draggableId.replace('element-', '')
+                // Encontrar o primeiro hífen que separa sectionId do elementKey
+                const firstDashIndex = withoutPrefix.indexOf('-')
+                if (firstDashIndex > 0) {
+                  const sectionKey = withoutPrefix.substring(0, firstDashIndex)
+                  const elementKey = withoutPrefix.substring(firstDashIndex + 1)
+                  // Criar um novo result com o elementKey correto
+                  const elementResult = {
+                    ...result,
+                    draggableId: elementKey,
+                  }
+                  handleElementDragEnd(sectionKey, elementResult as DropResult)
+                }
               }
             }}>
-              <Droppable droppableId="sections" type="SECTION">
+              <Droppable droppableId="sections">
                 {(provided) => (
                   <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
                     {sectionOrder.map((sectionId, index) => {
@@ -2255,7 +2274,7 @@ export default function EditLandingPage() {
                       const elementOrder = (settings[orderKey] as string[]) || []
                       
                       return (
-                        <Draggable key={sectionId} draggableId={sectionId} index={index} type="SECTION">
+                        <Draggable key={sectionId} draggableId={`section-${sectionId}`} index={index}>
                           {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
@@ -2281,7 +2300,7 @@ export default function EditLandingPage() {
                               {(settings as any)[section.key] && section.elements.length > 0 && (
                                 <div className="ml-8 mt-3 pl-4 border-l-2 border-gray-200">
                                   <p className="text-xs text-gray-600 mb-2 font-medium">Elementos (arraste para reordenar):</p>
-                                  <Droppable droppableId={`${sectionId}-elements`} type="ELEMENT">
+                                  <Droppable droppableId={`${sectionId}-elements`}>
                                     {(provided) => (
                                       <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                                         {elementOrder.map((elementKey, elementIndex) => {
@@ -2289,7 +2308,7 @@ export default function EditLandingPage() {
                                           if (!element) return null
                                           
                                           return (
-                                            <Draggable key={element.key} draggableId={element.key} index={elementIndex} type="ELEMENT">
+                                            <Draggable key={element.key} draggableId={`element-${sectionId}-${element.key}`} index={elementIndex}>
                                               {(provided, snapshot) => (
                                                 <div
                                                   ref={provided.innerRef}
