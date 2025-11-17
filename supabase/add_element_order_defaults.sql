@@ -1,5 +1,6 @@
 -- Adicionar valores padrão para ordem dos elementos dentro de cada seção
 -- Este script garante que os campos de ordem dos elementos existam no JSONB value
+-- Também remove o campo hero_viewer_count_link que não é mais necessário
 
 DO $$
 DECLARE
@@ -88,6 +89,11 @@ BEGIN
       updated_value := updated_value || jsonb_build_object(
         'faq_element_order', ARRAY['faq_title_visible']::text[]
       );
+    END IF;
+
+    -- Remover hero_viewer_count_link se existir (não é mais necessário)
+    IF updated_value ? 'hero_viewer_count_link' THEN
+      updated_value := updated_value - 'hero_viewer_count_link';
     END IF;
 
     -- Atualizar o registro

@@ -28,7 +28,6 @@ interface LandingSettings {
   hero_button_text: string
   hero_button_link: string
   hero_viewer_count_text: string // Texto do status de pessoas vendo
-  hero_viewer_count_link: string // Link do botão de pessoas vendo
   hero_viewer_count_enabled: boolean // Ativar/desativar status de pessoas vendo
   hero_bg_color: string
   hero_text_color: string
@@ -251,7 +250,6 @@ export default function EditLandingPage() {
     hero_button_text: '',
     hero_button_link: '',
     hero_viewer_count_text: 'pessoas vendo agora',
-    hero_viewer_count_link: '',
     hero_viewer_count_enabled: true,
     hero_bg_color: '#000000',
     hero_text_color: '#FFFFFF',
@@ -709,63 +707,6 @@ export default function EditLandingPage() {
     toast.success('Ordem dos elementos atualizada!')
   }
 
-  // Componente helper para renderizar drag-and-drop de elementos
-  const ElementOrderManager = ({ sectionKey }: { sectionKey: string }) => {
-    const section = sectionMap[sectionKey]
-    if (!section || !section.elements.length) return null
-
-    const orderKey = `${sectionKey}_element_order` as keyof LandingSettings
-    const elementOrder = (settings[orderKey] as string[]) || []
-
-    return (
-      <div className="border rounded-lg p-4 bg-gray-50">
-        <p className="text-sm font-medium mb-3">Ordem e Visibilidade dos Elementos:</p>
-        <p className="text-xs text-gray-600 mb-3">Arraste para reordenar os elementos dentro desta seção</p>
-        <DragDropContext onDragEnd={(result) => handleElementDragEnd(sectionKey, result)}>
-          <Droppable droppableId={`${sectionKey}-elements`}>
-            {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                {elementOrder.map((elementKey, index) => {
-                  const element = section.elements.find(e => e.key === elementKey)
-                  if (!element) return null
-                  
-                  return (
-                    <Draggable key={element.key} draggableId={element.key} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className={`flex items-center gap-3 p-3 bg-white rounded-lg border-2 ${
-                            snapshot.isDragging ? 'border-black shadow-lg' : 'border-gray-200'
-                          }`}
-                        >
-                          <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing">
-                            <GripVertical className="w-5 h-5 text-gray-400" />
-                          </div>
-                          <label className="flex items-center gap-2 cursor-pointer flex-1">
-                            <input
-                              type="checkbox"
-                              checked={(settings as any)[element.key] ?? true}
-                              onChange={(e) =>
-                                setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                              }
-                              className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                            />
-                            <span className="text-sm font-medium">{element.label}</span>
-                          </label>
-                        </div>
-                      )}
-                    </Draggable>
-                  )
-                })}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </div>
-    )
-  }
 
   const loadSettings = async () => {
     try {
@@ -789,7 +730,6 @@ export default function EditLandingPage() {
           hero_button_text: savedSettings.hero_button_text || '',
           hero_button_link: savedSettings.hero_button_link || '',
           hero_viewer_count_text: savedSettings.hero_viewer_count_text || 'pessoas vendo agora',
-          hero_viewer_count_link: savedSettings.hero_viewer_count_link || '',
           hero_viewer_count_enabled: savedSettings.hero_viewer_count_enabled !== undefined ? savedSettings.hero_viewer_count_enabled : true,
           hero_bg_color: savedSettings.hero_bg_color || '#000000',
           hero_text_color: savedSettings.hero_text_color || '#FFFFFF',
@@ -1278,8 +1218,26 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-4">
-              {/* Ordem e Visibilidade de elementos individuais */}
-              <ElementOrderManager sectionKey="hero" />
+              {/* Visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <p className="text-xs text-gray-600 mb-3">Para reordenar os elementos, use a aba "Visibilidade e Ordem das Seções"</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {sectionMap.hero.elements.map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               <Input
                 label="Título Principal"
@@ -1355,19 +1313,6 @@ export default function EditLandingPage() {
                   placeholder="pessoas vendo agora"
                   disabled={!settings.hero_viewer_count_enabled}
                 />
-
-                <Input
-                  label="Link do Botão de Status (opcional - deixe vazio para não ter link)"
-                  value={settings.hero_viewer_count_link}
-                  onChange={(e) =>
-                    setSettings({ ...settings, hero_viewer_count_link: e.target.value })
-                  }
-                  placeholder="Ex: /produtos ou https://exemplo.com"
-                  disabled={!settings.hero_viewer_count_enabled}
-                />
-                <p className="text-xs text-gray-500 -mt-2">
-                  Se preenchido, o card de pessoas vendo se torna clicável e redireciona para este link
-                </p>
               </div>
 
               {/* Banners Carrossel (1920x650) */}
@@ -1478,8 +1423,26 @@ export default function EditLandingPage() {
                 Link do Google Maps para a localização da loja
               </p>
 
-              {/* Ordem e Visibilidade de elementos individuais */}
-              <ElementOrderManager sectionKey="contact" />
+              {/* Visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <p className="text-xs text-gray-600 mb-3">Para reordenar os elementos, use a aba "Visibilidade e Ordem das Seções"</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {sectionMap.contact.elements.map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
           </motion.div>
 
@@ -1543,8 +1506,26 @@ export default function EditLandingPage() {
                     </div>
                   </div>
 
-                  {/* Ordem e Visibilidade de elementos individuais */}
-                  <ElementOrderManager sectionKey="faq" />
+                  {/* Visibilidade de elementos individuais */}
+                  <div className="border rounded-lg p-4 bg-gray-50">
+                    <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                    <p className="text-xs text-gray-600 mb-3">Para reordenar os elementos, use a aba "Visibilidade e Ordem das Seções"</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {sectionMap.faq.elements.map((element) => (
+                        <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                          <input
+                            type="checkbox"
+                            checked={(settings as any)[element.key] ?? true}
+                            onChange={(e) =>
+                              setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                            }
+                            className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                          />
+                          <span>{element.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1646,8 +1627,26 @@ export default function EditLandingPage() {
             </p>
             
             <div className="space-y-4 mb-6">
-              {/* Ordem e Visibilidade de elementos individuais */}
-              <ElementOrderManager sectionKey="media_showcase" />
+              {/* Visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <p className="text-xs text-gray-600 mb-3">Para reordenar os elementos, use a aba "Visibilidade e Ordem das Seções"</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {sectionMap.media_showcase.elements.map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               <Input
                 label="Título da Seção"
@@ -1850,8 +1849,26 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-4">
-              {/* Ordem e Visibilidade de elementos individuais */}
-              <ElementOrderManager sectionKey="value_package" />
+              {/* Visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <p className="text-xs text-gray-600 mb-3">Para reordenar os elementos, use a aba "Visibilidade e Ordem das Seções"</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {sectionMap.value_package.elements.map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               <Input
                 label="Título"
@@ -2016,8 +2033,26 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-4">
-              {/* Ordem e Visibilidade de elementos individuais */}
-              <ElementOrderManager sectionKey="story" />
+              {/* Visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <p className="text-xs text-gray-600 mb-3">Para reordenar os elementos, use a aba "Visibilidade e Ordem das Seções"</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {sectionMap.story.elements.map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               <Input
                 label="Título"
@@ -2083,8 +2118,26 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-4">
-              {/* Ordem e Visibilidade de elementos individuais */}
-              <ElementOrderManager sectionKey="about_us" />
+              {/* Visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <p className="text-xs text-gray-600 mb-3">Para reordenar os elementos, use a aba "Visibilidade e Ordem das Seções"</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {sectionMap.about_us.elements.map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               <Input
                 label="Título"
@@ -2175,19 +2228,34 @@ export default function EditLandingPage() {
           >
             <h2 className="text-2xl font-bold mb-6">👁️ Visibilidade e Ordem das Seções</h2>
             <p className="text-sm text-gray-600 mb-6">
-              Controle quais seções da página inicial devem ser exibidas e arraste para reordenar.
+              Controle quais seções da página inicial devem ser exibidas, arraste para reordenar as seções e os elementos dentro de cada seção.
             </p>
             
-            <DragDropContext onDragEnd={handleDragEnd}>
-              <Droppable droppableId="sections">
+            <DragDropContext onDragEnd={(result) => {
+              if (!result.destination) return
+              
+              // Drag de seção
+              if (result.source.droppableId === 'sections' && result.destination.droppableId === 'sections') {
+                handleDragEnd(result)
+              }
+              // Drag de elemento dentro de seção
+              else if (result.source.droppableId.includes('-elements') && result.destination.droppableId.includes('-elements')) {
+                const sectionKey = result.source.droppableId.replace('-elements', '')
+                handleElementDragEnd(sectionKey, result)
+              }
+            }}>
+              <Droppable droppableId="sections" type="SECTION">
                 {(provided) => (
                   <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
                     {sectionOrder.map((sectionId, index) => {
                       const section = sectionMap[sectionId]
                       if (!section) return null
                       
+                      const orderKey = `${sectionId}_element_order` as keyof LandingSettings
+                      const elementOrder = (settings[orderKey] as string[]) || []
+                      
                       return (
-                        <Draggable key={sectionId} draggableId={sectionId} index={index}>
+                        <Draggable key={sectionId} draggableId={sectionId} index={index} type="SECTION">
                           {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
@@ -2211,20 +2279,48 @@ export default function EditLandingPage() {
                                 </label>
                               </div>
                               {(settings as any)[section.key] && section.elements.length > 0 && (
-                                <div className="ml-8 space-y-2 pl-4 border-l-2 border-gray-200 mt-2">
-                                  {section.elements.map((element) => (
-                                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
-                                      <input
-                                        type="checkbox"
-                                        checked={(settings as any)[element.key] ?? true}
-                                        onChange={(e) =>
-                                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                                        }
-                                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                                      />
-                                      <span>{element.label}</span>
-                                    </label>
-                                  ))}
+                                <div className="ml-8 mt-3 pl-4 border-l-2 border-gray-200">
+                                  <p className="text-xs text-gray-600 mb-2 font-medium">Elementos (arraste para reordenar):</p>
+                                  <Droppable droppableId={`${sectionId}-elements`} type="ELEMENT">
+                                    {(provided) => (
+                                      <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                                        {elementOrder.map((elementKey, elementIndex) => {
+                                          const element = section.elements.find(e => e.key === elementKey)
+                                          if (!element) return null
+                                          
+                                          return (
+                                            <Draggable key={element.key} draggableId={element.key} index={elementIndex} type="ELEMENT">
+                                              {(provided, snapshot) => (
+                                                <div
+                                                  ref={provided.innerRef}
+                                                  {...provided.draggableProps}
+                                                  className={`flex items-center gap-3 p-2 bg-gray-50 rounded-lg border ${
+                                                    snapshot.isDragging ? 'border-black shadow-md' : 'border-gray-200'
+                                                  }`}
+                                                >
+                                                  <div {...provided.dragHandleProps} className="cursor-grab active:cursor-grabbing">
+                                                    <GripVertical size={16} className="text-gray-400" />
+                                                  </div>
+                                                  <label className="flex items-center gap-2 cursor-pointer flex-1">
+                                                    <input
+                                                      type="checkbox"
+                                                      checked={(settings as any)[element.key] ?? true}
+                                                      onChange={(e) =>
+                                                        setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                                                      }
+                                                      className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                                                    />
+                                                    <span className="text-sm">{element.label}</span>
+                                                  </label>
+                                                </div>
+                                              )}
+                                            </Draggable>
+                                          )
+                                        })}
+                                        {provided.placeholder}
+                                      </div>
+                                    )}
+                                  </Droppable>
                                 </div>
                               )}
                             </div>
@@ -2262,8 +2358,26 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-4">
-              {/* Ordem e Visibilidade de elementos individuais */}
-              <ElementOrderManager sectionKey="social_proof" />
+              {/* Visibilidade de elementos individuais */}
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
+                <p className="text-xs text-gray-600 mb-3">Para reordenar os elementos, use a aba "Visibilidade e Ordem das Seções"</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {sectionMap.social_proof.elements.map((element) => (
+                    <label key={element.key} className="flex items-center gap-2 cursor-pointer text-sm">
+                      <input
+                        type="checkbox"
+                        checked={(settings as any)[element.key] ?? true}
+                        onChange={(e) =>
+                          setSettings({ ...settings, [element.key]: e.target.checked } as any)
+                        }
+                        className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
+                      />
+                      <span>{element.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               <Input
                 label="Título"

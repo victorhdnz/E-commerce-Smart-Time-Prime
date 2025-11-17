@@ -263,7 +263,6 @@ export default async function Home() {
         heroButtonText={settings.hero_button_text}
         heroButtonLink={settings.hero_button_link}
         viewerCountText={settings.hero_viewer_count_text}
-        viewerCountLink={settings.hero_viewer_count_link}
         viewerCountEnabled={settings.hero_viewer_count_enabled !== false}
         backgroundColor={settings.hero_bg_color || '#000000'}
         textColor={settings.hero_text_color || '#FFFFFF'}

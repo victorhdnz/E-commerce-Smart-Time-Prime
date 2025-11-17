@@ -20,7 +20,6 @@ interface HeroSectionProps {
   textColor?: string
   badgeText?: string
   viewerCountText?: string
-  viewerCountLink?: string
   viewerCountEnabled?: boolean
   timerEndDate?: Date
   heroImages?: string[]
@@ -50,7 +49,6 @@ export const HeroSection = ({
   textColor, // Será ignorado, sempre usará branco
   badgeText = '🚨 A BLACK FRIDAY CHEGOU!',
   viewerCountText = 'pessoas vendo agora',
-  viewerCountLink,
   viewerCountEnabled = true,
   timerEndDate,
   heroImages = [],
@@ -238,145 +236,71 @@ export const HeroSection = ({
                   transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                   className="relative"
                 >
-                  {viewerCountLink ? (
-                    <Link href={viewerCountLink} target={viewerCountLink.startsWith('http') ? '_blank' : '_self'} rel={viewerCountLink.startsWith('http') ? 'noopener noreferrer' : undefined}>
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl backdrop-blur-md border-2 transition-all duration-300 cursor-pointer ${
-                          viewerCount < 15
-                            ? 'bg-orange-500/20 border-orange-400/50'
-                            : viewerCount >= 20
-                            ? 'bg-red-500/20 border-red-400/50'
-                            : 'bg-green-500/20 border-green-400/50'
-                        }`}
-                      >
-                        {/* Ícone de Fogo Animado */}
-                        <motion.div
-                          animate={{
-                            scale: [1, 1.2, 1],
-                            rotate: [0, 5, -5, 0],
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: 'easeInOut'
-                          }}
-                          className="text-2xl"
-                        >
-                          🔥
-                        </motion.div>
-                        
-                        {/* Número de Pessoas */}
-                        <div className="flex items-center gap-2">
-                          <motion.span
-                            key={viewerCount}
-                            initial={{ y: -10, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ type: 'spring', stiffness: 300 }}
-                            className={`text-xl md:text-2xl font-black ${
-                              viewerCount < 15
-                                ? 'text-orange-300'
-                                : viewerCount >= 20
-                                ? 'text-red-300'
-                                : 'text-green-300'
-                            }`}
-                          >
-                            {viewerCount}
-                          </motion.span>
-                          <span className="text-sm md:text-base font-bold text-white">
-                            {viewerCountText}
-                          </span>
-                        </div>
-                        
-                        {/* Badge de Status */}
-                        <motion.span
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.2 }}
-                          className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
-                            viewerCount < 15
-                              ? 'bg-orange-500/30 text-orange-200 border-orange-400/50'
-                              : viewerCount >= 20
-                              ? 'bg-red-500/30 text-red-200 border-red-400/50'
-                              : 'bg-green-500/30 text-green-200 border-green-400/50'
-                          }`}
-                        >
-                          {viewerCount < 15
-                            ? 'POPULAR'
-                            : viewerCount >= 20
-                            ? 'ALTA DEMANDA'
-                            : 'MUITA GENTE'}
-                        </motion.span>
-                      </motion.div>
-                    </Link>
-                  ) : (
-                    <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl backdrop-blur-md border-2 transition-all duration-300 ${
-                      viewerCount < 15
-                        ? 'bg-orange-500/20 border-orange-400/50'
-                        : viewerCount >= 20
-                        ? 'bg-red-500/20 border-red-400/50'
-                        : 'bg-green-500/20 border-green-400/50'
-                    }`}>
-                      {/* Ícone de Fogo Animado */}
-                      <motion.div
-                        animate={{
-                          scale: [1, 1.2, 1],
-                          rotate: [0, 5, -5, 0],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: 'easeInOut'
-                        }}
-                        className="text-2xl"
-                      >
-                        🔥
-                      </motion.div>
-                      
-                      {/* Número de Pessoas */}
-                      <div className="flex items-center gap-2">
-                        <motion.span
-                          key={viewerCount}
-                          initial={{ y: -10, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ type: 'spring', stiffness: 300 }}
-                          className={`text-xl md:text-2xl font-black ${
-                            viewerCount < 15
-                              ? 'text-orange-300'
-                              : viewerCount >= 20
-                              ? 'text-red-300'
-                              : 'text-green-300'
-                          }`}
-                        >
-                          {viewerCount}
-                        </motion.span>
-                        <span className="text-sm md:text-base font-bold text-white">
-                          {viewerCountText}
-                        </span>
-                      </div>
-                      
-                      {/* Badge de Status */}
+                  <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl backdrop-blur-md border-2 transition-all duration-300 ${
+                    viewerCount < 15
+                      ? 'bg-orange-500/20 border-orange-400/50'
+                      : viewerCount >= 20
+                      ? 'bg-red-500/20 border-red-400/50'
+                      : 'bg-green-500/20 border-green-400/50'
+                  }`}>
+                    {/* Ícone de Fogo Animado */}
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        rotate: [0, 5, -5, 0],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: 'easeInOut'
+                      }}
+                      className="text-2xl"
+                    >
+                      🔥
+                    </motion.div>
+                    
+                    {/* Número de Pessoas */}
+                    <div className="flex items-center gap-2">
                       <motion.span
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                        key={viewerCount}
+                        initial={{ y: -10, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 300 }}
+                        className={`text-xl md:text-2xl font-black ${
                           viewerCount < 15
-                            ? 'bg-orange-500/30 text-orange-200 border-orange-400/50'
+                            ? 'text-orange-300'
                             : viewerCount >= 20
-                            ? 'bg-red-500/30 text-red-200 border-red-400/50'
-                            : 'bg-green-500/30 text-green-200 border-green-400/50'
+                            ? 'text-red-300'
+                            : 'text-green-300'
                         }`}
                       >
-                        {viewerCount < 15
-                          ? 'POPULAR'
-                          : viewerCount >= 20
-                          ? 'ALTA DEMANDA'
-                          : 'MUITA GENTE'}
+                        {viewerCount}
                       </motion.span>
+                      <span className="text-sm md:text-base font-bold text-white">
+                        {viewerCountText}
+                      </span>
                     </div>
-                  )}
+                    
+                    {/* Badge de Status */}
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.2 }}
+                      className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                        viewerCount < 15
+                          ? 'bg-orange-500/30 text-orange-200 border-orange-400/50'
+                          : viewerCount >= 20
+                          ? 'bg-red-500/30 text-red-200 border-red-400/50'
+                          : 'bg-green-500/30 text-green-200 border-green-400/50'
+                      }`}
+                    >
+                      {viewerCount < 15
+                        ? 'POPULAR'
+                        : viewerCount >= 20
+                        ? 'ALTA DEMANDA'
+                        : 'MUITA GENTE'}
+                    </motion.span>
+                  </div>
                   
                   {/* Glow Effect */}
                   <motion.div
