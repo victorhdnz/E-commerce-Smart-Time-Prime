@@ -135,73 +135,84 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       
       productData.images = images
 
-      // Preparar todas as queries paralelas
+      // Preparar todas as queries paralelas como funções async
       const parallelQueries: Promise<any>[] = []
 
       // Query de tópicos da categoria (se necessário)
       if (productData.specifications && Array.isArray(productData.specifications) && productData.specifications.length > 0 && productData.category) {
         parallelQueries.push(
-          supabase
-            .from('category_topics')
-            .select('topic_key, display_order')
-            .eq('category_name', productData.category)
-            .order('display_order', { ascending: true })
+          (async () => {
+            const result = await supabase
+              .from('category_topics')
+              .select('topic_key, display_order')
+              .eq('category_name', productData.category)
+              .order('display_order', { ascending: true })
+            return result
+          })()
         )
       }
 
       // Query de brindes
       parallelQueries.push(
-        supabase
-          .from('product_gifts')
-          .select(`
-            gift_product:products!product_gifts_gift_product_id_fkey(*)
-          `)
-          .eq('product_id', productData.id)
-          .eq('is_active', true)
+        (async () => {
+          const result = await supabase
+            .from('product_gifts')
+            .select(`
+              gift_product:products!product_gifts_gift_product_id_fkey(*)
+            `)
+            .eq('product_id', productData.id)
+            .eq('is_active', true)
+          return result
+        })()
       )
 
       // Query de combo (se for combo)
       if (productData.category === 'Combos' && productData.slug) {
         parallelQueries.push(
-          supabase
-            .from('product_combos')
-            .select(`
-              *,
-              combo_items (
-                id,
-                product_id,
-                quantity,
-                product:products (
+          (async () => {
+            const result = await supabase
+              .from('product_combos')
+              .select(`
+                *,
+                combo_items (
                   id,
-                  name,
-                  description,
-                  local_price,
-                  national_price,
-                  images,
-                  slug
+                  product_id,
+                  quantity,
+                  product:products (
+                    id,
+                    name,
+                    description,
+                    local_price,
+                    national_price,
+                    images,
+                    slug
+                  )
                 )
-              )
-            `)
-            .eq('slug', productData.slug)
-            .eq('is_active', true)
-            .maybeSingle()
+              `)
+              .eq('slug', productData.slug)
+              .eq('is_active', true)
+              .maybeSingle()
+            return result
+          })()
         )
       }
 
       // Query de favoritos (se autenticado)
       if (isAuthenticated) {
         parallelQueries.push(
-          supabase.auth.getUser().then(async (userResult) => {
+          (async () => {
+            const userResult = await supabase.auth.getUser()
             if (userResult.data.user) {
-              return supabase
+              const result = await supabase
                 .from('favorites')
                 .select('id')
                 .eq('product_id', productData.id)
                 .eq('user_id', userResult.data.user.id)
                 .single()
+              return result
             }
             return { data: null, error: null }
-          })
+          })()
         )
       }
 
