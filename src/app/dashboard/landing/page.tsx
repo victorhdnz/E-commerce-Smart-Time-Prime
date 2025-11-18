@@ -2243,58 +2243,6 @@ export default function EditLandingPage() {
               Controle quais seções da página inicial devem ser exibidas, arraste para reordenar as seções e os elementos dentro de cada seção.
             </p>
             
-            <style jsx global>{`
-              /* Estilizar o placeholder do react-beautiful-dnd para seções */
-              [data-rbd-droppable-id="sections"] [data-rbd-placeholder-context-id] {
-                background: linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.15) 50%, transparent 100%) !important;
-                border: 2px dashed rgb(59, 130, 246) !important;
-                border-radius: 8px !important;
-                height: 70px !important;
-                margin: 12px 0 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                position: relative !important;
-                animation: pulse 1.5s ease-in-out infinite !important;
-              }
-              
-              [data-rbd-droppable-id="sections"] [data-rbd-placeholder-context-id]::before {
-                content: "↓ Solte aqui para inserir";
-                color: rgb(59, 130, 246);
-                font-size: 13px;
-                font-weight: 600;
-              }
-              
-              /* Placeholder para elementos dentro de seções */
-              [data-rbd-droppable-id*="-elements"] [data-rbd-placeholder-context-id] {
-                background: linear-gradient(90deg, transparent 0%, rgba(34, 197, 94, 0.15) 50%, transparent 100%) !important;
-                border: 2px dashed rgb(34, 197, 94) !important;
-                border-radius: 6px !important;
-                height: 55px !important;
-                margin: 6px 0 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                animation: pulse 1.5s ease-in-out infinite !important;
-              }
-              
-              [data-rbd-droppable-id*="-elements"] [data-rbd-placeholder-context-id]::before {
-                content: "↓ Solte aqui";
-                color: rgb(34, 197, 94);
-                font-size: 12px;
-                font-weight: 600;
-              }
-              
-              @keyframes pulse {
-                0%, 100% {
-                  opacity: 0.6;
-                }
-                50% {
-                  opacity: 1;
-                }
-              }
-            `}</style>
-            
             <DragDropContext onDragEnd={(result) => {
               if (!result.destination) return
               
@@ -2328,11 +2276,11 @@ export default function EditLandingPage() {
               }
             }}>
               <Droppable droppableId="sections">
-                {(provided, snapshot) => (
+                {(provided) => (
                   <div 
                     {...provided.droppableProps} 
                     ref={provided.innerRef} 
-                    className={`space-y-4 ${snapshot.isDraggingOver ? 'bg-blue-50/50 rounded-lg p-3 border-2 border-blue-300 border-dashed' : ''}`}
+                    className="space-y-4"
                   >
                     {sectionOrder.map((sectionId, index) => {
                       const section = sectionMap[sectionId]
@@ -2347,27 +2295,16 @@ export default function EditLandingPage() {
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              style={{
-                                ...provided.draggableProps.style,
-                                ...(snapshot.isDragging && {
-                                  opacity: 0.8,
-                                  zIndex: 9999,
-                                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
-                                }),
-                              }}
-                              className={`border-2 rounded-lg p-4 transition-all duration-200 ${
-                                snapshot.isDragging 
-                                  ? 'bg-blue-100 border-blue-500 shadow-2xl scale-105' 
-                                  : 'bg-white border-gray-200 hover:shadow-md hover:border-gray-300'
+                              className={`border rounded-lg p-4 hover:bg-gray-50 transition-colors ${
+                                snapshot.isDragging ? 'bg-gray-100 shadow-lg' : 'bg-white'
                               }`}
                             >
                               <div className="flex items-center gap-3">
-                                <div 
-                                  {...provided.dragHandleProps} 
-                                  className="cursor-grab active:cursor-grabbing touch-none"
-                                  style={{ touchAction: 'none' }}
+                                <div
+                                  {...provided.dragHandleProps}
+                                  className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors"
                                 >
-                                  <GripVertical size={20} className="text-gray-400 hover:text-gray-600" />
+                                  <GripVertical size={20} />
                                 </div>
                                 <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3 flex-1">
                                   <input
@@ -2385,15 +2322,11 @@ export default function EditLandingPage() {
                                 <div className="ml-8 mt-3 pl-4 border-l-2 border-gray-200">
                                   <p className="text-xs text-gray-600 mb-2 font-medium">Elementos (arraste para reordenar):</p>
                                   <Droppable droppableId={`${sectionId}-elements`}>
-                                    {(provided, snapshot) => (
+                                    {(provided) => (
                                       <div 
                                         {...provided.droppableProps} 
                                         ref={provided.innerRef} 
-                                        className={`space-y-2 min-h-[40px] transition-all duration-200 ${
-                                          snapshot.isDraggingOver 
-                                            ? 'bg-green-50 rounded-lg p-3 border-2 border-green-400 border-dashed' 
-                                            : ''
-                                        }`}
+                                        className="space-y-2"
                                       >
                                         {elementOrder.map((elementKey, elementIndex) => {
                                           const element = section.elements.find(e => e.key === elementKey)
@@ -2405,26 +2338,15 @@ export default function EditLandingPage() {
                                                 <div
                                                   ref={provided.innerRef}
                                                   {...provided.draggableProps}
-                                                  style={{
-                                                    ...provided.draggableProps.style,
-                                                    ...(snapshot.isDragging && {
-                                                      opacity: 0.7,
-                                                      zIndex: 10000,
-                                                      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15)',
-                                                    }),
-                                                  }}
-                                                  className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all duration-200 ${
-                                                    snapshot.isDragging 
-                                                      ? 'bg-green-100 border-green-500 shadow-xl scale-105' 
-                                                      : 'bg-gray-50 border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                                                  className={`flex items-center gap-3 p-2 border rounded-lg hover:bg-gray-50 transition-colors ${
+                                                    snapshot.isDragging ? 'bg-gray-100 shadow-lg' : 'bg-gray-50'
                                                   }`}
                                                 >
-                                                  <div 
-                                                    {...provided.dragHandleProps} 
-                                                    className="cursor-grab active:cursor-grabbing touch-none"
-                                                    style={{ touchAction: 'none' }}
+                                                  <div
+                                                    {...provided.dragHandleProps}
+                                                    className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors"
                                                   >
-                                                    <GripVertical size={16} className="text-gray-400 hover:text-gray-600" />
+                                                    <GripVertical size={16} />
                                                   </div>
                                                   <label className="flex items-center gap-2 cursor-pointer flex-1">
                                                     <input
@@ -2443,11 +2365,6 @@ export default function EditLandingPage() {
                                           )
                                         })}
                                         {provided.placeholder}
-                                        {snapshot.isDraggingOver && elementOrder.length === 0 && (
-                                          <div className="h-16 border-2 border-dashed border-green-500 rounded-lg bg-green-100 flex items-center justify-center animate-pulse">
-                                            <span className="text-sm font-medium text-green-700">Solte aqui para adicionar</span>
-                                          </div>
-                                        )}
                                       </div>
                                     )}
                                   </Droppable>
@@ -2459,11 +2376,6 @@ export default function EditLandingPage() {
                       )
                     })}
                     {provided.placeholder}
-                    {snapshot.isDraggingOver && sectionOrder.length === 0 && (
-                      <div className="h-24 border-2 border-dashed border-blue-500 rounded-lg bg-blue-100 flex items-center justify-center animate-pulse">
-                        <span className="text-sm font-medium text-blue-700">Solte aqui para adicionar a primeira seção</span>
-                      </div>
-                    )}
                   </div>
                 )}
               </Droppable>
