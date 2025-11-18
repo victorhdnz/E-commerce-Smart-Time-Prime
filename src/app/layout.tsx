@@ -145,7 +145,7 @@ export default function RootLayout({
         <GlobalBackground />
         <Header />
         <PageTransition>
-          <main className="min-h-screen relative z-10">
+          <main className="min-h-screen relative" style={{ zIndex: 10 }}>
             {children}
           </main>
         </PageTransition>

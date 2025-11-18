@@ -80,10 +80,8 @@ export function SectionTransition({
   const needsTopTransition = !isFirst && shouldApplyTransition(previousBgColor, backgroundColor)
   const needsBottomTransition = !isLast && shouldApplyTransition(backgroundColor, nextBgColor)
 
-  // Se o background for preto (#000000 ou similar), tornar transparente para o Prism aparecer
-  const normalizedBg = normalizeColor(backgroundColor)
-  const isBlack = normalizedBg === '#000000' || normalizedBg === '#000'
-  const finalBgColor = isBlack ? 'transparent' : backgroundColor
+  // Tornar TODAS as seções transparentes para o Prism aparecer em toda a página
+  const finalBgColor = 'transparent'
 
   return (
     <div 

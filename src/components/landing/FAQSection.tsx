@@ -25,7 +25,7 @@ export const FAQSection = ({
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section className="py-20" style={{ backgroundColor }}>
+    <section className="py-20" style={{ backgroundColor: 'transparent' }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {elementVisibility.title !== false && (
           <motion.div

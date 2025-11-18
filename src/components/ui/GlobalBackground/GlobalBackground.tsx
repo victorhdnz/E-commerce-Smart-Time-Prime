@@ -10,49 +10,20 @@ const Prism = dynamic(() => import('@/components/ui/Prism/Prism'), {
 })
 
 export const GlobalBackground = () => {
-  const [height, setHeight] = useState('100vh')
-
-  useEffect(() => {
-    // Garantir que o background cubra toda a altura do documento
-    const updateHeight = () => {
-      const docHeight = Math.max(
-        document.body.scrollHeight,
-        document.body.offsetHeight,
-        document.documentElement.clientHeight,
-        document.documentElement.scrollHeight,
-        document.documentElement.offsetHeight
-      )
-      setHeight(`${docHeight}px`)
-    }
-
-    updateHeight()
-    window.addEventListener('resize', updateHeight)
-    window.addEventListener('scroll', updateHeight)
-    
-    // Observar mudanças no DOM
-    const observer = new MutationObserver(updateHeight)
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true
-    })
-
-    return () => {
-      window.removeEventListener('resize', updateHeight)
-      window.removeEventListener('scroll', updateHeight)
-      observer.disconnect()
-    }
-  }, [])
-
   return (
     <div 
-      className="fixed inset-0 z-0 pointer-events-none" 
+      className="fixed inset-0 pointer-events-none" 
       style={{ 
         backgroundColor: '#000000',
         width: '100vw',
-        height: height,
-        minHeight: '100vh',
-        position: 'fixed'
+        height: '100vh',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 0,
+        overflow: 'hidden'
       }}
     >
       <div style={{ width: '100%', height: '100%', position: 'relative' }}>

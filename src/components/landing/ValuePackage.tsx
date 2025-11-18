@@ -118,7 +118,7 @@ export const ValuePackage = ({
   }
 
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-100 relative overflow-hidden">
+    <section className="py-20 relative overflow-hidden" style={{ backgroundColor: 'transparent' }}>
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-300/10 rounded-full blur-3xl"></div>

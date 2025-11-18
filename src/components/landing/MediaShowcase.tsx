@@ -76,7 +76,7 @@ export const MediaShowcase = ({
   // Sempre renderizar a seção, mas mostrar placeholders se não houver conteúdo
 
   return (
-    <section className="py-12 bg-black text-white">
+    <section className="py-12 text-white" style={{ backgroundColor: 'transparent' }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {elementVisibility.title && (
           <motion.div
