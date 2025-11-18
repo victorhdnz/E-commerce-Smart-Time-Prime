@@ -190,14 +190,19 @@ export default function Orb({
 
     if (!(gl.canvas instanceof HTMLCanvasElement)) return
 
-    Object.assign(gl.canvas.style, {
-      position: 'absolute',
-      inset: '0',
-      width: '100%',
-      height: '100%',
-      display: 'block'
-    })
-    container.appendChild(gl.canvas)
+    if (gl.canvas instanceof HTMLCanvasElement) {
+      Object.assign(gl.canvas.style, {
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        display: 'block',
+        pointerEvents: 'none',
+        zIndex: '1'
+      })
+      container.appendChild(gl.canvas)
+    }
 
     const geometry = new Triangle(gl)
     const program = new Program(gl, {
