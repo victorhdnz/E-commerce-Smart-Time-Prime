@@ -131,16 +131,21 @@ export default function ComparePage() {
     const loadProductsAndCategories = async () => {
       try {
         setLoading(true)
-        const { data: productsData, error } = await supabase
-          .from('products')
-          .select('*')
-          .eq('is_active', true)
-          .order('name')
-
-        if (error) throw error
-
-        if (productsData) {
-          setAllProducts(productsData as Product[])
+        
+        // Usar API com cache em vez de query direta
+        const response = await fetch('/api/products', {
+          next: { revalidate: 60 } // Cache de 60 segundos
+        })
+        
+        if (!response.ok) {
+          throw new Error('Erro ao carregar produtos')
+        }
+        
+        const result = await response.json()
+        
+        if (result.success && result.products) {
+          const productsData = result.products as Product[]
+          setAllProducts(productsData)
           const uniqueCategories = [...new Set(productsData.map((p: any) => p.category).filter(Boolean))] as string[]
           setCategories(uniqueCategories.sort())
         }

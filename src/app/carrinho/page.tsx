@@ -61,18 +61,29 @@ export default function CartPage() {
         items: Array<{ product: any; quantity: number }>
       }> = {}
 
+      // Carregar todos os combos em paralelo
       await Promise.all(
         comboItems.map(async (item) => {
           try {
             const { data: comboData, error } = await supabase
               .from('product_combos')
               .select(`
-                *,
+                id,
+                name,
+                slug,
+                discount_percentage,
+                discount_amount,
                 combo_items (
                   id,
                   product_id,
                   quantity,
-                  product:products (id, name, local_price, national_price, images)
+                  product:products (
+                    id,
+                    name,
+                    local_price,
+                    national_price,
+                    images
+                  )
                 )
               `)
               .eq('slug', item.product.slug)
@@ -89,12 +100,6 @@ export default function CartPage() {
                 combo: comboData,
                 items: comboItems
               }
-            } else {
-              console.log('Combo não encontrado ou sem itens:', {
-                slug: item.product.slug,
-                error,
-                comboData
-              })
             }
           } catch (error) {
             console.error('Erro ao carregar dados do combo:', error)

@@ -17,8 +17,6 @@ interface FilterState {
 }
 
 export default function ProductsPage() {
-  console.log('🎯 ProductsPage renderizado!')
-  
   const { isAuthenticated } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
@@ -27,19 +25,12 @@ export default function ProductsPage() {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([])
 
   const loadProducts = async () => {
-    console.log('🚀 loadProducts executado!')
     try {
       setLoading(true)
-      console.log('📡 Fazendo requisição para API...')
       
-      // Usar cache: 'no-store' para garantir produtos atualizados
-      // Adicionar timestamp para evitar cache do navegador
-      const response = await fetch(`/api/products?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-        },
+      // Usar cache da API (60 segundos) - não forçar bypass
+      const response = await fetch('/api/products', {
+        next: { revalidate: 60 } // Revalidar a cada 60 segundos
       })
       
       if (!response.ok) {
@@ -47,30 +38,22 @@ export default function ProductsPage() {
       }
       
       const result = await response.json()
-      
-      console.log('📊 Resultado da API:', { 
-        success: result.success, 
-        count: result.count 
-      })
 
       if (!result.success) {
-        console.error('❌ Erro na API:', result.error)
+        console.error('Erro na API:', result.error)
         return
       }
 
       const productsData = result.products || []
-      console.log('✅ Produtos carregados:', productsData.length)
-      console.log('📦 Primeiros 3 produtos:', productsData.slice(0, 3).map((p: any) => ({ id: p.id, name: p.name })))
       
       setProducts(productsData)
       setFilteredProducts(productsData)
 
       // Extrair categorias únicas
       const uniqueCategories = [...new Set(productsData.map((p: any) => p.category).filter(Boolean))] as string[]
-      console.log('🏷️ Categorias encontradas:', uniqueCategories)
       setCategories(uniqueCategories)
 
-      // Carregar favoritos do usuário se autenticado
+      // Carregar favoritos do usuário se autenticado (em paralelo)
       if (isAuthenticated) {
         try {
           const supabase = createClient()
@@ -91,10 +74,8 @@ export default function ProductsPage() {
       }
 
     } catch (error) {
-      console.error('❌ Erro na requisição:', error)
-      console.error('❌ Stack trace:', error)
+      console.error('Erro ao carregar produtos:', error)
     } finally {
-      console.log('🏁 Finalizando loading...')
       setLoading(false)
     }
   }
@@ -168,19 +149,23 @@ export default function ProductsPage() {
   }
 
   useEffect(() => {
-    console.log('🚀 useEffect executado!')
     loadProducts()
   }, [isAuthenticated])
 
   // Recarregar produtos quando a página receber foco (útil após criar produto)
+  // Usar debounce para evitar múltiplas requisições
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout
     const handleFocus = () => {
-      console.log('📱 Página recebeu foco, recarregando produtos...')
-      loadProducts()
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        loadProducts()
+      }, 500) // Debounce de 500ms
     }
 
     window.addEventListener('focus', handleFocus)
     return () => {
+      clearTimeout(timeoutId)
       window.removeEventListener('focus', handleFocus)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

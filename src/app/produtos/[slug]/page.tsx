@@ -102,7 +102,9 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
   const loadProduct = async () => {
     try {
-      // Carregar produto
+      setLoading(true)
+      
+      // Carregar produto principal
       const { data: productData, error } = await supabase
         .from('products')
         .select(`
@@ -131,26 +133,96 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         images = []
       }
       
-      // Garantir que productData.images seja um array válido
       productData.images = images
 
-      // Ordenar especificações pela ordem definida nos tópicos da categoria
+      // Preparar todas as queries paralelas
+      const parallelQueries: Promise<any>[] = []
+
+      // Query de tópicos da categoria (se necessário)
       if (productData.specifications && Array.isArray(productData.specifications) && productData.specifications.length > 0 && productData.category) {
-        try {
-          const { data: topicsData } = await supabase
+        parallelQueries.push(
+          supabase
             .from('category_topics')
             .select('topic_key, display_order')
             .eq('category_name', productData.category)
             .order('display_order', { ascending: true })
-          
+        )
+      }
+
+      // Query de brindes
+      parallelQueries.push(
+        supabase
+          .from('product_gifts')
+          .select(`
+            gift_product:products!product_gifts_gift_product_id_fkey(*)
+          `)
+          .eq('product_id', productData.id)
+          .eq('is_active', true)
+      )
+
+      // Query de combo (se for combo)
+      if (productData.category === 'Combos' && productData.slug) {
+        parallelQueries.push(
+          supabase
+            .from('product_combos')
+            .select(`
+              *,
+              combo_items (
+                id,
+                product_id,
+                quantity,
+                product:products (
+                  id,
+                  name,
+                  description,
+                  local_price,
+                  national_price,
+                  images,
+                  slug
+                )
+              )
+            `)
+            .eq('slug', productData.slug)
+            .eq('is_active', true)
+            .maybeSingle()
+        )
+      }
+
+      // Query de favoritos (se autenticado)
+      if (isAuthenticated) {
+        parallelQueries.push(
+          supabase.auth.getUser().then(async (userResult) => {
+            if (userResult.data.user) {
+              return supabase
+                .from('favorites')
+                .select('id')
+                .eq('product_id', productData.id)
+                .eq('user_id', userResult.data.user.id)
+                .single()
+            }
+            return { data: null, error: null }
+          })
+        )
+      }
+
+      // Executar todas as queries em paralelo
+      const results = await Promise.allSettled(parallelQueries)
+
+      // Processar resultados - usar índices baseados na ordem de inserção
+      let currentIndex = 0
+
+      // Processar tópicos (se existir)
+      if (productData.specifications && Array.isArray(productData.specifications) && productData.specifications.length > 0 && productData.category) {
+        const topicsResult = results[currentIndex]
+        currentIndex++
+        if (topicsResult.status === 'fulfilled' && topicsResult.value.data) {
+          const topicsData = topicsResult.value.data
           if (topicsData && topicsData.length > 0) {
-            // Criar mapa de ordem dos tópicos
             const topicOrderMap = new Map<string, number>()
-            topicsData.forEach((topic, index) => {
+            topicsData.forEach((topic: any, index: number) => {
               topicOrderMap.set(topic.topic_key, topic.display_order ?? index)
             })
             
-            // Ordenar especificações pela ordem definida nos tópicos
             const sortedSpecs = [...productData.specifications].sort((a, b) => {
               const orderA = topicOrderMap.get(a.key) ?? 999
               const orderB = topicOrderMap.get(b.key) ?? 999
@@ -160,16 +232,52 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             setOrderedSpecifications(sortedSpecs)
             productData.specifications = sortedSpecs
           } else {
-            // Se não houver tópicos definidos, manter ordem original
             setOrderedSpecifications(productData.specifications)
           }
-        } catch (error) {
-          console.error('Erro ao ordenar especificações:', error)
-          // Em caso de erro, manter ordem original
+        } else {
           setOrderedSpecifications(productData.specifications)
         }
       } else {
         setOrderedSpecifications(productData.specifications || [])
+      }
+
+      // Processar brindes (sempre presente)
+      const giftsResult = results[currentIndex]
+      currentIndex++
+      if (giftsResult.status === 'fulfilled' && giftsResult.value.data) {
+        const giftsData = giftsResult.value.data
+        if (giftsData && giftsData.length > 0) {
+          setGifts(giftsData.map((g: any) => g.gift_product))
+        }
+      }
+
+      // Processar combo (se for combo)
+      if (productData.category === 'Combos' && productData.slug) {
+        const comboResult = results[currentIndex]
+        currentIndex++
+        if (comboResult.status === 'fulfilled' && comboResult.value.data) {
+          const comboData = comboResult.value.data
+          if (comboData) {
+            setComboData(comboData)
+            if (comboData.combo_items) {
+              const items = comboData.combo_items.map((item: any) => ({
+                product: item.product,
+                quantity: item.quantity
+              }))
+              setComboItems(items)
+            }
+          }
+        }
+      }
+
+      // Processar favoritos (se autenticado)
+      if (isAuthenticated) {
+        const favoriteResult = results[currentIndex]
+        if (favoriteResult.status === 'fulfilled' && favoriteResult.value.data) {
+          setIsFavorite(!!favoriteResult.value.data)
+        } else {
+          setIsFavorite(false)
+        }
       }
 
       setProduct(productData as any)
@@ -178,75 +286,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         setSelectedColor(productData.colors[0] as any)
       }
 
-      // Carregar brindes vinculados
-      const { data: giftsData } = await supabase
-        .from('product_gifts')
-        .select(`
-          gift_product:products!product_gifts_gift_product_id_fkey(*)
-        `)
-        .eq('product_id', productData.id)
-        .eq('is_active', true)
-
-      if (giftsData && giftsData.length > 0) {
-        setGifts(giftsData.map((g: any) => g.gift_product))
-      }
-
-      // Carregar dados do combo se for um combo
-      if (productData.category === 'Combos' && productData.slug) {
-        const { data: comboData, error: comboError } = await supabase
-          .from('product_combos')
-          .select(`
-            *,
-            combo_items (
-              id,
-              product_id,
-              quantity,
-              product:products (
-                id,
-                name,
-                description,
-                local_price,
-                national_price,
-                images,
-                slug
-              )
-            )
-          `)
-          .eq('slug', productData.slug)
-          .eq('is_active', true)
-          .maybeSingle()
-
-        if (!comboError && comboData) {
-          setComboData(comboData)
-          if (comboData.combo_items) {
-            const items = comboData.combo_items.map((item: any) => ({
-              product: item.product,
-              quantity: item.quantity
-            }))
-            setComboItems(items)
-          }
-        }
-      }
-
-      // Verificar se o produto está nos favoritos
-      if (isAuthenticated) {
-        try {
-          const user = await supabase.auth.getUser()
-          if (user.data.user) {
-            const { data: favoriteData } = await supabase
-              .from('favorites')
-              .select('id')
-              .eq('product_id', productData.id)
-              .eq('user_id', user.data.user.id)
-              .single()
-
-            setIsFavorite(!!favoriteData)
-          }
-        } catch (error) {
-          // Ignora erro se não encontrar favorito
-          setIsFavorite(false)
-        }
-      }
     } catch (error) {
       console.error('Erro ao carregar produto:', error)
       router.push('/produtos')
@@ -1148,4 +1187,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     </div>
   )
 }
+
+
 

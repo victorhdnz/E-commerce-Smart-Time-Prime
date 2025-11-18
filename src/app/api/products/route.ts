@@ -1,17 +1,37 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+// Cache por 60 segundos (ISR - Incremental Static Regeneration)
+export const revalidate = 60
+
 export async function GET() {
   try {
     const supabase = createServerClient()
     
     // Buscar todos os produtos ativos (sem limite)
-    // Sem cache para garantir produtos atualizados
+    // Query otimizada - selecionar apenas campos necessários
     const { data: products, error } = await supabase
       .from('products')
       .select(`
-        *,
-        colors:product_colors(*)
+        id,
+        name,
+        slug,
+        short_description,
+        description,
+        category,
+        local_price,
+        national_price,
+        images,
+        is_featured,
+        is_active,
+        created_at,
+        colors:product_colors(
+          id,
+          name,
+          hex_code,
+          images,
+          stock
+        )
       `)
       .eq('is_active', true)
       .order('created_at', { ascending: false })
@@ -50,9 +70,8 @@ export async function GET() {
       message: normalizedProducts?.length ? 'Produtos encontrados' : 'Nenhum produto ativo encontrado'
     }, {
       headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
+        // Cache por 60 segundos no cliente e CDN
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
       }
     })
   } catch (error: any) {

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Fragment as ReactFragment } from 'react'
 import Image from 'next/image'
 import { BannerCarousel } from './BannerCarousel'
 
@@ -374,7 +374,7 @@ export const HeroSection = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.8 }}
-              className="flex flex-col items-center justify-center gap-4 text-base md:text-lg"
+              className="flex flex-col items-center justify-center gap-4 text-base md:text-lg w-full"
             >
               {element}
               {elementComponents.hero_timer_visible}
@@ -387,7 +387,22 @@ export const HeroSection = ({
           return null
         }
         
-        return <div key={key}>{element}</div>
+        // Para botões, não envolver em div extra - eles já têm seus próprios wrappers com classes corretas
+        if (key === 'hero_button_visible' || key === 'hero_cta_visible') {
+          return <ReactFragment key={key}>{element}</ReactFragment>
+        }
+        
+        // Para badge, título e subtítulo - já são inline-block ou block, não precisa wrapper
+        if (key === 'hero_badge_visible' || key === 'hero_title_visible' || key === 'hero_subtitle_visible') {
+          return <ReactFragment key={key}>{element}</ReactFragment>
+        }
+        
+        // Para outros elementos (viewerCount, timer quando separados), usar wrapper flex
+        return (
+          <div key={key} className="w-full flex justify-center">
+            {element}
+          </div>
+        )
       })
       .filter(Boolean)
   }
@@ -435,7 +450,7 @@ export const HeroSection = ({
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center max-w-5xl"
+            className="text-center max-w-5xl w-full flex flex-col items-center"
           >
             {renderContentElements()}
             
