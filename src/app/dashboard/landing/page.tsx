@@ -1466,55 +1466,30 @@ export default function EditLandingPage() {
                     </p>
                   </div>
 
-                  {settings.hero_background_effect !== 'none' && (
+                  {settings.hero_background_effect === 'prism' && (
                     <div className="ml-4 space-y-3 border-l-2 border-gray-200 pl-4">
                       <div>
                         <label className="block text-sm font-medium mb-2">
-                          Opacidade do Efeito (0-1)
+                          Tipo de Animação do Prism
                         </label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="1"
-                          step="0.1"
-                          value={settings.hero_background_effect_opacity}
+                        <select
+                          value={settings.hero_prism_animation_type}
                           onChange={(e) =>
                             setSettings({ 
                               ...settings, 
-                              hero_background_effect_opacity: parseFloat(e.target.value) || 0.3
+                              hero_prism_animation_type: e.target.value as 'rotate' | 'hover' | '3drotate'
                             })
                           }
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                        />
+                        >
+                          <option value="rotate">Rotação Automática</option>
+                          <option value="hover">Interativo (seguir mouse)</option>
+                          <option value="3drotate">Rotação 3D</option>
+                        </select>
                         <p className="text-xs text-gray-500 mt-1">
-                          Ajuste a intensidade do efeito (0 = invisível, 1 = máximo)
+                          Efeito de fundo animado inspirado no site do Gemini
                         </p>
                       </div>
-
-                      {settings.hero_background_effect === 'prism' && (
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            Tipo de Animação do Prism
-                          </label>
-                          <select
-                            value={settings.hero_prism_animation_type}
-                            onChange={(e) =>
-                              setSettings({ 
-                                ...settings, 
-                                hero_prism_animation_type: e.target.value as 'rotate' | 'hover' | '3drotate'
-                              })
-                            }
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                          >
-                            <option value="rotate">Rotação Automática</option>
-                            <option value="hover">Interativo (seguir mouse)</option>
-                            <option value="3drotate">Rotação 3D</option>
-                          </select>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Efeito de fundo animado inspirado no site do Gemini
-                          </p>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>

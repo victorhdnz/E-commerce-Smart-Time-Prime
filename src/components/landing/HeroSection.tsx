@@ -39,7 +39,6 @@ interface HeroSectionProps {
     viewerCount?: boolean
   }
   backgroundEffect?: BackgroundEffectType // Tipo de efeito de background ('prism', 'none', etc.)
-  backgroundEffectOpacity?: number // Opacidade do efeito (0-1)
   prismAnimationType?: PrismAnimationType // Tipo de animação do Prism
 }
 
@@ -73,7 +72,6 @@ export const HeroSection = ({
     viewerCount: true,
   },
   backgroundEffect = 'none',
-  backgroundEffectOpacity = 0.3,
   prismAnimationType = 'rotate',
 }: HeroSectionProps) => {
   // Cores fixas da empresa (preto e branco)
@@ -456,7 +454,6 @@ export const HeroSection = ({
       {/* Animated Background Effect - flexível para diferentes efeitos */}
       <AnimatedBackground
         effectType={backgroundEffect}
-        opacity={backgroundEffectOpacity}
         prismAnimationType={prismAnimationType}
       />
       

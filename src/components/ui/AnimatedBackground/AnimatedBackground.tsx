@@ -36,11 +36,11 @@ interface AnimatedBackgroundProps {
 
 export const AnimatedBackground = ({
   effectType = 'none',
-  opacity = 0.3,
+  opacity = 0.3, // Mantido para compatibilidade, mas não será usado
   className = '',
   children,
   prismAnimationType = 'rotate',
-  prismTimeScale = 0.5,
+  prismTimeScale = 0.5, // Valor fixo padrão
   prismHeight = 3.5,
   prismBaseWidth = 5.5,
   prismScale = 3.6,
@@ -55,7 +55,7 @@ export const AnimatedBackground = ({
     switch (effectType) {
       case 'prism':
         return (
-          <div className={`absolute inset-0 z-0 ${className}`} style={{ opacity }}>
+          <div className={`absolute inset-0 z-0 ${className}`}>
             <Prism
               animationType={prismAnimationType}
               timeScale={prismTimeScale}

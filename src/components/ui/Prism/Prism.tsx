@@ -62,12 +62,13 @@ const Prism = ({
     const TS = Math.max(0, timeScale || 1)
     const HOVSTR = Math.max(0, hoverStrength || 1)
     const INERT = Math.max(0, Math.min(1, inertia || 0.12))
-    const dpr = Math.min(2, window.devicePixelRatio || 1)
+    // Aumentar DPR para melhor qualidade (até 3 para telas de alta resolução)
+    const dpr = Math.min(3, window.devicePixelRatio || 1)
 
     const renderer = new Renderer({
       dpr,
       alpha: transparent,
-      antialias: false
+      antialias: true // Habilitar antialiasing para melhor qualidade
     })
 
     const gl = renderer.gl
@@ -445,7 +446,7 @@ const Prism = ({
     suspendWhenOffscreen
   ])
 
-  return <div className="w-full h-full relative" ref={containerRef} />
+  return <div className="absolute inset-0 w-full h-full" ref={containerRef} />
 }
 
 export default Prism
