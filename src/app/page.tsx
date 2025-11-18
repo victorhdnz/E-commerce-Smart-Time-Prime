@@ -264,6 +264,7 @@ export default async function Home() {
         heroButtonLink={settings.hero_button_link}
         viewerCountText={settings.hero_viewer_count_text}
         viewerCountEnabled={settings.hero_viewer_count_enabled !== false}
+        timerText={settings.hero_timer_text}
         backgroundColor={settings.hero_bg_color || '#000000'}
         textColor={settings.hero_text_color || '#FFFFFF'}
         heroImages={heroImages}
@@ -289,6 +290,7 @@ export default async function Home() {
         title={settings.media_showcase_title || '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO'}
         images={showcaseImages}
         videoUrl={settings.showcase_video_url || ""}
+        videoCaption={settings.showcase_video_caption}
         features={mediaFeatures}
         elementVisibility={{
           title: settings.media_showcase_title_visible !== false,

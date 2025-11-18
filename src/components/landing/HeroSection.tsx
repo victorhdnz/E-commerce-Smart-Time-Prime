@@ -21,6 +21,7 @@ interface HeroSectionProps {
   badgeText?: string
   viewerCountText?: string
   viewerCountEnabled?: boolean
+  timerText?: string
   timerEndDate?: Date
   heroImages?: string[]
   heroBanner?: string
@@ -51,6 +52,7 @@ export const HeroSection = ({
   badgeText = '🚨 A BLACK FRIDAY CHEGOU!',
   viewerCountText = 'pessoas vendo agora',
   viewerCountEnabled = true,
+  timerText = 'Oferta termina em:',
   timerEndDate,
   heroImages = [],
   heroBanner,
@@ -245,7 +247,7 @@ export const HeroSection = ({
       >
         <span className="text-xl">⏰</span>
         <span className="font-semibold">
-          Oferta termina em: <span className="font-mono text-white">{String(timeLeft.days).padStart(2, '0')}d {String(timeLeft.hours).padStart(2, '0')}h {String(timeLeft.minutes).padStart(2, '0')}m {String(timeLeft.seconds).padStart(2, '0')}s</span>
+          {timerText} <span className="font-mono text-white">{String(timeLeft.days).padStart(2, '0')}d {String(timeLeft.hours).padStart(2, '0')}h {String(timeLeft.minutes).padStart(2, '0')}m {String(timeLeft.seconds).padStart(2, '0')}s</span>
         </span>
       </motion.div>
     ) : null,

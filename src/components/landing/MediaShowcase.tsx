@@ -9,6 +9,7 @@ interface MediaShowcaseProps {
   title?: string
   images?: string[]
   videoUrl?: string
+  videoCaption?: string
   features?: Array<{
     icon: string
     text: string
@@ -25,6 +26,7 @@ export const MediaShowcase = ({
   title = '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO',
   images = [],
   videoUrl,
+  videoCaption = '🔥 Confira nossos lançamentos',
   features = [
     { icon: '📱', text: 'Responda mensagens e chamadas direto do relógio' },
     { icon: '❤️', text: 'Monitore batimentos, sono e pressão arterial' },
@@ -255,11 +257,13 @@ export const MediaShowcase = ({
               </div>
 
               {/* Legenda do Vídeo */}
-              <div className="mt-4 text-center">
-                <p className="text-sm text-gray-400">
-                  🔥 Confira nossos lançamentos
-                </p>
-              </div>
+              {videoCaption && (
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-gray-400">
+                    {videoCaption}
+                  </p>
+                </div>
+              )}
               </motion.div>
             </div>
           )}

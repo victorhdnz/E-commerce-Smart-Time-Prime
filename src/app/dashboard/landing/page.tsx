@@ -30,6 +30,7 @@ interface LandingSettings {
   hero_button_link: string
   hero_viewer_count_text: string // Texto do status de pessoas vendo
   hero_viewer_count_enabled: boolean // Ativar/desativar status de pessoas vendo
+  hero_timer_text: string // Texto do cronômetro fixo (ex: "Oferta termina em:")
   hero_bg_color: string
   hero_text_color: string
   hero_images: string[]
@@ -63,6 +64,7 @@ interface LandingSettings {
   showcase_image_3: string
   showcase_image_4: string
   showcase_video_url: string
+  showcase_video_caption: string // Texto abaixo do vídeo (ex: "🔥 Confira nossos lançamentos")
   
   // Value Package
   value_package_title: string
@@ -251,6 +253,7 @@ export default function EditLandingPage() {
     hero_button_text: '',
     hero_button_link: '',
     hero_viewer_count_text: 'pessoas vendo agora',
+    hero_timer_text: 'Oferta termina em:',
     hero_viewer_count_enabled: true,
     hero_bg_color: '#000000',
     hero_text_color: '#FFFFFF',
@@ -288,6 +291,7 @@ export default function EditLandingPage() {
     showcase_image_3: '',
     showcase_image_4: '',
     showcase_video_url: '',
+    showcase_video_caption: '🔥 Confira nossos lançamentos',
     // Value Package
     value_package_title: '🎁 VOCÊ LEVA TUDO ISSO',
     value_package_image: '',
@@ -730,6 +734,7 @@ export default function EditLandingPage() {
           hero_button_link: savedSettings.hero_button_link || '',
           hero_viewer_count_text: savedSettings.hero_viewer_count_text || 'pessoas vendo agora',
           hero_viewer_count_enabled: savedSettings.hero_viewer_count_enabled !== undefined ? savedSettings.hero_viewer_count_enabled : true,
+          hero_timer_text: savedSettings.hero_timer_text || 'Oferta termina em:',
           hero_bg_color: savedSettings.hero_bg_color || '#000000',
           hero_text_color: savedSettings.hero_text_color || '#FFFFFF',
           hero_images: Array.isArray(savedSettings.hero_images) ? savedSettings.hero_images : [],
@@ -788,6 +793,7 @@ export default function EditLandingPage() {
           showcase_image_3: savedSettings.showcase_image_3 || '',
           showcase_image_4: savedSettings.showcase_image_4 || '',
           showcase_video_url: savedSettings.showcase_video_url || '',
+          showcase_video_caption: savedSettings.showcase_video_caption || '🔥 Confira nossos lançamentos',
           // Value Package
           value_package_title: savedSettings.value_package_title || '🎁 VOCÊ LEVA TUDO ISSO',
           value_package_image: savedSettings.value_package_image || '',
@@ -1317,6 +1323,18 @@ export default function EditLandingPage() {
                 />
               </div>
 
+              {/* Cronômetro Fixo */}
+              <div className="pt-4 border-t">
+                <Input
+                  label="Texto do Cronômetro (ex: 'Oferta termina em:')"
+                  value={settings.hero_timer_text}
+                  onChange={(e) =>
+                    setSettings({ ...settings, hero_timer_text: e.target.value })
+                  }
+                  placeholder="Oferta termina em:"
+                />
+              </div>
+
               {/* Banners Carrossel (1920x650) */}
               <div className="pt-4 border-t">
                 <label className="block text-sm font-medium mb-2">
@@ -1834,6 +1852,16 @@ export default function EditLandingPage() {
                   }}
                   showMediaManager={false}
                 />
+                
+                <Input
+                  label="Texto abaixo do vídeo (ex: '🔥 Confira nossos lançamentos')"
+                  value={settings.showcase_video_caption}
+                  onChange={(e) =>
+                    setSettings({ ...settings, showcase_video_caption: e.target.value })
+                  }
+                  placeholder="🔥 Confira nossos lançamentos"
+                  className="mt-4"
+                />
               </div>
             </div>
           </motion.div>
@@ -2257,21 +2285,28 @@ export default function EditLandingPage() {
                 handleDragEnd(sectionResult as DropResult)
               }
               // Drag de elemento dentro de seção (identificado pelo draggableId começando com "element-")
-              else if (result.draggableId.startsWith('element-')) {
-                // Extrair sectionId e elementKey do draggableId
-                // Formato: element-{sectionId}-{elementKey}
-                const withoutPrefix = result.draggableId.replace('element-', '')
-                // Encontrar o primeiro hífen que separa sectionId do elementKey
-                const firstDashIndex = withoutPrefix.indexOf('-')
-                if (firstDashIndex > 0) {
-                  const sectionKey = withoutPrefix.substring(0, firstDashIndex)
-                  const elementKey = withoutPrefix.substring(firstDashIndex + 1)
-                  // Criar um novo result com o elementKey correto
-                  const elementResult = {
-                    ...result,
-                    draggableId: elementKey,
+              else if (result.draggableId.startsWith('element-') && result.destination) {
+                // Extrair sectionId do droppableId (formato: {sectionId}-elements)
+                const droppableId = result.destination.droppableId
+                if (droppableId.endsWith('-elements')) {
+                  const sectionKey = droppableId.replace('-elements', '')
+                  // Extrair elementKey do draggableId
+                  // Formato: element-{sectionId}-{elementKey}
+                  const withoutPrefix = result.draggableId.replace('element-', '')
+                  const firstDashIndex = withoutPrefix.indexOf('-')
+                  if (firstDashIndex > 0) {
+                    const elementKey = withoutPrefix.substring(firstDashIndex + 1)
+                    // Criar um novo result com o elementKey correto
+                    const elementResult = {
+                      ...result,
+                      draggableId: elementKey,
+                      destination: {
+                        ...result.destination,
+                        droppableId: `${sectionKey}-elements`,
+                      },
+                    }
+                    handleElementDragEnd(sectionKey, elementResult as DropResult)
                   }
-                  handleElementDragEnd(sectionKey, elementResult as DropResult)
                 }
               }
             }}>
@@ -2280,7 +2315,7 @@ export default function EditLandingPage() {
                   <div 
                     {...provided.droppableProps} 
                     ref={provided.innerRef} 
-                    className="flex flex-col gap-4"
+                    className="space-y-4"
                   >
                     {sectionOrder.map((sectionId, index) => {
                       const section = sectionMap[sectionId]
@@ -2295,10 +2330,8 @@ export default function EditLandingPage() {
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              style={{
-                                ...provided.draggableProps.style,
-                              }}
-                              className={`border rounded-lg p-4 hover:bg-gray-50 ${
+                              style={provided.draggableProps.style}
+                              className={`border rounded-lg p-4 hover:bg-gray-50 transition-colors ${
                                 snapshot.isDragging ? 'bg-gray-100 shadow-lg' : 'bg-white'
                               }`}
                             >
@@ -2329,7 +2362,7 @@ export default function EditLandingPage() {
                                       <div 
                                         {...provided.droppableProps} 
                                         ref={provided.innerRef} 
-                                        className="flex flex-col gap-2"
+                                        className="space-y-2"
                                       >
                                         {elementOrder.map((elementKey, elementIndex) => {
                                           const element = section.elements.find(e => e.key === elementKey)
@@ -2341,10 +2374,8 @@ export default function EditLandingPage() {
                                                 <div
                                                   ref={provided.innerRef}
                                                   {...provided.draggableProps}
-                                                  style={{
-                                                    ...provided.draggableProps.style,
-                                                  }}
-                                                  className={`flex items-center gap-3 p-2 border rounded-lg hover:bg-gray-50 ${
+                                                  style={provided.draggableProps.style}
+                                                  className={`flex items-center gap-3 p-2 border rounded-lg hover:bg-gray-50 transition-colors ${
                                                     snapshot.isDragging ? 'bg-gray-100 shadow-lg' : 'bg-gray-50'
                                                   }`}
                                                 >
