@@ -191,8 +191,20 @@ export default function DashboardLayoutsPage() {
 
           const currentSettings = existing?.value || {}
           
-          const newSettings = {
-            ...currentSettings,
+          // IMPORTANTE: Lista de campos que são arrays/objetos e devem ser preservados
+          const arrayObjectFields = [
+            'hero_images', 'hero_banners', 'showcase_images', 'story_images', 
+            'about_us_store_images', 'value_package_items', 'media_showcase_features',
+            'hero_element_order', 'media_showcase_element_order', 'value_package_element_order',
+            'social_proof_element_order', 'story_element_order', 'about_us_element_order',
+            'contact_element_order', 'faq_element_order', 'social_proof_reviews'
+          ]
+          
+          // Fazer merge preservando TODOS os dados existentes
+          const newSettings: any = { ...currentSettings } // Começar com TODOS os dados existentes
+          
+          // Atualizar apenas os campos do layout, preservando arrays/objetos
+          const layoutFields: any = {
             hero_title: layout.hero_title || currentSettings.hero_title,
             hero_subtitle: layout.hero_subtitle || currentSettings.hero_subtitle,
             hero_cta_text: layout.hero_cta_text || currentSettings.hero_cta_text,
@@ -202,9 +214,16 @@ export default function DashboardLayoutsPage() {
             timer_end_date: layout.timer_end_date || currentSettings.timer_end_date,
             timer_bg_color: layout.timer_bg_color || currentSettings.timer_bg_color,
             timer_text_color: layout.timer_text_color || currentSettings.timer_text_color,
-            // Aplicar cores do tema também
             site_theme_colors: layout.theme_colors || currentSettings.site_theme_colors,
           }
+          
+          // Atualizar apenas campos que não são arrays/objetos preservados
+          Object.keys(layoutFields).forEach(key => {
+            if (!arrayObjectFields.includes(key)) {
+              newSettings[key] = layoutFields[key]
+            }
+            // Arrays/objetos já estão preservados no spread inicial
+          })
 
           if (existing) {
             await supabase

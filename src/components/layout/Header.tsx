@@ -30,30 +30,15 @@ export const Header = () => {
     const loadSiteSettings = async () => {
       try {
         const supabase = createClient()
-        // Buscar primeiro registro
+        // Buscar registro com key = 'general' (correto)
         const { data, error } = await supabase
           .from('site_settings')
           .select('site_logo, site_name')
-          .order('updated_at', { ascending: false })
-          .limit(1)
+          .eq('key', 'general')
           .maybeSingle()
 
         if (error && error.code !== 'PGRST116') {
           console.error('Erro ao carregar configurações:', error)
-          // Tentar buscar qualquer registro como fallback
-          const { data: fallbackData } = await supabase
-            .from('site_settings')
-            .select('site_logo, site_name')
-            .limit(1)
-            .maybeSingle()
-
-          if (fallbackData) {
-            setSiteName(fallbackData.site_name || 'Smart Time Prime')
-            setSiteLogo(fallbackData.site_logo || undefined)
-          } else {
-            setSiteName('Smart Time Prime')
-            setSiteLogo(undefined)
-          }
           return
         }
 

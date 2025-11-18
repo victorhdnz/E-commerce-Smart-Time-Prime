@@ -485,30 +485,6 @@ export const HeroSection = ({
             className="text-center max-w-5xl w-full flex flex-col items-center gap-6 md:gap-8"
           >
             {renderContentElements()}
-            
-            {/* Scroll Indicator - apenas se não houver botão hero */}
-            {(!elementVisibility.heroButton || !heroButtonText || !heroButtonLink) && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1, duration: 1 }}
-                className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50"
-              >
-                <motion.div
-                  animate={{ y: [0, 10, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="w-6 h-10 border-2 rounded-full flex items-start justify-center p-2"
-                  style={{ borderColor: finalTextColor }}
-                >
-                  <motion.div
-                    animate={{ opacity: [0, 1, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{ backgroundColor: finalTextColor }}
-                  />
-                </motion.div>
-              </motion.div>
-            )}
           </motion.div>
         </div>
       </div>

@@ -148,10 +148,17 @@ export default function ConfiguracoesPage() {
       // Preparar dados para JSONB value (fazer merge com dados existentes para não perder outras configurações)
       const existingValue = existingData?.value || {}
       
-      // Criar novo objeto value fazendo merge: preservar todos os campos existentes e atualizar apenas os campos desta página
-      const valueData = {
-        ...existingValue, // Preservar todos os dados existentes (landing page, etc)
-        // Atualizar apenas os campos gerenciados por esta página
+      // IMPORTANTE: Lista de campos que são arrays/objetos e devem ser preservados do banco
+      const arrayObjectFields = [
+        'hero_images', 'hero_banners', 'showcase_images', 'story_images', 
+        'about_us_store_images', 'value_package_items', 'media_showcase_features',
+        'hero_element_order', 'media_showcase_element_order', 'value_package_element_order',
+        'social_proof_element_order', 'story_element_order', 'about_us_element_order',
+        'contact_element_order', 'faq_element_order', 'social_proof_reviews'
+      ]
+      
+      // Criar objeto com merge inteligente: preservar arrays/objetos do banco
+      const fieldsToUpdate: any = {
         site_name: config.site_name,
         site_logo: config.site_logo || null,
         site_description: config.site_description,
@@ -167,6 +174,24 @@ export default function ConfiguracoesPage() {
         address_zip: config.address_zip,
         loading_emoji: config.loading_emoji,
       }
+      
+      // Criar novo objeto value fazendo merge: preservar TODOS os dados existentes primeiro
+      const valueData: any = { ...existingValue } // Começar com TODOS os dados existentes
+      
+      // Atualizar apenas os campos desta página, preservando arrays/objetos do banco
+      Object.keys(fieldsToUpdate).forEach(key => {
+        const newValue = fieldsToUpdate[key]
+        const existingValueForKey = existingValue[key]
+        
+        // Se for um campo array/objeto, preservar do banco se existir
+        if (arrayObjectFields.includes(key) && existingValueForKey !== undefined && existingValueForKey !== null) {
+          // Preservar valor do banco para arrays/objetos
+          valueData[key] = existingValueForKey
+        } else {
+          // Atualizar com novo valor
+          valueData[key] = newValue
+        }
+      })
 
       // Remover apenas campos undefined (manter null para site_logo permitir limpar)
       Object.keys(updateData).forEach(key => {
@@ -177,6 +202,16 @@ export default function ConfiguracoesPage() {
 
       // Adicionar value ao updateData (fazendo merge para preservar outras configurações)
       updateData.value = valueData
+
+      // LOG DE SEGURANÇA: Verificar se arrays importantes foram preservados
+      console.log('🔒 Verificação de segurança - Arrays preservados:', {
+        hero_banners_count: Array.isArray(valueData.hero_banners) ? valueData.hero_banners.length : 0,
+        showcase_images_count: Array.isArray(valueData.showcase_images) ? valueData.showcase_images.length : 0,
+        story_images_count: Array.isArray(valueData.story_images) ? valueData.story_images.length : 0,
+        value_package_items_count: Array.isArray(valueData.value_package_items) ? valueData.value_package_items.length : 0,
+        showcase_video_url: valueData.showcase_video_url ? 'presente' : 'ausente',
+        hero_title: valueData.hero_title ? 'presente' : 'ausente',
+      })
 
       console.log('Dados a serem salvos:', updateData)
 

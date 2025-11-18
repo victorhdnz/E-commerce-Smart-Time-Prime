@@ -1086,6 +1086,15 @@ export default function EditLandingPage() {
         timer_end_date: timerEndDateISO, // Sempre atualizar timer_end_date
       }
 
+      // LOG DE SEGURANÇA: Verificar se arrays importantes foram preservados
+      console.log('🔒 Verificação de segurança - Arrays preservados:', {
+        hero_banners_count: Array.isArray(settingsToSave.hero_banners) ? settingsToSave.hero_banners.length : 0,
+        showcase_images_count: Array.isArray(settingsToSave.showcase_images) ? settingsToSave.showcase_images.length : 0,
+        story_images_count: Array.isArray(settingsToSave.story_images) ? settingsToSave.story_images.length : 0,
+        value_package_items_count: Array.isArray(settingsToSave.value_package_items) ? settingsToSave.value_package_items.length : 0,
+        showcase_video_url: settingsToSave.showcase_video_url ? 'presente' : 'ausente',
+      })
+
       if (existing) {
         // Atualizar existente
         const { error } = await supabase
