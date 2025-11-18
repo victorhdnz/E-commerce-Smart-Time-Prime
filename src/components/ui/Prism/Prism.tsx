@@ -62,7 +62,7 @@ const Prism = ({
     const TS = Math.max(0, timeScale || 1)
     const HOVSTR = Math.max(0, hoverStrength || 1)
     const INERT = Math.max(0, Math.min(1, inertia || 0.12))
-    // Remover limite de DPR para máxima qualidade em todas as telas
+    // Usar DPR completo para melhor qualidade (como no preview da biblioteca)
     const dpr = window.devicePixelRatio || 1
 
     const renderer = new Renderer({
@@ -182,7 +182,7 @@ const Prism = ({
           float c2 = cos(t + 11.0);
           wob = mat2(c0, c1, c2, c0);
         }
-        const int STEPS = 200; // Aumentado ainda mais para máxima qualidade
+        const int STEPS = 150; // Qualidade alta como no preview da biblioteca
         for (int i = 0; i < STEPS; i++) {
           p = vec3(f, z);
           p.xz = p.xz * wob;
@@ -243,8 +243,9 @@ const Prism = ({
     const mesh = new Mesh(gl, { geometry, program })
 
     const resize = () => {
-      const w = container.clientWidth || 1
-      const h = container.clientHeight || 1
+      // Usar window.innerWidth/Height para garantir que cubra toda a viewport
+      const w = Math.max(container.clientWidth || window.innerWidth || 1, window.innerWidth || 1)
+      const h = Math.max(container.clientHeight || window.innerHeight || 1, window.innerHeight || 1)
       renderer.setSize(w, h)
       iResBuf[0] = gl.drawingBufferWidth
       iResBuf[1] = gl.drawingBufferHeight
@@ -403,18 +404,21 @@ const Prism = ({
       }
     }
 
-    if (suspendWhenOffscreen) {
-      const io = new IntersectionObserver((entries) => {
+    // Sempre usar IntersectionObserver para otimizar performance
+    const io = new IntersectionObserver(
+      (entries) => {
         const vis = entries.some((e) => e.isIntersecting)
-        if (vis) startRAF()
-        else stopRAF()
-      })
-      io.observe(container)
-      startRAF()
-      ;(container as any).__prismIO = io
-    } else {
-      startRAF()
-    }
+        if (vis) {
+          startRAF()
+        } else {
+          stopRAF()
+        }
+      },
+      { threshold: 0.1 } // Iniciar quando 10% estiver visível
+    )
+    io.observe(container)
+    startRAF()
+    ;(container as any).__prismIO = io
 
     return () => {
       stopRAF()
@@ -424,11 +428,9 @@ const Prism = ({
         window.removeEventListener('mouseleave', onLeave)
         window.removeEventListener('blur', onBlur)
       }
-      if (suspendWhenOffscreen) {
-        const io = (container as any).__prismIO
-        if (io) io.disconnect()
-        delete (container as any).__prismIO
-      }
+      const io = (container as any).__prismIO
+      if (io) io.disconnect()
+      delete (container as any).__prismIO
       if (gl.canvas instanceof HTMLCanvasElement && gl.canvas.parentElement === container) {
         container.removeChild(gl.canvas)
       }

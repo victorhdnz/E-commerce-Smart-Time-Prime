@@ -51,21 +51,24 @@ export const GlobalBackground = () => {
         backgroundColor: '#000000',
         width: '100vw',
         height: height,
-        minHeight: '100vh'
+        minHeight: '100vh',
+        position: 'fixed'
       }}
     >
-      <Prism
-        animationType="rotate"
-        timeScale={0.5}
-        height={3.5}
-        baseWidth={5.5}
-        scale={3.6}
-        hueShift={0}
-        colorFrequency={1}
-        noise={0.5}
-        glow={1}
-        transparent={true}
-      />
+      <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+        <Prism
+          animationType="rotate"
+          timeScale={0.5}
+          height={3.5}
+          baseWidth={5.5}
+          scale={3.6}
+          hueShift={0}
+          colorFrequency={1}
+          noise={0.5}
+          glow={1}
+          transparent={true}
+        />
+      </div>
     </div>
   )
 }

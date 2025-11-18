@@ -80,8 +80,16 @@ export function SectionTransition({
   const needsTopTransition = !isFirst && shouldApplyTransition(previousBgColor, backgroundColor)
   const needsBottomTransition = !isLast && shouldApplyTransition(backgroundColor, nextBgColor)
 
+  // Se o background for preto (#000000 ou similar), tornar transparente para o Prism aparecer
+  const normalizedBg = normalizeColor(backgroundColor)
+  const isBlack = normalizedBg === '#000000' || normalizedBg === '#000'
+  const finalBgColor = isBlack ? 'transparent' : backgroundColor
+
   return (
-    <div className={`relative ${className}`}>
+    <div 
+      className={`relative ${className}`}
+      style={{ backgroundColor: finalBgColor }}
+    >
       {/* Sombreamento sutil superior */}
       {needsTopTransition && previousBgColor && backgroundColor && (
         <div

@@ -504,7 +504,7 @@ export default async function Home() {
         previousBgColor="#ffffff"
         isLast={true}
       >
-        <section className="py-20 bg-black text-white mb-0">
+        <section className="py-20 text-white mb-0" style={{ backgroundColor: 'transparent' }}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               Encontre o Produto Perfeito para Você
