@@ -2358,8 +2358,6 @@ export default function EditLandingPage() {
                               className={`border-2 rounded-lg p-4 transition-all duration-200 ${
                                 snapshot.isDragging 
                                   ? 'bg-blue-100 border-blue-500 shadow-2xl scale-105' 
-                                  : snapshot.isDraggingOver
-                                  ? 'bg-blue-50 border-blue-300'
                                   : 'bg-white border-gray-200 hover:shadow-md hover:border-gray-300'
                               }`}
                             >
@@ -2418,8 +2416,6 @@ export default function EditLandingPage() {
                                                   className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all duration-200 ${
                                                     snapshot.isDragging 
                                                       ? 'bg-green-100 border-green-500 shadow-xl scale-105' 
-                                                      : snapshot.isDraggingOver
-                                                      ? 'bg-green-50 border-green-300'
                                                       : 'bg-gray-50 border-gray-200 hover:border-gray-300 hover:shadow-sm'
                                                   }`}
                                                 >
