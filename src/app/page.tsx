@@ -282,8 +282,6 @@ export default async function Home() {
           heroButton: settings.hero_button_visible !== false,
           viewerCount: true,
         }}
-        backgroundEffect={settings.hero_background_effect || 'none'}
-        prismAnimationType={settings.hero_prism_animation_type || 'rotate'}
       />
     ) : null,
     media_showcase: settings.section_media_showcase_visible !== false ? (

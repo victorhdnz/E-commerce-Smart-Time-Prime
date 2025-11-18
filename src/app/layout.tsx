@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
+import { GlobalBackground } from '@/components/ui/GlobalBackground/GlobalBackground'
 import { Toaster } from 'react-hot-toast'
 import { getSiteUrl } from '@/lib/utils/siteUrl'
 import { createServerClient } from '@/lib/supabase/server'
@@ -141,9 +142,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
+        <GlobalBackground />
         <Header />
         <PageTransition>
-          <main className="min-h-screen">
+          <main className="min-h-screen relative z-10">
             {children}
           </main>
         </PageTransition>

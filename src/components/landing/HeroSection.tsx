@@ -7,7 +7,6 @@ import Link from 'next/link'
 import { useEffect, useState, Fragment as ReactFragment } from 'react'
 import Image from 'next/image'
 import { BannerCarousel } from './BannerCarousel'
-import { AnimatedBackground, BackgroundEffectType, PrismAnimationType } from '@/components/ui/AnimatedBackground/AnimatedBackground'
 
 interface HeroSectionProps {
   title?: string
@@ -38,8 +37,6 @@ interface HeroSectionProps {
     heroButton?: boolean
     viewerCount?: boolean
   }
-  backgroundEffect?: BackgroundEffectType // Tipo de efeito de background ('prism', 'none', etc.)
-  prismAnimationType?: PrismAnimationType // Tipo de animação do Prism
 }
 
 export const HeroSection = ({
@@ -71,8 +68,6 @@ export const HeroSection = ({
     heroButton: true,
     viewerCount: true,
   },
-  backgroundEffect = 'none',
-  prismAnimationType = 'rotate',
 }: HeroSectionProps) => {
   // Cores fixas da empresa (preto e branco)
   const finalBackgroundColor = '#000000'
@@ -448,15 +443,9 @@ export const HeroSection = ({
 
   return (
     <section
-      style={{ backgroundColor: finalBackgroundColor, color: finalTextColor }}
+      style={{ backgroundColor: 'transparent', color: finalTextColor }}
       className="relative flex flex-col items-center justify-center overflow-hidden"
     >
-      {/* Animated Background Effect - flexível para diferentes efeitos */}
-      <AnimatedBackground
-        effectType={backgroundEffect}
-        prismAnimationType={prismAnimationType}
-      />
-      
       {/* Banner carrossel acima do texto (1920x650) - renderizado primeiro se estiver na ordem */}
       {bannerElement}
 

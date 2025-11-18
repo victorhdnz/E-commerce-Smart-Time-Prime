@@ -176,7 +176,7 @@ const Prism = ({
           float c2 = cos(t + 11.0);
           wob = mat2(c0, c1, c2, c0);
         }
-        const int STEPS = 100;
+        const int STEPS = 150; // Aumentado para melhor qualidade
         for (int i = 0; i < STEPS; i++) {
           p = vec3(f, z);
           p.xz = p.xz * wob;
