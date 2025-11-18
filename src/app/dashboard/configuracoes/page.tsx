@@ -111,14 +111,15 @@ export default function ConfiguracoesPage() {
     try {
       console.log('Iniciando salvamento...', config)
       
-      // Buscar registro com key = 'general'
+      // Buscar registro com key = 'general' - IMPORTANTE: buscar TUDO para preservar
       const { data: existingData, error: checkError } = await supabase
         .from('site_settings')
-        .select('id, key, value')
+        .select('*')
         .eq('key', 'general')
         .maybeSingle()
 
       console.log('Dados existentes encontrados:', existingData)
+      console.log('Valor JSONB atual:', existingData?.value)
       
       if (checkError && checkError.code !== 'PGRST116') {
         console.error('Erro ao verificar dados existentes:', checkError)

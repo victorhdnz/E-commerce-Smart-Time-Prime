@@ -1028,10 +1028,43 @@ export default function EditLandingPage() {
 
       // Mesclar com dados existentes para preservar campos que não foram alterados
       const existingValue = existing?.value || {}
+      
+      // Criar objeto apenas com campos que têm valores (não vazios/undefined)
+      // Isso preserva campos existentes que não estão sendo editados
+      const settingsToUpdate: any = {}
+      
+      // Lista de campos que devem ser preservados mesmo se vazios (arrays, objetos)
+      const preserveFields = [
+        'hero_images', 'hero_banners', 'showcase_images', 'story_images', 
+        'about_us_store_images', 'value_package_items', 'media_showcase_features',
+        'hero_element_order', 'media_showcase_element_order', 'value_package_element_order',
+        'social_proof_element_order', 'story_element_order', 'about_us_element_order',
+        'contact_element_order', 'faq_element_order'
+      ]
+      
+      // Iterar sobre todas as chaves de settings e adicionar apenas valores não vazios
+      Object.keys(settings).forEach(key => {
+        const value = (settings as any)[key]
+        
+        // Se for um campo que deve ser preservado (array/objeto), sempre incluir
+        if (preserveFields.includes(key)) {
+          settingsToUpdate[key] = value
+        }
+        // Se for um valor não vazio (string não vazia, número, boolean, etc)
+        else if (value !== undefined && value !== null && value !== '') {
+          settingsToUpdate[key] = value
+        }
+        // Se for boolean false, também incluir (pois false é um valor válido)
+        else if (typeof value === 'boolean') {
+          settingsToUpdate[key] = value
+        }
+      })
+      
+      // Fazer merge: preservar tudo que existe + atualizar apenas campos com valores
       const settingsToSave = {
-        ...existingValue, // Preservar dados existentes
-        ...settings, // Sobrescrever com novos dados
-        timer_end_date: timerEndDateISO,
+        ...existingValue, // Preservar TODOS os dados existentes primeiro
+        ...settingsToUpdate, // Sobrescrever apenas campos que têm valores
+        timer_end_date: timerEndDateISO, // Sempre atualizar timer_end_date
       }
 
       if (existing) {
