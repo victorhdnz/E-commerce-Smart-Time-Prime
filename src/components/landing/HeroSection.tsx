@@ -130,7 +130,7 @@ export const HeroSection = ({
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
-        className="inline-block bg-red-600 text-white px-3 py-1.5 md:px-6 md:py-3 rounded-full text-sm md:text-lg font-bold mb-6 shadow-2xl"
+        className="inline-block bg-red-600 text-white px-3 py-1.5 md:px-6 md:py-3 rounded-full text-sm md:text-lg font-bold shadow-2xl"
       >
         {badgeText}
       </motion.div>
@@ -141,7 +141,7 @@ export const HeroSection = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.8 }}
-        className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
+        className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
       >
         {title}
       </motion.h1>
@@ -152,7 +152,7 @@ export const HeroSection = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.8 }}
-        className="text-lg md:text-xl lg:text-2xl mb-8 opacity-90 whitespace-pre-line"
+        className="text-lg md:text-xl lg:text-2xl opacity-90 whitespace-pre-line"
       >
         {(() => {
           let cleanedSubtitle = subtitle
@@ -255,7 +255,7 @@ export const HeroSection = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2, duration: 0.8 }}
-        className="mt-8"
+        className=""
       >
         {ctaLink ? (
           <Link href={ctaLink}>
@@ -276,7 +276,7 @@ export const HeroSection = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.4, duration: 0.8 }}
-        className="mt-6 relative z-10"
+        className="relative z-10"
       >
         <Link href={heroButtonLink} target={heroButtonLink.startsWith('http') ? '_blank' : '_self'} rel={heroButtonLink.startsWith('http') ? 'noopener noreferrer' : undefined}>
           <motion.div
@@ -360,11 +360,35 @@ export const HeroSection = ({
     const timerIndex = elementOrder.indexOf('hero_timer_visible')
     const shouldWrapViewerAndTimer = viewerCountIndex !== -1 && timerIndex !== -1 && Math.abs(viewerCountIndex - timerIndex) === 1
     
+    // Função para determinar espaçamento adicional baseado no tipo de elemento
+    const getElementSpacing = (key: string, isFirst: boolean) => {
+      // O gap-6 do container já fornece espaçamento base
+      // Adicionar espaçamento extra apenas para elementos que precisam de mais espaço
+      let spacing = ''
+      
+      // Elementos que precisam de mais espaço acima quando não são os primeiros
+      if (!isFirst) {
+        // Título e subtítulo precisam de mais espaço quando aparecem depois de outros elementos
+        if (['hero_title_visible', 'hero_subtitle_visible'].includes(key)) {
+          spacing += 'mt-4 ' // Espaçamento extra além do gap-6
+        }
+      }
+      
+      return spacing.trim()
+    }
+    
+    const visibleElements = elementOrder.filter(key => key !== 'hero_banner_visible' && elementComponents[key])
+    
     return elementOrder
       .filter(key => key !== 'hero_banner_visible')
       .map((key, index) => {
         const element = elementComponents[key]
         if (!element) return null
+        
+        // Encontrar o índice real do elemento na lista de elementos visíveis
+        const visibleIndex = visibleElements.indexOf(key)
+        const isFirst = visibleIndex === 0
+        const spacing = getElementSpacing(key, isFirst)
         
         // Se viewerCount e timer estão juntos, renderizar em um wrapper
         if (key === 'hero_viewer_count' && shouldWrapViewerAndTimer) {
@@ -374,7 +398,7 @@ export const HeroSection = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.8 }}
-              className="flex flex-col items-center justify-center gap-4 text-base md:text-lg w-full"
+              className={`flex flex-col items-center justify-center gap-4 text-base md:text-lg w-full ${spacing}`}
             >
               {element}
               {elementComponents.hero_timer_visible}
@@ -387,19 +411,27 @@ export const HeroSection = ({
           return null
         }
         
-        // Para botões, não envolver em div extra - eles já têm seus próprios wrappers com classes corretas
+        // Para botões, adicionar wrapper com espaçamento
         if (key === 'hero_button_visible' || key === 'hero_cta_visible') {
-          return <ReactFragment key={key}>{element}</ReactFragment>
+          return (
+            <div key={key} className={`w-full flex justify-center ${spacing}`}>
+              {element}
+            </div>
+          )
         }
         
-        // Para badge, título e subtítulo - já são inline-block ou block, não precisa wrapper
+        // Para badge, título e subtítulo - adicionar wrapper com espaçamento
         if (key === 'hero_badge_visible' || key === 'hero_title_visible' || key === 'hero_subtitle_visible') {
-          return <ReactFragment key={key}>{element}</ReactFragment>
+          return (
+            <div key={key} className={`w-full ${spacing}`}>
+              {element}
+            </div>
+          )
         }
         
-        // Para outros elementos (viewerCount, timer quando separados), usar wrapper flex
+        // Para outros elementos (viewerCount, timer quando separados), usar wrapper flex com espaçamento
         return (
-          <div key={key} className="w-full flex justify-center">
+          <div key={key} className={`w-full flex justify-center ${spacing}`}>
             {element}
           </div>
         )
@@ -450,7 +482,7 @@ export const HeroSection = ({
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-center max-w-5xl w-full flex flex-col items-center"
+            className="text-center max-w-5xl w-full flex flex-col items-center gap-6 md:gap-8"
           >
             {renderContentElements()}
             

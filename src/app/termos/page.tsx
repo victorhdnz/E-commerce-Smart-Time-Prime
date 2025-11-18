@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { FileText, Shield, Truck, RotateCcw, Loader2, ChevronRight } from 'lucide-react'
 import { FadeInSection } from '@/components/ui/FadeInSection'
-import { createClient } from '@/lib/supabase/client'
 import { TermsContent } from '@/components/ui/TermsContent'
 
 interface Term {
@@ -13,6 +12,7 @@ interface Term {
   key: string
   title: string
   icon: string
+  content?: string
 }
 
 const getIcon = (iconName: string) => {
@@ -35,7 +35,6 @@ export default function TermosPage() {
   const [terms, setTerms] = useState<Term[]>([])
   const [selectedTerm, setSelectedTerm] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
 
   const handleTermSelect = (termKey: string) => {
     setSelectedTerm(termKey)
@@ -47,34 +46,35 @@ export default function TermosPage() {
   useEffect(() => {
     const loadTerms = async () => {
       try {
-        const { data, error } = await supabase
-          .from('site_terms')
-          .select('id, key, title, icon')
-          .order('title')
-
-        if (error) {
-          console.error('Erro ao carregar termos:', error)
-          setTerms([])
-          return
+        // Usar API com cache (5 minutos)
+        const response = await fetch('/api/terms', {
+          next: { revalidate: 300 } // Cache de 5 minutos
+        })
+        
+        if (!response.ok) {
+          throw new Error('Erro ao carregar termos')
         }
-
-        if (data && data.length > 0) {
-          setTerms(data as Term[])
+        
+        const result = await response.json()
+        
+        if (result.success && result.terms) {
+          const termsData = result.terms as Term[]
+          setTerms(termsData)
           
           // Verificar se há um parâmetro de query para selecionar um termo específico
           const termFromQuery = searchParams.get('termo')
           if (termFromQuery) {
             // Verificar se o termo existe na lista
-            const termExists = data.find(t => t.key === termFromQuery)
+            const termExists = termsData.find(t => t.key === termFromQuery)
             if (termExists) {
               setSelectedTerm(termFromQuery)
             } else {
               // Se não encontrar, usar o primeiro termo
-              setSelectedTerm(data[0].key)
+              setSelectedTerm(termsData[0]?.key || null)
             }
           } else {
             // Selecionar o primeiro termo automaticamente
-            setSelectedTerm(data[0].key)
+            setSelectedTerm(termsData[0]?.key || null)
           }
         } else {
           setTerms([])
@@ -166,13 +166,17 @@ export default function TermosPage() {
 
             {/* Conteúdo do termo selecionado */}
             <main className="flex-1">
-              {selectedTerm ? (
-                <TermsContent
-                  termKey={selectedTerm}
-                  defaultTitle={terms.find(t => t.key === selectedTerm)?.title || 'Termo'}
-                  defaultContent={`# ${terms.find(t => t.key === selectedTerm)?.title || 'Termo'}\n\nConteúdo do termo aqui.`}
-                />
-              ) : (
+              {selectedTerm ? (() => {
+                const selectedTermData = terms.find(t => t.key === selectedTerm)
+                return (
+                  <TermsContent
+                    termKey={selectedTerm}
+                    defaultTitle={selectedTermData?.title || 'Termo'}
+                    defaultContent={selectedTermData?.content || `# ${selectedTermData?.title || 'Termo'}\n\nConteúdo do termo aqui.`}
+                    cachedContent={selectedTermData?.content}
+                  />
+                )
+              })() : (
                 <div className="bg-white border-2 border-gray-200 rounded-xl p-8 text-center">
                   <p className="text-gray-600">Selecione um termo para visualizar</p>
                 </div>

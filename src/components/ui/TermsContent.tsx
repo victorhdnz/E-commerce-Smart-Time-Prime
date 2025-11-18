@@ -1,33 +1,48 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { FadeInSection } from './FadeInSection'
 
 interface TermsContentProps {
   termKey: string
   defaultTitle: string
   defaultContent: string
+  cachedContent?: string
 }
 
-export const TermsContent = ({ termKey, defaultTitle, defaultContent }: TermsContentProps) => {
+export const TermsContent = ({ termKey, defaultTitle, defaultContent, cachedContent }: TermsContentProps) => {
   const [title, setTitle] = useState(defaultTitle)
-  const [content, setContent] = useState(defaultContent)
-  const [loading, setLoading] = useState(true)
+  const [content, setContent] = useState(cachedContent || defaultContent)
+  const [loading, setLoading] = useState(!cachedContent) // Se já tem conteúdo em cache, não precisa carregar
 
   useEffect(() => {
+    // Se já temos conteúdo em cache, usar diretamente
+    if (cachedContent) {
+      setContent(cachedContent)
+      setLoading(false)
+      return
+    }
+
+    // Caso contrário, carregar da API
     const loadTerm = async () => {
       try {
-        const supabase = createClient()
-        const { data, error } = await supabase
-          .from('site_terms')
-          .select('title, content')
-          .eq('key', termKey)
-          .maybeSingle()
-
-        if (!error && data) {
-          setTitle(data.title || defaultTitle)
-          setContent(data.content || defaultContent)
+        // Usar API com cache (5 minutos)
+        const response = await fetch('/api/terms', {
+          next: { revalidate: 300 } // Cache de 5 minutos
+        })
+        
+        if (!response.ok) {
+          throw new Error('Erro ao carregar termo')
+        }
+        
+        const result = await response.json()
+        
+        if (result.success && result.terms) {
+          const term = result.terms.find((t: any) => t.key === termKey)
+          if (term) {
+            setTitle(term.title || defaultTitle)
+            setContent(term.content || defaultContent)
+          }
         }
       } catch (error) {
         console.error('Erro ao carregar termo:', error)
@@ -37,7 +52,7 @@ export const TermsContent = ({ termKey, defaultTitle, defaultContent }: TermsCon
     }
 
     loadTerm()
-  }, [termKey, defaultTitle, defaultContent])
+  }, [termKey, defaultTitle, defaultContent, cachedContent])
 
   // Função para converter Markdown simples para HTML
   const formatContent = (text: string) => {
