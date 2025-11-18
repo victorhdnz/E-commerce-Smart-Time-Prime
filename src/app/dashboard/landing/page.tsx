@@ -2280,7 +2280,7 @@ export default function EditLandingPage() {
                   <div 
                     {...provided.droppableProps} 
                     ref={provided.innerRef} 
-                    className="space-y-4"
+                    className="flex flex-col gap-4"
                   >
                     {sectionOrder.map((sectionId, index) => {
                       const section = sectionMap[sectionId]
@@ -2295,7 +2295,10 @@ export default function EditLandingPage() {
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              className={`border rounded-lg p-4 hover:bg-gray-50 transition-colors ${
+                              style={{
+                                ...provided.draggableProps.style,
+                              }}
+                              className={`border rounded-lg p-4 hover:bg-gray-50 ${
                                 snapshot.isDragging ? 'bg-gray-100 shadow-lg' : 'bg-white'
                               }`}
                             >
@@ -2326,7 +2329,7 @@ export default function EditLandingPage() {
                                       <div 
                                         {...provided.droppableProps} 
                                         ref={provided.innerRef} 
-                                        className="space-y-2"
+                                        className="flex flex-col gap-2"
                                       >
                                         {elementOrder.map((elementKey, elementIndex) => {
                                           const element = section.elements.find(e => e.key === elementKey)
@@ -2338,7 +2341,10 @@ export default function EditLandingPage() {
                                                 <div
                                                   ref={provided.innerRef}
                                                   {...provided.draggableProps}
-                                                  className={`flex items-center gap-3 p-2 border rounded-lg hover:bg-gray-50 transition-colors ${
+                                                  style={{
+                                                    ...provided.draggableProps.style,
+                                                  }}
+                                                  className={`flex items-center gap-3 p-2 border rounded-lg hover:bg-gray-50 ${
                                                     snapshot.isDragging ? 'bg-gray-100 shadow-lg' : 'bg-gray-50'
                                                   }`}
                                                 >
