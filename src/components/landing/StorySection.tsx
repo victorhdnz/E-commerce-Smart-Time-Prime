@@ -103,8 +103,8 @@ export const StorySection = ({
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">{title}</h2>
-            <div className="w-24 h-1 bg-black mx-auto" />
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">{title}</h2>
+            <div className="w-24 h-1 bg-white mx-auto" />
           </motion.div>
         )}
 
@@ -117,15 +117,15 @@ export const StorySection = ({
               viewport={{ once: true }}
               className={!elementVisibility.images ? 'lg:col-span-1 max-w-2xl mx-auto' : ''}
             >
-              <div className="text-lg md:text-xl text-gray-700 whitespace-pre-line leading-relaxed">
+              <div className="text-lg md:text-xl text-white/90 whitespace-pre-line leading-relaxed">
                 {content}
               </div>
             {foundersNames && (
-              <div className="mt-6 pt-6 border-t border-gray-300">
-                <p className="text-lg font-semibold text-gray-900">
+              <div className="mt-6 pt-6 border-t border-white/20">
+                <p className="text-lg font-semibold text-white">
                   {foundersNames}
                 </p>
-                <p className="text-sm text-gray-600 mt-1">Fundadores da {siteName}</p>
+                <p className="text-sm text-white/70 mt-1">Fundadores da {siteName}</p>
               </div>
             )}
             </motion.div>

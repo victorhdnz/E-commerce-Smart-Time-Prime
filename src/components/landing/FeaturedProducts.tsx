@@ -57,9 +57,9 @@ export const FeaturedProducts = ({
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">{title}</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
-          <div className="w-24 h-1 bg-black mx-auto mt-6" />
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">{title}</h2>
+          <p className="text-xl text-white/80 max-w-2xl mx-auto">{subtitle}</p>
+          <div className="w-24 h-1 bg-white mx-auto mt-6" />
         </motion.div>
 
         <div className="relative">

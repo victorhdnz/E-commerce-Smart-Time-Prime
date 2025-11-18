@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 // Lazy load do Orb para melhor performance
 const Orb = dynamic(() => import('@/components/ui/Orb/Orb'), {
   ssr: false,
-  loading: () => null
+  loading: () => <div className="w-full h-full" />
 })
 
 export const GlobalBackground = () => {
@@ -59,7 +59,7 @@ export const GlobalBackground = () => {
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 0,
+        zIndex: 1,
         overflow: 'hidden'
       }}
     >
@@ -68,7 +68,8 @@ export const GlobalBackground = () => {
         height: '100%', 
         position: 'relative',
         minWidth: '100%',
-        minHeight: '100%'
+        minHeight: '100%',
+        display: 'block'
       }}>
         <Orb
           hue={0}

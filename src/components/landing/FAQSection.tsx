@@ -34,8 +34,8 @@ export const FAQSection = ({
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">{title}</h2>
-            <div className="w-24 h-1 bg-black mx-auto" />
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">{title}</h2>
+            <div className="w-24 h-1 bg-white mx-auto" />
           </motion.div>
         )}
 
@@ -47,21 +47,22 @@ export const FAQSection = ({
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="border border-gray-200 rounded-lg overflow-hidden"
+              className="border border-white/20 rounded-lg overflow-hidden"
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full px-6 py-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
+                className="w-full px-6 py-4 flex items-center justify-between bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-colors border border-white/20 rounded-lg"
               >
-                <span className="text-lg font-semibold text-left">
+                <span className="text-lg font-semibold text-left text-white">
                   {faq.question}
                 </span>
-                <motion.div
-                  animate={{ rotate: openIndex === index ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <ChevronDown size={24} />
-                </motion.div>
+                  <motion.div
+                    animate={{ rotate: openIndex === index ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="text-white"
+                  >
+                    <ChevronDown size={24} />
+                  </motion.div>
               </button>
 
               <AnimatePresence>
@@ -73,7 +74,7 @@ export const FAQSection = ({
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-6 py-4 bg-gray-50 text-gray-700">
+                    <div className="px-6 py-4 bg-white/5 backdrop-blur-sm text-white/90 border-t border-white/10">
                       {faq.answer}
                     </div>
                   </motion.div>
