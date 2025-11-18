@@ -13,6 +13,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { saveSiteSettings } from '@/lib/supabase/site-settings-helper'
 
 interface SiteConfig {
   site_name: string
@@ -29,6 +30,17 @@ interface SiteConfig {
   address_state: string
   address_zip: string
   loading_emoji: string
+  // Seção "Entre em Contato"
+  contact_title: string
+  contact_description: string
+  contact_schedule_weekdays: string
+  contact_schedule_saturday: string
+  contact_schedule_sunday: string
+  contact_location_street: string
+  contact_location_neighborhood: string
+  contact_location_city_state: string
+  contact_location_zip: string
+  contact_maps_link: string
 }
 
 export default function ConfiguracoesPage() {
@@ -53,6 +65,17 @@ export default function ConfiguracoesPage() {
     address_state: 'MG',
     address_zip: '38413-108',
     loading_emoji: '⌚',
+    // Seção "Entre em Contato"
+    contact_title: 'Entre em Contato',
+    contact_description: 'Estamos aqui para ajudar você!',
+    contact_schedule_weekdays: '09:00 - 20:00',
+    contact_schedule_saturday: '09:00 - 19:00',
+    contact_schedule_sunday: 'Fechado',
+    contact_location_street: 'Av. Imbaúba, 1676',
+    contact_location_neighborhood: 'Chácaras Tubalina e Quartel',
+    contact_location_city_state: 'Uberlândia - MG',
+    contact_location_zip: 'CEP: 38413-109',
+    contact_maps_link: 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6',
   })
 
   useEffect(() => {
@@ -97,6 +120,17 @@ export default function ConfiguracoesPage() {
           address_state: data.address_state || generalSettings.address_state || config.address_state,
           address_zip: data.address_zip || generalSettings.address_zip || config.address_zip,
           loading_emoji: data.loading_emoji || generalSettings.loading_emoji || config.loading_emoji,
+          // Seção "Entre em Contato"
+          contact_title: generalSettings.contact_title || config.contact_title,
+          contact_description: generalSettings.contact_description || config.contact_description,
+          contact_schedule_weekdays: generalSettings.contact_schedule_weekdays || config.contact_schedule_weekdays,
+          contact_schedule_saturday: generalSettings.contact_schedule_saturday || config.contact_schedule_saturday,
+          contact_schedule_sunday: generalSettings.contact_schedule_sunday || config.contact_schedule_sunday,
+          contact_location_street: generalSettings.contact_location_street || config.contact_location_street,
+          contact_location_neighborhood: generalSettings.contact_location_neighborhood || config.contact_location_neighborhood,
+          contact_location_city_state: generalSettings.contact_location_city_state || config.contact_location_city_state,
+          contact_location_zip: generalSettings.contact_location_zip || config.contact_location_zip,
+          contact_maps_link: generalSettings.contact_maps_link || config.contact_maps_link,
         })
       }
     } catch (error) {
@@ -109,25 +143,9 @@ export default function ConfiguracoesPage() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      console.log('Iniciando salvamento...', config)
-      
-      // Buscar registro com key = 'general' - IMPORTANTE: buscar TUDO para preservar
-      const { data: existingData, error: checkError } = await supabase
-        .from('site_settings')
-        .select('*')
-        .eq('key', 'general')
-        .maybeSingle()
-
-      console.log('Dados existentes encontrados:', existingData)
-      console.log('Valor JSONB atual:', existingData?.value)
-      
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Erro ao verificar dados existentes:', checkError)
-        throw checkError
-      }
-
-      // Preparar dados para colunas diretas
-      const updateData: any = {
+      // Preparar dados para salvar usando o helper seguro
+      const fieldsToSave: any = {
+        // Colunas diretas
         site_name: config.site_name,
         site_logo: config.site_logo || null,
         site_description: config.site_description,
@@ -142,132 +160,24 @@ export default function ConfiguracoesPage() {
         address_state: config.address_state,
         address_zip: config.address_zip,
         loading_emoji: config.loading_emoji,
-        updated_at: new Date().toISOString(),
+        // Seção "Entre em Contato" (no JSONB value)
+        contact_title: config.contact_title,
+        contact_description: config.contact_description,
+        contact_schedule_weekdays: config.contact_schedule_weekdays,
+        contact_schedule_saturday: config.contact_schedule_saturday,
+        contact_schedule_sunday: config.contact_schedule_sunday,
+        contact_location_street: config.contact_location_street,
+        contact_location_neighborhood: config.contact_location_neighborhood,
+        contact_location_city_state: config.contact_location_city_state,
+        contact_location_zip: config.contact_location_zip,
+        contact_maps_link: config.contact_maps_link,
       }
 
-      // Preparar dados para JSONB value (fazer merge com dados existentes para não perder outras configurações)
-      const existingValue = existingData?.value || {}
+      // Usar o helper seguro que faz merge inteligente
+      const result = await saveSiteSettings({ fieldsToUpdate: fieldsToSave })
       
-      // IMPORTANTE: Lista de campos que são arrays/objetos e devem ser preservados do banco
-      const arrayObjectFields = [
-        'hero_images', 'hero_banners', 'showcase_images', 'story_images', 
-        'about_us_store_images', 'value_package_items', 'media_showcase_features',
-        'hero_element_order', 'media_showcase_element_order', 'value_package_element_order',
-        'social_proof_element_order', 'story_element_order', 'about_us_element_order',
-        'contact_element_order', 'faq_element_order', 'social_proof_reviews'
-      ]
-      
-      // Criar objeto com merge inteligente: preservar arrays/objetos do banco
-      const fieldsToUpdate: any = {
-        site_name: config.site_name,
-        site_logo: config.site_logo || null,
-        site_description: config.site_description,
-        footer_text: config.footer_text,
-        copyright_text: config.copyright_text,
-        contact_email: config.contact_email,
-        contact_whatsapp: config.contact_whatsapp,
-        instagram_url: config.instagram_url,
-        facebook_url: config.facebook_url,
-        address_street: config.address_street,
-        address_city: config.address_city,
-        address_state: config.address_state,
-        address_zip: config.address_zip,
-        loading_emoji: config.loading_emoji,
-      }
-      
-      // Criar novo objeto value fazendo merge: preservar TODOS os dados existentes primeiro
-      const valueData: any = { ...existingValue } // Começar com TODOS os dados existentes
-      
-      // Atualizar apenas os campos desta página, preservando arrays/objetos do banco
-      Object.keys(fieldsToUpdate).forEach(key => {
-        const newValue = fieldsToUpdate[key]
-        const existingValueForKey = existingValue[key]
-        
-        // Se for um campo array/objeto, preservar do banco se existir
-        if (arrayObjectFields.includes(key) && existingValueForKey !== undefined && existingValueForKey !== null) {
-          // Preservar valor do banco para arrays/objetos
-          valueData[key] = existingValueForKey
-        } else {
-          // Atualizar com novo valor
-          valueData[key] = newValue
-        }
-      })
-
-      // Remover apenas campos undefined (manter null para site_logo permitir limpar)
-      Object.keys(updateData).forEach(key => {
-        if (updateData[key] === undefined) {
-          delete updateData[key]
-        }
-      })
-
-      // Adicionar value ao updateData (fazendo merge para preservar outras configurações)
-      updateData.value = valueData
-
-      // LOG DE SEGURANÇA: Verificar se arrays importantes foram preservados
-      console.log('🔒 Verificação de segurança - Arrays preservados:', {
-        hero_banners_count: Array.isArray(valueData.hero_banners) ? valueData.hero_banners.length : 0,
-        showcase_images_count: Array.isArray(valueData.showcase_images) ? valueData.showcase_images.length : 0,
-        story_images_count: Array.isArray(valueData.story_images) ? valueData.story_images.length : 0,
-        value_package_items_count: Array.isArray(valueData.value_package_items) ? valueData.value_package_items.length : 0,
-        showcase_video_url: valueData.showcase_video_url ? 'presente' : 'ausente',
-        hero_title: valueData.hero_title ? 'presente' : 'ausente',
-      })
-
-      console.log('Dados a serem salvos:', updateData)
-
-      if (existingData) {
-        // Atualizar registro existente
-        const { data, error } = await supabase
-          .from('site_settings')
-          .update(updateData)
-          .eq('id', existingData.id)
-          .select()
-
-        console.log('Resultado da atualização:', { data, error })
-
-        if (error) {
-          console.error('Erro detalhado na atualização:', error)
-          console.error('Código do erro:', error.code)
-          console.error('Mensagem:', error.message)
-          console.error('Detalhes:', error.details)
-          console.error('Hint:', error.hint)
-          throw error
-        }
-
-        if (!data || data.length === 0) {
-          throw new Error('Nenhum registro foi atualizado. Verifique as políticas RLS.')
-        }
-
-        console.log('✅ Configurações atualizadas com sucesso!')
-      } else {
-        // Criar novo registro com key obrigatória
-        const insertData = {
-          ...updateData,
-          key: 'general', // Chave obrigatória para o formato key-value
-          description: 'Configurações gerais do site',
-        }
-
-        const { data, error } = await supabase
-          .from('site_settings')
-          .insert(insertData)
-          .select()
-
-        console.log('Resultado da inserção:', { data, error })
-
-        if (error) {
-          console.error('Erro detalhado na inserção:', error)
-          console.error('Código do erro:', error.code)
-          console.error('Mensagem:', error.message)
-          console.error('Detalhes:', error.details)
-          console.error('Hint:', error.hint)
-          throw error
-        }
-
-        if (!data || data.length === 0) {
-          throw new Error('Nenhum registro foi criado. Verifique as políticas RLS.')
-        }
-
-        console.log('✅ Configurações criadas com sucesso!')
+      if (!result.success) {
+        throw result.error || new Error('Erro ao salvar configurações')
       }
 
       // Recarregar configurações após salvar
@@ -276,12 +186,6 @@ export default function ConfiguracoesPage() {
       toast.success('Configurações salvas com sucesso!')
     } catch (error: any) {
       console.error('Erro ao salvar configurações:', error)
-      console.error('Detalhes completos do erro:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint,
-      })
       toast.error(error.message || 'Erro ao salvar configurações. Verifique o console para mais detalhes.')
     } finally {
       setSaving(false)
@@ -375,40 +279,159 @@ export default function ConfiguracoesPage() {
             </div>
           </motion.div>
 
-          {/* Contact Info (Rodapé) */}
+          {/* Contact Info (Rodapé e Seção Entre em Contato) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Informações de Contato (Rodapé)</h2>
+            <h2 className="text-2xl font-bold mb-6">Informações de Contato</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Estas informações aparecerão no rodapé e na seção "Entre em Contato" da landing page.
+            </p>
             
-            <div className="space-y-4">
-              <Input
-                label="E-mail"
-                type="email"
-                value={config.contact_email}
-                onChange={(e) =>
-                  setConfig({ ...config, contact_email: e.target.value })
-                }
-                placeholder="contato@smarttimeprime.com.br"
-              />
-              <p className="text-xs text-gray-500 -mt-2">
-                Este e-mail aparecerá no rodapé do site.
-              </p>
+            <div className="space-y-6">
+              {/* Contato Básico */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Contato Básico</h3>
+                <Input
+                  label="E-mail"
+                  type="email"
+                  value={config.contact_email}
+                  onChange={(e) =>
+                    setConfig({ ...config, contact_email: e.target.value })
+                  }
+                  placeholder="contato@smarttimeprime.com.br"
+                />
+                <p className="text-xs text-gray-500 -mt-2">
+                  Este e-mail aparecerá no rodapé e na seção "Entre em Contato".
+                </p>
 
-              <Input
-                label="WhatsApp"
-                value={config.contact_whatsapp}
-                onChange={(e) =>
-                  setConfig({ ...config, contact_whatsapp: e.target.value })
-                }
-                placeholder="+55 34 8413-6291"
-              />
-              <p className="text-xs text-gray-500 -mt-2">
-                Este WhatsApp aparecerá no rodapé do site.
-              </p>
+                <Input
+                  label="WhatsApp"
+                  value={config.contact_whatsapp}
+                  onChange={(e) =>
+                    setConfig({ ...config, contact_whatsapp: e.target.value })
+                  }
+                  placeholder="+55 34 8413-6291"
+                />
+                <p className="text-xs text-gray-500 -mt-2">
+                  Este WhatsApp aparecerá no rodapé e na seção "Entre em Contato".
+                </p>
+              </div>
+
+              {/* Seção "Entre em Contato" */}
+              <div className="border-t pt-6 space-y-4">
+                <h3 className="text-lg font-semibold">Seção "Entre em Contato"</h3>
+                
+                <Input
+                  label="Título da Seção"
+                  value={config.contact_title}
+                  onChange={(e) =>
+                    setConfig({ ...config, contact_title: e.target.value })
+                  }
+                  placeholder="Entre em Contato"
+                />
+                <p className="text-xs text-gray-500 -mt-2">
+                  Título principal da seção "Entre em Contato" na landing page.
+                </p>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Descrição da Seção
+                  </label>
+                  <textarea
+                    value={config.contact_description}
+                    onChange={(e) =>
+                      setConfig({ ...config, contact_description: e.target.value })
+                    }
+                    placeholder="Estamos aqui para ajudar você!"
+                    rows={2}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Descrição que aparece abaixo do título na seção "Entre em Contato".
+                  </p>
+                </div>
+
+                {/* Horário de Funcionamento */}
+                <div className="space-y-3">
+                  <h4 className="text-md font-medium">Horário de Funcionamento</h4>
+                  <Input
+                    label="Segunda a Sexta"
+                    value={config.contact_schedule_weekdays}
+                    onChange={(e) =>
+                      setConfig({ ...config, contact_schedule_weekdays: e.target.value })
+                    }
+                    placeholder="09:00 - 20:00"
+                  />
+                  <Input
+                    label="Sábado"
+                    value={config.contact_schedule_saturday}
+                    onChange={(e) =>
+                      setConfig({ ...config, contact_schedule_saturday: e.target.value })
+                    }
+                    placeholder="09:00 - 19:00"
+                  />
+                  <Input
+                    label="Domingo"
+                    value={config.contact_schedule_sunday}
+                    onChange={(e) =>
+                      setConfig({ ...config, contact_schedule_sunday: e.target.value })
+                    }
+                    placeholder="Fechado"
+                  />
+                </div>
+
+                {/* Localização */}
+                <div className="space-y-3">
+                  <h4 className="text-md font-medium">Localização</h4>
+                  <Input
+                    label="Endereço"
+                    value={config.contact_location_street}
+                    onChange={(e) =>
+                      setConfig({ ...config, contact_location_street: e.target.value })
+                    }
+                    placeholder="Av. Imbaúba, 1676"
+                  />
+                  <Input
+                    label="Bairro"
+                    value={config.contact_location_neighborhood}
+                    onChange={(e) =>
+                      setConfig({ ...config, contact_location_neighborhood: e.target.value })
+                    }
+                    placeholder="Chácaras Tubalina e Quartel"
+                  />
+                  <Input
+                    label="Cidade - Estado"
+                    value={config.contact_location_city_state}
+                    onChange={(e) =>
+                      setConfig({ ...config, contact_location_city_state: e.target.value })
+                    }
+                    placeholder="Uberlândia - MG"
+                  />
+                  <Input
+                    label="CEP"
+                    value={config.contact_location_zip}
+                    onChange={(e) =>
+                      setConfig({ ...config, contact_location_zip: e.target.value })
+                    }
+                    placeholder="CEP: 38413-109"
+                  />
+                  <Input
+                    label="Link do Google Maps"
+                    value={config.contact_maps_link}
+                    onChange={(e) =>
+                      setConfig({ ...config, contact_maps_link: e.target.value })
+                    }
+                    placeholder="https://maps.app.goo.gl/..."
+                  />
+                  <p className="text-xs text-gray-500 -mt-2">
+                    Link que será usado no botão "Ver no Mapa" da seção "Entre em Contato".
+                  </p>
+                </div>
+              </div>
             </div>
           </motion.div>
 

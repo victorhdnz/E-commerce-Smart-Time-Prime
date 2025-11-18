@@ -382,6 +382,13 @@ export default async function Home() {
         mapsLink={settings.contact_maps_link || mapsLink}
         whatsapp={settings.contact_whatsapp || contactWhatsApp}
         email={settings.contact_email}
+        scheduleWeekdays={settings.contact_schedule_weekdays}
+        scheduleSaturday={settings.contact_schedule_saturday}
+        scheduleSunday={settings.contact_schedule_sunday}
+        locationStreet={settings.contact_location_street}
+        locationNeighborhood={settings.contact_location_neighborhood}
+        locationCityState={settings.contact_location_city_state}
+        locationZip={settings.contact_location_zip}
         elementVisibility={{
           title: settings.contact_title_visible !== false,
           description: settings.contact_description_visible !== false,

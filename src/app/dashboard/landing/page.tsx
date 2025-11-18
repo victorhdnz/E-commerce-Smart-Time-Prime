@@ -18,6 +18,7 @@ import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 import { Modal } from '@/components/ui/Modal'
 import { FAQ } from '@/types'
+import { saveSiteSettings } from '@/lib/supabase/site-settings-helper'
 
 interface LandingSettings {
   // Hero Section (expandido)
@@ -1026,97 +1027,36 @@ export default function EditLandingPage() {
         }
       }
 
-      // Mesclar com dados existentes para preservar campos que não foram alterados
-      const existingValue = existing?.value || {}
+      // Preparar todos os campos de settings para salvar usando o helper seguro
+      const fieldsToSave: any = {
+        ...settings,
+        timer_end_date: timerEndDateISO, // Usar a data convertida
+      }
+
+      // Usar o helper seguro que faz merge inteligente preservando todos os dados
+      const result = await saveSiteSettings({ fieldsToUpdate: fieldsToSave })
       
-      // IMPORTANTE: Preservar arrays e objetos do banco mesmo se estiverem vazios no estado
-      // Isso evita perder dados quando o estado local está vazio mas o banco tem dados
-      const settingsToUpdate: any = {}
-      
-      // Lista de campos que são arrays/objetos e devem ser sempre preservados do banco se existirem
-      const arrayObjectFields = [
-        'hero_images', 'hero_banners', 'showcase_images', 'story_images', 
-        'about_us_store_images', 'value_package_items', 'media_showcase_features',
-        'hero_element_order', 'media_showcase_element_order', 'value_package_element_order',
-        'social_proof_element_order', 'story_element_order', 'about_us_element_order',
-        'contact_element_order', 'faq_element_order', 'social_proof_reviews'
-      ]
-      
-      // Iterar sobre todas as chaves de settings
-      Object.keys(settings).forEach(key => {
-        const value = (settings as any)[key]
-        const existingValueForKey = existingValue[key]
-        
-        // Se for um campo array/objeto:
-        if (arrayObjectFields.includes(key)) {
-          // Se existe no banco e o valor local está vazio/null, preservar do banco
-          if (existingValueForKey !== undefined && existingValueForKey !== null && 
-              (value === undefined || value === null || 
-               (Array.isArray(value) && value.length === 0) ||
-               (typeof value === 'object' && Object.keys(value).length === 0))) {
-            // Preservar valor do banco
-            settingsToUpdate[key] = existingValueForKey
-          } else {
-            // Usar valor do estado (pode ser array vazio se foi limpo intencionalmente)
-            settingsToUpdate[key] = value
-          }
-        }
-        // Se for string vazia mas existe no banco, preservar do banco
-        else if (value === '' && existingValueForKey !== undefined && existingValueForKey !== null && existingValueForKey !== '') {
-          settingsToUpdate[key] = existingValueForKey
-        }
-        // Se for um valor não vazio, usar o valor do estado
-        else if (value !== undefined && value !== null && value !== '') {
-          settingsToUpdate[key] = value
-        }
-        // Se for boolean (incluindo false), sempre incluir
-        else if (typeof value === 'boolean') {
-          settingsToUpdate[key] = value
-        }
-        // Se existe no banco e não foi definido no estado, preservar
-        else if (existingValueForKey !== undefined && existingValueForKey !== null) {
-          settingsToUpdate[key] = existingValueForKey
-        }
-      })
-      
-      // Fazer merge: preservar tudo que existe + atualizar apenas campos modificados
-      const settingsToSave = {
-        ...existingValue, // Preservar TODOS os dados existentes primeiro
-        ...settingsToUpdate, // Sobrescrever apenas campos que foram modificados ou preservados
-        timer_end_date: timerEndDateISO, // Sempre atualizar timer_end_date
+      if (!result.success) {
+        throw result.error || new Error('Erro ao salvar configurações')
       }
 
       // LOG DE SEGURANÇA: Verificar se arrays importantes foram preservados
-      console.log('🔒 Verificação de segurança - Arrays preservados:', {
-        hero_banners_count: Array.isArray(settingsToSave.hero_banners) ? settingsToSave.hero_banners.length : 0,
-        showcase_images_count: Array.isArray(settingsToSave.showcase_images) ? settingsToSave.showcase_images.length : 0,
-        story_images_count: Array.isArray(settingsToSave.story_images) ? settingsToSave.story_images.length : 0,
-        value_package_items_count: Array.isArray(settingsToSave.value_package_items) ? settingsToSave.value_package_items.length : 0,
-        showcase_video_url: settingsToSave.showcase_video_url ? 'presente' : 'ausente',
-      })
-
-      if (existing) {
-        // Atualizar existente
-        const { error } = await supabase
-          .from('site_settings')
-          .update({
-            value: settingsToSave,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('key', 'general')
-
-        if (error) throw error
-      } else {
-        // Inserir novo
-        const { error } = await supabase
-          .from('site_settings')
-          .insert({
-            key: 'general',
-            value: settingsToSave,
-            description: 'Configurações gerais do site',
-          })
-
-        if (error) throw error
+      // Buscar novamente para verificar
+      const { data: verifyData } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'general')
+        .maybeSingle()
+      
+      if (verifyData?.value) {
+        console.log('🔒 Verificação de segurança - Arrays preservados APÓS SALVAR:', {
+          hero_banners_count: Array.isArray(verifyData.value.hero_banners) ? verifyData.value.hero_banners.length : 0,
+          showcase_images_count: Array.isArray(verifyData.value.showcase_images) ? verifyData.value.showcase_images.length : 0,
+          story_images_count: Array.isArray(verifyData.value.story_images) ? verifyData.value.story_images.length : 0,
+          value_package_items_count: Array.isArray(verifyData.value.value_package_items) ? verifyData.value.value_package_items.length : 0,
+          showcase_video_url: verifyData.value.showcase_video_url ? 'presente' : 'ausente',
+          hero_title: verifyData.value.hero_title ? 'presente' : 'ausente',
+        })
       }
 
       // Salvar ordem das seções
@@ -2303,6 +2243,58 @@ export default function EditLandingPage() {
               Controle quais seções da página inicial devem ser exibidas, arraste para reordenar as seções e os elementos dentro de cada seção.
             </p>
             
+            <style jsx global>{`
+              /* Estilizar o placeholder do react-beautiful-dnd para seções */
+              [data-rbd-droppable-id="sections"] [data-rbd-placeholder-context-id] {
+                background: linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.15) 50%, transparent 100%) !important;
+                border: 2px dashed rgb(59, 130, 246) !important;
+                border-radius: 8px !important;
+                height: 70px !important;
+                margin: 12px 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                position: relative !important;
+                animation: pulse 1.5s ease-in-out infinite !important;
+              }
+              
+              [data-rbd-droppable-id="sections"] [data-rbd-placeholder-context-id]::before {
+                content: "↓ Solte aqui para inserir";
+                color: rgb(59, 130, 246);
+                font-size: 13px;
+                font-weight: 600;
+              }
+              
+              /* Placeholder para elementos dentro de seções */
+              [data-rbd-droppable-id*="-elements"] [data-rbd-placeholder-context-id] {
+                background: linear-gradient(90deg, transparent 0%, rgba(34, 197, 94, 0.15) 50%, transparent 100%) !important;
+                border: 2px dashed rgb(34, 197, 94) !important;
+                border-radius: 6px !important;
+                height: 55px !important;
+                margin: 6px 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                animation: pulse 1.5s ease-in-out infinite !important;
+              }
+              
+              [data-rbd-droppable-id*="-elements"] [data-rbd-placeholder-context-id]::before {
+                content: "↓ Solte aqui";
+                color: rgb(34, 197, 94);
+                font-size: 12px;
+                font-weight: 600;
+              }
+              
+              @keyframes pulse {
+                0%, 100% {
+                  opacity: 0.6;
+                }
+                50% {
+                  opacity: 1;
+                }
+              }
+            `}</style>
+            
             <DragDropContext onDragEnd={(result) => {
               if (!result.destination) return
               
@@ -2340,7 +2332,7 @@ export default function EditLandingPage() {
                   <div 
                     {...provided.droppableProps} 
                     ref={provided.innerRef} 
-                    className={`space-y-4 ${snapshot.isDraggingOver ? 'bg-blue-50/50 rounded-lg p-2' : ''}`}
+                    className={`space-y-4 ${snapshot.isDraggingOver ? 'bg-blue-50/50 rounded-lg p-3 border-2 border-blue-300 border-dashed' : ''}`}
                   >
                     {sectionOrder.map((sectionId, index) => {
                       const section = sectionMap[sectionId]
@@ -2358,15 +2350,17 @@ export default function EditLandingPage() {
                               style={{
                                 ...provided.draggableProps.style,
                                 ...(snapshot.isDragging && {
-                                  opacity: 0.9,
+                                  opacity: 0.8,
                                   zIndex: 9999,
-                                  transform: provided.draggableProps.style?.transform,
+                                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)',
                                 }),
                               }}
-                              className={`border rounded-lg p-4 transition-colors ${
+                              className={`border-2 rounded-lg p-4 transition-all duration-200 ${
                                 snapshot.isDragging 
-                                  ? 'bg-blue-100 shadow-2xl border-blue-400' 
-                                  : 'bg-white hover:shadow-md'
+                                  ? 'bg-blue-100 border-blue-500 shadow-2xl scale-105' 
+                                  : snapshot.isDraggingOver
+                                  ? 'bg-blue-50 border-blue-300'
+                                  : 'bg-white border-gray-200 hover:shadow-md hover:border-gray-300'
                               }`}
                             >
                               <div className="flex items-center gap-3">
@@ -2397,8 +2391,10 @@ export default function EditLandingPage() {
                                       <div 
                                         {...provided.droppableProps} 
                                         ref={provided.innerRef} 
-                                        className={`space-y-2 min-h-[20px] ${
-                                          snapshot.isDraggingOver ? 'bg-green-50 rounded-lg p-2 border-2 border-green-300 border-dashed' : ''
+                                        className={`space-y-2 min-h-[40px] transition-all duration-200 ${
+                                          snapshot.isDraggingOver 
+                                            ? 'bg-green-50 rounded-lg p-3 border-2 border-green-400 border-dashed' 
+                                            : ''
                                         }`}
                                       >
                                         {elementOrder.map((elementKey, elementIndex) => {
@@ -2414,14 +2410,16 @@ export default function EditLandingPage() {
                                                   style={{
                                                     ...provided.draggableProps.style,
                                                     ...(snapshot.isDragging && {
-                                                      opacity: 0.95,
+                                                      opacity: 0.7,
                                                       zIndex: 10000,
-                                                      transform: provided.draggableProps.style?.transform,
+                                                      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15)',
                                                     }),
                                                   }}
-                                                  className={`flex items-center gap-3 p-2 rounded-lg border transition-colors ${
+                                                  className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all duration-200 ${
                                                     snapshot.isDragging 
-                                                      ? 'bg-green-100 border-green-400 shadow-xl' 
+                                                      ? 'bg-green-100 border-green-500 shadow-xl scale-105' 
+                                                      : snapshot.isDraggingOver
+                                                      ? 'bg-green-50 border-green-300'
                                                       : 'bg-gray-50 border-gray-200 hover:border-gray-300 hover:shadow-sm'
                                                   }`}
                                                 >
@@ -2450,8 +2448,8 @@ export default function EditLandingPage() {
                                         })}
                                         {provided.placeholder}
                                         {snapshot.isDraggingOver && elementOrder.length === 0 && (
-                                          <div className="h-12 border-2 border-dashed border-green-400 rounded-lg bg-green-50 flex items-center justify-center">
-                                            <span className="text-sm text-green-600">Solte aqui</span>
+                                          <div className="h-16 border-2 border-dashed border-green-500 rounded-lg bg-green-100 flex items-center justify-center animate-pulse">
+                                            <span className="text-sm font-medium text-green-700">Solte aqui para adicionar</span>
                                           </div>
                                         )}
                                       </div>
@@ -2466,8 +2464,8 @@ export default function EditLandingPage() {
                     })}
                     {provided.placeholder}
                     {snapshot.isDraggingOver && sectionOrder.length === 0 && (
-                      <div className="h-20 border-2 border-dashed border-blue-400 rounded-lg bg-blue-50 flex items-center justify-center">
-                        <span className="text-sm text-blue-600">Solte aqui</span>
+                      <div className="h-24 border-2 border-dashed border-blue-500 rounded-lg bg-blue-100 flex items-center justify-center animate-pulse">
+                        <span className="text-sm font-medium text-blue-700">Solte aqui para adicionar a primeira seção</span>
                       </div>
                     )}
                   </div>

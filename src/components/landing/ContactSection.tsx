@@ -6,6 +6,13 @@ interface ContactSectionProps {
   mapsLink?: string
   whatsapp?: string
   email?: string
+  scheduleWeekdays?: string
+  scheduleSaturday?: string
+  scheduleSunday?: string
+  locationStreet?: string
+  locationNeighborhood?: string
+  locationCityState?: string
+  locationZip?: string
   elementVisibility?: {
     title?: boolean
     description?: boolean
@@ -22,6 +29,13 @@ export function ContactSection({
   mapsLink, 
   whatsapp = '+55 34 8413-6291',
   email = 'contato@smarttimeprime.com.br',
+  scheduleWeekdays = '09:00 - 20:00',
+  scheduleSaturday = '09:00 - 19:00',
+  scheduleSunday = 'Fechado',
+  locationStreet = 'Av. Imbaúba, 1676',
+  locationNeighborhood = 'Chácaras Tubalina e Quartel',
+  locationCityState = 'Uberlândia - MG',
+  locationZip = 'CEP: 38413-109',
   elementVisibility = {
     title: true,
     description: true,
@@ -93,11 +107,11 @@ export function ContactSection({
             </div>
             <h3 className="text-xl font-bold mb-2">Horário</h3>
             <p className="text-gray-600 text-sm mb-1">Segunda a Sexta</p>
-            <p className="font-semibold">09:00 - 20:00</p>
+            <p className="font-semibold">{scheduleWeekdays}</p>
             <p className="text-gray-600 text-sm mt-2">Sábado</p>
-            <p className="font-semibold">09:00 - 19:00</p>
+            <p className="font-semibold">{scheduleSaturday}</p>
             <p className="text-gray-600 text-sm mt-2">Domingo</p>
-            <p className="font-semibold text-red-600">Fechado</p>
+            <p className="font-semibold text-red-600">{scheduleSunday}</p>
           </div>
           )}
 
@@ -111,10 +125,10 @@ export function ContactSection({
               </svg>
             </div>
             <h3 className="text-xl font-bold mb-2">Localização</h3>
-            <p className="text-gray-700 text-sm font-medium mb-1">Av. Imbaúba, 1676</p>
-            <p className="text-gray-600 text-xs mb-1">Chácaras Tubalina e Quartel</p>
-            <p className="text-gray-700 text-sm font-medium">Uberlândia - MG</p>
-            <p className="text-gray-600 text-xs">CEP: 38413-108</p>
+            <p className="text-gray-700 text-sm font-medium mb-1">{locationStreet}</p>
+            <p className="text-gray-600 text-xs mb-1">{locationNeighborhood}</p>
+            <p className="text-gray-700 text-sm font-medium">{locationCityState}</p>
+            <p className="text-gray-600 text-xs">{locationZip}</p>
             <a 
               href={mapsLink || 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6'} 
               target="_blank" 

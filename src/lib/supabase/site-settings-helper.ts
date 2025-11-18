@@ -61,83 +61,132 @@ export async function saveSiteSettings({
     // 3. Criar objeto com merge inteligente
     const mergedValue: any = { ...existingValue } // Começar com TODOS os dados existentes
 
-    // 4. Atualizar apenas os campos especificados, com lógica de preservação
+    // 4. Atualizar apenas os campos especificados, SEMPRE priorizando valores do formulário
+    // IMPORTANTE: Valores preenchidos no formulário SEMPRE são salvos, só preserva do banco se estiver vazio
     Object.keys(fieldsToUpdate).forEach(key => {
-      const newValue = fieldsToUpdate[key]
-      const existingValueForKey = existingValue[key]
+      const newValue = fieldsToUpdate[key] // Valor atual do formulário
+      const existingValueForKey = existingValue[key] // Valor antigo do banco
 
-      // Se forceUpdate está ativo, sempre atualizar
+      // Se forceUpdate está ativo, sempre usar o valor novo (do formulário)
       if (forceUpdate) {
         mergedValue[key] = newValue
         return
       }
 
-      // Se for um campo array/objeto que deve ser preservado
+      // PRIORIDADE 1: Se o valor do formulário está preenchido (não vazio), SEMPRE usar ele
+      // Para arrays/objetos: considerar preenchido se tem conteúdo
       if (arrayObjectFields.includes(key)) {
-        // Se existe no banco e o valor local está vazio/null, preservar do banco
-        if (existingValueForKey !== undefined && existingValueForKey !== null && 
-            (newValue === undefined || newValue === null || 
-             (Array.isArray(newValue) && newValue.length === 0) ||
-             (typeof newValue === 'object' && newValue !== null && Object.keys(newValue).length === 0))) {
-          // Preservar valor do banco
-          mergedValue[key] = existingValueForKey
-        } else {
-          // Usar valor novo (pode ser array vazio se foi limpo intencionalmente)
-          mergedValue[key] = newValue
+        // Se é array/objeto e tem conteúdo, usar o valor do formulário
+        if (Array.isArray(newValue) && newValue.length > 0) {
+          mergedValue[key] = newValue // ✅ SEMPRE salva array preenchido do formulário
+          return
         }
+        if (typeof newValue === 'object' && newValue !== null && Object.keys(newValue).length > 0) {
+          mergedValue[key] = newValue // ✅ SEMPRE salva objeto preenchido do formulário
+          return
+        }
+        // Se array/objeto está vazio no formulário, preservar do banco (se existir)
+        if (existingValueForKey !== undefined && existingValueForKey !== null) {
+          mergedValue[key] = existingValueForKey // Preservar do banco apenas se formulário vazio
+        } else {
+          mergedValue[key] = newValue // Se banco também vazio, usar valor do formulário (vazio)
+        }
+        return
       }
-      // Se for string vazia mas existe no banco, preservar do banco
-      else if (newValue === '' && existingValueForKey !== undefined && existingValueForKey !== null && existingValueForKey !== '') {
-        mergedValue[key] = existingValueForKey
+
+      // PRIORIDADE 2: Se é string não vazia, SEMPRE usar valor do formulário
+      if (typeof newValue === 'string' && newValue !== '') {
+        mergedValue[key] = newValue // ✅ SEMPRE salva string preenchida do formulário
+        return
       }
-      // Se for um valor não vazio, usar o valor novo
-      else if (newValue !== undefined && newValue !== null && newValue !== '') {
-        mergedValue[key] = newValue
+
+      // PRIORIDADE 3: Se é boolean, SEMPRE usar valor do formulário (incluindo false)
+      if (typeof newValue === 'boolean') {
+        mergedValue[key] = newValue // ✅ SEMPRE salva boolean do formulário
+        return
       }
-      // Se for boolean (incluindo false), sempre atualizar
-      else if (typeof newValue === 'boolean') {
-        mergedValue[key] = newValue
+
+      // PRIORIDADE 4: Se é número, SEMPRE usar valor do formulário
+      if (typeof newValue === 'number') {
+        mergedValue[key] = newValue // ✅ SEMPRE salva número do formulário
+        return
       }
-      // Se existe no banco e não foi definido no novo valor, preservar
-      else if (existingValueForKey !== undefined && existingValueForKey !== null) {
-        mergedValue[key] = existingValueForKey
+
+      // PRIORIDADE 5: Se valor do formulário não é undefined/null, usar ele
+      if (newValue !== undefined && newValue !== null) {
+        mergedValue[key] = newValue // ✅ SEMPRE salva se formulário tem valor
+        return
       }
-      // Se o novo valor não é undefined/null, usar ele
-      else if (newValue !== undefined && newValue !== null) {
-        mergedValue[key] = newValue
+
+      // ÚLTIMA PRIORIDADE: Se formulário está vazio/null/undefined, preservar do banco (se existir)
+      if (existingValueForKey !== undefined && existingValueForKey !== null) {
+        mergedValue[key] = existingValueForKey // Preservar do banco apenas se formulário vazio
       }
     })
 
-    // 5. Salvar no banco
+    // 5. Preparar update payload incluindo colunas diretas
+    const updatePayload: any = {
+      value: mergedValue,
+      updated_at: new Date().toISOString(),
+    }
+
+    // Lista de colunas diretas que podem ser atualizadas
+    const directColumns = [
+      'site_name', 'site_logo', 'site_description', 'footer_text', 'copyright_text',
+      'contact_email', 'contact_whatsapp', 'instagram_url', 'facebook_url',
+      'address_street', 'address_city', 'address_state', 'address_zip', 'loading_emoji'
+    ]
+
+    // Atualizar colunas diretas se estiverem em fieldsToUpdate
+    directColumns.forEach(column => {
+      if (fieldsToUpdate[column] !== undefined) {
+        updatePayload[column] = fieldsToUpdate[column]
+      }
+    })
+
+    // LOG DE SEGURANÇA: Verificar se arrays importantes foram preservados ANTES DE SALVAR
+    console.log('🔒 Verificação de segurança - Arrays preservados ANTES DE SALVAR:', {
+      hero_banners_count: Array.isArray(mergedValue.hero_banners) ? mergedValue.hero_banners.length : 0,
+      showcase_images_count: Array.isArray(mergedValue.showcase_images) ? mergedValue.showcase_images.length : 0,
+      story_images_count: Array.isArray(mergedValue.story_images) ? mergedValue.story_images.length : 0,
+      value_package_items_count: Array.isArray(mergedValue.value_package_items) ? mergedValue.value_package_items.length : 0,
+      showcase_video_url: mergedValue.showcase_video_url ? 'presente' : 'ausente',
+      hero_title: mergedValue.hero_title ? 'presente' : 'ausente',
+      media_showcase_features_count: Array.isArray(mergedValue.media_showcase_features) ? mergedValue.media_showcase_features.length : 0,
+    })
+
+    // 6. Salvar no banco
     if (existing) {
       // Atualizar registro existente
       const { error: updateError } = await supabase
         .from('site_settings')
-        .update({
-          value: mergedValue,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq('key', 'general')
 
       if (updateError) {
-        console.error('Erro ao atualizar site_settings:', updateError)
+        console.error('❌ Erro ao atualizar site_settings:', updateError)
         return { success: false, error: updateError }
       }
+      
+      console.log('✅ site_settings atualizado com sucesso usando helper seguro')
     } else {
       // Criar novo registro
+      const insertPayload = {
+        ...updatePayload,
+        key: 'general',
+        description: 'Configurações gerais do site',
+      }
+
       const { error: insertError } = await supabase
         .from('site_settings')
-        .insert({
-          key: 'general',
-          value: mergedValue,
-          description: 'Configurações gerais do site',
-          updated_at: new Date().toISOString(),
-        })
+        .insert(insertPayload)
 
       if (insertError) {
-        console.error('Erro ao inserir site_settings:', insertError)
+        console.error('❌ Erro ao inserir site_settings:', insertError)
         return { success: false, error: insertError }
       }
+      
+      console.log('✅ site_settings criado com sucesso usando helper seguro')
     }
 
     return { success: true }

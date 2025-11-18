@@ -12,6 +12,7 @@ import { Plus, Edit, Copy, Trash2, Calendar, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatDateTime } from '@/lib/utils/format'
 import { BackButton } from '@/components/ui/BackButton'
+import { saveSiteSettings } from '@/lib/supabase/site-settings-helper'
 
 export default function DashboardLayoutsPage() {
   const router = useRouter()
@@ -182,57 +183,26 @@ export default function DashboardLayoutsPage() {
           .single()
 
         if (layout) {
-          // Atualizar site_settings com dados do layout
-          const { data: existing } = await supabase
-            .from('site_settings')
-            .select('*')
-            .eq('key', 'general')
-            .maybeSingle()
+          // Preparar campos do layout para aplicar usando o helper seguro
+          const layoutFields: any = {}
+          
+          // Apenas incluir campos que existem no layout (não sobrescrever com undefined)
+          if (layout.hero_title) layoutFields.hero_title = layout.hero_title
+          if (layout.hero_subtitle) layoutFields.hero_subtitle = layout.hero_subtitle
+          if (layout.hero_cta_text) layoutFields.hero_cta_text = layout.hero_cta_text
+          if (layout.hero_bg_color) layoutFields.hero_bg_color = layout.hero_bg_color
+          if (layout.hero_text_color) layoutFields.hero_text_color = layout.hero_text_color
+          if (layout.timer_title) layoutFields.timer_title = layout.timer_title
+          if (layout.timer_end_date) layoutFields.timer_end_date = layout.timer_end_date
+          if (layout.timer_bg_color) layoutFields.timer_bg_color = layout.timer_bg_color
+          if (layout.timer_text_color) layoutFields.timer_text_color = layout.timer_text_color
+          if (layout.theme_colors) layoutFields.site_theme_colors = layout.theme_colors
 
-          const currentSettings = existing?.value || {}
+          // Usar o helper seguro que preserva todos os outros dados
+          const result = await saveSiteSettings({ fieldsToUpdate: layoutFields })
           
-          // IMPORTANTE: Lista de campos que são arrays/objetos e devem ser preservados
-          const arrayObjectFields = [
-            'hero_images', 'hero_banners', 'showcase_images', 'story_images', 
-            'about_us_store_images', 'value_package_items', 'media_showcase_features',
-            'hero_element_order', 'media_showcase_element_order', 'value_package_element_order',
-            'social_proof_element_order', 'story_element_order', 'about_us_element_order',
-            'contact_element_order', 'faq_element_order', 'social_proof_reviews'
-          ]
-          
-          // Fazer merge preservando TODOS os dados existentes
-          const newSettings: any = { ...currentSettings } // Começar com TODOS os dados existentes
-          
-          // Atualizar apenas os campos do layout, preservando arrays/objetos
-          const layoutFields: any = {
-            hero_title: layout.hero_title || currentSettings.hero_title,
-            hero_subtitle: layout.hero_subtitle || currentSettings.hero_subtitle,
-            hero_cta_text: layout.hero_cta_text || currentSettings.hero_cta_text,
-            hero_bg_color: layout.hero_bg_color || currentSettings.hero_bg_color,
-            hero_text_color: layout.hero_text_color || currentSettings.hero_text_color,
-            timer_title: layout.timer_title || currentSettings.timer_title,
-            timer_end_date: layout.timer_end_date || currentSettings.timer_end_date,
-            timer_bg_color: layout.timer_bg_color || currentSettings.timer_bg_color,
-            timer_text_color: layout.timer_text_color || currentSettings.timer_text_color,
-            site_theme_colors: layout.theme_colors || currentSettings.site_theme_colors,
-          }
-          
-          // Atualizar apenas campos que não são arrays/objetos preservados
-          Object.keys(layoutFields).forEach(key => {
-            if (!arrayObjectFields.includes(key)) {
-              newSettings[key] = layoutFields[key]
-            }
-            // Arrays/objetos já estão preservados no spread inicial
-          })
-
-          if (existing) {
-            await supabase
-              .from('site_settings')
-              .update({
-                value: newSettings,
-                updated_at: new Date().toISOString(),
-              })
-              .eq('key', 'general')
+          if (!result.success) {
+            throw result.error || new Error('Erro ao aplicar layout')
           }
         }
 
