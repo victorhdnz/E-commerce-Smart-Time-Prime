@@ -63,12 +63,12 @@ const Prism = ({
     const HOVSTR = Math.max(0, hoverStrength || 1)
     const INERT = Math.max(0, Math.min(1, inertia || 0.12))
 
-    // Aumentar DPR para melhor qualidade (até 3 para telas de alta resolução)
-    const dpr = Math.min(3, window.devicePixelRatio || 1)
+    // Reduzir DPR para melhor performance (1.5 é um bom equilíbrio)
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1)
     const renderer = new Renderer({
       dpr,
       alpha: transparent,
-      antialias: true // Habilitar antialiasing para melhor qualidade
+      antialias: false
     })
     const gl = renderer.gl
     gl.disable(gl.DEPTH_TEST)
@@ -180,7 +180,7 @@ const Prism = ({
           wob = mat2(c0, c1, c2, c0);
         }
 
-        const int STEPS = 150; // Aumentado para melhor qualidade
+        const int STEPS = 80; // Reduzido para melhor performance
         for (int i = 0; i < STEPS; i++) {
           p = vec3(f, z);
           p.xz = p.xz * wob;
@@ -245,15 +245,24 @@ const Prism = ({
 
     const mesh = new Mesh(gl, { geometry, program })
 
+    // Debounce resize para melhor performance
+    let resizeTimeout: ReturnType<typeof setTimeout> | null = null
     const resize = () => {
-      const w = container.clientWidth || 1
-      const h = container.clientHeight || 1
-      renderer.setSize(w, h)
-      iResBuf[0] = gl.drawingBufferWidth
-      iResBuf[1] = gl.drawingBufferHeight
-      offsetPxBuf[0] = offX * dpr
-      offsetPxBuf[1] = offY * dpr
-      program.uniforms.uPxScale.value = 1 / ((gl.drawingBufferHeight || 1) * 0.1 * SCALE)
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout)
+      }
+      resizeTimeout = setTimeout(() => {
+        const w = container.clientWidth || 1
+        const h = container.clientHeight || 1
+        if (w > 0 && h > 0) {
+          renderer.setSize(w, h)
+          iResBuf[0] = gl.drawingBufferWidth
+          iResBuf[1] = gl.drawingBufferHeight
+          offsetPxBuf[0] = offX * dpr
+          offsetPxBuf[1] = offY * dpr
+          program.uniforms.uPxScale.value = 1 / ((gl.drawingBufferHeight || 1) * 0.1 * SCALE)
+        }
+      }, 100) // Debounce de 100ms
     }
 
     const ro = new ResizeObserver(resize)
@@ -406,32 +415,36 @@ const Prism = ({
       }
     }
 
-    if (suspendWhenOffscreen) {
-      const io = new IntersectionObserver((entries) => {
+    // Sempre usar IntersectionObserver para otimizar performance
+    const io = new IntersectionObserver(
+      (entries) => {
         const vis = entries.some((e) => e.isIntersecting)
-        if (vis) startRAF()
-        else stopRAF()
-      })
-      io.observe(container)
-      startRAF()
-      ;(container as any).__prismIO = io
-    } else {
-      startRAF()
-    }
+        if (vis) {
+          startRAF()
+        } else {
+          stopRAF()
+        }
+      },
+      { threshold: 0.01 } // Pausar quando menos de 1% estiver visível
+    )
+    io.observe(container)
+    startRAF()
+    ;(container as any).__prismIO = io
 
     return () => {
       stopRAF()
       ro.disconnect()
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout)
+      }
       if (animationType === 'hover') {
         if (onPointerMove) window.removeEventListener('pointermove', onPointerMove)
         window.removeEventListener('mouseleave', onLeave)
         window.removeEventListener('blur', onBlur)
       }
-      if (suspendWhenOffscreen) {
-        const io = (container as any).__prismIO
-        if (io) io.disconnect()
-        delete (container as any).__prismIO
-      }
+      const io = (container as any).__prismIO
+      if (io) io.disconnect()
+      delete (container as any).__prismIO
       if (gl.canvas instanceof HTMLCanvasElement && gl.canvas.parentElement === container) {
         container.removeChild(gl.canvas)
       }

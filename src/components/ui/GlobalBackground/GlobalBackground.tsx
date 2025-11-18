@@ -26,7 +26,13 @@ export const GlobalBackground = () => {
         overflow: 'hidden'
       }}
     >
-      <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+      <div style={{ 
+        width: '100%', 
+        height: '100%', 
+        position: 'relative',
+        minWidth: '100%',
+        minHeight: '100%'
+      }}>
         <Prism
           animationType="rotate"
           timeScale={0.5}

@@ -19,7 +19,9 @@
     "@supabase/supabase-js": "^2.77.0",
     "@types/react-beautiful-dnd": "^13.1.8",
     "axios": "^1.6.5",
+    "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.8.0",
+    "clsx": "^2.1.1",
     "date-fns": "^3.2.0",
     "framer-motion": "^11.0.3",
     "gsap": "^3.13.0",
@@ -37,6 +39,8 @@
     "react-intersection-observer": "^9.5.3",
     "sharp": "^0.33.2",
     "swiper": "^11.0.5",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss-animate": "^1.0.7",
     "zod": "^3.22.4",
     "zustand": "^4.5.0"
   },
