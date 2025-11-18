@@ -38,8 +38,8 @@
   }
   
   body {
-    @apply text-black antialiased;
-    background-color: transparent;
+    @apply text-white antialiased;
+    background-color: #000000;
   }
 
   h1 {
