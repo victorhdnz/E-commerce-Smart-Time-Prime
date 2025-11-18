@@ -144,8 +144,13 @@ export default function ConfiguracoesPage() {
         updated_at: new Date().toISOString(),
       }
 
-      // Preparar dados para JSONB value (manter consistência)
+      // Preparar dados para JSONB value (fazer merge com dados existentes para não perder outras configurações)
+      const existingValue = existingData?.value || {}
+      
+      // Criar novo objeto value fazendo merge: preservar todos os campos existentes e atualizar apenas os campos desta página
       const valueData = {
+        ...existingValue, // Preservar todos os dados existentes (landing page, etc)
+        // Atualizar apenas os campos gerenciados por esta página
         site_name: config.site_name,
         site_logo: config.site_logo || null,
         site_description: config.site_description,
@@ -169,7 +174,7 @@ export default function ConfiguracoesPage() {
         }
       })
 
-      // Adicionar value ao updateData
+      // Adicionar value ao updateData (fazendo merge para preservar outras configurações)
       updateData.value = valueData
 
       console.log('Dados a serem salvos:', updateData)
