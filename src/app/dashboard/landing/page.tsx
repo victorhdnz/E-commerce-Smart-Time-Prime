@@ -30,6 +30,9 @@ interface LandingSettings {
   hero_viewer_count_text: string // Texto do status de pessoas vendo
   hero_viewer_count_enabled: boolean // Ativar/desativar status de pessoas vendo
   hero_timer_text: string // Texto do cronômetro fixo (ex: "Oferta termina em:")
+  hero_background_effect: 'prism' | 'none' | 'grid' | 'particles' // Tipo de efeito de background
+  hero_background_effect_opacity: number // Opacidade do efeito (0-1)
+  hero_prism_animation_type: 'rotate' | 'hover' | '3drotate' // Tipo de animação do Prism (quando usar Prism)
   hero_bg_color: string
   hero_text_color: string
   hero_images: string[]
@@ -258,6 +261,9 @@ export default function EditLandingPage() {
     hero_viewer_count_text: 'pessoas vendo agora',
     hero_timer_text: 'Oferta termina em:',
     hero_viewer_count_enabled: true,
+    hero_background_effect: 'none' as const,
+    hero_background_effect_opacity: 0.3,
+    hero_prism_animation_type: 'rotate' as const,
     hero_bg_color: '#000000',
     hero_text_color: '#FFFFFF',
     hero_images: [],
@@ -829,6 +835,9 @@ export default function EditLandingPage() {
           hero_viewer_count_text: savedSettings.hero_viewer_count_text || 'pessoas vendo agora',
           hero_viewer_count_enabled: savedSettings.hero_viewer_count_enabled !== undefined ? savedSettings.hero_viewer_count_enabled : true,
           hero_timer_text: savedSettings.hero_timer_text || 'Oferta termina em:',
+          hero_background_effect: (savedSettings.hero_background_effect as 'prism' | 'none' | 'grid' | 'particles') || 'none',
+          hero_background_effect_opacity: savedSettings.hero_background_effect_opacity ?? 0.3,
+          hero_prism_animation_type: (savedSettings.hero_prism_animation_type as 'rotate' | 'hover' | '3drotate') || 'rotate',
           hero_bg_color: savedSettings.hero_bg_color || '#000000',
           hero_text_color: savedSettings.hero_text_color || '#FFFFFF',
           hero_images: Array.isArray(savedSettings.hero_images) ? savedSettings.hero_images : [],
@@ -1427,6 +1436,88 @@ export default function EditLandingPage() {
                   }
                   placeholder="Oferta termina em:"
                 />
+              </div>
+
+              {/* Background Effect */}
+              <div className="pt-4 border-t">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Efeito de Background
+                    </label>
+                    <select
+                      value={settings.hero_background_effect}
+                      onChange={(e) =>
+                        setSettings({ 
+                          ...settings, 
+                          hero_background_effect: e.target.value as 'prism' | 'none' | 'grid' | 'particles'
+                        })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                    >
+                      <option value="none">Nenhum</option>
+                      <option value="prism">Prism (Efeito 3D Animado)</option>
+                      {/* Adicione mais opções conforme instalar novos efeitos */}
+                      {/* <option value="grid">Grid Animado</option> */}
+                      {/* <option value="particles">Partículas</option> */}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Escolha o efeito de fundo animado para esta seção
+                    </p>
+                  </div>
+
+                  {settings.hero_background_effect !== 'none' && (
+                    <div className="ml-4 space-y-3 border-l-2 border-gray-200 pl-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Opacidade do Efeito (0-1)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="1"
+                          step="0.1"
+                          value={settings.hero_background_effect_opacity}
+                          onChange={(e) =>
+                            setSettings({ 
+                              ...settings, 
+                              hero_background_effect_opacity: parseFloat(e.target.value) || 0.3
+                            })
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Ajuste a intensidade do efeito (0 = invisível, 1 = máximo)
+                        </p>
+                      </div>
+
+                      {settings.hero_background_effect === 'prism' && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Tipo de Animação do Prism
+                          </label>
+                          <select
+                            value={settings.hero_prism_animation_type}
+                            onChange={(e) =>
+                              setSettings({ 
+                                ...settings, 
+                                hero_prism_animation_type: e.target.value as 'rotate' | 'hover' | '3drotate'
+                              })
+                            }
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                          >
+                            <option value="rotate">Rotação Automática</option>
+                            <option value="hover">Interativo (seguir mouse)</option>
+                            <option value="3drotate">Rotação 3D</option>
+                          </select>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Efeito de fundo animado inspirado no site do Gemini
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Banners Carrossel (1920x650) */}
