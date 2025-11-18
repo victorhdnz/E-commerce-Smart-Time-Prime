@@ -265,7 +265,7 @@ export default async function Home() {
         viewerCountText={settings.hero_viewer_count_text}
         viewerCountEnabled={settings.hero_viewer_count_enabled !== false}
         timerText={settings.hero_timer_text}
-        backgroundColor={settings.hero_bg_color || '#000000'}
+        backgroundColor="transparent"
         textColor={settings.hero_text_color || '#FFFFFF'}
         heroImages={heroImages}
         heroBanner={settings.hero_banner}
@@ -406,7 +406,7 @@ export default async function Home() {
         key="faq"
         faqs={faqsToShow as any}
         title={settings.faq_title || 'Perguntas Frequentes'}
-        backgroundColor={settings.faq_bg_color || '#ffffff'}
+        backgroundColor="transparent"
         elementVisibility={{
           title: settings.faq_title_visible !== false,
         }}
@@ -448,30 +448,9 @@ export default async function Home() {
         // Filtrar apenas seções visíveis
         const visibleSections = sectionOrder.filter(id => sectionComponents[id] !== null)
         
-        // Obter cores de fundo das seções
+        // Obter cores de fundo das seções - sempre transparente para mostrar o Orb
         const getSectionBgColor = (id: string): string | undefined => {
-          switch (id) {
-            case 'hero':
-              return settings.hero_bg_color || '#000000'
-            case 'media_showcase':
-              return settings.media_showcase_bg_color || '#ffffff'
-            case 'value_package':
-              return settings.value_package_bg_color || '#f5f5f5'
-            case 'social_proof':
-              return settings.social_proof_bg_color || '#ffffff'
-            case 'story':
-              return settings.story_bg_color || '#ffffff'
-            case 'whatsapp_vip':
-              return settings.whatsapp_vip_bg_color || '#000000'
-            case 'about_us':
-              return settings.about_us_bg_color || '#ffffff'
-            case 'contact':
-              return settings.contact_bg_color || '#f5f5f5'
-            case 'faq':
-              return settings.faq_bg_color || '#ffffff'
-            default:
-              return undefined
-          }
+          return 'transparent'
         }
 
         return visibleSections.map((sectionId, index) => {
@@ -500,7 +479,7 @@ export default async function Home() {
 
       {/* CTA Section */}
       <SectionTransition
-        backgroundColor="#000000"
+        backgroundColor="transparent"
         previousBgColor="#ffffff"
         isLast={true}
       >

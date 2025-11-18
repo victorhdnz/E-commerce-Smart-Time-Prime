@@ -69,7 +69,7 @@ export const SocialProof = ({
   const duplicatedReviews = [...reviewsToUse, ...reviewsToUse, ...reviewsToUse]
 
   return (
-    <section className="py-20 bg-black text-white overflow-hidden">
+    <section className="py-20 text-white overflow-hidden" style={{ backgroundColor: 'transparent' }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {elementVisibility.title && (
           <motion.div
