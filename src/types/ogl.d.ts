@@ -45,5 +45,13 @@ declare module 'ogl' {
       }
     )
   }
+
+  export class Vec3 {
+    x: number
+    y: number
+    z: number
+    constructor(x?: number, y?: number, z?: number)
+    set(x: number, y: number, z: number): Vec3
+  }
 }
 
