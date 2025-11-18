@@ -213,8 +213,11 @@ export const BannerCarousel = ({
     <>
       {/* Banner Principal - Clique abre modal */}
       <div 
-        className="relative w-full group cursor-pointer" 
-        style={{ aspectRatio: '1920/650' }}
+        className="relative w-full group cursor-pointer max-h-[400px] md:max-h-[500px] lg:max-h-[600px]" 
+        style={{ 
+          aspectRatio: '1920/650',
+          height: 'auto'
+        }}
         onClick={() => setShowModal(true)}
       >
         <AnimatePresence mode="wait">

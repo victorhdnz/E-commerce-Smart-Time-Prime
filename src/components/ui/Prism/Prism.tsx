@@ -62,16 +62,22 @@ const Prism = ({
     const TS = Math.max(0, timeScale || 1)
     const HOVSTR = Math.max(0, hoverStrength || 1)
     const INERT = Math.max(0, Math.min(1, inertia || 0.12))
-    // Aumentar DPR para melhor qualidade (até 3 para telas de alta resolução)
-    const dpr = Math.min(3, window.devicePixelRatio || 1)
+    // Remover limite de DPR para máxima qualidade em todas as telas
+    const dpr = window.devicePixelRatio || 1
 
     const renderer = new Renderer({
       dpr,
       alpha: transparent,
       antialias: true // Habilitar antialiasing para melhor qualidade
     })
-
+    
+    // Configurar contexto WebGL para máxima qualidade
     const gl = renderer.gl
+    
+    // Habilitar extensões para melhor qualidade (se disponível)
+    const ext = gl.getExtension('EXT_texture_filter_anisotropic') || 
+                gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') ||
+                gl.getExtension('MOZ_EXT_texture_filter_anisotropic')
 
     gl.disable(gl.DEPTH_TEST)
     gl.disable(gl.CULL_FACE)
@@ -176,7 +182,7 @@ const Prism = ({
           float c2 = cos(t + 11.0);
           wob = mat2(c0, c1, c2, c0);
         }
-        const int STEPS = 150; // Aumentado para melhor qualidade
+        const int STEPS = 200; // Aumentado ainda mais para máxima qualidade
         for (int i = 0; i < STEPS; i++) {
           p = vec3(f, z);
           p.xz = p.xz * wob;
