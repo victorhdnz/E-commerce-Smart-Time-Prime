@@ -76,15 +76,17 @@ const Prism = ({
     gl.disable(gl.CULL_FACE)
     gl.disable(gl.BLEND)
 
-    Object.assign(gl.canvas.style, {
-      position: 'absolute',
-      inset: '0',
-      width: '100%',
-      height: '100%',
-      display: 'block'
-    })
-
-    container.appendChild(gl.canvas)
+    // Type guard para garantir que é HTMLCanvasElement
+    if (gl.canvas instanceof HTMLCanvasElement) {
+      Object.assign(gl.canvas.style, {
+        position: 'absolute',
+        inset: '0',
+        width: '100%',
+        height: '100%',
+        display: 'block'
+      })
+      container.appendChild(gl.canvas)
+    }
 
     const vertex = /* glsl */ `
       attribute vec2 position;
@@ -420,7 +422,9 @@ const Prism = ({
         if (io) io.disconnect()
         delete (container as any).__prismIO
       }
-      if (gl.canvas.parentElement === container) container.removeChild(gl.canvas)
+      if (gl.canvas instanceof HTMLCanvasElement && gl.canvas.parentElement === container) {
+        container.removeChild(gl.canvas)
+      }
     }
   }, [
     height,
