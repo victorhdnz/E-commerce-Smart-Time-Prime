@@ -468,16 +468,6 @@ export const HeroSection = ({
       )}
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Background Pattern - apenas na área de conteúdo de texto */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `radial-gradient(circle, ${finalTextColor} 1px, transparent 1px)`,
-              backgroundSize: '50px 50px',
-            }}
-          />
-        </div>
         <div className="flex items-center justify-center min-h-[70vh]">
           {/* Content - renderizado na ordem especificada */}
           <motion.div
