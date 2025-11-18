@@ -55,7 +55,7 @@ export const GlobalBackground = () => {
         position: 'fixed'
       }}
     >
-      <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+      <div style={{ width: '100%', height: '100%', position: 'relative' }}>
         <Prism
           animationType="rotate"
           timeScale={0.5}

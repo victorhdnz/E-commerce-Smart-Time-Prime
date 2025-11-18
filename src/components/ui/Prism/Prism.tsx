@@ -62,28 +62,18 @@ const Prism = ({
     const TS = Math.max(0, timeScale || 1)
     const HOVSTR = Math.max(0, hoverStrength || 1)
     const INERT = Math.max(0, Math.min(1, inertia || 0.12))
-    // Usar DPR completo para melhor qualidade (como no preview da biblioteca)
-    const dpr = window.devicePixelRatio || 1
 
+    const dpr = Math.min(2, window.devicePixelRatio || 1)
     const renderer = new Renderer({
       dpr,
       alpha: transparent,
-      antialias: true // Habilitar antialiasing para melhor qualidade
+      antialias: false
     })
-    
-    // Configurar contexto WebGL para máxima qualidade
     const gl = renderer.gl
-    
-    // Habilitar extensões para melhor qualidade (se disponível)
-    const ext = gl.getExtension('EXT_texture_filter_anisotropic') || 
-                gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') ||
-                gl.getExtension('MOZ_EXT_texture_filter_anisotropic')
-
     gl.disable(gl.DEPTH_TEST)
     gl.disable(gl.CULL_FACE)
     gl.disable(gl.BLEND)
 
-    // Type guard para garantir que é HTMLCanvasElement
     if (gl.canvas instanceof HTMLCanvasElement) {
       Object.assign(gl.canvas.style, {
         position: 'absolute',
@@ -104,8 +94,10 @@ const Prism = ({
 
     const fragment = /* glsl */ `
       precision highp float;
+
       uniform vec2  iResolution;
       uniform float iTime;
+
       uniform float uHeight;
       uniform float uBaseHalf;
       uniform mat3  uRot;
@@ -168,12 +160,16 @@ const Prism = ({
 
       void main(){
         vec2 f = (gl_FragCoord.xy - 0.5 * iResolution.xy - uOffsetPx) * uPxScale;
+
         float z = 5.0;
         float d = 0.0;
+
         vec3 p;
         vec4 o = vec4(0.0);
+
         float centerShift = uCenterShift;
         float cf = uColorFreq;
+
         mat2 wob = mat2(1.0);
         if (uUseBaseWobble == 1) {
           float t = iTime * uTimeScale;
@@ -182,7 +178,8 @@ const Prism = ({
           float c2 = cos(t + 11.0);
           wob = mat2(c0, c1, c2, c0);
         }
-        const int STEPS = 150; // Qualidade alta como no preview da biblioteca
+
+        const int STEPS = 100;
         for (int i = 0; i < STEPS; i++) {
           p = vec3(f, z);
           p.xz = p.xz * wob;
@@ -193,16 +190,21 @@ const Prism = ({
           z -= d;
           o += (sin((p.y + z) * cf + vec4(0.0, 1.0, 2.0, 3.0)) + 1.0) / d;
         }
+
         o = tanh4(o * o * (uGlow * uBloom) / 1e5);
+
         vec3 col = o.rgb;
         float n = rand(gl_FragCoord.xy + vec2(iTime));
         col += (n - 0.5) * uNoise;
         col = clamp(col, 0.0, 1.0);
+
         float L = dot(col, vec3(0.2126, 0.7152, 0.0722));
         col = clamp(mix(vec3(L), col, uSaturation), 0.0, 1.0);
+
         if(abs(uHueShift) > 0.0001){
           col = clamp(hueRotation(uHueShift) * col, 0.0, 1.0);
         }
+
         gl_FragColor = vec4(col, o.a);
       }
     `
@@ -243,9 +245,8 @@ const Prism = ({
     const mesh = new Mesh(gl, { geometry, program })
 
     const resize = () => {
-      // Usar window.innerWidth/Height para garantir que cubra toda a viewport
-      const w = Math.max(container.clientWidth || window.innerWidth || 1, window.innerWidth || 1)
-      const h = Math.max(container.clientHeight || window.innerHeight || 1, window.innerHeight || 1)
+      const w = container.clientWidth || 1
+      const h = container.clientHeight || 1
       renderer.setSize(w, h)
       iResBuf[0] = gl.drawingBufferWidth
       iResBuf[1] = gl.drawingBufferHeight
@@ -309,7 +310,6 @@ const Prism = ({
 
     let yaw = 0, pitch = 0, roll = 0
     let targetYaw = 0, targetPitch = 0
-
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
     const pointer = { x: 0, y: 0, inside: true }
@@ -369,6 +369,7 @@ const Prism = ({
         pitch = lerp(prevPitch, targetPitch, INERT)
         roll = lerp(prevRoll, 0, 0.1)
         program.uniforms.uRot.value = setMat3FromEuler(yaw, pitch, roll, rotBuf)
+
         if (NOISE_IS_ZERO) {
           const settled =
             Math.abs(yaw - targetYaw) < 1e-4 && Math.abs(pitch - targetPitch) < 1e-4 && Math.abs(roll) < 1e-4
@@ -404,21 +405,18 @@ const Prism = ({
       }
     }
 
-    // Sempre usar IntersectionObserver para otimizar performance
-    const io = new IntersectionObserver(
-      (entries) => {
+    if (suspendWhenOffscreen) {
+      const io = new IntersectionObserver((entries) => {
         const vis = entries.some((e) => e.isIntersecting)
-        if (vis) {
-          startRAF()
-        } else {
-          stopRAF()
-        }
-      },
-      { threshold: 0.1 } // Iniciar quando 10% estiver visível
-    )
-    io.observe(container)
-    startRAF()
-    ;(container as any).__prismIO = io
+        if (vis) startRAF()
+        else stopRAF()
+      })
+      io.observe(container)
+      startRAF()
+      ;(container as any).__prismIO = io
+    } else {
+      startRAF()
+    }
 
     return () => {
       stopRAF()
@@ -428,9 +426,11 @@ const Prism = ({
         window.removeEventListener('mouseleave', onLeave)
         window.removeEventListener('blur', onBlur)
       }
-      const io = (container as any).__prismIO
-      if (io) io.disconnect()
-      delete (container as any).__prismIO
+      if (suspendWhenOffscreen) {
+        const io = (container as any).__prismIO
+        if (io) io.disconnect()
+        delete (container as any).__prismIO
+      }
       if (gl.canvas instanceof HTMLCanvasElement && gl.canvas.parentElement === container) {
         container.removeChild(gl.canvas)
       }
@@ -454,8 +454,7 @@ const Prism = ({
     suspendWhenOffscreen
   ])
 
-  return <div className="absolute inset-0 w-full h-full" ref={containerRef} />
+  return <div className="w-full h-full relative" ref={containerRef} />
 }
 
 export default Prism
-
