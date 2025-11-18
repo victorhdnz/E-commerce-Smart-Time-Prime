@@ -241,7 +241,10 @@ export default function Orb({
     }
 
     window.addEventListener('resize', resize)
-    resize()
+    // Aguardar um frame antes de fazer o resize inicial para garantir que o container tenha dimensões
+    requestAnimationFrame(() => {
+      resize()
+    })
 
     let targetHover = 0
     let lastTime = 0

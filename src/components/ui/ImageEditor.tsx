@@ -217,6 +217,10 @@ export function ImageEditor({
       if (targetSize && targetSize.width >= 1920) {
         formData.append('isBanner', 'true')
       }
+      // Para imagens de alta qualidade (como About Us), marcar como high quality
+      if (targetSize && targetSize.width >= 1920 && targetSize.height >= 1440) {
+        formData.append('isHighQuality', 'true')
+      }
       // Passar informação se é logo (para preservar transparência na API também)
       if (isTransparentFormat || croppedImage.type === 'image/png') {
         formData.append('preserveTransparency', 'true')

@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File
     const folder = formData.get('folder') as string || 'smart-time-prime'
     const isBanner = formData.get('isBanner') === 'true'
+    const isHighQuality = formData.get('isHighQuality') === 'true'
     const preserveTransparency = formData.get('preserveTransparency') === 'true'
 
     if (!file) {
@@ -111,9 +112,9 @@ export async function POST(request: NextRequest) {
                                   file.type === 'image/webp' ||
                                   file.type === 'image/gif'
       
-      // Para banners grandes (1920x650), não aplicar nenhuma transformação para manter qualidade máxima
-      if (isBanner) {
-        // Para banners, não aplicar transformações - manter tamanho e qualidade original
+      // Para banners grandes (1920x650) ou imagens de alta qualidade, não aplicar nenhuma transformação para manter qualidade máxima
+      if (isBanner || isHighQuality) {
+        // Para banners e imagens de alta qualidade, não aplicar transformações - manter tamanho e qualidade original
         // O Cloudinary manterá a imagem no tamanho original sem compressão
         if (isTransparentFormat) {
           uploadOptions.allowed_formats = ['png', 'webp', 'gif'] // Preservar formatos com transparência

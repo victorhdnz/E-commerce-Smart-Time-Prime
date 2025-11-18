@@ -4,8 +4,8 @@ import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PageTransition } from '@/components/layout/PageTransition'
+import { MainBackground } from '@/components/layout/MainBackground'
 import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
-import { GlobalBackground } from '@/components/ui/GlobalBackground/GlobalBackground'
 import { Toaster } from 'react-hot-toast'
 import { getSiteUrl } from '@/lib/utils/siteUrl'
 import { createServerClient } from '@/lib/supabase/server'
@@ -142,13 +142,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
+        <MainBackground />
         <Header />
         <PageTransition>
-          <main className="min-h-screen relative" style={{ backgroundColor: 'transparent' }}>
-            <GlobalBackground />
-            <div style={{ position: 'relative', zIndex: 2 }}>
-              {children}
-            </div>
+          <main className="min-h-screen relative bg-white">
+            {children}
           </main>
         </PageTransition>
         <Footer />

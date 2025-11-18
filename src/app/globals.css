@@ -38,12 +38,12 @@
   }
   
   body {
-    @apply text-white antialiased;
-    background-color: #000000;
+    @apply text-foreground antialiased;
+    background-color: #ffffff;
   }
   
   html {
-    background-color: #000000;
+    background-color: #ffffff;
   }
 
   h1 {

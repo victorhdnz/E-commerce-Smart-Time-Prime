@@ -12,6 +12,7 @@ import { AboutUsSection } from '@/components/landing/AboutUsSection'
 import { ContactSection } from '@/components/landing/ContactSection'
 import { SectionTransition } from '@/components/landing/SectionTransition'
 import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
+import { GlobalBackground } from '@/components/ui/GlobalBackground/GlobalBackground'
 import { createServerClient } from '@/lib/supabase/server'
 
 export const revalidate = 10 // Revalidar a cada 10 segundos para atualizações mais rápidas
@@ -415,9 +416,14 @@ export default async function Home() {
   }
 
   return (
-    <div>
-      {/* Auth Redirect Handler */}
-      <AuthRedirect />
+    <>
+      {/* Global Background - Apenas na página inicial */}
+      <GlobalBackground />
+      
+      {/* Conteúdo com z-index acima do background */}
+      <div style={{ position: 'relative', zIndex: 2 }}>
+        {/* Auth Redirect Handler */}
+        <AuthRedirect />
       
       {/* Botão Fixo do WhatsApp */}
       <WhatsAppFloat 
@@ -500,6 +506,7 @@ export default async function Home() {
           </div>
         </section>
       </SectionTransition>
-    </div>
+      </div>
+    </>
   )
 }

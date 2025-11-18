@@ -8,26 +8,29 @@ export const GlobalBackground = () => {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    // Aguardar um pouco para garantir que o DOM está pronto
+    const timer = setTimeout(() => {
+      setMounted(true)
+    }, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
     // Calcular altura até o footer (excluindo o footer)
     const updateHeight = () => {
       const footer = document.querySelector('footer')
-      const main = document.querySelector('main')
-      if (footer && main) {
-        const mainTop = main.getBoundingClientRect().top + window.scrollY
+      if (footer) {
         const footerTop = footer.getBoundingClientRect().top + window.scrollY
-        const calculatedHeight = footerTop - mainTop
-        setHeight(`${calculatedHeight}px`)
+        // Usar a posição do footer como altura máxima
+        setHeight(`${footerTop}px`)
       } else {
+        // Se não encontrar o footer, usar altura da viewport
         setHeight('100vh')
       }
     }
 
     // Aguardar o DOM estar pronto
-    const timeoutId = setTimeout(updateHeight, 100)
+    const timeoutId = setTimeout(updateHeight, 200)
     updateHeight()
     
     window.addEventListener('resize', updateHeight)
@@ -35,7 +38,7 @@ export const GlobalBackground = () => {
 
     // Observar mudanças no DOM
     const observer = new MutationObserver(() => {
-      setTimeout(updateHeight, 50)
+      setTimeout(updateHeight, 100)
     })
     observer.observe(document.body, { childList: true, subtree: true })
 

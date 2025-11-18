@@ -119,7 +119,8 @@ export const AboutUsSection = ({
                     fill
                     className="object-cover"
                     priority={currentIndex === 0}
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
+                    quality={95}
                     unoptimized={false}
                   />
                 </div>

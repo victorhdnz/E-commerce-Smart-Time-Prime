@@ -2300,6 +2300,10 @@ export default function EditLandingPage() {
                 <ArrayImageManager
                   value={settings.about_us_store_images}
                   onChange={(images) => setSettings({ ...settings, about_us_store_images: images })}
+                  cropType="custom"
+                  aspectRatio={4/3}
+                  targetSize={{ width: 1920, height: 1440 }}
+                  recommendedDimensions="Recomendado: 1920x1440px ou maior. A imagem será mantida em alta qualidade."
                 />
               </div>
 

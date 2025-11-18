@@ -13,6 +13,7 @@ export const PageTransition = ({ children }: { children: ReactNode }) => {
         duration: 0.3,
         ease: 'easeInOut',
       }}
+      style={{ position: 'relative', zIndex: 2 }}
     >
       {children}
     </motion.div>
