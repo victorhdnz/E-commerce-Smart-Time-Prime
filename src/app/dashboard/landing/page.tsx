@@ -1029,41 +1029,60 @@ export default function EditLandingPage() {
       // Mesclar com dados existentes para preservar campos que não foram alterados
       const existingValue = existing?.value || {}
       
-      // Criar objeto apenas com campos que têm valores (não vazios/undefined)
-      // Isso preserva campos existentes que não estão sendo editados
+      // IMPORTANTE: Preservar arrays e objetos do banco mesmo se estiverem vazios no estado
+      // Isso evita perder dados quando o estado local está vazio mas o banco tem dados
       const settingsToUpdate: any = {}
       
-      // Lista de campos que devem ser preservados mesmo se vazios (arrays, objetos)
-      const preserveFields = [
+      // Lista de campos que são arrays/objetos e devem ser sempre preservados do banco se existirem
+      const arrayObjectFields = [
         'hero_images', 'hero_banners', 'showcase_images', 'story_images', 
         'about_us_store_images', 'value_package_items', 'media_showcase_features',
         'hero_element_order', 'media_showcase_element_order', 'value_package_element_order',
         'social_proof_element_order', 'story_element_order', 'about_us_element_order',
-        'contact_element_order', 'faq_element_order'
+        'contact_element_order', 'faq_element_order', 'social_proof_reviews'
       ]
       
-      // Iterar sobre todas as chaves de settings e adicionar apenas valores não vazios
+      // Iterar sobre todas as chaves de settings
       Object.keys(settings).forEach(key => {
         const value = (settings as any)[key]
+        const existingValueForKey = existingValue[key]
         
-        // Se for um campo que deve ser preservado (array/objeto), sempre incluir
-        if (preserveFields.includes(key)) {
-          settingsToUpdate[key] = value
+        // Se for um campo array/objeto:
+        if (arrayObjectFields.includes(key)) {
+          // Se existe no banco e o valor local está vazio/null, preservar do banco
+          if (existingValueForKey !== undefined && existingValueForKey !== null && 
+              (value === undefined || value === null || 
+               (Array.isArray(value) && value.length === 0) ||
+               (typeof value === 'object' && Object.keys(value).length === 0))) {
+            // Preservar valor do banco
+            settingsToUpdate[key] = existingValueForKey
+          } else {
+            // Usar valor do estado (pode ser array vazio se foi limpo intencionalmente)
+            settingsToUpdate[key] = value
+          }
         }
-        // Se for um valor não vazio (string não vazia, número, boolean, etc)
+        // Se for string vazia mas existe no banco, preservar do banco
+        else if (value === '' && existingValueForKey !== undefined && existingValueForKey !== null && existingValueForKey !== '') {
+          settingsToUpdate[key] = existingValueForKey
+        }
+        // Se for um valor não vazio, usar o valor do estado
         else if (value !== undefined && value !== null && value !== '') {
           settingsToUpdate[key] = value
         }
-        // Se for boolean false, também incluir (pois false é um valor válido)
+        // Se for boolean (incluindo false), sempre incluir
         else if (typeof value === 'boolean') {
           settingsToUpdate[key] = value
         }
+        // Se existe no banco e não foi definido no estado, preservar
+        else if (existingValueForKey !== undefined && existingValueForKey !== null) {
+          settingsToUpdate[key] = existingValueForKey
+        }
       })
       
-      // Fazer merge: preservar tudo que existe + atualizar apenas campos com valores
+      // Fazer merge: preservar tudo que existe + atualizar apenas campos modificados
       const settingsToSave = {
         ...existingValue, // Preservar TODOS os dados existentes primeiro
-        ...settingsToUpdate, // Sobrescrever apenas campos que têm valores
+        ...settingsToUpdate, // Sobrescrever apenas campos que foram modificados ou preservados
         timer_end_date: timerEndDateISO, // Sempre atualizar timer_end_date
       }
 
