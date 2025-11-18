@@ -10,12 +10,11 @@ import { VideoUploader } from '@/components/ui/VideoUploader'
 import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Save, Plus, Trash2, GripVertical, Edit } from 'lucide-react'
+import { Save, Plus, Trash2, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import { createClient } from '@/lib/supabase/client'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd'
 import { Modal } from '@/components/ui/Modal'
 import { FAQ } from '@/types'
 import { saveSiteSettings } from '@/lib/supabase/site-settings-helper'
@@ -244,6 +243,10 @@ export default function EditLandingPage() {
     'contact',
     'faq'
   ])
+  
+  // Estados para numeração de ordem
+  const [sectionOrderNumbers, setSectionOrderNumbers] = useState<Record<string, number>>({})
+  const [elementOrderNumbers, setElementOrderNumbers] = useState<Record<string, Record<string, number>>>({})
   const [settings, setSettings] = useState<LandingSettings>({
     // Hero
     hero_title: '',
@@ -686,29 +689,120 @@ export default function EditLandingPage() {
     }
   }
 
-  const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return
-
-    const items = Array.from(sectionOrder)
-    const [reorderedItem] = items.splice(result.source.index, 1)
-    items.splice(result.destination.index, 0, reorderedItem)
-
-    setSectionOrder(items)
+  // Função para reordenar seções baseado em números
+  const handleSectionOrderChange = (sectionId: string, newNumber: number) => {
+    const maxNumber = sectionOrder.length
+    const clampedNumber = Math.max(1, Math.min(maxNumber, newNumber))
+    
+    // Criar novo objeto de números
+    const newNumbers: Record<string, number> = { ...sectionOrderNumbers }
+    
+    // Se já existe um item com esse número, trocar os números
+    const existingSection = Object.entries(newNumbers).find(([id, num]) => num === clampedNumber && id !== sectionId)
+    if (existingSection) {
+      newNumbers[existingSection[0]] = newNumbers[sectionId] || sectionOrder.indexOf(sectionId) + 1
+    }
+    
+    newNumbers[sectionId] = clampedNumber
+    
+    // Reordenar seções baseado nos números
+    const sortedSections = [...sectionOrder].sort((a, b) => {
+      const numA = newNumbers[a] || sectionOrder.indexOf(a) + 1
+      const numB = newNumbers[b] || sectionOrder.indexOf(b) + 1
+      return numA - numB
+    })
+    
+    // Renumerar para garantir sequência 1, 2, 3...
+    const finalNumbers: Record<string, number> = {}
+    sortedSections.forEach((id, index) => {
+      finalNumbers[id] = index + 1
+    })
+    
+    setSectionOrderNumbers(finalNumbers)
+    setSectionOrder(sortedSections)
     toast.success('Ordem das seções atualizada! Clique em "Salvar" para aplicar as mudanças.')
   }
 
-  const handleElementDragEnd = (sectionKey: string, result: DropResult) => {
-    if (!result.destination) return
-
+  // Função para reordenar elementos dentro de uma seção baseado em números
+  const handleElementOrderChange = (sectionKey: string, elementKey: string, newNumber: number) => {
     const orderKey = `${sectionKey}_element_order` as keyof LandingSettings
     const currentOrder = (settings[orderKey] as string[]) || []
-    const items = Array.from(currentOrder)
-    const [reorderedItem] = items.splice(result.source.index, 1)
-    items.splice(result.destination.index, 0, reorderedItem)
-
-    setSettings({ ...settings, [orderKey]: items } as any)
+    const maxNumber = currentOrder.length
+    const clampedNumber = Math.max(1, Math.min(maxNumber, newNumber))
+    
+    // Criar novo objeto de números para esta seção
+    const sectionNumbers = { ...(elementOrderNumbers[sectionKey] || {}) }
+    
+    // Inicializar números se não existirem
+    currentOrder.forEach((key, index) => {
+      if (!sectionNumbers[key]) {
+        sectionNumbers[key] = index + 1
+      }
+    })
+    
+    // Se já existe um elemento com esse número, trocar os números
+    const existingElement = Object.entries(sectionNumbers).find(([key, num]) => num === clampedNumber && key !== elementKey)
+    if (existingElement) {
+      sectionNumbers[existingElement[0]] = sectionNumbers[elementKey] || currentOrder.indexOf(elementKey) + 1
+    }
+    
+    sectionNumbers[elementKey] = clampedNumber
+    
+    // Reordenar elementos baseado nos números
+    const sortedElements = [...currentOrder].sort((a, b) => {
+      const numA = sectionNumbers[a] || currentOrder.indexOf(a) + 1
+      const numB = sectionNumbers[b] || currentOrder.indexOf(b) + 1
+      return numA - numB
+    })
+    
+    // Renumerar para garantir sequência 1, 2, 3...
+    const finalNumbers: Record<string, number> = {}
+    sortedElements.forEach((key, index) => {
+      finalNumbers[key] = index + 1
+    })
+    
+    setElementOrderNumbers({ ...elementOrderNumbers, [sectionKey]: finalNumbers })
+    setSettings({ ...settings, [orderKey]: sortedElements } as any)
     toast.success('Ordem dos elementos atualizada! Clique em "Salvar" para aplicar as mudanças.')
   }
+  
+  // Inicializar números de ordem quando sectionOrder ou settings mudarem
+  useEffect(() => {
+    // Inicializar números das seções apenas se ainda não foram inicializados
+    setSectionOrderNumbers(prev => {
+      const updated = { ...prev }
+      let hasChanges = false
+      sectionOrder.forEach((id, index) => {
+        if (!updated[id]) {
+          updated[id] = index + 1
+          hasChanges = true
+        }
+      })
+      return hasChanges ? updated : prev
+    })
+    
+    // Inicializar números dos elementos apenas se ainda não foram inicializados
+    setElementOrderNumbers(prev => {
+      const updated = { ...prev }
+      let hasChanges = false
+      Object.keys(sectionMap).forEach(sectionKey => {
+        const orderKey = `${sectionKey}_element_order` as keyof LandingSettings
+        const elementOrder = (settings[orderKey] as string[]) || []
+        if (elementOrder.length > 0) {
+          if (!updated[sectionKey]) {
+            updated[sectionKey] = {}
+          }
+          elementOrder.forEach((elementKey, index) => {
+            if (!updated[sectionKey][elementKey]) {
+              updated[sectionKey][elementKey] = index + 1
+              hasChanges = true
+            }
+          })
+        }
+      })
+      return hasChanges ? updated : prev
+    })
+  }, [sectionOrder, settings]) // Re-executar quando sectionOrder ou settings mudarem
 
 
   const loadSettings = async () => {
@@ -2268,155 +2362,100 @@ export default function EditLandingPage() {
           >
             <h2 className="text-2xl font-bold mb-6">👁️ Visibilidade e Ordem das Seções</h2>
             <p className="text-sm text-gray-600 mb-6">
-              Controle quais seções da página inicial devem ser exibidas, arraste para reordenar as seções e os elementos dentro de cada seção.
+              Controle quais seções da página inicial devem ser exibidas. Use os números para definir a ordem das seções e elementos (1 = primeiro, 2 = segundo, etc.).
             </p>
             
-            <DragDropContext onDragEnd={(result) => {
-              if (!result.destination) return
-              
-              // Drag de seção (identificado pelo draggableId começando com "section-")
-              if (result.draggableId.startsWith('section-')) {
-                const sectionId = result.draggableId.replace('section-', '')
-                // Criar um novo result com o sectionId correto para handleDragEnd
-                const sectionResult = {
-                  ...result,
-                  draggableId: sectionId,
-                }
-                handleDragEnd(sectionResult as DropResult)
-              }
-              // Drag de elemento dentro de seção (identificado pelo draggableId começando com "element-")
-              else if (result.draggableId.startsWith('element-') && result.destination) {
-                // Extrair sectionId do droppableId (formato: {sectionId}-elements)
-                const droppableId = result.destination.droppableId
-                if (droppableId.endsWith('-elements')) {
-                  const sectionKey = droppableId.replace('-elements', '')
-                  // Extrair elementKey do draggableId
-                  // Formato: element-{sectionId}-{elementKey}
-                  const withoutPrefix = result.draggableId.replace('element-', '')
-                  const firstDashIndex = withoutPrefix.indexOf('-')
-                  if (firstDashIndex > 0) {
-                    const elementKey = withoutPrefix.substring(firstDashIndex + 1)
-                    // Criar um novo result com o elementKey correto
-                    const elementResult = {
-                      ...result,
-                      draggableId: elementKey,
-                      destination: {
-                        ...result.destination,
-                        droppableId: `${sectionKey}-elements`,
-                      },
-                    }
-                    handleElementDragEnd(sectionKey, elementResult as DropResult)
-                  }
-                }
-              }
-            }}>
-              <Droppable droppableId="sections">
-                {(provided) => (
-                  <div 
-                    {...provided.droppableProps} 
-                    ref={provided.innerRef} 
-                    className="space-y-4"
+            <div className="space-y-4">
+              {sectionOrder.map((sectionId) => {
+                const section = sectionMap[sectionId]
+                if (!section) return null
+                
+                const orderKey = `${sectionId}_element_order` as keyof LandingSettings
+                const elementOrder = (settings[orderKey] as string[]) || []
+                const sectionNumber = sectionOrderNumbers[sectionId] || sectionOrder.indexOf(sectionId) + 1
+                
+                return (
+                  <div
+                    key={sectionId}
+                    className="border rounded-lg p-4 bg-white hover:bg-gray-50 transition-colors"
                   >
-                    {sectionOrder.map((sectionId, index) => {
-                      const section = sectionMap[sectionId]
-                      if (!section) return null
-                      
-                      const orderKey = `${sectionId}_element_order` as keyof LandingSettings
-                      const elementOrder = (settings[orderKey] as string[]) || []
-                      
-                      return (
-                        <Draggable key={sectionId} draggableId={`section-${sectionId}`} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              style={provided.draggableProps.style}
-                              className={`border rounded-lg p-4 hover:bg-gray-50 transition-colors ${
-                                snapshot.isDragging ? 'bg-gray-100 shadow-lg' : 'bg-white'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div
-                                  {...provided.dragHandleProps}
-                                  className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors"
-                                >
-                                  <GripVertical size={20} />
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium text-gray-700 w-16">Ordem:</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max={sectionOrder.length}
+                          value={sectionNumber}
+                          onChange={(e) => {
+                            const num = parseInt(e.target.value) || 1
+                            handleSectionOrderChange(sectionId, num)
+                          }}
+                          className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                        />
+                      </div>
+                      <label className="flex items-center gap-3 cursor-pointer flex-1">
+                        <input
+                          type="checkbox"
+                          checked={(settings as any)[section.key] ?? true}
+                          onChange={(e) =>
+                            setSettings({ ...settings, [section.key]: e.target.checked } as any)
+                          }
+                          className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                        />
+                        <span className="text-sm font-bold">{section.label}</span>
+                      </label>
+                    </div>
+                    {(settings as any)[section.key] && section.elements.length > 0 && (
+                      <div className="ml-8 mt-3 pl-4 border-l-2 border-gray-200">
+                        <p className="text-xs text-gray-600 mb-2 font-medium">Elementos (defina a ordem com números):</p>
+                        <div className="space-y-2">
+                          {elementOrder.map((elementKey) => {
+                            const element = section.elements.find(e => e.key === elementKey)
+                            if (!element) return null
+                            
+                            const elementNumber = elementOrderNumbers[sectionId]?.[elementKey] || elementOrder.indexOf(elementKey) + 1
+                            
+                            return (
+                              <div
+                                key={element.key}
+                                className="flex items-center gap-3 p-2 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <label className="text-xs font-medium text-gray-600 w-12">Ordem:</label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max={elementOrder.length}
+                                    value={elementNumber}
+                                    onChange={(e) => {
+                                      const num = parseInt(e.target.value) || 1
+                                      handleElementOrderChange(sectionId, elementKey, num)
+                                    }}
+                                    className="w-12 px-2 py-1 border border-gray-300 rounded text-center text-xs focus:outline-none focus:ring-2 focus:ring-black"
+                                  />
                                 </div>
-                                <label className="flex items-center gap-3 cursor-pointer p-2 rounded-lg hover:bg-gray-50 mb-3 flex-1">
+                                <label className="flex items-center gap-2 cursor-pointer flex-1">
                                   <input
                                     type="checkbox"
-                                    checked={(settings as any)[section.key] ?? true}
+                                    checked={(settings as any)[element.key] ?? true}
                                     onChange={(e) =>
-                                      setSettings({ ...settings, [section.key]: e.target.checked } as any)
+                                      setSettings({ ...settings, [element.key]: e.target.checked } as any)
                                     }
-                                    className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
+                                    className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
                                   />
-                                  <span className="text-sm font-bold">{section.label}</span>
+                                  <span className="text-sm">{element.label}</span>
                                 </label>
                               </div>
-                              {(settings as any)[section.key] && section.elements.length > 0 && (
-                                <div className="ml-8 mt-3 pl-4 border-l-2 border-gray-200">
-                                  <p className="text-xs text-gray-600 mb-2 font-medium">Elementos (arraste para reordenar):</p>
-                                  <Droppable droppableId={`${sectionId}-elements`}>
-                                    {(provided) => (
-                                      <div 
-                                        {...provided.droppableProps} 
-                                        ref={provided.innerRef} 
-                                        className="space-y-2"
-                                      >
-                                        {elementOrder.map((elementKey, elementIndex) => {
-                                          const element = section.elements.find(e => e.key === elementKey)
-                                          if (!element) return null
-                                          
-                                          return (
-                                            <Draggable key={element.key} draggableId={`element-${sectionId}-${element.key}`} index={elementIndex}>
-                                              {(provided, snapshot) => (
-                                                <div
-                                                  ref={provided.innerRef}
-                                                  {...provided.draggableProps}
-                                                  style={provided.draggableProps.style}
-                                                  className={`flex items-center gap-3 p-2 border rounded-lg hover:bg-gray-50 transition-colors ${
-                                                    snapshot.isDragging ? 'bg-gray-100 shadow-lg' : 'bg-gray-50'
-                                                  }`}
-                                                >
-                                                  <div
-                                                    {...provided.dragHandleProps}
-                                                    className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors"
-                                                  >
-                                                    <GripVertical size={16} />
-                                                  </div>
-                                                  <label className="flex items-center gap-2 cursor-pointer flex-1">
-                                                    <input
-                                                      type="checkbox"
-                                                      checked={(settings as any)[element.key] ?? true}
-                                                      onChange={(e) =>
-                                                        setSettings({ ...settings, [element.key]: e.target.checked } as any)
-                                                      }
-                                                      className="w-4 h-4 text-black focus:ring-black border-gray-300 rounded"
-                                                    />
-                                                    <span className="text-sm">{element.label}</span>
-                                                  </label>
-                                                </div>
-                                              )}
-                                            </Draggable>
-                                          )
-                                        })}
-                                        {provided.placeholder}
-                                      </div>
-                                    )}
-                                  </Droppable>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </Draggable>
-                      )
-                    })}
-                    {provided.placeholder}
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+                )
+              })}
+            </div>
           </motion.div>
 
           {/* Social Proof Section */}
