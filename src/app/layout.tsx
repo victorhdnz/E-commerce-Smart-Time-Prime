@@ -142,10 +142,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-        <GlobalBackground />
         <Header />
         <PageTransition>
           <main className="min-h-screen relative" style={{ zIndex: 10 }}>
+            <GlobalBackground />
             {children}
           </main>
         </PageTransition>
