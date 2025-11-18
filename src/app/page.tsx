@@ -14,7 +14,7 @@ import { SectionTransition } from '@/components/landing/SectionTransition'
 import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
 import { createServerClient } from '@/lib/supabase/server'
 
-export const revalidate = 30 // Revalidar a cada 30 segundos para melhor performance
+export const revalidate = 10 // Revalidar a cada 10 segundos para atualizações mais rápidas
 export const dynamic = 'force-dynamic' // Forçar renderização dinâmica
 
 async function getPageData() {
@@ -270,6 +270,7 @@ export default async function Home() {
         heroBanner={settings.hero_banner}
         heroBanners={heroBanners}
         timerEndDate={timerEnabled ? timerEndDate : undefined}
+        elementOrder={Array.isArray(settings.hero_element_order) ? settings.hero_element_order : ['hero_banner_visible', 'hero_badge_visible', 'hero_title_visible', 'hero_subtitle_visible', 'hero_viewer_count', 'hero_timer_visible', 'hero_button_visible']}
         elementVisibility={{
           banner: settings.hero_banner_visible !== false,
           badge: settings.hero_badge_visible !== false,

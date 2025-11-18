@@ -19,7 +19,7 @@ BEGIN
     VALUES (
       'general',
       jsonb_build_object(
-        'hero_element_order', ARRAY['hero_banner_visible', 'hero_badge_visible', 'hero_title_visible', 'hero_subtitle_visible', 'hero_viewer_count', 'hero_timer_visible', 'hero_cta_visible', 'hero_button_visible']::text[],
+        'hero_element_order', ARRAY['hero_banner_visible', 'hero_badge_visible', 'hero_title_visible', 'hero_subtitle_visible', 'hero_viewer_count', 'hero_timer_visible', 'hero_button_visible']::text[],
         'media_showcase_element_order', ARRAY['media_showcase_title_visible', 'media_showcase_features_visible', 'media_showcase_images_visible', 'media_showcase_video_visible']::text[],
         'value_package_element_order', ARRAY['value_package_title_visible', 'value_package_image_visible', 'value_package_items_visible', 'value_package_prices_visible', 'value_package_timer_visible', 'value_package_button_visible']::text[],
         'social_proof_element_order', ARRAY['social_proof_title_visible', 'social_proof_reviews_visible']::text[],

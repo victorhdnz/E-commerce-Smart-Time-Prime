@@ -424,7 +424,7 @@ export default function EditLandingPage() {
     // FAQ Section
     faq_title_visible: true,
     // Ordem dos elementos (padrão: ordem original)
-    hero_element_order: ['hero_banner_visible', 'hero_badge_visible', 'hero_title_visible', 'hero_subtitle_visible', 'hero_viewer_count', 'hero_timer_visible', 'hero_cta_visible', 'hero_button_visible'],
+    hero_element_order: ['hero_banner_visible', 'hero_badge_visible', 'hero_title_visible', 'hero_subtitle_visible', 'hero_viewer_count', 'hero_timer_visible', 'hero_button_visible'],
     media_showcase_element_order: ['media_showcase_title_visible', 'media_showcase_features_visible', 'media_showcase_images_visible', 'media_showcase_video_visible'],
     value_package_element_order: ['value_package_title_visible', 'value_package_image_visible', 'value_package_items_visible', 'value_package_prices_visible', 'value_package_timer_visible', 'value_package_button_visible'],
     social_proof_element_order: ['social_proof_title_visible', 'social_proof_reviews_visible'],
@@ -603,8 +603,7 @@ export default function EditLandingPage() {
         { key: 'hero_subtitle_visible', label: 'Subtítulo' },
         { key: 'hero_viewer_count', label: 'Status de Pessoas Vendo' },
         { key: 'hero_timer_visible', label: 'Cronômetro' },
-        { key: 'hero_cta_visible', label: 'Botão CTA' },
-        { key: 'hero_button_visible', label: 'Botão Secundário' },
+        { key: 'hero_button_visible', label: 'Botão' },
       ]
     },
     media_showcase: {
@@ -690,8 +689,7 @@ export default function EditLandingPage() {
     items.splice(result.destination.index, 0, reorderedItem)
 
     setSectionOrder(items)
-    saveSectionOrder(items)
-    toast.success('Ordem das seções atualizada!')
+    toast.success('Ordem das seções atualizada! Clique em "Salvar" para aplicar as mudanças.')
   }
 
   const handleElementDragEnd = (sectionKey: string, result: DropResult) => {
@@ -704,7 +702,7 @@ export default function EditLandingPage() {
     items.splice(result.destination.index, 0, reorderedItem)
 
     setSettings({ ...settings, [orderKey]: items } as any)
-    toast.success('Ordem dos elementos atualizada!')
+    toast.success('Ordem dos elementos atualizada! Clique em "Salvar" para aplicar as mudanças.')
   }
 
 
@@ -932,7 +930,7 @@ export default function EditLandingPage() {
           // Ordem dos elementos
           hero_element_order: Array.isArray(savedSettings.hero_element_order) && savedSettings.hero_element_order.length > 0 
             ? savedSettings.hero_element_order 
-            : ['hero_banner_visible', 'hero_badge_visible', 'hero_title_visible', 'hero_subtitle_visible', 'hero_viewer_count', 'hero_timer_visible', 'hero_cta_visible', 'hero_button_visible'],
+            : ['hero_banner_visible', 'hero_badge_visible', 'hero_title_visible', 'hero_subtitle_visible', 'hero_viewer_count', 'hero_timer_visible', 'hero_button_visible'],
           media_showcase_element_order: Array.isArray(savedSettings.media_showcase_element_order) && savedSettings.media_showcase_element_order.length > 0
             ? savedSettings.media_showcase_element_order
             : ['media_showcase_title_visible', 'media_showcase_features_visible', 'media_showcase_images_visible', 'media_showcase_video_visible'],
@@ -1059,6 +1057,9 @@ export default function EditLandingPage() {
 
         if (error) throw error
       }
+
+      // Salvar ordem das seções
+      await saveSectionOrder(sectionOrder)
 
       toast.success('Configurações salvas! Recarregue a página inicial para ver as mudanças.')
     } catch (error: any) {
