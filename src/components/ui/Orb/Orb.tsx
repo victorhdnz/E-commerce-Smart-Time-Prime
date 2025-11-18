@@ -180,7 +180,11 @@ export default function Orb({
     const container = ctnDom.current
     if (!container) return
 
-    const renderer = new Renderer({ alpha: true, premultipliedAlpha: false })
+    const renderer = new Renderer({ 
+      alpha: true, 
+      premultipliedAlpha: false,
+      dpr: Math.min(2, window.devicePixelRatio || 1)
+    })
     const gl = renderer.gl
     gl.clearColor(0, 0, 0, 0)
 
@@ -215,15 +219,20 @@ export default function Orb({
 
     function resize() {
       if (!container) return
-      const dpr = window.devicePixelRatio || 1
-      const width = Math.max(container.clientWidth || window.innerWidth || 1, 1)
-      const height = Math.max(container.clientHeight || window.innerHeight || 1, 1)
-      renderer.setSize(width * dpr, height * dpr)
-      if (gl.canvas instanceof HTMLCanvasElement) {
-        gl.canvas.style.width = width + 'px'
-        gl.canvas.style.height = height + 'px'
+      const dpr = Math.min(2, window.devicePixelRatio || 1)
+      // Usar window dimensions se container não tiver dimensões
+      const containerRect = container.getBoundingClientRect()
+      const width = Math.max(containerRect.width || window.innerWidth || 1, 1)
+      const height = Math.max(containerRect.height || window.innerHeight || 1, 1)
+      
+      if (width > 0 && height > 0) {
+        renderer.setSize(width * dpr, height * dpr)
+        if (gl.canvas instanceof HTMLCanvasElement) {
+          gl.canvas.style.width = width + 'px'
+          gl.canvas.style.height = height + 'px'
+        }
+        program.uniforms.iResolution.value.set(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height)
       }
-      program.uniforms.iResolution.value.set(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height)
     }
 
     window.addEventListener('resize', resize)

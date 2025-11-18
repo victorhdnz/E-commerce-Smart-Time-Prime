@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 // Lazy load do Orb para melhor performance
 const Orb = dynamic(() => import('@/components/ui/Orb/Orb'), {
   ssr: false,
-  loading: () => <div className="w-full h-full" />
+  loading: () => null
 })
 
 export const GlobalBackground = () => {
@@ -52,24 +52,27 @@ export const GlobalBackground = () => {
     <div 
       className="fixed pointer-events-none" 
       style={{ 
-        backgroundColor: 'transparent',
+        backgroundColor: '#000000',
         width: '100vw',
         height: height,
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 1,
+        zIndex: 0,
         overflow: 'hidden'
       }}
     >
       <div style={{ 
         width: '100%', 
         height: '100%', 
-        position: 'relative',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         minWidth: '100%',
-        minHeight: '100%',
-        display: 'block'
+        minHeight: '100%'
       }}>
         <Orb
           hue={0}

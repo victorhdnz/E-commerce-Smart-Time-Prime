@@ -144,7 +144,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Header />
         <PageTransition>
-          <main className="min-h-screen relative" style={{ backgroundColor: '#000000' }}>
+          <main className="min-h-screen relative" style={{ backgroundColor: 'transparent' }}>
             <GlobalBackground />
             <div style={{ position: 'relative', zIndex: 10 }}>
               {children}
