@@ -52,7 +52,22 @@ export const GlobalBackground = () => {
 
   return (
     <>
-      {/* ColorBends com fundo próprio */}
+      {/* Fundo preto de fallback */}
+      <div 
+        className="fixed pointer-events-none" 
+        style={{ 
+          backgroundColor: '#000000',
+          width: '100vw',
+          height: height,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 0,
+          overflow: 'hidden'
+        }}
+      />
+      {/* ColorBends sobre o fundo preto */}
       {mounted && (
         <div 
           className="fixed pointer-events-none" 
@@ -64,34 +79,31 @@ export const GlobalBackground = () => {
             top: 0,
             left: 0,
             right: 0,
-            zIndex: 0,
+            zIndex: 1,
             overflow: 'hidden'
           }}
         >
-          <div style={{ 
-            width: '100%', 
-            height: '100%', 
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            minWidth: '100%',
-            minHeight: '100%'
-          }}>
-            <ColorBends
-              colors={['#ffffff', '#d4af37', '#f5f5f5', '#ffd700']}
-              rotation={30}
-              speed={0.3}
-              scale={1.2}
-              frequency={1.4}
-              warpStrength={1.2}
-              mouseInfluence={0.8}
-              parallax={0.6}
-              noise={0.08}
-              transparent={false}
-            />
-          </div>
+          <ColorBends
+            colors={['#ffffff', '#d4af37', '#f5f5f5', '#ffd700']}
+            rotation={30}
+            speed={0.3}
+            scale={1.2}
+            frequency={1.4}
+            warpStrength={1.2}
+            mouseInfluence={0.8}
+            parallax={0.6}
+            noise={0.08}
+            transparent={true}
+            style={{
+              width: '100%',
+              height: '100%',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0
+            }}
+          />
         </div>
       )}
     </>
