@@ -8,8 +8,6 @@ import { formatCurrency } from '@/lib/utils/format'
 import { useCart } from '@/hooks/useCart'
 import Link from 'next/link'
 import Image from 'next/image'
-import SpotlightCard from '@/components/ui/SpotlightCard/SpotlightCard'
-import StarBorder from '@/components/ui/StarBorder/StarBorder'
 
 interface FeaturedProductsProps {
   products: Product[]
@@ -93,11 +91,8 @@ export const FeaturedProducts = ({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
               >
-                <SpotlightCard
-                  className="bg-white border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 group p-0 overflow-hidden"
-                  spotlightColor="rgba(0, 0, 0, 0.05)"
-                >
                 {/* Product Image */}
                 <div className="relative aspect-square overflow-hidden">
                   <Link href={`/produtos/${product.id}`}>
@@ -157,27 +152,21 @@ export const FeaturedProducts = ({
 
                   {/* Action Buttons */}
                   <div className="flex gap-2">
-                    <StarBorder
-                      as="button"
+                    <button
                       onClick={() => handleAddToCart(product)}
-                      color="rgba(255, 215, 0, 0.6)"
-                      speed="4s"
-                      className="flex-1 cursor-pointer [&>div]:bg-black [&>div]:text-white [&>div]:border-gray-700"
+                      className="flex-1 bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
                     >
-                      <div className="flex items-center justify-center gap-2">
-                        <ShoppingCart size={16} />
-                        <span className="font-semibold">Adicionar</span>
-                      </div>
-                    </StarBorder>
+                      <ShoppingCart size={16} />
+                      Adicionar
+                    </button>
                     <Link
                       href={`/produtos/${product.id}`}
-                      className="px-4 py-2 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center"
+                      className="px-4 py-2 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                     >
                       Ver
                     </Link>
                   </div>
                 </div>
-                </SpotlightCard>
               </motion.div>
             ))}
           </div>

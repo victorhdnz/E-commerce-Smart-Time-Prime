@@ -1,7 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import ColorBends from '@/components/ui/ColorBends/ColorBends'
+import dynamic from 'next/dynamic'
+
+const Orb = dynamic(() => import('@/components/ui/Orb/Orb'), {
+  ssr: false,
+  loading: () => null
+})
 
 export const GlobalBackground = () => {
   const [height, setHeight] = useState('100vh')
@@ -55,7 +60,22 @@ export const GlobalBackground = () => {
   }, [mounted])
 
   if (!mounted) {
-    return null
+    return (
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{ 
+          width: '100vw',
+          height: '100vh',
+          zIndex: 0,
+          overflow: 'hidden',
+          backgroundColor: '#000000',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0
+        }}
+      />
+    )
   }
 
   return (
@@ -66,7 +86,7 @@ export const GlobalBackground = () => {
         height: height,
         zIndex: 0,
         overflow: 'hidden',
-        backgroundColor: 'transparent',
+        backgroundColor: '#000000',
         position: 'fixed',
         top: 0,
         left: 0,
@@ -86,28 +106,10 @@ export const GlobalBackground = () => {
           minWidth: '100vw'
         }}
       >
-        <ColorBends
-          colors={['#ff5c7a', '#8a5cff', '#00ffd1']}
-          rotation={30}
-          speed={0.3}
-          scale={1.2}
-          frequency={1.4}
-          warpStrength={1.2}
-          mouseInfluence={0.8}
-          parallax={0.6}
-          noise={0.08}
-          transparent={false}
-          style={{
-            width: '100%',
-            height: '100%',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            minHeight: '100vh',
-            minWidth: '100vw'
-          }}
+        <Orb
+          hue={0}
+          hoverIntensity={0.2}
+          rotateOnHover={true}
         />
       </div>
     </div>
