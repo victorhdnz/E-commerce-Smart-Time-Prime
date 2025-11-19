@@ -119,6 +119,13 @@ interface LandingSettings {
   contact_email: string
   contact_whatsapp: string
   contact_maps_link: string
+  contact_schedule_weekdays: string
+  contact_schedule_saturday: string
+  contact_schedule_sunday: string
+  contact_location_street: string
+  contact_location_neighborhood: string
+  contact_location_city_state: string
+  contact_location_zip: string
   contact_title_visible: boolean
   contact_description_visible: boolean
   contact_whatsapp_visible: boolean
@@ -367,6 +374,13 @@ export default function EditLandingPage() {
     contact_email: 'contato@smarttimeprime.com.br',
     contact_whatsapp: '+55 34 8413-6291',
     contact_maps_link: 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6',
+    contact_schedule_weekdays: '09:00 - 20:00',
+    contact_schedule_saturday: '09:00 - 19:00',
+    contact_schedule_sunday: 'Fechado',
+    contact_location_street: 'Av. Imbaúba, 1676',
+    contact_location_neighborhood: 'Chácaras Tubalina e Quartel',
+    contact_location_city_state: 'Uberlândia - MG',
+    contact_location_zip: 'CEP: 38413-109',
     contact_title_visible: true,
     contact_description_visible: true,
     contact_whatsapp_visible: true,
@@ -964,6 +978,13 @@ export default function EditLandingPage() {
           contact_email: savedSettings.contact_email || 'contato@smarttimeprime.com.br',
           contact_whatsapp: savedSettings.contact_whatsapp || '+55 34 8413-6291',
           contact_maps_link: savedSettings.contact_maps_link || 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6',
+          contact_schedule_weekdays: savedSettings.contact_schedule_weekdays || '09:00 - 20:00',
+          contact_schedule_saturday: savedSettings.contact_schedule_saturday || '09:00 - 19:00',
+          contact_schedule_sunday: savedSettings.contact_schedule_sunday || 'Fechado',
+          contact_location_street: savedSettings.contact_location_street || 'Av. Imbaúba, 1676',
+          contact_location_neighborhood: savedSettings.contact_location_neighborhood || 'Chácaras Tubalina e Quartel',
+          contact_location_city_state: savedSettings.contact_location_city_state || 'Uberlândia - MG',
+          contact_location_zip: savedSettings.contact_location_zip || 'CEP: 38413-109',
           contact_title_visible: savedSettings.contact_title_visible !== undefined ? savedSettings.contact_title_visible : true,
           contact_description_visible: savedSettings.contact_description_visible !== undefined ? savedSettings.contact_description_visible : true,
           contact_whatsapp_visible: savedSettings.contact_whatsapp_visible !== undefined ? savedSettings.contact_whatsapp_visible : true,
@@ -1128,18 +1149,8 @@ export default function EditLandingPage() {
       }
 
       // Preparar todos os campos de settings para salvar usando o helper seguro
-      // Remover campos de contato que são editados apenas na aba "Configurações"
-      const { 
-        contact_title, 
-        contact_description, 
-        contact_email, 
-        contact_whatsapp, 
-        contact_maps_link,
-        ...landingSettings 
-      } = settings
-      
       const fieldsToSave: any = {
-        ...landingSettings,
+        ...settings,
         timer_end_date: timerEndDateISO, // Usar a data convertida
       }
 
@@ -1463,7 +1474,7 @@ export default function EditLandingPage() {
             </div>
           </motion.div>
 
-          {/* Contact Section (Footer) - Apenas controle de visibilidade */}
+          {/* Contact Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1471,12 +1482,7 @@ export default function EditLandingPage() {
             className="bg-white rounded-lg shadow-md p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold">Seção de Contato</h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Para editar as informações de contato, acesse a aba "Configurações".
-                </p>
-              </div>
+              <h2 className="text-2xl font-bold">Entre em Contato</h2>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -1510,6 +1516,128 @@ export default function EditLandingPage() {
                     </label>
                   ))}
                 </div>
+              </div>
+
+              <Input
+                label="Título da Seção"
+                value={settings.contact_title}
+                onChange={(e) =>
+                  setSettings({ ...settings, contact_title: e.target.value })
+                }
+                placeholder="Entre em Contato"
+              />
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Descrição da Seção
+                </label>
+                <textarea
+                  value={settings.contact_description}
+                  onChange={(e) =>
+                    setSettings({ ...settings, contact_description: e.target.value })
+                  }
+                  placeholder="Estamos aqui para ajudar você!"
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="E-mail"
+                  type="email"
+                  value={settings.contact_email}
+                  onChange={(e) =>
+                    setSettings({ ...settings, contact_email: e.target.value })
+                  }
+                  placeholder="contato@smarttimeprime.com.br"
+                />
+
+                <Input
+                  label="WhatsApp"
+                  value={settings.contact_whatsapp}
+                  onChange={(e) =>
+                    setSettings({ ...settings, contact_whatsapp: e.target.value })
+                  }
+                  placeholder="+55 34 8413-6291"
+                />
+              </div>
+
+              {/* Horário de Funcionamento */}
+              <div className="space-y-3">
+                <h4 className="text-md font-medium">Horário de Funcionamento</h4>
+                <Input
+                  label="Segunda a Sexta"
+                  value={settings.contact_schedule_weekdays}
+                  onChange={(e) =>
+                    setSettings({ ...settings, contact_schedule_weekdays: e.target.value })
+                  }
+                  placeholder="09:00 - 20:00"
+                />
+                <Input
+                  label="Sábado"
+                  value={settings.contact_schedule_saturday}
+                  onChange={(e) =>
+                    setSettings({ ...settings, contact_schedule_saturday: e.target.value })
+                  }
+                  placeholder="09:00 - 19:00"
+                />
+                <Input
+                  label="Domingo"
+                  value={settings.contact_schedule_sunday}
+                  onChange={(e) =>
+                    setSettings({ ...settings, contact_schedule_sunday: e.target.value })
+                  }
+                  placeholder="Fechado"
+                />
+              </div>
+
+              {/* Localização */}
+              <div className="space-y-3">
+                <h4 className="text-md font-medium">Localização</h4>
+                <Input
+                  label="Endereço"
+                  value={settings.contact_location_street}
+                  onChange={(e) =>
+                    setSettings({ ...settings, contact_location_street: e.target.value })
+                  }
+                  placeholder="Av. Imbaúba, 1676"
+                />
+                <Input
+                  label="Bairro"
+                  value={settings.contact_location_neighborhood}
+                  onChange={(e) =>
+                    setSettings({ ...settings, contact_location_neighborhood: e.target.value })
+                  }
+                  placeholder="Chácaras Tubalina e Quartel"
+                />
+                <Input
+                  label="Cidade - Estado"
+                  value={settings.contact_location_city_state}
+                  onChange={(e) =>
+                    setSettings({ ...settings, contact_location_city_state: e.target.value })
+                  }
+                  placeholder="Uberlândia - MG"
+                />
+                <Input
+                  label="CEP"
+                  value={settings.contact_location_zip}
+                  onChange={(e) =>
+                    setSettings({ ...settings, contact_location_zip: e.target.value })
+                  }
+                  placeholder="CEP: 38413-109"
+                />
+                <Input
+                  label="Link do Google Maps"
+                  value={settings.contact_maps_link}
+                  onChange={(e) =>
+                    setSettings({ ...settings, contact_maps_link: e.target.value })
+                  }
+                  placeholder="https://maps.app.goo.gl/..."
+                />
+                <p className="text-xs text-gray-500 -mt-2">
+                  Link que será usado no botão "Ver no Mapa" da seção "Entre em Contato".
+                </p>
               </div>
             </div>
           </motion.div>

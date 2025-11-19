@@ -145,7 +145,7 @@ export default function RootLayout({
         <MainBackground />
         <Header />
         <PageTransition>
-          <main className="min-h-screen relative bg-white">
+          <main className="min-h-screen relative">
             {children}
           </main>
         </PageTransition>

@@ -78,7 +78,7 @@ export const GlobalBackground = () => {
             mouseInfluence={0.8}
             parallax={0.6}
             noise={0.08}
-            transparent={false}
+            transparent={true}
             style={{
               width: '100%',
               height: '100%',

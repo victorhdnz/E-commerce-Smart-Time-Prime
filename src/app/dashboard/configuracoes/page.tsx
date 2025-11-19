@@ -30,17 +30,6 @@ interface SiteConfig {
   address_state: string
   address_zip: string
   loading_emoji: string
-  // Seção "Entre em Contato"
-  contact_title: string
-  contact_description: string
-  contact_schedule_weekdays: string
-  contact_schedule_saturday: string
-  contact_schedule_sunday: string
-  contact_location_street: string
-  contact_location_neighborhood: string
-  contact_location_city_state: string
-  contact_location_zip: string
-  contact_maps_link: string
 }
 
 export default function ConfiguracoesPage() {
@@ -65,17 +54,6 @@ export default function ConfiguracoesPage() {
     address_state: 'MG',
     address_zip: '38413-108',
     loading_emoji: '⌚',
-    // Seção "Entre em Contato"
-    contact_title: 'Entre em Contato',
-    contact_description: 'Estamos aqui para ajudar você!',
-    contact_schedule_weekdays: '09:00 - 20:00',
-    contact_schedule_saturday: '09:00 - 19:00',
-    contact_schedule_sunday: 'Fechado',
-    contact_location_street: 'Av. Imbaúba, 1676',
-    contact_location_neighborhood: 'Chácaras Tubalina e Quartel',
-    contact_location_city_state: 'Uberlândia - MG',
-    contact_location_zip: 'CEP: 38413-109',
-    contact_maps_link: 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6',
   })
 
   useEffect(() => {
@@ -120,17 +98,6 @@ export default function ConfiguracoesPage() {
           address_state: data.address_state || generalSettings.address_state || config.address_state,
           address_zip: data.address_zip || generalSettings.address_zip || config.address_zip,
           loading_emoji: data.loading_emoji || generalSettings.loading_emoji || config.loading_emoji,
-          // Seção "Entre em Contato"
-          contact_title: generalSettings.contact_title || config.contact_title,
-          contact_description: generalSettings.contact_description || config.contact_description,
-          contact_schedule_weekdays: generalSettings.contact_schedule_weekdays || config.contact_schedule_weekdays,
-          contact_schedule_saturday: generalSettings.contact_schedule_saturday || config.contact_schedule_saturday,
-          contact_schedule_sunday: generalSettings.contact_schedule_sunday || config.contact_schedule_sunday,
-          contact_location_street: generalSettings.contact_location_street || config.contact_location_street,
-          contact_location_neighborhood: generalSettings.contact_location_neighborhood || config.contact_location_neighborhood,
-          contact_location_city_state: generalSettings.contact_location_city_state || config.contact_location_city_state,
-          contact_location_zip: generalSettings.contact_location_zip || config.contact_location_zip,
-          contact_maps_link: generalSettings.contact_maps_link || config.contact_maps_link,
         })
       }
     } catch (error) {
@@ -160,17 +127,6 @@ export default function ConfiguracoesPage() {
         address_state: config.address_state,
         address_zip: config.address_zip,
         loading_emoji: config.loading_emoji,
-        // Seção "Entre em Contato" (no JSONB value)
-        contact_title: config.contact_title,
-        contact_description: config.contact_description,
-        contact_schedule_weekdays: config.contact_schedule_weekdays,
-        contact_schedule_saturday: config.contact_schedule_saturday,
-        contact_schedule_sunday: config.contact_schedule_sunday,
-        contact_location_street: config.contact_location_street,
-        contact_location_neighborhood: config.contact_location_neighborhood,
-        contact_location_city_state: config.contact_location_city_state,
-        contact_location_zip: config.contact_location_zip,
-        contact_maps_link: config.contact_maps_link,
       }
 
       // Usar o helper seguro que faz merge inteligente
@@ -279,16 +235,16 @@ export default function ConfiguracoesPage() {
             </div>
           </motion.div>
 
-          {/* Contact Info e Redes Sociais (Rodapé e Seção Entre em Contato) */}
+          {/* Contact Info e Redes Sociais (Rodapé) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Informações de Contato e Redes Sociais</h2>
+            <h2 className="text-2xl font-bold mb-6">Informações de Contato e Redes Sociais (Rodapé)</h2>
             <p className="text-sm text-gray-600 mb-6">
-              Estas informações aparecerão no rodapé e na seção "Entre em Contato" da landing page.
+              Estas informações aparecerão no rodapé do site (universal para todas as páginas).
             </p>
             
             <div className="space-y-6">
@@ -305,7 +261,7 @@ export default function ConfiguracoesPage() {
                   placeholder="contato@smarttimeprime.com.br"
                 />
                 <p className="text-xs text-gray-500 -mt-2">
-                  Este e-mail aparecerá no rodapé e na seção "Entre em Contato".
+                  Este e-mail aparecerá no rodapé.
                 </p>
 
                 <Input
@@ -317,120 +273,8 @@ export default function ConfiguracoesPage() {
                   placeholder="+55 34 8413-6291"
                 />
                 <p className="text-xs text-gray-500 -mt-2">
-                  Este WhatsApp aparecerá no rodapé e na seção "Entre em Contato".
+                  Este WhatsApp aparecerá no rodapé.
                 </p>
-              </div>
-
-              {/* Seção "Entre em Contato" */}
-              <div className="border-t pt-6 space-y-4">
-                <h3 className="text-lg font-semibold">Seção "Entre em Contato"</h3>
-                
-                <Input
-                  label="Título da Seção"
-                  value={config.contact_title}
-                  onChange={(e) =>
-                    setConfig({ ...config, contact_title: e.target.value })
-                  }
-                  placeholder="Entre em Contato"
-                />
-                <p className="text-xs text-gray-500 -mt-2">
-                  Título principal da seção "Entre em Contato" na landing page.
-                </p>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Descrição da Seção
-                  </label>
-                  <textarea
-                    value={config.contact_description}
-                    onChange={(e) =>
-                      setConfig({ ...config, contact_description: e.target.value })
-                    }
-                    placeholder="Estamos aqui para ajudar você!"
-                    rows={2}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Descrição que aparece abaixo do título na seção "Entre em Contato".
-                  </p>
-                </div>
-
-                {/* Horário de Funcionamento */}
-                <div className="space-y-3">
-                  <h4 className="text-md font-medium">Horário de Funcionamento</h4>
-                  <Input
-                    label="Segunda a Sexta"
-                    value={config.contact_schedule_weekdays}
-                    onChange={(e) =>
-                      setConfig({ ...config, contact_schedule_weekdays: e.target.value })
-                    }
-                    placeholder="09:00 - 20:00"
-                  />
-                  <Input
-                    label="Sábado"
-                    value={config.contact_schedule_saturday}
-                    onChange={(e) =>
-                      setConfig({ ...config, contact_schedule_saturday: e.target.value })
-                    }
-                    placeholder="09:00 - 19:00"
-                  />
-                  <Input
-                    label="Domingo"
-                    value={config.contact_schedule_sunday}
-                    onChange={(e) =>
-                      setConfig({ ...config, contact_schedule_sunday: e.target.value })
-                    }
-                    placeholder="Fechado"
-                  />
-                </div>
-
-                {/* Localização */}
-                <div className="space-y-3">
-                  <h4 className="text-md font-medium">Localização</h4>
-                  <Input
-                    label="Endereço"
-                    value={config.contact_location_street}
-                    onChange={(e) =>
-                      setConfig({ ...config, contact_location_street: e.target.value })
-                    }
-                    placeholder="Av. Imbaúba, 1676"
-                  />
-                  <Input
-                    label="Bairro"
-                    value={config.contact_location_neighborhood}
-                    onChange={(e) =>
-                      setConfig({ ...config, contact_location_neighborhood: e.target.value })
-                    }
-                    placeholder="Chácaras Tubalina e Quartel"
-                  />
-                  <Input
-                    label="Cidade - Estado"
-                    value={config.contact_location_city_state}
-                    onChange={(e) =>
-                      setConfig({ ...config, contact_location_city_state: e.target.value })
-                    }
-                    placeholder="Uberlândia - MG"
-                  />
-                  <Input
-                    label="CEP"
-                    value={config.contact_location_zip}
-                    onChange={(e) =>
-                      setConfig({ ...config, contact_location_zip: e.target.value })
-                    }
-                    placeholder="CEP: 38413-109"
-                  />
-                  <Input
-                    label="Link do Google Maps"
-                    value={config.contact_maps_link}
-                    onChange={(e) =>
-                      setConfig({ ...config, contact_maps_link: e.target.value })
-                    }
-                    placeholder="https://maps.app.goo.gl/..."
-                  />
-                  <p className="text-xs text-gray-500 -mt-2">
-                    Link que será usado no botão "Ver no Mapa" da seção "Entre em Contato".
-                  </p>
-                </div>
               </div>
 
               {/* Redes Sociais */}
