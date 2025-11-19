@@ -50,6 +50,7 @@ export const GlobalBackground = () => {
     }
   }, [])
 
+
   return (
     <>
       {/* ColorBends com fundo próprio */}
