@@ -132,7 +132,7 @@ export async function saveSiteSettings({
 
     // Lista de colunas diretas que podem ser atualizadas
     const directColumns = [
-      'site_name', 'site_logo', 'site_description', 'footer_text', 'copyright_text',
+      'site_name', 'site_title', 'site_logo', 'site_description', 'footer_text', 'copyright_text',
       'contact_email', 'contact_whatsapp', 'instagram_url', 'facebook_url',
       'address_street', 'address_city', 'address_state', 'address_zip', 'loading_emoji'
     ]

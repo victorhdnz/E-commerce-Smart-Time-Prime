@@ -17,6 +17,7 @@ import { saveSiteSettings } from '@/lib/supabase/site-settings-helper'
 
 interface SiteConfig {
   site_name: string
+  site_title: string
   site_logo: string
   site_description: string
   footer_text: string
@@ -41,6 +42,7 @@ export default function ConfiguracoesPage() {
   const [saving, setSaving] = useState(false)
   const [config, setConfig] = useState<SiteConfig>({
     site_name: 'Smart Time Prime',
+    site_title: 'Smart Time Prime - Relógios Premium',
     site_logo: '',
     site_description: 'E-commerce de produtos premium',
     footer_text: 'Produtos de qualidade com design moderno e elegante.',
@@ -85,6 +87,7 @@ export default function ConfiguracoesPage() {
         const generalSettings = data.value || {}
         setConfig({
           site_name: data.site_name || generalSettings.site_name || config.site_name,
+          site_title: data.site_title || generalSettings.site_title || `${data.site_name || generalSettings.site_name || config.site_name} - Relógios Premium`,
           site_logo: data.site_logo || generalSettings.site_logo || config.site_logo,
           site_description: data.site_description || generalSettings.site_description || config.site_description,
           footer_text: data.footer_text || generalSettings.footer_text || config.footer_text,
@@ -114,6 +117,7 @@ export default function ConfiguracoesPage() {
       const fieldsToSave: any = {
         // Colunas diretas
         site_name: config.site_name,
+        site_title: config.site_title,
         site_logo: config.site_logo || null,
         site_description: config.site_description,
         footer_text: config.footer_text,
@@ -213,6 +217,18 @@ export default function ConfiguracoesPage() {
               />
               <p className="text-xs text-gray-500 -mt-2">
                 Este nome aparecerá no navigation, rodapé e seção "Nossa História"
+              </p>
+
+              <Input
+                label="Título do Site (Google)"
+                value={config.site_title}
+                onChange={(e) =>
+                  setConfig({ ...config, site_title: e.target.value })
+                }
+                placeholder="Smart Time Prime - Relógios Premium"
+              />
+              <p className="text-xs text-gray-500 -mt-2">
+                Este título aparecerá nos resultados de busca do Google e na aba do navegador. Recomendado: máximo de 60 caracteres.
               </p>
 
               <div>

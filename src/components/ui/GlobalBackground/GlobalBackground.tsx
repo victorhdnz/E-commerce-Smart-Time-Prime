@@ -55,22 +55,7 @@ export const GlobalBackground = () => {
   }, [mounted])
 
   if (!mounted) {
-    return (
-      <div 
-        className="fixed inset-0 pointer-events-none"
-        style={{ 
-          width: '100vw',
-          height: '100vh',
-          zIndex: 0,
-          overflow: 'hidden',
-          backgroundColor: '#000000',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0
-        }}
-      />
-    )
+    return null
   }
 
   return (
@@ -81,7 +66,7 @@ export const GlobalBackground = () => {
         height: height,
         zIndex: 0,
         overflow: 'hidden',
-        backgroundColor: '#000000',
+        backgroundColor: 'transparent',
         position: 'fixed',
         top: 0,
         left: 0,

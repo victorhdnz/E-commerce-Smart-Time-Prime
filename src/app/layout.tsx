@@ -84,22 +84,66 @@ async function getSiteName(): Promise<string> {
   return 'Smart Time Prime'
 }
 
+// Função para buscar título do site do banco de dados
+async function getSiteTitle(): Promise<string | null> {
+  try {
+    const supabase = createServerClient()
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('site_title, site_name')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Erro ao buscar título do site:', error)
+      // Tentar buscar qualquer registro como fallback
+      const { data: fallbackData } = await supabase
+        .from('site_settings')
+        .select('site_title, site_name')
+        .limit(1)
+        .maybeSingle()
+
+      if (fallbackData?.site_title) {
+        return fallbackData.site_title
+      }
+      // Se não tiver site_title, usar site_name + sufixo
+      if (fallbackData?.site_name) {
+        return `${fallbackData.site_name} - Relógios Premium`
+      }
+    }
+
+    if (data?.site_title) {
+      return data.site_title
+    }
+    // Se não tiver site_title, usar site_name + sufixo
+    if (data?.site_name) {
+      return `${data.site_name} - Relógios Premium`
+    }
+  } catch (error) {
+    console.error('Erro ao buscar título do site:', error)
+  }
+
+  return null
+}
+
 // Gerar metadata dinamicamente com dados do banco
 export async function generateMetadata(): Promise<Metadata> {
   const siteDescription = await getSiteDescription()
   const siteName = await getSiteName()
+  const siteTitle = await getSiteTitle() || `${siteName} - Relógios Premium`
   const siteUrl = getSiteUrl()
 
   return {
     metadataBase: new URL(siteUrl),
-    title: `${siteName} - Relógios Premium`,
+    title: siteTitle,
     description: siteDescription,
     keywords: ['relógios', 'premium', 'smart watch', 'acessórios', 'moda', 'Uberlândia', siteName],
     authors: [{ name: siteName }],
     creator: siteName,
     publisher: siteName,
     openGraph: {
-      title: `${siteName} - Relógios Premium`,
+      title: siteTitle,
       description: siteDescription,
       type: 'website',
       locale: 'pt_BR',
@@ -110,13 +154,13 @@ export async function generateMetadata(): Promise<Metadata> {
           url: `${siteUrl}/og-image.jpg`, // Você pode adicionar uma imagem OG personalizada
           width: 1200,
           height: 630,
-          alt: `${siteName} - Relógios Premium`,
+          alt: siteTitle,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${siteName} - Relógios Premium`,
+      title: siteTitle,
       description: siteDescription,
       images: [`${siteUrl}/og-image.jpg`],
     },
