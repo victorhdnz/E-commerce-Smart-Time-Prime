@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Orb from '@/components/ui/Orb/Orb'
+import ColorBends from '@/components/ui/ColorBends/ColorBends'
 
 export const GlobalBackground = () => {
   const [height, setHeight] = useState('100vh')
@@ -67,7 +67,7 @@ export const GlobalBackground = () => {
           overflow: 'hidden'
         }}
       />
-      {/* Orb sobre o fundo preto */}
+      {/* ColorBends sobre o fundo preto */}
       {mounted && (
         <div 
           className="fixed pointer-events-none" 
@@ -94,11 +94,17 @@ export const GlobalBackground = () => {
             minWidth: '100%',
             minHeight: '100%'
           }}>
-            <Orb
-              hue={0}
-              hoverIntensity={0.5}
-              rotateOnHover={true}
-              forceHoverState={false}
+            <ColorBends
+              colors={['#ffffff', '#d4af37', '#f5f5f5', '#ffd700']}
+              rotation={30}
+              speed={0.3}
+              scale={1.2}
+              frequency={1.4}
+              warpStrength={1.2}
+              mouseInfluence={0.8}
+              parallax={0.6}
+              noise={0.08}
+              transparent={true}
             />
           </div>
         </div>
