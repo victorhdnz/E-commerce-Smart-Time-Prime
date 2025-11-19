@@ -421,7 +421,7 @@ export default async function Home() {
       <GlobalBackground />
       
       {/* Conteúdo com z-index acima do background */}
-      <div style={{ position: 'relative', zIndex: 2 }}>
+      <div style={{ position: 'relative', zIndex: 10 }}>
         {/* Auth Redirect Handler */}
         <AuthRedirect />
       
