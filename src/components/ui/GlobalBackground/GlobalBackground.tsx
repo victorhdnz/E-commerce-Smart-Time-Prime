@@ -9,7 +9,10 @@ export const GlobalBackground = () => {
 
   useEffect(() => {
     // Aguardar um pouco para garantir que o DOM está pronto
-    setMounted(true)
+    const timer = setTimeout(() => {
+      setMounted(true)
+    }, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
@@ -49,7 +52,24 @@ export const GlobalBackground = () => {
     }
   }, [mounted])
 
-  if (!mounted) return null
+  if (!mounted) {
+    return (
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{ 
+          width: '100vw',
+          height: '100vh',
+          zIndex: 0,
+          overflow: 'hidden',
+          backgroundColor: '#000000',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0
+        }}
+      />
+    )
+  }
 
   return (
     <div 
@@ -59,7 +79,7 @@ export const GlobalBackground = () => {
         height: height,
         zIndex: 0,
         overflow: 'hidden',
-        backgroundColor: 'transparent',
+        backgroundColor: '#000000',
         position: 'fixed',
         top: 0,
         left: 0,
@@ -71,7 +91,8 @@ export const GlobalBackground = () => {
           width: '100%',
           height: '100%',
           position: 'absolute',
-          inset: 0
+          inset: 0,
+          minHeight: '100vh'
         }}
       >
         <ColorBends
@@ -84,12 +105,13 @@ export const GlobalBackground = () => {
           mouseInfluence={0.8}
           parallax={0.6}
           noise={0.08}
-          transparent={true}
+          transparent={false}
           style={{
             width: '100%',
             height: '100%',
             position: 'absolute',
-            inset: 0
+            inset: 0,
+            minHeight: '100vh'
           }}
         />
       </div>

@@ -13,17 +13,17 @@ export function MainBackground() {
     
     if (!main) return
 
-    // Se estiver na página inicial, tornar o main, body e html transparentes
+    // Se estiver na página inicial, tornar o main, body e html pretos para o background effect aparecer
     if (pathname === '/') {
-      main.style.backgroundColor = 'transparent'
-      main.style.background = 'transparent'
+      main.style.backgroundColor = '#000000'
+      main.style.background = '#000000'
       if (body) {
-        body.style.backgroundColor = 'transparent'
-        body.style.background = 'transparent'
+        body.style.backgroundColor = '#000000'
+        body.style.background = '#000000'
       }
       if (html) {
-        html.style.backgroundColor = 'transparent'
-        html.style.background = 'transparent'
+        html.style.backgroundColor = '#000000'
+        html.style.background = '#000000'
       }
     } else {
       main.style.backgroundColor = '#ffffff'
