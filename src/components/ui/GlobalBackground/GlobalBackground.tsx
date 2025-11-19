@@ -1,7 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import ColorBends from '@/components/ui/ColorBends/ColorBends'
+import dynamic from 'next/dynamic'
+
+// Importar ColorBends dinamicamente para evitar problemas de SSR
+const ColorBends = dynamic(() => import('@/components/ui/ColorBends/ColorBends'), {
+  ssr: false,
+  loading: () => null
+})
 
 export const GlobalBackground = () => {
   const [height, setHeight] = useState('100vh')
@@ -16,6 +22,8 @@ export const GlobalBackground = () => {
   }, [])
 
   useEffect(() => {
+    if (!mounted) return
+
     // Calcular altura até o footer (excluindo o footer)
     const updateHeight = () => {
       const footer = document.querySelector('footer')
@@ -30,7 +38,7 @@ export const GlobalBackground = () => {
     }
 
     // Aguardar o DOM estar pronto
-    const timeoutId = setTimeout(updateHeight, 200)
+    const timeoutId = setTimeout(updateHeight, 300)
     updateHeight()
     
     window.addEventListener('resize', updateHeight)
@@ -48,51 +56,39 @@ export const GlobalBackground = () => {
       window.removeEventListener('scroll', updateHeight)
       observer.disconnect()
     }
-  }, [])
+  }, [mounted])
 
+  if (!mounted) return null
 
   return (
-    <>
-      {/* ColorBends com fundo próprio */}
-      {mounted && (
-        <div 
-          className="fixed pointer-events-none" 
-          style={{ 
-            backgroundColor: 'transparent',
-            width: '100vw',
-            height: height,
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 0,
-            overflow: 'hidden'
-          }}
-        >
-          <ColorBends
-            colors={['#ffffff', '#d4af37', '#f5f5f5', '#ffd700']}
-            rotation={30}
-            speed={0.3}
-            scale={1.2}
-            frequency={1.4}
-            warpStrength={1.2}
-            mouseInfluence={0.8}
-            parallax={0.6}
-            noise={0.08}
-            transparent={true}
-            style={{
-              width: '100%',
-              height: '100%',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0
-            }}
-          />
-        </div>
-      )}
-    </>
+    <div 
+      className="fixed inset-0 pointer-events-none"
+      style={{ 
+        width: '100vw',
+        height: height,
+        zIndex: 0,
+        overflow: 'hidden'
+      }}
+    >
+      <ColorBends
+        colors={['#ff5c7a', '#8a5cff', '#00ffd1']}
+        rotation={30}
+        speed={0.3}
+        scale={1.2}
+        frequency={1.4}
+        warpStrength={1.2}
+        mouseInfluence={0.8}
+        parallax={0.6}
+        noise={0.08}
+        transparent={true}
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'absolute',
+          inset: 0
+        }}
+      />
+    </div>
   )
 }
 

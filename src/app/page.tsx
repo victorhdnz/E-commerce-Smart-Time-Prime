@@ -454,7 +454,7 @@ export default async function Home() {
         // Filtrar apenas seções visíveis
         const visibleSections = sectionOrder.filter(id => sectionComponents[id] !== null)
         
-        // Obter cores de fundo das seções - sempre transparente para mostrar o Orb
+        // Obter cores de fundo das seções - sempre transparente para mostrar o background animado
         const getSectionBgColor = (id: string): string | undefined => {
           return 'transparent'
         }
