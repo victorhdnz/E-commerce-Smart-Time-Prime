@@ -183,12 +183,11 @@ export default function ColorBends({
     rendererRef.current = renderer
     // Three r152+ uses outputColorSpace and SRGBColorSpace
     renderer.outputColorSpace = THREE.SRGBColorSpace
-    renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1, 2))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
     renderer.setClearColor(0x000000, transparent ? 0 : 1)
     renderer.domElement.style.width = '100%'
     renderer.domElement.style.height = '100%'
     renderer.domElement.style.display = 'block'
-    renderer.domElement.style.pointerEvents = 'none'
     container.appendChild(renderer.domElement)
 
     const clock = new THREE.Clock()
@@ -202,15 +201,12 @@ export default function ColorBends({
 
     handleResize()
 
-    if (typeof window !== 'undefined' && typeof ResizeObserver !== 'undefined') {
+    if ('ResizeObserver' in window) {
       const ro = new ResizeObserver(handleResize)
       ro.observe(container)
       resizeObserverRef.current = ro
     } else {
-      if (typeof window !== 'undefined') {
-        const win = window as Window & typeof globalThis
-        win.addEventListener('resize', handleResize)
-      }
+      window.addEventListener('resize', handleResize)
     }
 
     const loop = () => {
@@ -239,10 +235,7 @@ export default function ColorBends({
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect()
       } else {
-        if (typeof window !== 'undefined') {
-          const win = window as Window & typeof globalThis
-          win.removeEventListener('resize', handleResize)
-        }
+        window.removeEventListener('resize', handleResize)
       }
       geometry.dispose()
       material.dispose()
