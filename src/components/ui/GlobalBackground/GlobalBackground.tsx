@@ -1,13 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
-
-// Importar ColorBends dinamicamente para evitar problemas de SSR
-const ColorBends = dynamic(() => import('@/components/ui/ColorBends/ColorBends'), {
-  ssr: false,
-  loading: () => null
-})
+import ColorBends from '@/components/ui/ColorBends/ColorBends'
 
 export const GlobalBackground = () => {
   const [height, setHeight] = useState('100vh')
@@ -15,10 +9,7 @@ export const GlobalBackground = () => {
 
   useEffect(() => {
     // Aguardar um pouco para garantir que o DOM está pronto
-    const timer = setTimeout(() => {
-      setMounted(true)
-    }, 100)
-    return () => clearTimeout(timer)
+    setMounted(true)
   }, [])
 
   useEffect(() => {
@@ -38,7 +29,7 @@ export const GlobalBackground = () => {
     }
 
     // Aguardar o DOM estar pronto
-    const timeoutId = setTimeout(updateHeight, 300)
+    const timeoutId = setTimeout(updateHeight, 500)
     updateHeight()
     
     window.addEventListener('resize', updateHeight)
@@ -67,27 +58,41 @@ export const GlobalBackground = () => {
         width: '100vw',
         height: height,
         zIndex: 0,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        backgroundColor: 'transparent',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0
       }}
     >
-      <ColorBends
-        colors={['#ff5c7a', '#8a5cff', '#00ffd1']}
-        rotation={30}
-        speed={0.3}
-        scale={1.2}
-        frequency={1.4}
-        warpStrength={1.2}
-        mouseInfluence={0.8}
-        parallax={0.6}
-        noise={0.08}
-        transparent={true}
+      <div
         style={{
           width: '100%',
           height: '100%',
           position: 'absolute',
           inset: 0
         }}
-      />
+      >
+        <ColorBends
+          colors={['#ff5c7a', '#8a5cff', '#00ffd1']}
+          rotation={30}
+          speed={0.3}
+          scale={1.2}
+          frequency={1.4}
+          warpStrength={1.2}
+          mouseInfluence={0.8}
+          parallax={0.6}
+          noise={0.08}
+          transparent={true}
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            inset: 0
+          }}
+        />
+      </div>
     </div>
   )
 }

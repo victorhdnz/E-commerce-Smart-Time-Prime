@@ -16,12 +16,26 @@ export function MainBackground() {
     // Se estiver na página inicial, tornar o main, body e html transparentes
     if (pathname === '/') {
       main.style.backgroundColor = 'transparent'
-      if (body) body.style.backgroundColor = 'transparent'
-      if (html) html.style.backgroundColor = 'transparent'
+      main.style.background = 'transparent'
+      if (body) {
+        body.style.backgroundColor = 'transparent'
+        body.style.background = 'transparent'
+      }
+      if (html) {
+        html.style.backgroundColor = 'transparent'
+        html.style.background = 'transparent'
+      }
     } else {
       main.style.backgroundColor = '#ffffff'
-      if (body) body.style.backgroundColor = '#ffffff'
-      if (html) html.style.backgroundColor = '#ffffff'
+      main.style.background = '#ffffff'
+      if (body) {
+        body.style.backgroundColor = '#ffffff'
+        body.style.background = '#ffffff'
+      }
+      if (html) {
+        html.style.backgroundColor = '#ffffff'
+        html.style.background = '#ffffff'
+      }
     }
 
     return () => {
