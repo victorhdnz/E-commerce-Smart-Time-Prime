@@ -183,7 +183,7 @@ export default function ColorBends({
     rendererRef.current = renderer
     // Three r152+ uses outputColorSpace and SRGBColorSpace
     renderer.outputColorSpace = THREE.SRGBColorSpace
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+    renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1, 2))
     renderer.setClearColor(0x000000, transparent ? 0 : 1)
     renderer.domElement.style.width = '100%'
     renderer.domElement.style.height = '100%'
@@ -202,12 +202,14 @@ export default function ColorBends({
 
     handleResize()
 
-    if ('ResizeObserver' in window) {
+    if (typeof ResizeObserver !== 'undefined') {
       const ro = new ResizeObserver(handleResize)
       ro.observe(container)
       resizeObserverRef.current = ro
     } else {
-      window.addEventListener('resize', handleResize)
+      if (typeof window !== 'undefined') {
+        window.addEventListener('resize', handleResize)
+      }
     }
 
     const loop = () => {
@@ -233,8 +235,13 @@ export default function ColorBends({
 
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
-      if (resizeObserverRef.current) resizeObserverRef.current.disconnect()
-      else window.removeEventListener('resize', handleResize)
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect()
+      } else {
+        if (typeof window !== 'undefined') {
+          window.removeEventListener('resize', handleResize)
+        }
+      }
       geometry.dispose()
       material.dispose()
       renderer.dispose()

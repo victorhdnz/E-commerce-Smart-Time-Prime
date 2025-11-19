@@ -52,22 +52,7 @@ export const GlobalBackground = () => {
 
   return (
     <>
-      {/* Fundo preto fixo */}
-      <div 
-        className="fixed pointer-events-none" 
-        style={{ 
-          backgroundColor: '#000000',
-          width: '100vw',
-          height: height,
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 0,
-          overflow: 'hidden'
-        }}
-      />
-      {/* ColorBends sobre o fundo preto */}
+      {/* ColorBends com fundo próprio */}
       {mounted && (
         <div 
           className="fixed pointer-events-none" 
@@ -79,7 +64,7 @@ export const GlobalBackground = () => {
             top: 0,
             left: 0,
             right: 0,
-            zIndex: 1,
+            zIndex: 0,
             overflow: 'hidden'
           }}
         >
@@ -104,7 +89,7 @@ export const GlobalBackground = () => {
               mouseInfluence={0.8}
               parallax={0.6}
               noise={0.08}
-              transparent={true}
+              transparent={false}
             />
           </div>
         </div>
