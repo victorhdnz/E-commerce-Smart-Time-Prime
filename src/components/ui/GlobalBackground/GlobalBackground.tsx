@@ -8,10 +8,12 @@ export const GlobalBackground = () => {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // Aguardar um pouco para garantir que o DOM está pronto
+    // Aguardar o DOM estar pronto e garantir que o container tenha dimensões
     const timer = setTimeout(() => {
-      setMounted(true)
-    }, 100)
+      if (typeof window !== 'undefined') {
+        setMounted(true)
+      }
+    }, 200)
     return () => clearTimeout(timer)
   }, [])
 
@@ -91,8 +93,12 @@ export const GlobalBackground = () => {
           width: '100%',
           height: '100%',
           position: 'absolute',
-          inset: 0,
-          minHeight: '100vh'
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          minHeight: '100vh',
+          minWidth: '100vw'
         }}
       >
         <ColorBends
@@ -110,8 +116,12 @@ export const GlobalBackground = () => {
             width: '100%',
             height: '100%',
             position: 'absolute',
-            inset: 0,
-            minHeight: '100vh'
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            minHeight: '100vh',
+            minWidth: '100vw'
           }}
         />
       </div>
