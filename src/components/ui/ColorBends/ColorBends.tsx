@@ -201,13 +201,14 @@ export default function ColorBends({
 
     handleResize()
 
-    if (typeof window !== 'undefined' && 'ResizeObserver' in window) {
+    if (typeof window !== 'undefined' && typeof ResizeObserver !== 'undefined') {
       const ro = new ResizeObserver(handleResize)
       ro.observe(container)
       resizeObserverRef.current = ro
     } else {
       if (typeof window !== 'undefined') {
-        window.addEventListener('resize', handleResize)
+        const win = window as Window & typeof globalThis
+        win.addEventListener('resize', handleResize)
       }
     }
 
@@ -238,7 +239,8 @@ export default function ColorBends({
         resizeObserverRef.current.disconnect()
       } else {
         if (typeof window !== 'undefined') {
-          window.removeEventListener('resize', handleResize)
+          const win = window as Window & typeof globalThis
+          win.removeEventListener('resize', handleResize)
         }
       }
       geometry.dispose()
