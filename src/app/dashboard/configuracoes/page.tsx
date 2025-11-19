@@ -279,14 +279,14 @@ export default function ConfiguracoesPage() {
             </div>
           </motion.div>
 
-          {/* Contact Info (Rodapé e Seção Entre em Contato) */}
+          {/* Contact Info e Redes Sociais (Rodapé e Seção Entre em Contato) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="bg-white rounded-lg shadow-md p-6"
           >
-            <h2 className="text-2xl font-bold mb-6">Informações de Contato</h2>
+            <h2 className="text-2xl font-bold mb-6">Informações de Contato e Redes Sociais</h2>
             <p className="text-sm text-gray-600 mb-6">
               Estas informações aparecerão no rodapé e na seção "Entre em Contato" da landing page.
             </p>
@@ -432,36 +432,31 @@ export default function ConfiguracoesPage() {
                   </p>
                 </div>
               </div>
-            </div>
-          </motion.div>
 
-          {/* Social Media */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">Redes Sociais</h2>
-            
-            <div className="space-y-4">
-              <Input
-                label="Instagram"
-                value={config.instagram_url}
-                onChange={(e) =>
-                  setConfig({ ...config, instagram_url: e.target.value })
-                }
-                placeholder="https://www.instagram.com/smarttimeprime"
-              />
+              {/* Redes Sociais */}
+              <div className="border-t pt-6 space-y-4">
+                <h3 className="text-lg font-semibold">Redes Sociais</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Links das redes sociais que aparecerão no rodapé.
+                </p>
+                <Input
+                  label="Instagram"
+                  value={config.instagram_url}
+                  onChange={(e) =>
+                    setConfig({ ...config, instagram_url: e.target.value })
+                  }
+                  placeholder="https://www.instagram.com/smarttimeprime"
+                />
 
-              <Input
-                label="Facebook"
-                value={config.facebook_url}
-                onChange={(e) =>
-                  setConfig({ ...config, facebook_url: e.target.value })
-                }
-                placeholder="https://www.facebook.com/smarttimeprime/"
-              />
+                <Input
+                  label="Facebook"
+                  value={config.facebook_url}
+                  onChange={(e) =>
+                    setConfig({ ...config, facebook_url: e.target.value })
+                  }
+                  placeholder="https://www.facebook.com/smarttimeprime/"
+                />
+              </div>
             </div>
           </motion.div>
 

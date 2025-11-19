@@ -1128,8 +1128,18 @@ export default function EditLandingPage() {
       }
 
       // Preparar todos os campos de settings para salvar usando o helper seguro
+      // Remover campos de contato que são editados apenas na aba "Configurações"
+      const { 
+        contact_title, 
+        contact_description, 
+        contact_email, 
+        contact_whatsapp, 
+        contact_maps_link,
+        ...landingSettings 
+      } = settings
+      
       const fieldsToSave: any = {
-        ...settings,
+        ...landingSettings,
         timer_end_date: timerEndDateISO, // Usar a data convertida
       }
 
@@ -1453,7 +1463,7 @@ export default function EditLandingPage() {
             </div>
           </motion.div>
 
-          {/* Contact Section (Footer) */}
+          {/* Contact Section (Footer) - Apenas controle de visibilidade */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1461,7 +1471,12 @@ export default function EditLandingPage() {
             className="bg-white rounded-lg shadow-md p-6"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Seção de Contato (Footer)</h2>
+              <div>
+                <h2 className="text-2xl font-bold">Seção de Contato</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Para editar as informações de contato, acesse a aba "Configurações".
+                </p>
+              </div>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -1476,67 +1491,6 @@ export default function EditLandingPage() {
             </div>
             
             <div className="space-y-4">
-              <Input
-                label="Título da Seção"
-                value={settings.contact_title}
-                onChange={(e) =>
-                  setSettings({ ...settings, contact_title: e.target.value })
-                }
-                placeholder="Ex: Entre em Contato"
-              />
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Descrição
-                </label>
-                <textarea
-                  value={settings.contact_description}
-                  onChange={(e) =>
-                    setSettings({ ...settings, contact_description: e.target.value })
-                  }
-                  placeholder="Mensagem de contato"
-                  rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                />
-              </div>
-
-              <Input
-                label="E-mail"
-                type="email"
-                value={settings.contact_email}
-                onChange={(e) =>
-                  setSettings({ ...settings, contact_email: e.target.value })
-                }
-                placeholder="contato@smarttimeprime.com.br"
-              />
-              <p className="text-xs text-gray-500 -mt-2">
-                Este e-mail aparecerá na seção de Contato.
-              </p>
-
-              <Input
-                label="WhatsApp"
-                value={settings.contact_whatsapp}
-                onChange={(e) =>
-                  setSettings({ ...settings, contact_whatsapp: e.target.value })
-                }
-                placeholder="+55 34 8413-6291"
-              />
-              <p className="text-xs text-gray-500 -mt-2">
-                Este WhatsApp aparecerá no rodapé e na seção de Contato.
-              </p>
-
-              <Input
-                label="Link do Google Maps"
-                value={settings.contact_maps_link}
-                onChange={(e) =>
-                  setSettings({ ...settings, contact_maps_link: e.target.value })
-                }
-                placeholder="https://maps.app.goo.gl/..."
-              />
-              <p className="text-xs text-gray-500 -mt-2">
-                Link do Google Maps para a localização da loja
-              </p>
-
               {/* Visibilidade de elementos individuais */}
               <div className="border rounded-lg p-4 bg-gray-50">
                 <p className="text-sm font-medium mb-3">Visibilidade de elementos:</p>
