@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useEffect, useState, Fragment as ReactFragment } from 'react'
 import Image from 'next/image'
 import { BannerCarousel } from './BannerCarousel'
+import StarBorder from '@/components/ui/StarBorder/StarBorder'
 
 interface HeroSectionProps {
   title?: string
@@ -261,14 +262,28 @@ export const HeroSection = ({
       >
         {ctaLink ? (
           <Link href={ctaLink}>
-            <Button size="lg" className="text-lg px-8 py-4">
-              {ctaText.replace(/Garantir agora!?\s*#####/gi, '').replace(/#####/g, '').trim()}
-            </Button>
+            <StarBorder
+              as="div"
+              color="rgba(255, 255, 255, 0.8)"
+              speed="5s"
+              className="cursor-pointer"
+            >
+              <span className="text-lg font-semibold">
+                {ctaText.replace(/Garantir agora!?\s*#####/gi, '').replace(/#####/g, '').trim()}
+              </span>
+            </StarBorder>
           </Link>
         ) : (
-          <Button size="lg" className="text-lg px-8 py-4">
-            {ctaText.replace(/Garantir agora!?\s*#####/gi, '').replace(/#####/g, '').trim()}
-          </Button>
+          <StarBorder
+            as="button"
+            color="rgba(255, 255, 255, 0.8)"
+            speed="5s"
+            className="cursor-pointer"
+          >
+            <span className="text-lg font-semibold">
+              {ctaText.replace(/Garantir agora!?\s*#####/gi, '').replace(/#####/g, '').trim()}
+            </span>
+          </StarBorder>
         )}
       </motion.div>
     ) : null,

@@ -10,6 +10,7 @@ import { ValuePackage } from '@/components/landing/ValuePackage'
 import { StorySection } from '@/components/landing/StorySection'
 import { AboutUsSection } from '@/components/landing/AboutUsSection'
 import { ContactSection } from '@/components/landing/ContactSection'
+import { FeaturesSection } from '@/components/landing/FeaturesSection'
 import { SectionTransition } from '@/components/landing/SectionTransition'
 import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
 import { GlobalBackground } from '@/components/ui/GlobalBackground/GlobalBackground'
@@ -84,7 +85,7 @@ async function getPageData() {
 
     // Extrair ordem das seções
     const sectionOrderData = sectionOrderResult.status === 'fulfilled' ? sectionOrderResult.value.data : null
-    let sectionOrder: string[] = ['hero', 'media_showcase', 'value_package', 'social_proof', 'story', 'whatsapp_vip', 'about_us', 'contact', 'faq']
+    let sectionOrder: string[] = ['hero', 'media_showcase', 'value_package', 'social_proof', 'story', 'whatsapp_vip', 'about_us', 'features', 'contact', 'faq']
     if (sectionOrderData?.value && Array.isArray(sectionOrderData.value)) {
       sectionOrder = sectionOrderData.value
     }
@@ -377,6 +378,16 @@ export default async function Home() {
         }}
       />
     ) : null,
+    features: (
+      <FeaturesSection
+        key="features"
+        title="Por que escolher a Smart Time Prime?"
+        backgroundColor="transparent"
+        elementVisibility={{
+          title: true,
+        }}
+      />
+    ),
     contact: settings.section_contact_visible !== false ? (
       <ContactSection
         key="contact"

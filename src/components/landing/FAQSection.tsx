@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { FAQ } from '@/types'
+import SpotlightCard from '@/components/ui/SpotlightCard/SpotlightCard'
 
 interface FAQSectionProps {
   faqs: FAQ[]
@@ -47,15 +48,18 @@ export const FAQSection = ({
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="border border-white/20 rounded-lg overflow-hidden"
             >
-              <button
-                onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full px-6 py-4 flex items-center justify-between bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-colors border border-white/20 rounded-lg"
+              <SpotlightCard
+                className="border-white/20 bg-white/10 backdrop-blur-sm p-0 overflow-visible"
+                spotlightColor="rgba(255, 255, 255, 0.15)"
               >
-                <span className="text-lg font-semibold text-left text-white">
-                  {faq.question}
-                </span>
+                <button
+                  onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                >
+                  <span className="text-lg font-semibold text-left text-white">
+                    {faq.question}
+                  </span>
                   <motion.div
                     animate={{ rotate: openIndex === index ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
@@ -63,23 +67,24 @@ export const FAQSection = ({
                   >
                     <ChevronDown size={24} />
                   </motion.div>
-              </button>
+                </button>
 
-              <AnimatePresence>
-                {openIndex === index && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-6 py-4 bg-white/5 backdrop-blur-sm text-white/90 border-t border-white/10">
-                      {faq.answer}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                <AnimatePresence>
+                  {openIndex === index && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-6 py-4 bg-white/5 backdrop-blur-sm text-white/90 border-t border-white/10">
+                        {faq.answer}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </SpotlightCard>
             </motion.div>
           ))}
         </div>
