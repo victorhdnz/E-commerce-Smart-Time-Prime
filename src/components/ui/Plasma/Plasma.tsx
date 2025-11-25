@@ -112,7 +112,7 @@ export const Plasma = ({
     const renderer = new Renderer({
       alpha: true,
       antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
+      dpr: Math.min(window.devicePixelRatio || 1, 1.5)
     });
     const gl = renderer.gl;
     
@@ -145,8 +145,17 @@ export const Plasma = ({
 
     const mesh = new Mesh(gl, { geometry, program });
 
+    let mouseMoveTimeout: number | null = null;
     const handleMouseMove = (e: MouseEvent) => {
       if (!mouseInteractive || !containerRef.current) return;
+      
+      // Throttle mouse updates para melhor performance
+      if (mouseMoveTimeout) return;
+      
+      mouseMoveTimeout = window.setTimeout(() => {
+        mouseMoveTimeout = null;
+      }, 16); // ~60fps
+      
       const rect = containerRef.current.getBoundingClientRect();
       mousePos.current.x = e.clientX - rect.left;
       mousePos.current.y = e.clientY - rect.top;
@@ -156,7 +165,7 @@ export const Plasma = ({
     };
 
     if (mouseInteractive && containerRef.current) {
-      containerRef.current.addEventListener('mousemove', handleMouseMove);
+      containerRef.current.addEventListener('mousemove', handleMouseMove, { passive: true });
     }
 
     const setSize = () => {
@@ -199,6 +208,9 @@ export const Plasma = ({
 
     return () => {
       cancelAnimationFrame(raf);
+      if (mouseMoveTimeout) {
+        clearTimeout(mouseMoveTimeout);
+      }
       ro.disconnect();
       if (mouseInteractive && containerRef.current) {
         containerRef.current.removeEventListener('mousemove', handleMouseMove);

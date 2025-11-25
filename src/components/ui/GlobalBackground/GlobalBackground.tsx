@@ -91,12 +91,12 @@ export const GlobalBackground = () => {
         }}
       >
         <Plasma 
-          color="#ff6b35"
-          speed={0.6}
+          color="#9333ea"
+          speed={0.3}
           direction="forward"
-          scale={1.1}
-          opacity={0.8}
-          mouseInteractive={true}
+          scale={1.0}
+          opacity={0.6}
+          mouseInteractive={false}
         />
       </div>
     </div>
