@@ -115,6 +115,9 @@ export const Plasma = ({
       dpr: Math.min(window.devicePixelRatio || 1, 2)
     });
     const gl = renderer.gl;
+    
+    if (!(gl.canvas instanceof HTMLCanvasElement)) return;
+    
     const canvas = gl.canvas;
     canvas.style.display = 'block';
     canvas.style.width = '100%';
