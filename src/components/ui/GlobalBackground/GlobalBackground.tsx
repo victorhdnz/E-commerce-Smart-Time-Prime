@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { BackgroundGradientAnimation } from '@/components/ui/BackgroundGradientAnimation/BackgroundGradientAnimation'
+
+const Plasma = dynamic(() => import('@/components/ui/Plasma/Plasma'), {
+  ssr: false,
+  loading: () => null
+})
 
 export const GlobalBackground = () => {
   const [height, setHeight] = useState('100vh')
@@ -73,18 +77,28 @@ export const GlobalBackground = () => {
         right: 0
       }}
     >
-      <BackgroundGradientAnimation
-        firstColor="242, 0, 137"
-        secondColor="209, 0, 209"
-        thirdColor="161, 0, 242"
-        fourthColor="45, 0, 247"
-        fifthColor="242, 0, 137"
-        pointerColor="209, 0, 209"
-        size="80%"
-        blendingValue="hard-light"
-        interactive={true}
-        containerClassName="pointer-events-none"
-      />
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          minHeight: '100vh',
+          minWidth: '100vw'
+        }}
+      >
+        <Plasma 
+          color="#ff6b35"
+          speed={0.6}
+          direction="forward"
+          scale={1.1}
+          opacity={0.8}
+          mouseInteractive={true}
+        />
+      </div>
     </div>
   )
 }
