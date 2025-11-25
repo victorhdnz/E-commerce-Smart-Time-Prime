@@ -13,7 +13,7 @@ export function MainBackground() {
     
     if (!main) return
 
-    // Se estiver na página inicial, tornar o main, body e html pretos para o Orb aparecer
+    // Se estiver na página inicial, tornar o main, body e html pretos para o background aparecer
     if (pathname === '/') {
       main.style.backgroundColor = '#000000'
       main.style.background = '#000000'

@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-
-const Orb = dynamic(() => import('@/components/ui/Orb/Orb'), {
-  ssr: false,
-  loading: () => null
-})
+import { BackgroundGradientAnimation } from '@/components/ui/BackgroundGradientAnimation/BackgroundGradientAnimation'
 
 export const GlobalBackground = () => {
   const [height, setHeight] = useState('100vh')
@@ -60,22 +56,7 @@ export const GlobalBackground = () => {
   }, [mounted])
 
   if (!mounted) {
-    return (
-      <div 
-        className="fixed inset-0 pointer-events-none"
-        style={{ 
-          width: '100vw',
-          height: '100vh',
-          zIndex: 0,
-          overflow: 'hidden',
-          backgroundColor: '#000000',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0
-        }}
-      />
-    )
+    return null
   }
 
   return (
@@ -86,32 +67,24 @@ export const GlobalBackground = () => {
         height: height,
         zIndex: 0,
         overflow: 'hidden',
-        backgroundColor: '#000000',
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0
       }}
     >
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          minHeight: '100vh',
-          minWidth: '100vw'
-        }}
-      >
-        <Orb
-          hue={0}
-          hoverIntensity={0.2}
-          rotateOnHover={true}
-        />
-      </div>
+      <BackgroundGradientAnimation
+        firstColor="242, 0, 137"
+        secondColor="209, 0, 209"
+        thirdColor="161, 0, 242"
+        fourthColor="45, 0, 247"
+        fifthColor="242, 0, 137"
+        pointerColor="209, 0, 209"
+        size="80%"
+        blendingValue="hard-light"
+        interactive={true}
+        containerClassName="pointer-events-none"
+      />
     </div>
   )
 }
