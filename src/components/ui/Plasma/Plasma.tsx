@@ -110,7 +110,6 @@ export const Plasma = ({
     const directionMultiplier = direction === 'reverse' ? -1.0 : 1.0;
 
     const renderer = new Renderer({
-      webgl: 2,
       alpha: true,
       antialias: false,
       dpr: Math.min(window.devicePixelRatio || 1, 2)
