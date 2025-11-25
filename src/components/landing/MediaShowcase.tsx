@@ -76,7 +76,7 @@ export const MediaShowcase = ({
   // Sempre renderizar a seção, mas mostrar placeholders se não houver conteúdo
 
   return (
-    <section className="py-12 text-white" style={{ backgroundColor: 'transparent' }}>
+    <section className="py-12 text-gray-900" style={{ backgroundColor: 'transparent' }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {elementVisibility.title && (
           <motion.div
@@ -107,10 +107,10 @@ export const MediaShowcase = ({
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white/10 backdrop-blur-md rounded-lg p-4 md:p-6 text-center hover:bg-white/20 transition-colors"
+                className="bg-gray-100 rounded-lg p-4 md:p-6 text-center hover:bg-gray-200 transition-colors"
               >
                 <div className="text-4xl md:text-5xl mb-3">{feature.icon}</div>
-                <p className="text-sm md:text-base text-gray-200">{feature.text}</p>
+                <p className="text-sm md:text-base text-gray-700">{feature.text}</p>
               </motion.div>
             ))}
           </motion.div>

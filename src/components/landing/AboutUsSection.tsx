@@ -80,8 +80,8 @@ export const AboutUsSection = ({
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">{title}</h2>
-            <div className="w-24 h-1 bg-white mx-auto" />
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">{title}</h2>
+            <div className="w-24 h-1 bg-gray-900 mx-auto" />
           </motion.div>
         )}
 
@@ -94,7 +94,7 @@ export const AboutUsSection = ({
               viewport={{ once: true }}
               className="text-center mb-12"
             >
-              <p className="text-lg md:text-xl text-white/90 whitespace-pre-line leading-relaxed">
+              <p className="text-lg md:text-xl text-gray-700 whitespace-pre-line leading-relaxed">
                 {description}
               </p>
             </motion.div>

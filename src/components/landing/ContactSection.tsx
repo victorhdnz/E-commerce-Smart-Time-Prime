@@ -50,16 +50,16 @@ export function ContactSection({
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           {elementVisibility.title && (
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">
               {title || 'Entre em Contato'}
             </h2>
           )}
           {elementVisibility.description && (
             <>
-              <p className="text-xl text-white/80">
+              <p className="text-xl text-gray-700">
                 {description || 'Estamos aqui para ajudar você!'}
               </p>
-              <div className="w-24 h-1 bg-white mx-auto mt-6" />
+              <div className="w-24 h-1 bg-gray-900 mx-auto mt-6" />
             </>
           )}
         </div>

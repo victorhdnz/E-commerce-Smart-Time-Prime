@@ -135,7 +135,7 @@ export const ValuePackage = ({
             className="text-center mb-16"
           >
             <motion.h2 
-              className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white via-gray-200 to-white bg-clip-text text-transparent"
+              className="text-4xl md:text-6xl font-bold mb-6 text-gray-900"
               initial={{ scale: 0.95 }}
               whileInView={{ scale: 1 }}
               viewport={{ once: true }}
@@ -144,7 +144,7 @@ export const ValuePackage = ({
               {title}
             </motion.h2>
             <motion.div 
-              className="w-32 h-1.5 bg-gradient-to-r from-transparent via-white to-transparent mx-auto rounded-full"
+              className="w-32 h-1.5 bg-gradient-to-r from-transparent via-gray-400 to-transparent mx-auto rounded-full"
               initial={{ width: 0 }}
               whileInView={{ width: 128 }}
               viewport={{ once: true }}
