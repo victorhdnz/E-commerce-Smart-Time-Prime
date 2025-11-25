@@ -13,17 +13,17 @@ export function MainBackground() {
     
     if (!main) return
 
-    // Se estiver na página inicial, manter branco (cores são definidas por seção)
+    // Se estiver na página inicial, usar preto como base (seções terão suas próprias cores)
     if (pathname === '/') {
-      main.style.backgroundColor = '#ffffff'
-      main.style.background = '#ffffff'
+      main.style.backgroundColor = '#000000'
+      main.style.background = '#000000'
       if (body) {
-        body.style.backgroundColor = '#ffffff'
-        body.style.background = '#ffffff'
+        body.style.backgroundColor = '#000000'
+        body.style.background = '#000000'
       }
       if (html) {
-        html.style.backgroundColor = '#ffffff'
-        html.style.background = '#ffffff'
+        html.style.backgroundColor = '#000000'
+        html.style.background = '#000000'
       }
     } else {
       main.style.backgroundColor = '#ffffff'

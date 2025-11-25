@@ -1,7 +1,6 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { AnimatedGradientBackground } from '@/components/ui/AnimatedGradientBackground/AnimatedGradientBackground'
 
 interface SectionTransitionProps {
   children: ReactNode
@@ -85,7 +84,10 @@ export function SectionTransition({
   const finalBgColor = backgroundColor
 
   return (
-    <AnimatedGradientBackground color={finalBgColor} className={className}>
+    <div 
+      className={`relative ${className}`}
+      style={{ backgroundColor: finalBgColor }}
+    >
       {/* Sombreamento sutil superior */}
       {needsTopTransition && previousBgColor && backgroundColor && (
         <div
@@ -110,7 +112,7 @@ export function SectionTransition({
           }}
         />
       )}
-    </AnimatedGradientBackground>
+    </div>
   )
 }
 

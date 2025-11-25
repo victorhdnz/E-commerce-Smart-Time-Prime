@@ -455,15 +455,15 @@ export default async function Home() {
         // Obter cores de fundo das seções
         const getSectionBgColor = (id: string): string => {
           const colorMap: Record<string, string> = {
-            hero: '#ffffff',
+            hero: '#000000', // Preto para hero (texto branco)
             media_showcase: '#ffffff',
             value_package: '#ffffff',
-            social_proof: '#ffffff',
+            social_proof: '#000000', // Preto para social proof (texto branco)
             story: '#ffffff',
-            whatsapp_vip: '#10b981', // Verde para WhatsApp VIP (mesma cor do WhatsApp)
+            whatsapp_vip: '#10b981', // Verde para WhatsApp VIP
             about_us: '#ffffff',
             contact: '#ffffff',
-            faq: '#ffffff',
+            faq: '#000000', // Preto para FAQ (texto branco)
           }
           return colorMap[id] || '#ffffff'
         }
