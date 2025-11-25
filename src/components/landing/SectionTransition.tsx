@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { AnimatedGradientBackground } from '@/components/ui/AnimatedGradientBackground/AnimatedGradientBackground'
 
 interface SectionTransitionProps {
   children: ReactNode
@@ -80,14 +81,11 @@ export function SectionTransition({
   const needsTopTransition = !isFirst && shouldApplyTransition(previousBgColor, backgroundColor)
   const needsBottomTransition = !isLast && shouldApplyTransition(backgroundColor, nextBgColor)
 
-  // Tornar TODAS as seções transparentes para o Prism aparecer em toda a página
-  const finalBgColor = 'transparent'
+  // Usar a cor de background fornecida
+  const finalBgColor = backgroundColor
 
   return (
-    <div 
-      className={`relative ${className}`}
-      style={{ backgroundColor: finalBgColor }}
-    >
+    <AnimatedGradientBackground color={finalBgColor} className={className}>
       {/* Sombreamento sutil superior */}
       {needsTopTransition && previousBgColor && backgroundColor && (
         <div
@@ -112,7 +110,7 @@ export function SectionTransition({
           }}
         />
       )}
-    </div>
+    </AnimatedGradientBackground>
   )
 }
 

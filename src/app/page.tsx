@@ -12,7 +12,6 @@ import { AboutUsSection } from '@/components/landing/AboutUsSection'
 import { ContactSection } from '@/components/landing/ContactSection'
 import { SectionTransition } from '@/components/landing/SectionTransition'
 import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
-import { GlobalBackground } from '@/components/ui/GlobalBackground/GlobalBackground'
 import { createServerClient } from '@/lib/supabase/server'
 
 export const revalidate = 10 // Revalidar a cada 10 segundos para atualizações mais rápidas
@@ -418,7 +417,6 @@ export default async function Home() {
   return (
     <>
       {/* Global Background - Apenas na página inicial */}
-      <GlobalBackground />
       
       {/* Conteúdo com z-index acima do background */}
       <div style={{ position: 'relative', zIndex: 10 }}>
@@ -454,9 +452,20 @@ export default async function Home() {
         // Filtrar apenas seções visíveis
         const visibleSections = sectionOrder.filter(id => sectionComponents[id] !== null)
         
-        // Obter cores de fundo das seções - sempre transparente para mostrar o background animado
-        const getSectionBgColor = (id: string): string | undefined => {
-          return 'transparent'
+        // Obter cores de fundo das seções
+        const getSectionBgColor = (id: string): string => {
+          const colorMap: Record<string, string> = {
+            hero: '#ffffff',
+            media_showcase: '#ffffff',
+            value_package: '#ffffff',
+            social_proof: '#ffffff',
+            story: '#ffffff',
+            whatsapp_vip: '#10b981', // Verde para WhatsApp VIP (mesma cor do WhatsApp)
+            about_us: '#ffffff',
+            contact: '#ffffff',
+            faq: '#ffffff',
+          }
+          return colorMap[id] || '#ffffff'
         }
 
         return visibleSections.map((sectionId, index) => {

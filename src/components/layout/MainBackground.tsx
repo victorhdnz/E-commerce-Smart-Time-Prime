@@ -13,17 +13,17 @@ export function MainBackground() {
     
     if (!main) return
 
-    // Se estiver na página inicial, tornar o main, body e html pretos para o background aparecer
+    // Se estiver na página inicial, manter branco (cores são definidas por seção)
     if (pathname === '/') {
-      main.style.backgroundColor = '#000000'
-      main.style.background = '#000000'
+      main.style.backgroundColor = '#ffffff'
+      main.style.background = '#ffffff'
       if (body) {
-        body.style.backgroundColor = '#000000'
-        body.style.background = '#000000'
+        body.style.backgroundColor = '#ffffff'
+        body.style.background = '#ffffff'
       }
       if (html) {
-        html.style.backgroundColor = '#000000'
-        html.style.background = '#000000'
+        html.style.backgroundColor = '#ffffff'
+        html.style.background = '#ffffff'
       }
     } else {
       main.style.backgroundColor = '#ffffff'
