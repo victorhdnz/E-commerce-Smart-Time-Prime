@@ -1,6 +1,6 @@
-# 🛍️ Smart Time Prime
+# 🛍️ E-commerce Template
 
-> E-commerce Premium de Relógios com Design Moderno e Dashboard Administrativo Completo
+> Template completo e reutilizável de E-commerce com Design Moderno e Dashboard Administrativo
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
@@ -12,7 +12,13 @@
 
 ## ✨ Sobre o Projeto
 
-**Smart Time Prime** é um e-commerce completo e moderno, desenvolvido com as melhores tecnologias do mercado. Oferece uma experiência de compra excepcional com design elegante, animações suaves e funcionalidades avançadas.
+Este é um **template completo de e-commerce** desenvolvido com as melhores tecnologias do mercado. Pode ser facilmente adaptado para qualquer tipo de negócio, oferecendo uma experiência de compra excepcional com design elegante, animações suaves e funcionalidades avançadas.
+
+**🎯 Perfeito para:**
+- Lojas de produtos físicos
+- E-commerce de qualquer nicho
+- Empresas que precisam de uma solução completa e personalizável
+- Projetos que precisam ser replicados para múltiplos clientes
 
 ### 🎯 Principais Destaques
 
@@ -21,7 +27,7 @@
 - 📱 **100% Responsivo** - Funciona perfeitamente em todos os dispositivos
 - 🎛️ **Dashboard Admin** - Gerenciamento completo via interface visual
 - 🎭 **Layouts Sazonais** - Temas para Black Friday, Natal e outras datas
-- 💰 **Preços Dinâmicos** - Preços diferentes para local e nacional
+- 💰 **Preços Dinâmicos** - Sistema flexível de preços (local/nacional)
 - 🎁 **Sistema de Brindes** - Brindes automáticos vinculados aos produtos
 - 🔐 **Login Social** - Autenticação rápida com Google OAuth
 
@@ -46,16 +52,11 @@ npm run dev
 http://localhost:3000
 ```
 
-### 📚 Documentação Completa
+### 📚 Documentação
 
 | Documento | Descrição |
 |-----------|-----------|
-| **[START_HERE.md](START_HERE.md)** | ⭐ **Comece aqui!** Guia completo de boas-vindas |
-| **[QUICKSTART.md](QUICKSTART.md)** | ⚡ Configure em 5 minutos |
-| **[SETUP.md](SETUP.md)** | 🔧 Instalação detalhada passo a passo |
-| **[DEPLOYMENT.md](DEPLOYMENT.md)** | 🚀 Como fazer deploy na Hostinger |
-| **[FEATURES.md](FEATURES.md)** | 📋 Lista completa de funcionalidades |
-| **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** | 📊 Resumo técnico do projeto |
+| **[REPLICACAO_PROJETO.md](REPLICACAO_PROJETO.md)** | 📋 **Guia completo de replicação** - Configure tudo do zero |
 
 ---
 
@@ -72,7 +73,7 @@ http://localhost:3000
 ### 💎 Recursos Premium
 
 - 🎁 **Brindes Automáticos** - Produtos ganham brindes configuráveis
-- 💰 **Preços Dinâmicos** - Uberlândia tem preço local, outros nacional
+- 💰 **Preços Dinâmicos** - Sistema flexível de preços (local/nacional)
 - 🔒 **Login para Ver Preço** - Preços revelados apenas após autenticação
 - ⏱️ **Cronômetros** - Contagem regressiva para ofertas
 - ⭐ **Avaliações** - Sistema de reviews com 5 estrelas
@@ -128,15 +129,14 @@ Google OAuth    ViaCEP    Melhor Envio
 ## 📁 Estrutura do Projeto
 
 ```
-smart-time-prime/
+e-commerce-template/
 ├── 📚 Documentação
-│   ├── START_HERE.md          ⭐ Comece aqui
-│   ├── QUICKSTART.md          5 minutos
-│   ├── SETUP.md               Instalação
-│   └── DEPLOYMENT.md          Deploy
+│   ├── README.md              Este arquivo
+│   └── REPLICACAO_PROJETO.md  Guia completo de replicação
 │
 ├── 🗄️ supabase/
-│   └── schema.sql             Script banco de dados
+│   ├── schema_completo.sql    Script completo do banco de dados
+│   └── setup_storage_policies.sql  Políticas de storage
 │
 ├── 📱 src/
 │   ├── app/                   Páginas (App Router)
@@ -162,6 +162,7 @@ smart-time-prime/
 │
 └── 📄 Configuração
     ├── package.json
+    ├── .env.example         Template de variáveis
     ├── tsconfig.json
     ├── tailwind.config.js
     └── next.config.js
@@ -179,15 +180,22 @@ smart-time-prime/
 | `products` | Catálogo de produtos |
 | `product_colors` | Variações de cor |
 | `product_gifts` | Brindes vinculados |
+| `product_combos` | Combos de produtos |
+| `combo_items` | Itens dos combos |
 | `addresses` | Endereços de entrega |
 | `orders` | Pedidos realizados |
 | `order_items` | Itens dos pedidos |
 | `reviews` | Avaliações de produtos |
+| `coupons` | Cupons de desconto |
+| `coupon_usage` | Uso de cupons |
+| `favorites` | Lista de desejos |
 | `faqs` | Perguntas frequentes |
 | `seasonal_layouts` | Layouts temáticos |
 | `landing_sections` | Seções da home |
 | `timers` | Cronômetros |
 | `site_settings` | Configurações globais |
+| `site_terms` | Termos e políticas |
+| `whatsapp_vip_registrations` | Cadastros VIP |
 
 ### 3 Buckets de Storage
 
@@ -199,23 +207,26 @@ smart-time-prime/
 
 ## 🎯 Casos de Uso
 
-### Para Lojistas
+### Para Empresas
 - Venda online com interface profissional
-- Dashboard para gerenciar tudo
-- Campanhas sazonais (Black Friday, Natal)
-- Sem necessidade de programação
+- Dashboard completo para gerenciar produtos, pedidos e configurações
+- Campanhas sazonais (Black Friday, Natal, etc.)
+- Sistema totalmente personalizável sem necessidade de programação
+- Fácil replicação para múltiplos clientes/negócios
 
 ### Para Desenvolvedores
-- Código limpo e bem documentado
+- Template limpo e bem documentado
 - TypeScript para segurança de tipos
-- Componentes reutilizáveis
+- Componentes reutilizáveis e modulares
 - Fácil de customizar e estender
+- Guia completo de replicação incluído
+- SQL consolidado e pronto para uso
 
-### Para Clientes
-- Experiência de compra fluida
-- Login rápido com Google
+### Para Clientes Finais
+- Experiência de compra fluida e intuitiva
+- Login rápido com Google OAuth
 - Rastreamento de pedidos
-- Interface responsiva
+- Interface 100% responsiva
 
 ---
 
@@ -226,7 +237,7 @@ smart-time-prime/
 - 📄 **14** páginas completas
 - 🗄️ **13** tabelas no banco
 - ✨ **200+** funcionalidades
-- 📚 **8** arquivos de documentação
+- 📚 Documentação completa de replicação
 
 ---
 
@@ -246,15 +257,17 @@ GOOGLE_CLIENT_SECRET=GOCSPX-xxx
 
 # Configurações
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_FRETE_UBERLANDIA=15.00
+NEXT_PUBLIC_SITE_NAME=Nome da Sua Empresa
 ```
 
 ### 2️⃣ Banco de Dados
 
 ```bash
 # Execute no SQL Editor do Supabase
-cat supabase/schema.sql
+# Use o arquivo: supabase/schema_completo.sql
 ```
+
+📋 **Veja o guia completo**: [REPLICACAO_PROJETO.md](REPLICACAO_PROJETO.md)
 
 ### 3️⃣ Storage
 
@@ -272,32 +285,43 @@ Crie 3 buckets **públicos**:
 npm run build
 ```
 
-### Hostinger
-Veja o guia completo em **[DEPLOYMENT.md](DEPLOYMENT.md)**
-
-### Outras Plataformas
-- ✅ Vercel
+### Plataformas Suportadas
+- ✅ **Vercel** (Recomendado) - Veja guia completo em [REPLICACAO_PROJETO.md](REPLICACAO_PROJETO.md#7-deploy)
 - ✅ Netlify
 - ✅ VPS próprio
+- ✅ Qualquer plataforma com suporte a Node.js
 
 ---
 
-## 📸 Screenshots
+## 📸 Características Visuais
 
 ### Landing Page
-Design moderno com hero animado, cronômetro e produtos em destaque.
+Design moderno e personalizável com hero animado, cronômetro para promoções e produtos em destaque.
 
-### Dashboard
-Interface administrativa completa para gerenciar produtos, FAQ e layouts.
+### Dashboard Administrativo
+Interface completa para gerenciar produtos, pedidos, FAQ, layouts sazonais e todas as configurações do site.
 
 ### Checkout
-Fluxo de compra intuitivo com cálculo automático de frete.
+Fluxo de compra intuitivo com cálculo automático de frete, múltiplas formas de pagamento e validações em tempo real.
 
 ---
 
-## 🤝 Contribuindo
+## 🔄 Replicação e Personalização
 
-Este é um projeto comercial. Para sugestões ou melhorias, abra uma issue.
+Este template foi projetado para ser facilmente replicado e personalizado para diferentes empresas e negócios.
+
+### Como Replicar
+1. Siga o guia completo em **[REPLICACAO_PROJETO.md](REPLICACAO_PROJETO.md)**
+2. Configure as variáveis de ambiente
+3. Execute o SQL completo
+4. Personalize cores, textos e imagens
+5. Configure integrações (Stripe, Google OAuth, etc.)
+
+### Personalização Rápida
+- **Cores**: Configure no dashboard ou edite `tailwind.config.js`
+- **Textos**: Edite via dashboard ou diretamente no banco de dados
+- **Imagens**: Upload via dashboard ou Cloudinary
+- **Funcionalidades**: Código modular facilita adicionar/remover features
 
 ---
 
@@ -310,38 +334,64 @@ MIT License - veja [LICENSE](LICENSE) para detalhes.
 ## 🆘 Suporte
 
 ### Documentação
-- [START_HERE.md](START_HERE.md) - Início
-- [QUICKSTART.md](QUICKSTART.md) - Setup rápido
-- [SETUP.md](SETUP.md) - Instalação completa
+- [REPLICACAO_PROJETO.md](REPLICACAO_PROJETO.md) - Guia completo de configuração e replicação
 
 ### Problemas Comuns
-Consulte a seção de troubleshooting em [SETUP.md](SETUP.md)
+Consulte a seção de troubleshooting em [REPLICACAO_PROJETO.md](REPLICACAO_PROJETO.md#-troubleshooting)
 
 ---
 
-## ✨ Créditos
+## 🛠️ Tecnologias Utilizadas
 
-Desenvolvido com ❤️ usando:
-- **Cursor AI** - IDE inteligente
-- **Next.js** - Framework React
-- **Supabase** - Backend completo
-- **Tailwind CSS** - Estilização
+- **Next.js 14** - Framework React com App Router
+- **TypeScript** - Tipagem estática
+- **Supabase** - Backend completo (PostgreSQL + Auth + Storage)
+- **Tailwind CSS** - Estilização utilitária
+- **Framer Motion** - Animações
+- **Stripe** - Pagamentos (estrutura preparada)
+- **Cloudinary** - Otimização de imagens
 
 ---
 
 ## 🎉 Comece Agora!
 
 ```bash
+# 1. Clone o repositório
 git clone seu-repositorio
-cd smart-time-prime
+cd e-commerce-template
+
+# 2. Instale as dependências
 npm install
-cp .env.local.example .env.local
+
+# 3. Configure as variáveis de ambiente
+cp .env.example .env.local
+# Edite .env.local com suas credenciais
+
+# 4. Execute o projeto
 npm run dev
 ```
 
-👉 Leia **[START_HERE.md](START_HERE.md)** para configuração completa!
+👉 **Leia o guia completo**: **[REPLICACAO_PROJETO.md](REPLICACAO_PROJETO.md)**
 
 ---
 
-**Smart Time Prime** © 2025 - Todos os direitos reservados.
+## 📋 Checklist de Configuração
+
+Após clonar o projeto:
+
+- [ ] Configurar Supabase (criar projeto e executar SQL)
+- [ ] Configurar Google OAuth
+- [ ] Configurar Cloudinary (opcional, para upload de imagens)
+- [ ] Configurar Stripe (para pagamentos)
+- [ ] Configurar variáveis de ambiente
+- [ ] Criar buckets no Supabase Storage
+- [ ] Configurar primeiro administrador
+- [ ] Personalizar textos e imagens
+- [ ] Fazer deploy
+
+**📖 Veja detalhes de cada passo em [REPLICACAO_PROJETO.md](REPLICACAO_PROJETO.md)**
+
+---
+
+**E-commerce Template** - Template reutilizável para qualquer negócio
 
