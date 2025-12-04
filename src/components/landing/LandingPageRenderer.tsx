@@ -117,28 +117,28 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
   const fonts = styles.fonts || layout.default_fonts || {}
 
   // Aplicar fontes via CSS variables
-  const fontStyles: React.CSSProperties = {}
+  const fontStyles: Record<string, string> = {}
   if (fonts.heading) {
-    fontStyles['--font-heading' as any] = fonts.heading
+    fontStyles['--font-heading'] = fonts.heading
   }
   if (fonts.body) {
-    fontStyles['--font-body' as any] = fonts.body
+    fontStyles['--font-body'] = fonts.body
   }
   if (fonts.button) {
-    fontStyles['--font-button' as any] = fonts.button
+    fontStyles['--font-button'] = fonts.button
   }
 
   // Aplicar cores via CSS variables
-  const colorStyles: React.CSSProperties = {
+  const colorStyles: React.CSSProperties & Record<string, string> = {
     ...fontStyles,
-    '--color-primary' as any: styles.colors?.primary || themeColors.primary || '#000000',
-    '--color-secondary' as any: styles.colors?.secondary || themeColors.secondary || '#ffffff',
-    '--color-accent' as any: styles.colors?.accent || themeColors.accent || '#FFD700',
-    '--color-background' as any: styles.colors?.background || themeColors.background || '#ffffff',
-    '--color-text' as any: styles.colors?.text || themeColors.text || '#000000',
-    '--color-button' as any: styles.colors?.button || themeColors.button || '#000000',
-    '--color-button-text' as any: styles.colors?.buttonText || themeColors.buttonText || '#ffffff',
-  }
+    '--color-primary': styles.colors?.primary || themeColors.primary || '#000000',
+    '--color-secondary': styles.colors?.secondary || themeColors.secondary || '#ffffff',
+    '--color-accent': styles.colors?.accent || themeColors.accent || '#FFD700',
+    '--color-background': styles.colors?.background || themeColors.background || '#ffffff',
+    '--color-text': styles.colors?.text || themeColors.text || '#000000',
+    '--color-button': styles.colors?.button || themeColors.button || '#000000',
+    '--color-button-text': styles.colors?.buttonText || themeColors.buttonText || '#ffffff',
+  } as React.CSSProperties & Record<string, string>
 
   // Renderizar seções baseado na configuração
   const sectionsConfig = version?.sections_config || {}
