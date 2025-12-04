@@ -234,6 +234,7 @@ export default function AnalyticsPage() {
 
     data.forEach(event => {
       const layoutId = event.layout_id
+      if (!layoutId) return // Skip eventos sem layout_id
       
       if (!layoutMap.has(layoutId)) {
         layoutMap.set(layoutId, { views: 0, sessions: new Set(), times: [], scrolls: [] })
