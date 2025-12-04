@@ -4,11 +4,12 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, Save, Home, Plus, Trash2, ChevronUp, ChevronDown, GripVertical, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Save, Home, Plus, Trash2, ChevronUp, ChevronDown, GripVertical, Eye, EyeOff, Palette } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { ImageUploader } from '@/components/ui/ImageUploader'
 import { motion } from 'framer-motion'
 import { LandingLayout, LandingVersion } from '@/types'
 import { AppleWatchContent, defaultAppleWatchContent } from '@/components/landing/layouts/AppleWatchLayout'
@@ -24,6 +25,34 @@ interface SectionVisibility {
   accessories: boolean
   faq: boolean
   cta: boolean
+}
+
+// Cores por seção
+interface SectionColors {
+  backgroundColor: string
+  textColor: string
+  buttonColor: string
+  buttonTextColor: string
+}
+
+interface AllSectionColors {
+  hero: SectionColors
+  products: SectionColors
+  reasons: SectionColors
+  features: SectionColors
+  accessories: SectionColors
+  faq: SectionColors
+  cta: SectionColors
+}
+
+const defaultSectionColors: AllSectionColors = {
+  hero: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
+  products: { backgroundColor: '#f9fafb', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
+  reasons: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
+  features: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
+  accessories: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
+  faq: { backgroundColor: '#f9fafb', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
+  cta: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
 }
 
 const defaultSectionOrder: SectionKey[] = ['hero', 'products', 'reasons', 'features', 'accessories', 'faq', 'cta']
@@ -63,7 +92,10 @@ function AppleEditorContent() {
   const [content, setContent] = useState<AppleWatchContent>(defaultAppleWatchContent)
   const [sectionOrder, setSectionOrder] = useState<SectionKey[]>(defaultSectionOrder)
   const [sectionVisibility, setSectionVisibility] = useState<SectionVisibility>(defaultSectionVisibility)
+  const [sectionColors, setSectionColors] = useState<AllSectionColors>(defaultSectionColors)
   const [expandedSection, setExpandedSection] = useState<SectionKey | null>('hero')
+  const [showColorEditor, setShowColorEditor] = useState<SectionKey | null>(null)
+  const [showWhatsAppButton, setShowWhatsAppButton] = useState(true)
 
   useEffect(() => {
     if (authLoading) return
@@ -118,6 +150,12 @@ function AppleEditorContent() {
           if (config.sectionVisibility) {
             setSectionVisibility({ ...defaultSectionVisibility, ...config.sectionVisibility })
           }
+          if (config.sectionColors) {
+            setSectionColors({ ...defaultSectionColors, ...config.sectionColors })
+          }
+          if (config.showWhatsAppButton !== undefined) {
+            setShowWhatsAppButton(config.showWhatsAppButton)
+          }
         }
       }
     } catch (error) {
@@ -141,6 +179,8 @@ function AppleEditorContent() {
             appleWatchContent: content,
             sectionOrder,
             sectionVisibility,
+            sectionColors,
+            showWhatsAppButton,
           },
           updated_at: new Date().toISOString(),
         })
@@ -168,6 +208,13 @@ function AppleEditorContent() {
 
   const toggleSectionVisibility = (key: SectionKey) => {
     setSectionVisibility(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const updateSectionColor = (section: SectionKey, colorKey: keyof SectionColors, value: string) => {
+    setSectionColors(prev => ({
+      ...prev,
+      [section]: { ...prev[section], [colorKey]: value }
+    }))
   }
 
   // Funções de atualização do conteúdo
@@ -398,6 +445,95 @@ function AppleEditorContent() {
     )
   }
 
+  // Componente para editor de cores por seção
+  const ColorEditorPopup = ({ section }: { section: SectionKey }) => {
+    const colors = sectionColors[section]
+    return (
+      <div className="absolute right-0 top-12 z-50 bg-white rounded-lg shadow-xl border p-4 w-72">
+        <h4 className="font-medium mb-3 flex items-center gap-2">
+          <Palette size={16} />
+          Cores da Seção
+        </h4>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium mb-1">Cor de Fundo</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={colors.backgroundColor}
+                onChange={(e) => updateSectionColor(section, 'backgroundColor', e.target.value)}
+                className="w-8 h-8 rounded border cursor-pointer"
+              />
+              <input
+                type="text"
+                value={colors.backgroundColor}
+                onChange={(e) => updateSectionColor(section, 'backgroundColor', e.target.value)}
+                className="flex-1 px-2 py-1 border rounded text-sm"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Cor do Texto</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={colors.textColor}
+                onChange={(e) => updateSectionColor(section, 'textColor', e.target.value)}
+                className="w-8 h-8 rounded border cursor-pointer"
+              />
+              <input
+                type="text"
+                value={colors.textColor}
+                onChange={(e) => updateSectionColor(section, 'textColor', e.target.value)}
+                className="flex-1 px-2 py-1 border rounded text-sm"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Cor do Botão</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={colors.buttonColor}
+                onChange={(e) => updateSectionColor(section, 'buttonColor', e.target.value)}
+                className="w-8 h-8 rounded border cursor-pointer"
+              />
+              <input
+                type="text"
+                value={colors.buttonColor}
+                onChange={(e) => updateSectionColor(section, 'buttonColor', e.target.value)}
+                className="flex-1 px-2 py-1 border rounded text-sm"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1">Texto do Botão</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={colors.buttonTextColor}
+                onChange={(e) => updateSectionColor(section, 'buttonTextColor', e.target.value)}
+                className="w-8 h-8 rounded border cursor-pointer"
+              />
+              <input
+                type="text"
+                value={colors.buttonTextColor}
+                onChange={(e) => updateSectionColor(section, 'buttonTextColor', e.target.value)}
+                className="flex-1 px-2 py-1 border rounded text-sm"
+              />
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowColorEditor(null)}
+          className="mt-3 w-full py-1.5 bg-black text-white rounded text-sm hover:bg-gray-800"
+        >
+          Fechar
+        </button>
+      </div>
+    )
+  }
+
   // Renderizar seção específica
   const renderSection = (key: SectionKey, index: number) => {
     const isExpanded = expandedSection === key
@@ -422,7 +558,15 @@ function AppleEditorContent() {
             <span className="text-xl">{emoji}</span>
             <h3 className="font-semibold text-gray-900">{label}</h3>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative">
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowColorEditor(showColorEditor === key ? null : key) }}
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-purple-600"
+              title="Editar cores da seção"
+            >
+              <Palette size={18} />
+            </button>
+            {showColorEditor === key && <ColorEditorPopup section={key} />}
             <button
               onClick={(e) => { e.stopPropagation(); toggleSectionVisibility(key) }}
               className={`p-2 rounded-lg transition-colors ${isVisible ? 'hover:bg-gray-200 text-gray-600' : 'bg-red-100 text-red-500'}`}
@@ -549,12 +693,17 @@ function AppleEditorContent() {
             />
           </div>
 
+          {/* Upload de Imagem */}
           <div className="mt-4">
-            <Input
-              label="URL da Imagem"
+            <label className="block text-sm font-medium mb-2">Imagem do Produto</label>
+            <ImageUploader
               value={product.image}
-              onChange={(e) => updateProduct(index, 'image', e.target.value)}
-              placeholder="https://..."
+              onChange={(url) => updateProduct(index, 'image', url)}
+              placeholder="Clique para fazer upload da imagem do produto"
+              cropType="square"
+              aspectRatio={1}
+              targetSize={{ width: 600, height: 600 }}
+              recommendedDimensions="600 x 600px (Formato quadrado)"
             />
           </div>
 
@@ -586,7 +735,7 @@ function AppleEditorContent() {
 
           {/* Cores */}
           <div className="mt-4">
-            <label className="block text-sm font-medium mb-2">Cores do Produto</label>
+            <label className="block text-sm font-medium mb-2">Cores do Produto (seletor de cores visível)</label>
             <div className="flex flex-wrap gap-2 items-center">
               {product.colors.map((color, colorIndex) => (
                 <div key={colorIndex} className="flex items-center gap-1">
@@ -682,12 +831,18 @@ function AppleEditorContent() {
               rows={2}
             />
           </div>
-          <Input
-            label="URL da Imagem"
-            value={item.image}
-            onChange={(e) => updateReasonItem(index, 'image', e.target.value)}
-            className="mt-3"
-          />
+          <div className="mt-3">
+            <label className="block text-sm font-medium mb-2">Imagem</label>
+            <ImageUploader
+              value={item.image}
+              onChange={(url) => updateReasonItem(index, 'image', url)}
+              placeholder="Clique para fazer upload da imagem"
+              cropType="banner"
+              aspectRatio={16/9}
+              targetSize={{ width: 800, height: 450 }}
+              recommendedDimensions="800 x 450px (Formato 16:9)"
+            />
+          </div>
         </div>
       ))}
     </div>
@@ -757,12 +912,18 @@ function AppleEditorContent() {
               rows={2}
             />
           </div>
-          <Input
-            label="URL da Imagem de Fundo"
-            value={item.image}
-            onChange={(e) => updateFeatureItem(index, 'image', e.target.value)}
-            className="mt-3"
-          />
+          <div className="mt-3">
+            <label className="block text-sm font-medium mb-2">Imagem de Fundo</label>
+            <ImageUploader
+              value={item.image}
+              onChange={(url) => updateFeatureItem(index, 'image', url)}
+              placeholder="Clique para fazer upload da imagem de fundo"
+              cropType="custom"
+              aspectRatio={280/400}
+              targetSize={{ width: 560, height: 800 }}
+              recommendedDimensions="560 x 800px (Formato vertical)"
+            />
+          </div>
         </div>
       ))}
     </div>
@@ -796,11 +957,6 @@ function AppleEditorContent() {
           value={content.accessories.banner.title}
           onChange={(e) => updateAccessoriesBanner('title', e.target.value)}
         />
-        <Input
-          label="URL da Imagem"
-          value={content.accessories.banner.image}
-          onChange={(e) => updateAccessoriesBanner('image', e.target.value)}
-        />
       </div>
       <div>
         <label className="block text-sm font-medium mb-2">Descrição do Banner</label>
@@ -821,6 +977,18 @@ function AppleEditorContent() {
           label="URL do Link do Banner"
           value={content.accessories.banner.link.url}
           onChange={(e) => updateAccessoriesBanner('link', { ...content.accessories.banner.link, url: e.target.value })}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-2">Imagem do Banner</label>
+        <ImageUploader
+          value={content.accessories.banner.image}
+          onChange={(url) => updateAccessoriesBanner('image', url)}
+          placeholder="Clique para fazer upload da imagem do banner"
+          cropType="banner"
+          aspectRatio={4/1}
+          targetSize={{ width: 1200, height: 300 }}
+          recommendedDimensions="1200 x 300px (Banner horizontal)"
         />
       </div>
     </div>
@@ -933,7 +1101,7 @@ function AppleEditorContent() {
           <div className="lg:col-span-2 space-y-4">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
               <p className="text-sm text-blue-800">
-                <strong>💡 Dica:</strong> Arraste as seções para reordená-las. Use os ícones de olho para ocultar/mostrar seções.
+                <strong>💡 Dica:</strong> Use as setas ↑↓ para reordenar. Clique na 🎨 paleta para editar cores de cada seção. Use o 👁️ olho para ocultar/mostrar.
               </p>
             </div>
             
@@ -951,7 +1119,7 @@ function AppleEditorContent() {
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Cor Primária (Botões)</label>
+                  <label className="block text-sm font-medium mb-2">Cor Primária (Links)</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -987,7 +1155,7 @@ function AppleEditorContent() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Cor de Fundo</label>
+                  <label className="block text-sm font-medium mb-2">Cor de Fundo Geral</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -1004,12 +1172,26 @@ function AppleEditorContent() {
                   </div>
                 </div>
 
-                <Input
-                  label="WhatsApp (opcional)"
-                  value={content.settings.whatsappNumber || ''}
-                  onChange={(e) => updateSettings('whatsappNumber', e.target.value)}
-                  placeholder="5534999999999"
-                />
+                <div className="pt-4 border-t">
+                  <h3 className="text-sm font-medium mb-3">WhatsApp</h3>
+                  <Input
+                    label="Número (opcional)"
+                    value={content.settings.whatsappNumber || ''}
+                    onChange={(e) => updateSettings('whatsappNumber', e.target.value)}
+                    placeholder="5534999999999"
+                  />
+                  <div className="mt-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showWhatsAppButton}
+                        onChange={(e) => setShowWhatsAppButton(e.target.checked)}
+                        className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      />
+                      <span className="text-sm">Mostrar botão flutuante do WhatsApp</span>
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-6 pt-6 border-t">

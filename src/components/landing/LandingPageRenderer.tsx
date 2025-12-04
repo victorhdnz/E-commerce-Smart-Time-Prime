@@ -193,6 +193,10 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
       {layoutType === 'apple-watch' ? (
         <AppleWatchLayout 
           content={getAppleWatchContent(version, landingSettings)}
+          sectionOrder={sectionsConfig?.sectionOrder}
+          sectionVisibility={sectionsConfig?.sectionVisibility}
+          sectionColors={sectionsConfig?.sectionColors}
+          showWhatsAppButton={sectionsConfig?.showWhatsAppButton ?? true}
         />
       ) : (
         <DefaultLayout 
