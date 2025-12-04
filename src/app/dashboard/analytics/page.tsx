@@ -31,6 +31,8 @@ interface DailyStats {
 interface LayoutPerformance {
   layoutId: string
   layoutName: string
+  versionId?: string
+  versionName?: string
   views: number
   clicks: number
   visitors: number
@@ -163,26 +165,42 @@ export default function AnalyticsPage() {
     try {
       setDeleting(true)
       
+      // Supabase requer uma condição WHERE para delete, então usamos neq com valor impossível
       let query = supabase.from('landing_analytics').delete()
       
       // Se tiver layout selecionado, deletar apenas desse layout
       if (selectedLayout) {
-        query = query.eq('layout_id', selectedLayout)
+        const { error } = await supabase
+          .from('landing_analytics')
+          .delete()
+          .eq('layout_id', selectedLayout)
+        
+        if (error) throw error
       } else {
-        // Deletar todos - precisa de uma condição, então usamos created_at > 1970
-        query = query.gte('created_at', '1970-01-01')
+        // Deletar todos - usar id diferente de string vazia como condição
+        const { error } = await supabase
+          .from('landing_analytics')
+          .delete()
+          .neq('id', '00000000-0000-0000-0000-000000000000')
+        
+        if (error) throw error
       }
-
-      const { error } = await query
-
-      if (error) throw error
 
       toast.success(selectedLayout ? 'Dados do layout apagados!' : 'Todos os dados de analytics foram apagados!')
       setShowDeleteModal(false)
-      loadAnalytics()
+      
+      // Limpar estados locais
+      setAnalytics([])
+      setSummary(null)
+      setDailyStats([])
+      setLayoutPerformance([])
+      setSessions([])
+      
+      // Recarregar analytics (que deve estar vazio agora)
+      setTimeout(() => loadAnalytics(), 500)
     } catch (error: any) {
       console.error('Erro ao apagar dados:', error)
-      toast.error('Erro ao apagar dados')
+      toast.error(`Erro ao apagar dados: ${error.message || 'Erro desconhecido'}`)
     } finally {
       setDeleting(false)
     }
@@ -291,34 +309,57 @@ export default function AnalyticsPage() {
   }
 
   const calculateLayoutPerformance = (data: LandingAnalytics[]) => {
-    const layoutMap = new Map<string, { views: number; clicks: number; sessions: Set<string>; times: number[]; scrolls: number[]; allEvents: LandingAnalytics[] }>()
+    // Agrupar por layout + versão para ter dados mais granulares
+    const performanceMap = new Map<string, { 
+      layoutId: string
+      versionId: string | null
+      views: number
+      clicks: number
+      sessions: Set<string>
+      times: number[]
+      scrolls: number[]
+      allEvents: LandingAnalytics[] 
+    }>()
 
     data.forEach(event => {
       const layoutId = event.layout_id
       if (!layoutId) return
       
-      if (!layoutMap.has(layoutId)) {
-        layoutMap.set(layoutId, { views: 0, clicks: 0, sessions: new Set(), times: [], scrolls: [], allEvents: [] })
+      // Chave única: layout + versão (ou só layout se não tiver versão)
+      const key = event.version_id ? `${layoutId}-${event.version_id}` : layoutId
+      
+      if (!performanceMap.has(key)) {
+        performanceMap.set(key, { 
+          layoutId, 
+          versionId: event.version_id || null,
+          views: 0, 
+          clicks: 0, 
+          sessions: new Set(), 
+          times: [], 
+          scrolls: [], 
+          allEvents: [] 
+        })
       }
       
-      const layoutStats = layoutMap.get(layoutId)!
-      layoutStats.allEvents.push(event)
+      const stats = performanceMap.get(key)!
+      stats.allEvents.push(event)
       
       if (event.event_type === 'page_view') {
-        layoutStats.views++
-        layoutStats.sessions.add(event.session_id)
+        stats.views++
+        stats.sessions.add(event.session_id)
       } else if (event.event_type === 'click') {
-        layoutStats.clicks++
+        stats.clicks++
       } else if (event.event_type === 'time_on_page') {
-        layoutStats.times.push((event.event_data as any)?.time_seconds || 0)
+        stats.times.push((event.event_data as any)?.time_seconds || 0)
       } else if (event.event_type === 'scroll') {
-        layoutStats.scrolls.push((event.event_data as any)?.scroll_depth || 0)
+        stats.scrolls.push((event.event_data as any)?.scroll_depth || 0)
       }
     })
 
-    const performance: LayoutPerformance[] = Array.from(layoutMap.entries())
-      .map(([layoutId, stats]) => {
-        const layout = layouts.find(l => l.id === layoutId)
+    const performance: LayoutPerformance[] = Array.from(performanceMap.entries())
+      .map(([key, stats]) => {
+        const layout = layouts.find(l => l.id === stats.layoutId)
+        const version = versions.find(v => v.id === stats.versionId)
         const avgTime = stats.times.length > 0 ? Math.round(stats.times.reduce((a, b) => a + b, 0) / stats.times.length) : 0
         const avgScroll = stats.scrolls.length > 0 ? Math.round(stats.scrolls.reduce((a, b) => a + b, 0) / stats.scrolls.length) : 0
         
@@ -366,8 +407,10 @@ export default function AnalyticsPage() {
         }
 
         return {
-          layoutId,
+          layoutId: stats.layoutId,
           layoutName: layout?.name || 'Layout desconhecido',
+          versionId: stats.versionId || undefined,
+          versionName: version?.name,
           views: stats.views,
           clicks: stats.clicks,
           visitors: stats.sessions.size,
@@ -592,18 +635,25 @@ export default function AnalyticsPage() {
         {/* Performance por Layout com Insights */}
         {layoutPerformance.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">🏆 Performance por Layout</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">🏆 Performance por Layout / Versão</h2>
             
             <div className="space-y-4">
               {layoutPerformance.map((lp, index) => (
-                <div key={lp.layoutId} className="p-4 bg-gray-50 rounded-lg">
+                <div key={`${lp.layoutId}-${lp.versionId || 'base'}`} className="p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
                         {index + 1}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">{lp.layoutName}</h3>
+                        <h3 className="font-semibold text-gray-900">
+                          {lp.layoutName}
+                          {lp.versionName && (
+                            <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-normal">
+                              {lp.versionName}
+                            </span>
+                          )}
+                        </h3>
                         <div className="flex flex-wrap gap-3 text-sm text-gray-500 mt-1">
                           <span className="flex items-center gap-1">
                             <Eye size={14} /> {lp.views} views

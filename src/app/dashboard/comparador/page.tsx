@@ -29,6 +29,8 @@ export default function ComparadorDashboardPage() {
   const [comparisonName, setComparisonName] = useState('')
   const [copiedLink, setCopiedLink] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [ecommerceUrl, setEcommerceUrl] = useState('')
+  const [savingUrl, setSavingUrl] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -68,11 +70,47 @@ export default function ComparadorDashboardPage() {
         // Tabela pode não existir ainda
         setSavedComparisons([])
       }
+
+      // Carregar URL do e-commerce
+      const { data: urlData } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'comparator_ecommerce_url')
+        .maybeSingle()
+      
+      if (urlData?.value) {
+        setEcommerceUrl(urlData.value as string)
+      }
     } catch (error: any) {
       console.error('Erro ao carregar dados:', error)
       toast.error('Erro ao carregar dados')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const saveEcommerceUrl = async () => {
+    try {
+      setSavingUrl(true)
+      
+      const { error } = await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'comparator_ecommerce_url',
+          value: ecommerceUrl,
+          description: 'URL do e-commerce para redirecionamento do comparador',
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'key'
+        })
+      
+      if (error) throw error
+      toast.success('URL do e-commerce salva!')
+    } catch (error: any) {
+      console.error('Erro ao salvar URL:', error)
+      toast.error('Erro ao salvar URL')
+    } finally {
+      setSavingUrl(false)
     }
   }
 
@@ -207,6 +245,36 @@ export default function ComparadorDashboardPage() {
               Ver Comparador
             </Link>
           </div>
+        </div>
+
+        {/* Configuração de URL do E-commerce */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-2">🛒 URL do E-commerce (Retorno)</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Configure a URL para onde o usuário será redirecionado após usar o comparador.
+            Um banner aparecerá no comparador convidando o usuário a voltar ao e-commerce.
+          </p>
+          <div className="flex gap-3">
+            <input
+              type="url"
+              value={ecommerceUrl}
+              onChange={(e) => setEcommerceUrl(e.target.value)}
+              placeholder="https://seu-ecommerce.com.br"
+              className="flex-1 px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            />
+            <button
+              onClick={saveEcommerceUrl}
+              disabled={savingUrl}
+              className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              {savingUrl ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
+          {ecommerceUrl && (
+            <p className="text-xs text-green-600 mt-2">
+              ✓ Banner de retorno ativo no comparador
+            </p>
+          )}
         </div>
 
         {/* Produtos Selecionados */}

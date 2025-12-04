@@ -42,7 +42,28 @@ function ComparePageContent() {
   const [urlProductsLoaded, setUrlProductsLoaded] = useState(false)
   const [productGifts, setProductGifts] = useState<Record<string, ProductGift[]>>({})
   const [selectedGiftImage, setSelectedGiftImage] = useState<{ name: string; image: string } | null>(null)
+  const [ecommerceUrl, setEcommerceUrl] = useState<string>('')
   const supabase = createClient()
+
+  // Carregar URL do e-commerce das configurações
+  useEffect(() => {
+    const loadEcommerceUrl = async () => {
+      try {
+        const { data } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'comparator_ecommerce_url')
+          .maybeSingle()
+        
+        if (data?.value) {
+          setEcommerceUrl(data.value as string)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar URL do e-commerce:', error)
+      }
+    }
+    loadEcommerceUrl()
+  }, [])
 
   // Carregar produtos da URL (se houver)
   useEffect(() => {
@@ -365,6 +386,29 @@ function ComparePageContent() {
 
   return (
     <div className="container mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-12">
+      {/* Banner de retorno ao E-commerce */}
+      {ecommerceUrl && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-black to-gray-800 text-white rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3"
+        >
+          <div className="text-center sm:text-left">
+            <p className="font-semibold">🛒 Pronto para comprar?</p>
+            <p className="text-sm text-gray-300">Volte ao e-commerce e garanta seu produto!</p>
+          </div>
+          <a
+            href={ecommerceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-2.5 bg-white text-black rounded-lg font-semibold hover:bg-gray-100 transition-colors flex items-center gap-2 whitespace-nowrap"
+          >
+            <ShoppingCart size={18} />
+            Ir para o E-commerce
+          </a>
+        </motion.div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-4 sm:mb-8">
         <h1 className="text-xl sm:text-4xl font-bold">Comparar Produtos</h1>
         <div className="flex gap-2 sm:gap-3 flex-wrap">
