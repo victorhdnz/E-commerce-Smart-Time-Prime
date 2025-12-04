@@ -3,9 +3,11 @@
 import Link from 'next/link'
 import { Instagram, Facebook, Mail, Phone } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export const Footer = () => {
+  const pathname = usePathname()
   const currentYear = new Date().getFullYear()
   const [siteSettings, setSiteSettings] = useState<{
     site_name?: string
@@ -59,6 +61,11 @@ export const Footer = () => {
     }
     loadSiteSettings()
   }, [])
+
+  // Ocultar footer em landing pages e na página principal
+  if (pathname?.startsWith('/lp/') || pathname === '/') {
+    return null
+  }
 
   return (
     <footer className="bg-black text-white mt-0 relative z-20">

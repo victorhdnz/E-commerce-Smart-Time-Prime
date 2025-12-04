@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react'
 import { useProductComparison } from '@/hooks/useProductComparison'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { useAuth } from '@/hooks/useAuth'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils/format'
 import { getProductPrice } from '@/lib/utils/price'
 import { Product } from '@/types'
 import Image from 'next/image'
-import { X, ShoppingCart, Eye, Check, XCircle, MapPin, GitCompare, Star } from 'lucide-react'
+import { X, ShoppingCart, Eye, Check, XCircle, MapPin, GitCompare, Star, Link2, Copy } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { createPortal } from 'react-dom'
@@ -20,6 +20,7 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function ComparePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { isAuthenticated } = useAuth()
   const { products, removeProduct, clearComparison, addProduct, canAddMore } = useProductComparison()
   const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
@@ -31,7 +32,40 @@ export default function ComparePage() {
   const [categories, setCategories] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [showProductSelector, setShowProductSelector] = useState(false)
+  const [urlProductsLoaded, setUrlProductsLoaded] = useState(false)
   const supabase = createClient()
+
+  // Carregar produtos da URL (se houver)
+  useEffect(() => {
+    const loadProductsFromUrl = async () => {
+      const productIds = searchParams.get('produtos')
+      if (productIds && !urlProductsLoaded) {
+        const ids = productIds.split(',').filter(Boolean)
+        if (ids.length > 0) {
+          try {
+            const { data } = await supabase
+              .from('products')
+              .select('*')
+              .in('id', ids)
+              .eq('is_active', true)
+
+            if (data && data.length > 0) {
+              // Limpar comparação atual e adicionar os produtos da URL
+              clearComparison()
+              data.forEach(product => {
+                addProduct(product as Product)
+              })
+            }
+          } catch (error) {
+            console.error('Erro ao carregar produtos da URL:', error)
+          }
+        }
+        setUrlProductsLoaded(true)
+      }
+    }
+
+    loadProductsFromUrl()
+  }, [searchParams, urlProductsLoaded])
 
   const loadComparisonFields = async () => {
     try {

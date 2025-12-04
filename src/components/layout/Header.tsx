@@ -18,6 +18,11 @@ export const Header = () => {
   const { products } = useProductComparison()
   const comparisonCount = products.length
 
+  // Ocultar header em landing pages e na página principal
+  if (pathname?.startsWith('/lp/') || pathname === '/') {
+    return null
+  }
+
   // Carregar logo e nome do site
   useEffect(() => {
     const loadSiteSettings = async () => {

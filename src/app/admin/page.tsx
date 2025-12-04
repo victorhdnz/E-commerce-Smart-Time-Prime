@@ -13,7 +13,7 @@ export default function AdminPage() {
 
     // Redirecionar para login se não autenticado
     if (!isAuthenticated) {
-      const returnUrl = encodeURIComponent('/admin')
+      const returnUrl = encodeURIComponent('/dashboard')
       router.push(`/login?returnUrl=${returnUrl}`)
       return
     }
@@ -30,7 +30,7 @@ export default function AdminPage() {
 
   // Mostrar loading enquanto verifica
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
         <p className="text-gray-600">Carregando...</p>
@@ -38,4 +38,3 @@ export default function AdminPage() {
     </div>
   )
 }
-

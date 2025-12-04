@@ -86,6 +86,20 @@ CREATE TABLE IF NOT EXISTS product_support_pages (
 );
 
 -- ==========================================
+-- SAVED COMPARISONS (Links de Comparação Salvos)
+-- ==========================================
+CREATE TABLE IF NOT EXISTS saved_comparisons (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  product_ids TEXT[] NOT NULL, -- Array de IDs dos produtos
+  description TEXT,
+  created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ==========================================
 -- ÍNDICES PARA PERFORMANCE
 -- ==========================================
 CREATE INDEX IF NOT EXISTS idx_landing_layouts_slug ON landing_layouts(slug);
@@ -99,6 +113,7 @@ CREATE INDEX IF NOT EXISTS idx_landing_analytics_event_type ON landing_analytics
 CREATE INDEX IF NOT EXISTS idx_product_comparisons_product_id ON product_comparisons(product_id);
 CREATE INDEX IF NOT EXISTS idx_product_support_pages_product_id ON product_support_pages(product_id);
 CREATE INDEX IF NOT EXISTS idx_product_support_pages_model_slug ON product_support_pages(model_slug);
+CREATE INDEX IF NOT EXISTS idx_saved_comparisons_slug ON saved_comparisons(slug);
 
 -- ==========================================
 -- RLS POLICIES
@@ -261,6 +276,43 @@ CREATE POLICY "Product support pages are updatable by admins and editors"
 
 CREATE POLICY "Product support pages are deletable by admins and editors"
   ON product_support_pages FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.role IN ('admin', 'editor')
+    )
+  );
+
+-- Saved Comparisons: Admins e editors podem tudo, todos podem ler
+ALTER TABLE saved_comparisons ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Saved comparisons are viewable by everyone"
+  ON saved_comparisons FOR SELECT
+  USING (true);
+
+CREATE POLICY "Saved comparisons are insertable by admins and editors"
+  ON saved_comparisons FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.role IN ('admin', 'editor')
+    )
+  );
+
+CREATE POLICY "Saved comparisons are updatable by admins and editors"
+  ON saved_comparisons FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.role IN ('admin', 'editor')
+    )
+  );
+
+CREATE POLICY "Saved comparisons are deletable by admins and editors"
+  ON saved_comparisons FOR DELETE
   USING (
     EXISTS (
       SELECT 1 FROM profiles
