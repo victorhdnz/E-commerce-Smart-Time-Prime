@@ -10,13 +10,19 @@ import { formatCurrency } from '@/lib/utils/format'
 import { getProductPrice } from '@/lib/utils/price'
 import { Product } from '@/types'
 import Image from 'next/image'
-import { X, ShoppingCart, Eye, Check, XCircle, MapPin, GitCompare, Star, Link2, Copy } from 'lucide-react'
+import { X, ShoppingCart, Eye, Check, XCircle, MapPin, GitCompare, Star, Link2, Copy, Gift } from 'lucide-react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 import toast from 'react-hot-toast'
 import { useCart } from '@/hooks/useCart'
 import { createClient } from '@/lib/supabase/client'
+
+interface ProductGift {
+  id: string
+  name: string
+  images: string[]
+}
 
 // Componente wrapper para usar Suspense com useSearchParams
 function ComparePageContent() {
@@ -34,6 +40,8 @@ function ComparePageContent() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [showProductSelector, setShowProductSelector] = useState(false)
   const [urlProductsLoaded, setUrlProductsLoaded] = useState(false)
+  const [productGifts, setProductGifts] = useState<Record<string, ProductGift[]>>({})
+  const [selectedGiftImage, setSelectedGiftImage] = useState<{ name: string; image: string } | null>(null)
   const supabase = createClient()
 
   // Carregar produtos da URL (se houver)
@@ -144,6 +152,49 @@ function ComparePageContent() {
   useEffect(() => {
     loadComparisonFields()
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products.length, products.map(p => p.id).join(',')])
+
+  // Carregar brindes dos produtos
+  useEffect(() => {
+    const loadProductGifts = async () => {
+      if (products.length === 0) {
+        setProductGifts({})
+        return
+      }
+
+      try {
+        const giftsMap: Record<string, ProductGift[]> = {}
+        
+        for (const product of products) {
+          const { data, error } = await supabase
+            .from('product_gifts')
+            .select(`
+              id,
+              gift_product:products!product_gifts_gift_product_id_fkey(id, name, images)
+            `)
+            .eq('product_id', product.id)
+            .eq('is_active', true)
+          
+          if (!error && data) {
+            giftsMap[product.id] = data
+              .filter((g: any) => g.gift_product)
+              .map((g: any) => ({
+                id: g.gift_product.id,
+                name: g.gift_product.name,
+                images: g.gift_product.images || []
+              }))
+          } else {
+            giftsMap[product.id] = []
+          }
+        }
+        
+        setProductGifts(giftsMap)
+      } catch (error) {
+        console.error('Erro ao carregar brindes:', error)
+      }
+    }
+
+    loadProductGifts()
   }, [products.length, products.map(p => p.id).join(',')])
 
   const handleRemoveProduct = (productId: string) => {
@@ -737,6 +788,102 @@ function ComparePageContent() {
         </table>
         </div>
       </div>
+
+      {/* Seção de Brindes */}
+      {products.length > 0 && Object.values(productGifts).some(gifts => gifts.length > 0) && (
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Gift className="text-pink-500" size={24} />
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">🎁 Brindes Inclusos</h2>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            {products.map((product) => {
+              const gifts = productGifts[product.id] || []
+              
+              return (
+                <div key={product.id} className="border rounded-lg p-3">
+                  <h3 className="font-semibold text-sm mb-3 text-gray-700 truncate">{product.name}</h3>
+                  
+                  {gifts.length > 0 ? (
+                    <div className="space-y-2">
+                      {gifts.map((gift) => (
+                        <button
+                          key={gift.id}
+                          onClick={() => gift.images?.[0] && setSelectedGiftImage({ name: gift.name, image: gift.images[0] })}
+                          className="w-full flex items-center gap-2 p-2 bg-pink-50 rounded-lg hover:bg-pink-100 transition-colors text-left"
+                        >
+                          {gift.images?.[0] ? (
+                            <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0 border">
+                              <Image
+                                src={gift.images[0]}
+                                alt={gift.name}
+                                fill
+                                className="object-cover"
+                                sizes="40px"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
+                              <Gift size={20} className="text-gray-400" />
+                            </div>
+                          )}
+                          <span className="text-sm font-medium text-gray-700 truncate">{gift.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="h-12" />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Modal para visualizar imagem do brinde */}
+      <AnimatePresence>
+        {selectedGiftImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+            onClick={() => setSelectedGiftImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-2xl p-4 max-w-lg w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Gift className="text-pink-500" size={20} />
+                  {selectedGiftImage.name}
+                </h3>
+                <button
+                  onClick={() => setSelectedGiftImage(null)}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="relative aspect-square w-full rounded-lg overflow-hidden bg-gray-100">
+                <Image
+                  src={selectedGiftImage.image}
+                  alt={selectedGiftImage.name}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 640px) 100vw, 512px"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modal para cadastrar endereço */}
       {typeof window !== 'undefined' && showAddressModal && createPortal(
