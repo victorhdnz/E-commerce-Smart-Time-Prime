@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
 import { LandingLayout, LandingVersion } from '@/types'
@@ -30,8 +30,10 @@ const AVAILABLE_FONTS = [
   'Plus Jakarta Sans',
 ]
 
-export default function DashboardLayoutsPage() {
+function LayoutsContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const selectedLayoutParam = searchParams.get('selected')
   const { isAuthenticated, isEditor, loading: authLoading } = useAuth()
   const [layouts, setLayouts] = useState<LandingLayout[]>([])
   const [loading, setLoading] = useState(true)
@@ -91,9 +93,18 @@ export default function DashboardLayoutsPage() {
       if (error) throw error
       setLayouts(data || [])
       
-      // Selecionar o primeiro layout automaticamente
+      // Selecionar layout baseado no parâmetro da URL ou o primeiro
       if (data && data.length > 0 && !selectedLayout) {
-        setSelectedLayout(data[0])
+        if (selectedLayoutParam) {
+          const layoutFromParam = data.find(l => l.id === selectedLayoutParam)
+          if (layoutFromParam) {
+            setSelectedLayout(layoutFromParam)
+          } else {
+            setSelectedLayout(data[0])
+          }
+        } else {
+          setSelectedLayout(data[0])
+        }
       }
     } catch (error: any) {
       console.error('Erro ao carregar layouts:', error)
@@ -658,5 +669,17 @@ export default function DashboardLayoutsPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function DashboardLayoutsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+      </div>
+    }>
+      <LayoutsContent />
+    </Suspense>
   )
 }

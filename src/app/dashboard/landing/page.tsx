@@ -1313,7 +1313,7 @@ function EditLandingPageContent() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
             <Link
-              href={currentVersion ? '/dashboard/layouts' : '/dashboard'}
+              href={currentVersion ? `/dashboard/layouts?selected=${layoutId}` : '/dashboard'}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft size={20} />

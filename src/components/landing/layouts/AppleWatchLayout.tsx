@@ -26,6 +26,10 @@ export interface AppleWatchContent {
     image: string
     colors: string[]
     badge?: string
+    learnMoreLink?: string
+    buyLink?: string
+    learnMoreText?: string
+    buyText?: string
   }>
   // Seção "Motivos para comprar"
   reasons: {
@@ -99,6 +103,10 @@ export const defaultAppleWatchContent: AppleWatchContent = {
       image: '',
       colors: ['#f5e6d8', '#e8e8e8', '#1a1a1a', '#3b82f6', '#22c55e'],
       badge: 'Novo',
+      learnMoreLink: '#',
+      buyLink: '#',
+      learnMoreText: 'Saiba mais',
+      buyText: 'Comprar',
     },
     {
       id: '2',
@@ -109,6 +117,10 @@ export const defaultAppleWatchContent: AppleWatchContent = {
       image: '',
       colors: ['#1a1a1a', '#e8e8e8'],
       badge: 'Novo',
+      learnMoreLink: '#',
+      buyLink: '#',
+      learnMoreText: 'Saiba mais',
+      buyText: 'Comprar',
     },
   ],
   reasons: {
@@ -210,7 +222,7 @@ export function AppleWatchLayout({ content = defaultAppleWatchContent, isEditing
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ backgroundColor: content.settings.backgroundColor || '#ffffff' }}>
       {/* Navigation Pills - Estilo Apple */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/50">
         <div className="max-w-[1200px] mx-auto px-4">
@@ -310,18 +322,18 @@ export function AppleWatchLayout({ content = defaultAppleWatchContent, isEditing
                 {/* CTA Buttons */}
                 <div className="flex gap-4 mt-6">
                   <a
-                    href="#"
-                    className="px-6 py-2.5 rounded-full text-white text-sm font-medium transition-colors"
+                    href={product.learnMoreLink || '#'}
+                    className="px-6 py-2.5 rounded-full text-white text-sm font-medium transition-colors hover:opacity-90"
                     style={{ backgroundColor: content.settings.primaryColor }}
                   >
-                    Saiba mais
+                    {product.learnMoreText || 'Saiba mais'}
                   </a>
                   <a
-                    href="#"
-                    className="px-6 py-2.5 text-sm font-medium transition-colors"
+                    href={product.buyLink || '#'}
+                    className="px-6 py-2.5 text-sm font-medium transition-colors hover:opacity-70"
                     style={{ color: content.settings.primaryColor }}
                   >
-                    Comprar &gt;
+                    {product.buyText || 'Comprar'} &gt;
                   </a>
                 </div>
               </div>

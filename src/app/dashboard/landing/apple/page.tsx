@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, Save, Home, Plus, Trash2, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, Save, Home, Plus, Trash2, ChevronUp, ChevronDown, GripVertical, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
@@ -12,7 +12,40 @@ import { Input } from '@/components/ui/Input'
 import { motion } from 'framer-motion'
 import { LandingLayout, LandingVersion } from '@/types'
 import { AppleWatchContent, defaultAppleWatchContent } from '@/components/landing/layouts/AppleWatchLayout'
-import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
+
+// Seções disponíveis para ordenação
+type SectionKey = 'hero' | 'products' | 'reasons' | 'features' | 'accessories' | 'faq' | 'cta'
+
+interface SectionVisibility {
+  hero: boolean
+  products: boolean
+  reasons: boolean
+  features: boolean
+  accessories: boolean
+  faq: boolean
+  cta: boolean
+}
+
+const defaultSectionOrder: SectionKey[] = ['hero', 'products', 'reasons', 'features', 'accessories', 'faq', 'cta']
+const defaultSectionVisibility: SectionVisibility = {
+  hero: true,
+  products: true,
+  reasons: true,
+  features: true,
+  accessories: true,
+  faq: true,
+  cta: true,
+}
+
+const sectionLabels: Record<SectionKey, { emoji: string; label: string }> = {
+  hero: { emoji: '🎯', label: 'Hero Section' },
+  products: { emoji: '📦', label: 'Produtos em Destaque' },
+  reasons: { emoji: '💡', label: 'Motivos para Comprar' },
+  features: { emoji: '✨', label: 'Conheça Melhor' },
+  accessories: { emoji: '🎨', label: 'Acessórios' },
+  faq: { emoji: '❓', label: 'FAQ / Perguntas Frequentes' },
+  cta: { emoji: '🚀', label: 'CTA Final' },
+}
 
 function AppleEditorContent() {
   const router = useRouter()
@@ -28,6 +61,9 @@ function AppleEditorContent() {
   const [currentLayout, setCurrentLayout] = useState<LandingLayout | null>(null)
   const [currentVersion, setCurrentVersion] = useState<LandingVersion | null>(null)
   const [content, setContent] = useState<AppleWatchContent>(defaultAppleWatchContent)
+  const [sectionOrder, setSectionOrder] = useState<SectionKey[]>(defaultSectionOrder)
+  const [sectionVisibility, setSectionVisibility] = useState<SectionVisibility>(defaultSectionVisibility)
+  const [expandedSection, setExpandedSection] = useState<SectionKey | null>('hero')
 
   useEffect(() => {
     if (authLoading) return
@@ -69,12 +105,18 @@ function AppleEditorContent() {
         
         // Carregar conteúdo da versão
         if (versionData.sections_config && typeof versionData.sections_config === 'object') {
-          const savedContent = (versionData.sections_config as any).appleWatchContent
-          if (savedContent) {
+          const config = versionData.sections_config as any
+          if (config.appleWatchContent) {
             setContent({
               ...defaultAppleWatchContent,
-              ...savedContent,
+              ...config.appleWatchContent,
             })
+          }
+          if (config.sectionOrder) {
+            setSectionOrder(config.sectionOrder)
+          }
+          if (config.sectionVisibility) {
+            setSectionVisibility({ ...defaultSectionVisibility, ...config.sectionVisibility })
           }
         }
       }
@@ -95,7 +137,11 @@ function AppleEditorContent() {
       const { error } = await supabase
         .from('landing_versions')
         .update({
-          sections_config: { appleWatchContent: content },
+          sections_config: { 
+            appleWatchContent: content,
+            sectionOrder,
+            sectionVisibility,
+          },
           updated_at: new Date().toISOString(),
         })
         .eq('id', versionId)
@@ -109,6 +155,19 @@ function AppleEditorContent() {
     } finally {
       setSaving(false)
     }
+  }
+
+  // Funções de ordenação de seções
+  const moveSection = (index: number, direction: 'up' | 'down') => {
+    const newOrder = [...sectionOrder]
+    const newIndex = direction === 'up' ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= newOrder.length) return
+    ;[newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]]
+    setSectionOrder(newOrder)
+  }
+
+  const toggleSectionVisibility = (key: SectionKey) => {
+    setSectionVisibility(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
   // Funções de atualização do conteúdo
@@ -136,6 +195,10 @@ function AppleEditorContent() {
         price: 'R$ 0,00',
         image: '',
         colors: ['#000000'],
+        learnMoreLink: '#',
+        buyLink: '#',
+        learnMoreText: 'Saiba mais',
+        buyText: 'Comprar',
       }]
     }))
   }
@@ -147,17 +210,183 @@ function AppleEditorContent() {
     }))
   }
 
-  const updateSettings = (field: string, value: string) => {
+  const updateProductColor = (productIndex: number, colorIndex: number, value: string) => {
     setContent(prev => ({
       ...prev,
-      settings: { ...prev.settings, [field]: value }
+      products: prev.products.map((p, i) => {
+        if (i !== productIndex) return p
+        const newColors = [...p.colors]
+        newColors[colorIndex] = value
+        return { ...p, colors: newColors }
+      })
     }))
   }
 
+  const addProductColor = (productIndex: number) => {
+    setContent(prev => ({
+      ...prev,
+      products: prev.products.map((p, i) => {
+        if (i !== productIndex) return p
+        return { ...p, colors: [...p.colors, '#000000'] }
+      })
+    }))
+  }
+
+  const removeProductColor = (productIndex: number, colorIndex: number) => {
+    setContent(prev => ({
+      ...prev,
+      products: prev.products.map((p, i) => {
+        if (i !== productIndex) return p
+        return { ...p, colors: p.colors.filter((_, ci) => ci !== colorIndex) }
+      })
+    }))
+  }
+
+  // Reasons
+  const updateReasons = (field: string, value: any) => {
+    setContent(prev => ({
+      ...prev,
+      reasons: { ...prev.reasons, [field]: value }
+    }))
+  }
+
+  const updateReasonItem = (index: number, field: string, value: string) => {
+    setContent(prev => ({
+      ...prev,
+      reasons: {
+        ...prev.reasons,
+        items: prev.reasons.items.map((item, i) => i === index ? { ...item, [field]: value } : item)
+      }
+    }))
+  }
+
+  const addReasonItem = () => {
+    setContent(prev => ({
+      ...prev,
+      reasons: {
+        ...prev.reasons,
+        items: [...prev.reasons.items, { title: 'Novo Motivo', subtitle: 'Subtítulo', description: 'Descrição', image: '' }]
+      }
+    }))
+  }
+
+  const removeReasonItem = (index: number) => {
+    setContent(prev => ({
+      ...prev,
+      reasons: {
+        ...prev.reasons,
+        items: prev.reasons.items.filter((_, i) => i !== index)
+      }
+    }))
+  }
+
+  // Features
+  const updateFeatures = (field: string, value: string) => {
+    setContent(prev => ({
+      ...prev,
+      features: { ...prev.features, [field]: value }
+    }))
+  }
+
+  const updateFeatureItem = (index: number, field: string, value: string) => {
+    setContent(prev => ({
+      ...prev,
+      features: {
+        ...prev.features,
+        items: prev.features.items.map((item, i) => i === index ? { ...item, [field]: value } : item)
+      }
+    }))
+  }
+
+  const addFeatureItem = () => {
+    setContent(prev => ({
+      ...prev,
+      features: {
+        ...prev.features,
+        items: [...prev.features.items, { category: 'Categoria', title: 'Título', image: '', textColor: '#ffffff' }]
+      }
+    }))
+  }
+
+  const removeFeatureItem = (index: number) => {
+    setContent(prev => ({
+      ...prev,
+      features: {
+        ...prev.features,
+        items: prev.features.items.filter((_, i) => i !== index)
+      }
+    }))
+  }
+
+  // Accessories
+  const updateAccessories = (field: string, value: any) => {
+    setContent(prev => ({
+      ...prev,
+      accessories: { ...prev.accessories, [field]: value }
+    }))
+  }
+
+  const updateAccessoriesBanner = (field: string, value: any) => {
+    setContent(prev => ({
+      ...prev,
+      accessories: {
+        ...prev.accessories,
+        banner: { ...prev.accessories.banner, [field]: value }
+      }
+    }))
+  }
+
+  // FAQ
+  const updateFaq = (field: string, value: string) => {
+    setContent(prev => ({
+      ...prev,
+      faq: { ...prev.faq, [field]: value }
+    }))
+  }
+
+  const updateFaqItem = (index: number, field: string, value: string) => {
+    setContent(prev => ({
+      ...prev,
+      faq: {
+        ...prev.faq,
+        items: prev.faq.items.map((item, i) => i === index ? { ...item, [field]: value } : item)
+      }
+    }))
+  }
+
+  const addFaqItem = () => {
+    setContent(prev => ({
+      ...prev,
+      faq: {
+        ...prev.faq,
+        items: [...prev.faq.items, { question: 'Nova Pergunta', answer: 'Resposta' }]
+      }
+    }))
+  }
+
+  const removeFaqItem = (index: number) => {
+    setContent(prev => ({
+      ...prev,
+      faq: {
+        ...prev.faq,
+        items: prev.faq.items.filter((_, i) => i !== index)
+      }
+    }))
+  }
+
+  // CTA
   const updateCta = (field: string, value: string) => {
     setContent(prev => ({
       ...prev,
       cta: { ...prev.cta, [field]: value }
+    }))
+  }
+
+  // Settings
+  const updateSettings = (field: string, value: string) => {
+    setContent(prev => ({
+      ...prev,
+      settings: { ...prev.settings, [field]: value }
     }))
   }
 
@@ -169,6 +398,503 @@ function AppleEditorContent() {
     )
   }
 
+  // Renderizar seção específica
+  const renderSection = (key: SectionKey, index: number) => {
+    const isExpanded = expandedSection === key
+    const isVisible = sectionVisibility[key]
+    const { emoji, label } = sectionLabels[key]
+
+    return (
+      <motion.div
+        key={key}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05 }}
+        className={`bg-white rounded-lg shadow-md overflow-hidden ${!isVisible ? 'opacity-50' : ''}`}
+      >
+        {/* Header da Seção */}
+        <div
+          className="p-4 flex items-center justify-between bg-gray-50 cursor-pointer hover:bg-gray-100"
+          onClick={() => setExpandedSection(isExpanded ? null : key)}
+        >
+          <div className="flex items-center gap-3">
+            <GripVertical size={18} className="text-gray-400" />
+            <span className="text-xl">{emoji}</span>
+            <h3 className="font-semibold text-gray-900">{label}</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleSectionVisibility(key) }}
+              className={`p-2 rounded-lg transition-colors ${isVisible ? 'hover:bg-gray-200 text-gray-600' : 'bg-red-100 text-red-500'}`}
+              title={isVisible ? 'Ocultar seção' : 'Mostrar seção'}
+            >
+              {isVisible ? <Eye size={18} /> : <EyeOff size={18} />}
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); moveSection(index, 'up') }}
+              className="p-2 hover:bg-gray-200 rounded-lg disabled:opacity-50"
+              disabled={index === 0}
+            >
+              <ChevronUp size={18} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); moveSection(index, 'down') }}
+              className="p-2 hover:bg-gray-200 rounded-lg disabled:opacity-50"
+              disabled={index === sectionOrder.length - 1}
+            >
+              <ChevronDown size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Conteúdo da Seção */}
+        {isExpanded && (
+          <div className="p-6 border-t">
+            {key === 'hero' && renderHeroEditor()}
+            {key === 'products' && renderProductsEditor()}
+            {key === 'reasons' && renderReasonsEditor()}
+            {key === 'features' && renderFeaturesEditor()}
+            {key === 'accessories' && renderAccessoriesEditor()}
+            {key === 'faq' && renderFaqEditor()}
+            {key === 'cta' && renderCtaEditor()}
+          </div>
+        )}
+      </motion.div>
+    )
+  }
+
+  // Editores específicos de cada seção
+  const renderHeroEditor = () => (
+    <div className="space-y-4">
+      <Input
+        label="Título Principal"
+        value={content.hero.title}
+        onChange={(e) => updateHero('title', e.target.value)}
+        placeholder="Smart Watch"
+      />
+      <Input
+        label="Subtítulo"
+        value={content.hero.subtitle}
+        onChange={(e) => updateHero('subtitle', e.target.value)}
+        placeholder="O mais poderoso de todos os tempos."
+      />
+      <Input
+        label="Badge (opcional)"
+        value={content.hero.badge || ''}
+        onChange={(e) => updateHero('badge', e.target.value)}
+        placeholder="Novo"
+      />
+    </div>
+  )
+
+  const renderProductsEditor = () => (
+    <div className="space-y-6">
+      <div className="flex justify-end">
+        <button
+          onClick={addProduct}
+          className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2"
+        >
+          <Plus size={18} />
+          Adicionar Produto
+        </button>
+      </div>
+
+      {content.products.map((product, index) => (
+        <div key={product.id} className="border rounded-lg p-4 bg-gray-50">
+          <div className="flex items-start justify-between mb-4">
+            <h4 className="font-semibold">Produto {index + 1}: {product.name}</h4>
+            {content.products.length > 1 && (
+              <button
+                onClick={() => removeProduct(index)}
+                className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+              >
+                <Trash2 size={18} />
+              </button>
+            )}
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <Input
+              label="Nome do Produto"
+              value={product.name}
+              onChange={(e) => updateProduct(index, 'name', e.target.value)}
+            />
+            <Input
+              label="Preço"
+              value={product.price}
+              onChange={(e) => updateProduct(index, 'price', e.target.value)}
+              placeholder="R$ 0,00"
+            />
+            <Input
+              label="Preço Mensal (opcional)"
+              value={product.monthlyPrice || ''}
+              onChange={(e) => updateProduct(index, 'monthlyPrice', e.target.value)}
+              placeholder="R$ 458,25/mês"
+            />
+            <Input
+              label="Badge (opcional)"
+              value={product.badge || ''}
+              onChange={(e) => updateProduct(index, 'badge', e.target.value)}
+              placeholder="Novo"
+            />
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-2">Descrição</label>
+            <textarea
+              value={product.description}
+              onChange={(e) => updateProduct(index, 'description', e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg"
+              rows={2}
+            />
+          </div>
+
+          <div className="mt-4">
+            <Input
+              label="URL da Imagem"
+              value={product.image}
+              onChange={(e) => updateProduct(index, 'image', e.target.value)}
+              placeholder="https://..."
+            />
+          </div>
+
+          {/* Links dos Botões */}
+          <div className="mt-4 grid md:grid-cols-2 gap-4">
+            <Input
+              label="Texto do Botão 'Saiba mais'"
+              value={product.learnMoreText || 'Saiba mais'}
+              onChange={(e) => updateProduct(index, 'learnMoreText', e.target.value)}
+            />
+            <Input
+              label="Link 'Saiba mais'"
+              value={product.learnMoreLink || ''}
+              onChange={(e) => updateProduct(index, 'learnMoreLink', e.target.value)}
+              placeholder="https://..."
+            />
+            <Input
+              label="Texto do Botão 'Comprar'"
+              value={product.buyText || 'Comprar'}
+              onChange={(e) => updateProduct(index, 'buyText', e.target.value)}
+            />
+            <Input
+              label="Link 'Comprar'"
+              value={product.buyLink || ''}
+              onChange={(e) => updateProduct(index, 'buyLink', e.target.value)}
+              placeholder="https://..."
+            />
+          </div>
+
+          {/* Cores */}
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-2">Cores do Produto</label>
+            <div className="flex flex-wrap gap-2 items-center">
+              {product.colors.map((color, colorIndex) => (
+                <div key={colorIndex} className="flex items-center gap-1">
+                  <input
+                    type="color"
+                    value={color}
+                    onChange={(e) => updateProductColor(index, colorIndex, e.target.value)}
+                    className="w-8 h-8 rounded border cursor-pointer"
+                  />
+                  <button
+                    onClick={() => removeProductColor(index, colorIndex)}
+                    className="p-1 text-red-500 hover:bg-red-50 rounded"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={() => addProductColor(index)}
+                className="p-2 bg-gray-200 rounded hover:bg-gray-300"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+
+  const renderReasonsEditor = () => (
+    <div className="space-y-6">
+      <Input
+        label="Título da Seção"
+        value={content.reasons.title}
+        onChange={(e) => updateReasons('title', e.target.value)}
+        placeholder="Motivos para comprar seu Smart Watch aqui."
+      />
+      
+      <div className="grid md:grid-cols-2 gap-4">
+        <Input
+          label="Texto do Link"
+          value={content.reasons.link.text}
+          onChange={(e) => updateReasons('link', { ...content.reasons.link, text: e.target.value })}
+        />
+        <Input
+          label="URL do Link"
+          value={content.reasons.link.url}
+          onChange={(e) => updateReasons('link', { ...content.reasons.link, url: e.target.value })}
+        />
+      </div>
+
+      <div className="flex justify-between items-center">
+        <h4 className="font-medium">Itens</h4>
+        <button
+          onClick={addReasonItem}
+          className="px-3 py-1.5 bg-black text-white rounded-lg text-sm flex items-center gap-1"
+        >
+          <Plus size={16} />
+          Adicionar
+        </button>
+      </div>
+
+      {content.reasons.items.map((item, index) => (
+        <div key={index} className="border rounded-lg p-4 bg-gray-50">
+          <div className="flex justify-between items-start mb-3">
+            <span className="font-medium">Item {index + 1}</span>
+            <button
+              onClick={() => removeReasonItem(index)}
+              className="p-1 text-red-500 hover:bg-red-50 rounded"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Input
+              label="Título"
+              value={item.title}
+              onChange={(e) => updateReasonItem(index, 'title', e.target.value)}
+            />
+            <Input
+              label="Subtítulo"
+              value={item.subtitle}
+              onChange={(e) => updateReasonItem(index, 'subtitle', e.target.value)}
+            />
+          </div>
+          <div className="mt-3">
+            <label className="block text-sm font-medium mb-2">Descrição</label>
+            <textarea
+              value={item.description}
+              onChange={(e) => updateReasonItem(index, 'description', e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg"
+              rows={2}
+            />
+          </div>
+          <Input
+            label="URL da Imagem"
+            value={item.image}
+            onChange={(e) => updateReasonItem(index, 'image', e.target.value)}
+            className="mt-3"
+          />
+        </div>
+      ))}
+    </div>
+  )
+
+  const renderFeaturesEditor = () => (
+    <div className="space-y-6">
+      <Input
+        label="Título da Seção"
+        value={content.features.title}
+        onChange={(e) => updateFeatures('title', e.target.value)}
+        placeholder="Conheça melhor o Smart Watch."
+      />
+
+      <div className="flex justify-between items-center">
+        <h4 className="font-medium">Cards de Features</h4>
+        <button
+          onClick={addFeatureItem}
+          className="px-3 py-1.5 bg-black text-white rounded-lg text-sm flex items-center gap-1"
+        >
+          <Plus size={16} />
+          Adicionar
+        </button>
+      </div>
+
+      {content.features.items.map((item, index) => (
+        <div key={index} className="border rounded-lg p-4 bg-gray-50">
+          <div className="flex justify-between items-start mb-3">
+            <span className="font-medium">Feature {index + 1}</span>
+            <button
+              onClick={() => removeFeatureItem(index)}
+              className="p-1 text-red-500 hover:bg-red-50 rounded"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Input
+              label="Categoria"
+              value={item.category}
+              onChange={(e) => updateFeatureItem(index, 'category', e.target.value)}
+            />
+            <div>
+              <label className="block text-sm font-medium mb-2">Cor do Texto</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={item.textColor || '#ffffff'}
+                  onChange={(e) => updateFeatureItem(index, 'textColor', e.target.value)}
+                  className="w-10 h-10 rounded border cursor-pointer"
+                />
+                <input
+                  type="text"
+                  value={item.textColor || '#ffffff'}
+                  onChange={(e) => updateFeatureItem(index, 'textColor', e.target.value)}
+                  className="flex-1 px-3 py-2 border rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mt-3">
+            <label className="block text-sm font-medium mb-2">Título (use \n para quebra de linha)</label>
+            <textarea
+              value={item.title}
+              onChange={(e) => updateFeatureItem(index, 'title', e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg"
+              rows={2}
+            />
+          </div>
+          <Input
+            label="URL da Imagem de Fundo"
+            value={item.image}
+            onChange={(e) => updateFeatureItem(index, 'image', e.target.value)}
+            className="mt-3"
+          />
+        </div>
+      ))}
+    </div>
+  )
+
+  const renderAccessoriesEditor = () => (
+    <div className="space-y-6">
+      <Input
+        label="Título da Seção"
+        value={content.accessories.title}
+        onChange={(e) => updateAccessories('title', e.target.value)}
+      />
+      
+      <div className="grid md:grid-cols-2 gap-4">
+        <Input
+          label="Texto do Link"
+          value={content.accessories.link.text}
+          onChange={(e) => updateAccessories('link', { ...content.accessories.link, text: e.target.value })}
+        />
+        <Input
+          label="URL do Link"
+          value={content.accessories.link.url}
+          onChange={(e) => updateAccessories('link', { ...content.accessories.link, url: e.target.value })}
+        />
+      </div>
+
+      <h4 className="font-medium pt-4 border-t">Banner</h4>
+      <div className="grid md:grid-cols-2 gap-4">
+        <Input
+          label="Título do Banner"
+          value={content.accessories.banner.title}
+          onChange={(e) => updateAccessoriesBanner('title', e.target.value)}
+        />
+        <Input
+          label="URL da Imagem"
+          value={content.accessories.banner.image}
+          onChange={(e) => updateAccessoriesBanner('image', e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-2">Descrição do Banner</label>
+        <textarea
+          value={content.accessories.banner.description}
+          onChange={(e) => updateAccessoriesBanner('description', e.target.value)}
+          className="w-full px-4 py-2 border rounded-lg"
+          rows={2}
+        />
+      </div>
+      <div className="grid md:grid-cols-2 gap-4">
+        <Input
+          label="Texto do Link do Banner"
+          value={content.accessories.banner.link.text}
+          onChange={(e) => updateAccessoriesBanner('link', { ...content.accessories.banner.link, text: e.target.value })}
+        />
+        <Input
+          label="URL do Link do Banner"
+          value={content.accessories.banner.link.url}
+          onChange={(e) => updateAccessoriesBanner('link', { ...content.accessories.banner.link, url: e.target.value })}
+        />
+      </div>
+    </div>
+  )
+
+  const renderFaqEditor = () => (
+    <div className="space-y-6">
+      <Input
+        label="Título da Seção"
+        value={content.faq.title}
+        onChange={(e) => updateFaq('title', e.target.value)}
+      />
+
+      <div className="flex justify-between items-center">
+        <h4 className="font-medium">Perguntas</h4>
+        <button
+          onClick={addFaqItem}
+          className="px-3 py-1.5 bg-black text-white rounded-lg text-sm flex items-center gap-1"
+        >
+          <Plus size={16} />
+          Adicionar
+        </button>
+      </div>
+
+      {content.faq.items.map((item, index) => (
+        <div key={index} className="border rounded-lg p-4 bg-gray-50">
+          <div className="flex justify-between items-start mb-3">
+            <span className="font-medium">Pergunta {index + 1}</span>
+            <button
+              onClick={() => removeFaqItem(index)}
+              className="p-1 text-red-500 hover:bg-red-50 rounded"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+          <Input
+            label="Pergunta"
+            value={item.question}
+            onChange={(e) => updateFaqItem(index, 'question', e.target.value)}
+          />
+          <div className="mt-3">
+            <label className="block text-sm font-medium mb-2">Resposta</label>
+            <textarea
+              value={item.answer}
+              onChange={(e) => updateFaqItem(index, 'answer', e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg"
+              rows={3}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+
+  const renderCtaEditor = () => (
+    <div className="space-y-4">
+      <Input
+        label="Título"
+        value={content.cta.title}
+        onChange={(e) => updateCta('title', e.target.value)}
+      />
+      <Input
+        label="Texto do Botão"
+        value={content.cta.buttonText}
+        onChange={(e) => updateCta('buttonText', e.target.value)}
+      />
+      <Input
+        label="Link do Botão"
+        value={content.cta.buttonLink}
+        onChange={(e) => updateCta('buttonLink', e.target.value)}
+      />
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -176,7 +902,7 @@ function AppleEditorContent() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
             <Link
-              href="/dashboard/layouts"
+              href={`/dashboard/layouts?selected=${layoutId}`}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft size={20} />
@@ -202,222 +928,102 @@ function AppleEditorContent() {
           </div>
         </div>
 
-        <div className="max-w-4xl space-y-6">
-          {/* Hero Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">🎯 Hero Section</h2>
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Seções Ordenáveis */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-blue-800">
+                <strong>💡 Dica:</strong> Arraste as seções para reordená-las. Use os ícones de olho para ocultar/mostrar seções.
+              </p>
+            </div>
             
-            <div className="space-y-4">
-              <Input
-                label="Título Principal"
-                value={content.hero.title}
-                onChange={(e) => updateHero('title', e.target.value)}
-                placeholder="Smart Watch"
-              />
-              <Input
-                label="Subtítulo"
-                value={content.hero.subtitle}
-                onChange={(e) => updateHero('subtitle', e.target.value)}
-                placeholder="O mais poderoso de todos os tempos."
-              />
-              <Input
-                label="Badge (opcional)"
-                value={content.hero.badge || ''}
-                onChange={(e) => updateHero('badge', e.target.value)}
-                placeholder="Novo"
-              />
-            </div>
-          </motion.div>
+            {sectionOrder.map((key, index) => renderSection(key, index))}
+          </div>
 
-          {/* Produtos */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">📦 Produtos em Destaque</h2>
-              <button
-                onClick={addProduct}
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2"
-              >
-                <Plus size={18} />
-                Adicionar Produto
-              </button>
-            </div>
-
-            <div className="space-y-6">
-              {content.products.map((product, index) => (
-                <div key={product.id} className="border rounded-lg p-4 bg-gray-50">
-                  <div className="flex items-start justify-between mb-4">
-                    <h3 className="font-semibold">Produto {index + 1}</h3>
-                    {content.products.length > 1 && (
-                      <button
-                        onClick={() => removeProduct(index)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <Input
-                      label="Nome do Produto"
-                      value={product.name}
-                      onChange={(e) => updateProduct(index, 'name', e.target.value)}
+          {/* Configurações Gerais */}
+          <div className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-lg shadow-md p-6 sticky top-4"
+            >
+              <h2 className="text-xl font-bold mb-6">⚙️ Configurações Gerais</h2>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Cor Primária (Botões)</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={content.settings.primaryColor}
+                      onChange={(e) => updateSettings('primaryColor', e.target.value)}
+                      className="w-10 h-10 rounded border cursor-pointer"
                     />
-                    <Input
-                      label="Preço"
-                      value={product.price}
-                      onChange={(e) => updateProduct(index, 'price', e.target.value)}
-                      placeholder="R$ 0,00"
-                    />
-                    <Input
-                      label="Preço Mensal (opcional)"
-                      value={product.monthlyPrice || ''}
-                      onChange={(e) => updateProduct(index, 'monthlyPrice', e.target.value)}
-                      placeholder="R$ 458,25/mês"
-                    />
-                    <Input
-                      label="Badge (opcional)"
-                      value={product.badge || ''}
-                      onChange={(e) => updateProduct(index, 'badge', e.target.value)}
-                      placeholder="Novo"
-                    />
-                  </div>
-
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium mb-2">Descrição</label>
-                    <textarea
-                      value={product.description}
-                      onChange={(e) => updateProduct(index, 'description', e.target.value)}
-                      className="w-full px-4 py-2 border rounded-lg"
-                      rows={2}
-                    />
-                  </div>
-
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium mb-2">Imagem do Produto</label>
-                    <Input
-                      value={product.image}
-                      onChange={(e) => updateProduct(index, 'image', e.target.value)}
-                      placeholder="URL da imagem"
+                    <input
+                      type="text"
+                      value={content.settings.primaryColor}
+                      onChange={(e) => updateSettings('primaryColor', e.target.value)}
+                      className="flex-1 px-3 py-2 border rounded-lg"
                     />
                   </div>
                 </div>
-              ))}
-            </div>
-          </motion.div>
 
-          {/* CTA Final */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">🚀 CTA Final</h2>
-            
-            <div className="space-y-4">
-              <Input
-                label="Título do CTA"
-                value={content.cta.title}
-                onChange={(e) => updateCta('title', e.target.value)}
-                placeholder="Compre agora"
-              />
-              <Input
-                label="Texto do Botão"
-                value={content.cta.buttonText}
-                onChange={(e) => updateCta('buttonText', e.target.value)}
-                placeholder="Comprar"
-              />
-              <Input
-                label="Link do Botão"
-                value={content.cta.buttonLink}
-                onChange={(e) => updateCta('buttonLink', e.target.value)}
-                placeholder="https://..."
-              />
-            </div>
-          </motion.div>
-
-          {/* Configurações */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">⚙️ Configurações</h2>
-            
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Cor Primária</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={content.settings.primaryColor}
-                    onChange={(e) => updateSettings('primaryColor', e.target.value)}
-                    className="w-10 h-10 rounded border cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={content.settings.primaryColor}
-                    onChange={(e) => updateSettings('primaryColor', e.target.value)}
-                    className="flex-1 px-3 py-2 border rounded-lg"
-                  />
+                <div>
+                  <label className="block text-sm font-medium mb-2">Cor de Destaque (Badges)</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={content.settings.accentColor}
+                      onChange={(e) => updateSettings('accentColor', e.target.value)}
+                      className="w-10 h-10 rounded border cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={content.settings.accentColor}
+                      onChange={(e) => updateSettings('accentColor', e.target.value)}
+                      className="flex-1 px-3 py-2 border rounded-lg"
+                    />
+                  </div>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Cor de Fundo</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={content.settings.backgroundColor}
+                      onChange={(e) => updateSettings('backgroundColor', e.target.value)}
+                      className="w-10 h-10 rounded border cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={content.settings.backgroundColor}
+                      onChange={(e) => updateSettings('backgroundColor', e.target.value)}
+                      className="flex-1 px-3 py-2 border rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <Input
+                  label="WhatsApp (opcional)"
+                  value={content.settings.whatsappNumber || ''}
+                  onChange={(e) => updateSettings('whatsappNumber', e.target.value)}
+                  placeholder="5534999999999"
+                />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Cor de Destaque</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={content.settings.accentColor}
-                    onChange={(e) => updateSettings('accentColor', e.target.value)}
-                    className="w-10 h-10 rounded border cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={content.settings.accentColor}
-                    onChange={(e) => updateSettings('accentColor', e.target.value)}
-                    className="flex-1 px-3 py-2 border rounded-lg"
-                  />
-                </div>
+              <div className="mt-6 pt-6 border-t">
+                <Link
+                  href={`/lp/${currentLayout?.slug}/${currentVersion?.slug}`}
+                  target="_blank"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  <Eye size={18} />
+                  Ver Prévia
+                </Link>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Cor de Fundo</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="color"
-                    value={content.settings.backgroundColor}
-                    onChange={(e) => updateSettings('backgroundColor', e.target.value)}
-                    className="w-10 h-10 rounded border cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={content.settings.backgroundColor}
-                    onChange={(e) => updateSettings('backgroundColor', e.target.value)}
-                    className="flex-1 px-3 py-2 border rounded-lg"
-                  />
-                </div>
-              </div>
-
-              <Input
-                label="WhatsApp"
-                value={content.settings.whatsappNumber || ''}
-                onChange={(e) => updateSettings('whatsappNumber', e.target.value)}
-                placeholder="5534999999999"
-              />
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>
@@ -435,4 +1041,3 @@ export default function AppleEditorPage() {
     </Suspense>
   )
 }
-
