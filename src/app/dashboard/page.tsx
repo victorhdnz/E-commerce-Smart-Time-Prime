@@ -15,7 +15,6 @@ import {
   HelpCircle,
   ArrowRight,
   Palette,
-  Tags,
   Link2,
   Package,
   LogOut,
@@ -289,17 +288,10 @@ function DashboardContent() {
       items: [
         {
           title: 'Gerenciar Produtos',
-          description: 'Adicionar, editar e organizar produtos',
+          description: 'Adicionar, editar e organizar produtos e tópicos',
           href: '/dashboard/produtos',
           icon: Package,
           color: 'bg-orange-500',
-        },
-        {
-          title: 'Tópicos de Classificação',
-          description: 'Definir tópicos de comparação por categoria',
-          href: '/dashboard/produtos/topicos-classificacao',
-          icon: Tags,
-          color: 'bg-amber-500',
         },
         {
           title: 'Criar Links de Comparação',

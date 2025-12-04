@@ -521,9 +521,10 @@ function ComparePageContent() {
                     break
                   default:
                     const spec = product.specifications?.find(s => s.key === field)
-                    if (spec) {
-                      const rating = parseInt(spec.value) || 0
-                      const isRating = rating >= 1 && rating <= 5
+                    if (spec && spec.value && spec.value.trim() !== '') {
+                      const trimmedValue = spec.value.trim()
+                      const rating = parseInt(trimmedValue)
+                      const isRating = !isNaN(rating) && rating >= 1 && rating <= 5 && trimmedValue === String(rating)
                       
                       if (isRating) {
                         value = (
@@ -545,8 +546,12 @@ function ComparePageContent() {
                           </div>
                         )
                       } else {
-                        value = <span className="text-gray-700 text-xs break-words">{spec.value}</span>
+                        // Valor textual - pode ser "À prova d'água", "Resistente", etc.
+                        value = <span className="text-gray-700 text-xs break-words">{trimmedValue}</span>
                       }
+                    } else {
+                      // Produto não possui esta especificação
+                      value = <span className="text-gray-400 text-xs italic">Não possui</span>
                     }
                     break
                 }
@@ -680,10 +685,11 @@ function ComparePageContent() {
                       break
                     default:
                       // Buscar na especificações
-                      const spec = product.specifications?.find(s => s.key === field)
-                      if (spec) {
-                        const rating = parseInt(spec.value) || 0
-                        const isRating = rating >= 1 && rating <= 5
+                      const specDesktop = product.specifications?.find(s => s.key === field)
+                      if (specDesktop && specDesktop.value && specDesktop.value.trim() !== '') {
+                        const trimmedValue = specDesktop.value.trim()
+                        const rating = parseInt(trimmedValue)
+                        const isRating = !isNaN(rating) && rating >= 1 && rating <= 5 && trimmedValue === String(rating)
                         
                         if (isRating) {
                           value = (
@@ -705,8 +711,12 @@ function ComparePageContent() {
                             </div>
                           )
                         } else {
-                          value = <span className="text-gray-700 break-words">{spec.value}</span>
+                          // Valor textual - pode ser "À prova d'água", "Resistente", etc.
+                          value = <span className="text-gray-700 break-words">{trimmedValue}</span>
                         }
+                      } else {
+                        // Produto não possui esta especificação
+                        value = <span className="text-gray-400 italic">Não possui</span>
                       }
                       break
                   }
