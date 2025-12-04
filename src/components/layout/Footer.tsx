@@ -62,8 +62,8 @@ export const Footer = () => {
     loadSiteSettings()
   }, [])
 
-  // Ocultar footer em landing pages e na página principal
-  if (pathname?.startsWith('/lp/') || pathname === '/') {
+  // Ocultar footer em landing pages, página principal e dashboard
+  if (pathname?.startsWith('/lp/') || pathname === '/' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin')) {
     return null
   }
 

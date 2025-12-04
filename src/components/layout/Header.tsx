@@ -18,11 +18,6 @@ export const Header = () => {
   const { products } = useProductComparison()
   const comparisonCount = products.length
 
-  // Ocultar header em landing pages e na página principal
-  if (pathname?.startsWith('/lp/') || pathname === '/') {
-    return null
-  }
-
   // Carregar logo e nome do site
   useEffect(() => {
     const loadSiteSettings = async () => {
@@ -112,7 +107,10 @@ export const Header = () => {
     }
   }, [pathname])
 
-
+  // Ocultar header em landing pages, página principal e dashboard
+  if (pathname?.startsWith('/lp/') || pathname === '/' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin')) {
+    return null
+  }
 
   return (
     <header className="sticky top-0 z-30 bg-white shadow-sm">
