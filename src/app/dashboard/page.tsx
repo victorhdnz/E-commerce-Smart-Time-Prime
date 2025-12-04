@@ -410,34 +410,6 @@ function DashboardContent() {
             </motion.div>
           ))}
         </div>
-
-        {/* Quick Links Footer */}
-        <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-6 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Package size={18} className="text-gray-400" />
-                <span className="text-sm text-gray-600">
-                  <strong>{stats.productsForComparison}</strong> produtos ativos
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <FileText size={18} className="text-gray-400" />
-                <span className="text-sm text-gray-600">
-                  <strong>{stats.supportPages}</strong> páginas de suporte
-                </span>
-              </div>
-            </div>
-            <Link 
-              href="/comparar"
-              target="_blank"
-              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800"
-            >
-              <Link2 size={16} />
-              Abrir Comparador
-            </Link>
-          </div>
-        </div>
       </div>
     </div>
   )
