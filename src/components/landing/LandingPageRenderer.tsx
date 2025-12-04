@@ -24,32 +24,29 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
     if (sessionId && typeof window !== 'undefined') {
       sessionStorage.setItem('session_id', sessionId)
       
-    // Registrar analytics de forma assíncrona
-    const analyticsPromise = supabase
-      .from('landing_analytics')
-      .insert({
-        layout_id: layout.id,
-        version_id: version?.id || null,
-        session_id: sessionId,
-        event_type: 'page_view',
-        event_data: {
-          url: window.location.href,
-          referrer: document.referrer,
-        },
-        user_agent: navigator.userAgent,
-        referrer: document.referrer,
-      })
-    
-    // Garantir que seja uma Promise
-    if (analyticsPromise && typeof analyticsPromise.then === 'function') {
-      analyticsPromise
+      // Registrar analytics de forma assíncrona
+      Promise.resolve(
+        supabase
+          .from('landing_analytics')
+          .insert({
+            layout_id: layout.id,
+            version_id: version?.id || null,
+            session_id: sessionId,
+            event_type: 'page_view',
+            event_data: {
+              url: window.location.href,
+              referrer: document.referrer,
+            },
+            user_agent: navigator.userAgent,
+            referrer: document.referrer,
+          })
+      )
         .then(() => {
           // Analytics registrado
         })
         .catch((error) => {
           console.error('Erro ao registrar analytics:', error)
         })
-    }
     }
 
     // Tracking de scroll
@@ -62,23 +59,21 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
         )
         
         if (sessionId) {
-          const scrollPromise = supabase
-            .from('landing_analytics')
-            .insert({
-              layout_id: layout.id,
-              version_id: version?.id || null,
-              session_id: sessionId,
-              event_type: 'scroll',
-              event_data: {
-                scroll_depth: scrollDepth,
-              },
-            })
-          
-          if (scrollPromise && typeof scrollPromise.then === 'function') {
-            scrollPromise
-              .then(() => {})
-              .catch((error) => console.error('Erro ao registrar scroll:', error))
-          }
+          Promise.resolve(
+            supabase
+              .from('landing_analytics')
+              .insert({
+                layout_id: layout.id,
+                version_id: version?.id || null,
+                session_id: sessionId,
+                event_type: 'scroll',
+                event_data: {
+                  scroll_depth: scrollDepth,
+                },
+              })
+          )
+            .then(() => {})
+            .catch((error) => console.error('Erro ao registrar scroll:', error))
         }
       }, 500)
     }
@@ -88,23 +83,21 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
     const handleBeforeUnload = () => {
       const timeOnPage = Math.round((Date.now() - startTime) / 1000)
       if (sessionId && timeOnPage > 5) {
-        const timePromise = supabase
-          .from('landing_analytics')
-          .insert({
-            layout_id: layout.id,
-            version_id: version?.id || null,
-            session_id: sessionId,
-            event_type: 'time_on_page',
-            event_data: {
-              time_seconds: timeOnPage,
-            },
-          })
-        
-        if (timePromise && typeof timePromise.then === 'function') {
-          timePromise
-            .then(() => {})
-            .catch((error) => console.error('Erro ao registrar tempo:', error))
-        }
+        Promise.resolve(
+          supabase
+            .from('landing_analytics')
+            .insert({
+              layout_id: layout.id,
+              version_id: version?.id || null,
+              session_id: sessionId,
+              event_type: 'time_on_page',
+              event_data: {
+                time_seconds: timeOnPage,
+              },
+            })
+        )
+          .then(() => {})
+          .catch((error) => console.error('Erro ao registrar tempo:', error))
       }
     }
 
