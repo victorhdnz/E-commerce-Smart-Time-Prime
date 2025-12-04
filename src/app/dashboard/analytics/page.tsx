@@ -551,7 +551,7 @@ export default function AnalyticsPage() {
                 <MousePointer className="w-7 h-7 text-green-500" />
               </div>
               <p className="text-2xl font-bold text-gray-900">{summary.totalClicks.toLocaleString()}</p>
-              <p className="text-sm text-gray-500">Cliques ({summary.clickRate}%)</p>
+              <p className="text-sm text-gray-500">Cliques</p>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
