@@ -6,12 +6,10 @@ import { useAuth } from '@/hooks/useAuth'
 import { motion } from 'framer-motion'
 import {
   Layout,
-  Settings,
   BarChart3,
   GitCompare,
   FileText,
   Layers,
-  Eye,
   MousePointer,
   HelpCircle,
   ArrowRight,
@@ -346,23 +344,13 @@ function DashboardContent() {
               Olá, <span className="font-medium">{profile?.full_name || profile?.email}</span>
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              target="_blank"
-              className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
-            >
-              <Eye size={18} />
-              Ver Site
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
-            >
-              <LogOut size={18} />
-              Sair
-            </button>
-          </div>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+          >
+            <LogOut size={18} />
+            Sair
+          </button>
         </div>
 
         {/* Stats Grid */}
@@ -446,21 +434,14 @@ function DashboardContent() {
                   <strong>{stats.supportPages}</strong> páginas de suporte
                 </span>
               </div>
-              <Link 
-                href="/comparar"
-                target="_blank"
-                className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800"
-              >
-                <Link2 size={16} />
-                Abrir Comparador
-              </Link>
             </div>
             <Link 
-              href="/dashboard/configuracoes"
-              className="text-sm text-gray-500 hover:text-gray-900 flex items-center gap-1"
+              href="/comparar"
+              target="_blank"
+              className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800"
             >
-              <Settings size={16} />
-              Configurações
+              <Link2 size={16} />
+              Abrir Comparador
             </Link>
           </div>
         </div>

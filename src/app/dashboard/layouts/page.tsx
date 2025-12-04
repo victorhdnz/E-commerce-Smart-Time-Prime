@@ -38,8 +38,11 @@ export default function DashboardLayoutsPage() {
   const [selectedLayout, setSelectedLayout] = useState<LandingLayout | null>(null)
   const [versions, setVersions] = useState<LandingVersion[]>([])
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false)
+  const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false)
   const [editingVersion, setEditingVersion] = useState<LandingVersion | null>(null)
   const [copiedLink, setCopiedLink] = useState<string | null>(null)
+  const [layoutName, setLayoutName] = useState('')
+  const [layoutDescription, setLayoutDescription] = useState('')
   const supabase = createClient()
 
   const [versionFormData, setVersionFormData] = useState({
@@ -217,6 +220,48 @@ export default function DashboardLayoutsPage() {
     })
   }
 
+  const openLayoutModal = () => {
+    if (selectedLayout) {
+      setLayoutName(selectedLayout.name)
+      setLayoutDescription(selectedLayout.description || '')
+      setIsLayoutModalOpen(true)
+    }
+  }
+
+  const handleSaveLayout = async () => {
+    if (!selectedLayout || !layoutName.trim()) {
+      toast.error('Nome do layout é obrigatório')
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('landing_layouts')
+        .update({
+          name: layoutName.trim(),
+          description: layoutDescription.trim() || null,
+        })
+        .eq('id', selectedLayout.id)
+
+      if (error) throw error
+
+      toast.success('Layout atualizado!')
+      setIsLayoutModalOpen(false)
+      
+      // Atualizar a lista de layouts
+      const updatedLayouts = layouts.map(l => 
+        l.id === selectedLayout.id 
+          ? { ...l, name: layoutName.trim(), description: layoutDescription.trim() || null }
+          : l
+      )
+      setLayouts(updatedLayouts)
+      setSelectedLayout({ ...selectedLayout, name: layoutName.trim(), description: layoutDescription.trim() || null })
+    } catch (error: any) {
+      console.error('Erro ao atualizar layout:', error)
+      toast.error('Erro ao atualizar layout')
+    }
+  }
+
   const copyToClipboard = async (text: string, linkId: string) => {
     try {
       await navigator.clipboard.writeText(text)
@@ -345,14 +390,23 @@ export default function DashboardLayoutsPage() {
                           </button>
                         </div>
                       </div>
-                      <Link
-                        href={`/lp/${selectedLayout.slug}`}
-                        target="_blank"
-                        className="px-4 py-2 border rounded-lg hover:bg-gray-50 flex items-center gap-2"
-                      >
-                        <Eye size={16} />
-                        Visualizar
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={openLayoutModal}
+                          className="px-4 py-2 border rounded-lg hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <Edit size={16} />
+                          Renomear
+                        </button>
+                        <Link
+                          href={`/lp/${selectedLayout.slug}`}
+                          target="_blank"
+                          className="px-4 py-2 border rounded-lg hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <Eye size={16} />
+                          Visualizar
+                        </Link>
+                      </div>
                     </div>
 
                     {/* Cores do Layout */}
@@ -648,6 +702,61 @@ export default function DashboardLayoutsPage() {
                 </button>
                 <button
                   onClick={handleSaveVersion}
+                  className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800"
+                >
+                  Salvar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Edição do Layout */}
+        {isLayoutModalOpen && selectedLayout && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-md w-full">
+              <div className="p-6 border-b">
+                <h2 className="text-xl font-bold">Renomear Layout</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Altere o nome e descrição do layout
+                </p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Nome do Layout *</label>
+                  <input
+                    type="text"
+                    value={layoutName}
+                    onChange={(e) => setLayoutName(e.target.value)}
+                    className="w-full border rounded-lg px-4 py-2.5"
+                    placeholder="Nome do layout"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Descrição</label>
+                  <textarea
+                    value={layoutDescription}
+                    onChange={(e) => setLayoutDescription(e.target.value)}
+                    className="w-full border rounded-lg px-4 py-2.5 resize-none"
+                    rows={3}
+                    placeholder="Descrição opcional do layout"
+                  />
+                </div>
+                <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+                  <strong>Slug:</strong> /lp/{selectedLayout.slug}
+                  <br />
+                  <span className="text-xs">O slug não pode ser alterado pois afetaria URLs existentes</span>
+                </div>
+              </div>
+              <div className="p-6 border-t flex justify-end gap-4">
+                <button
+                  onClick={() => setIsLayoutModalOpen(false)}
+                  className="px-6 py-2.5 border rounded-lg hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveLayout}
                   className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800"
                 >
                   Salvar

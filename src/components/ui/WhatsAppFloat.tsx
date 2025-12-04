@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface WhatsAppFloatProps {
@@ -14,17 +15,26 @@ export const WhatsAppFloat = ({
   message = 'Olá! Gostaria de saber mais sobre os produtos.',
   className = ''
 }: WhatsAppFloatProps) => {
+  const pathname = usePathname()
   const [isVisible, setIsVisible] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
+  // Ocultar no dashboard e admin
+  const shouldHide = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin')
+
   useEffect(() => {
+    if (shouldHide) {
+      setIsVisible(false)
+      return
+    }
+    
     // Mostrar o botão após 2 segundos para não ser intrusivo
     const timer = setTimeout(() => {
       setIsVisible(true)
     }, 2000)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [shouldHide])
 
   const handleClick = () => {
     const encodedMessage = encodeURIComponent(message)
