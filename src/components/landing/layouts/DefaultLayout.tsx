@@ -162,14 +162,13 @@ export function DefaultLayout({
             subtitle={settings.hero_subtitle}
             badgeText={settings.hero_badge_text}
             ctaText={settings.hero_cta_text}
-            buttonText={settings.hero_button_text}
-            buttonLink={settings.hero_button_link}
+            heroButtonText={settings.hero_button_text}
+            heroButtonLink={settings.hero_button_link}
             backgroundColor={settings.hero_bg_color}
             textColor={settings.hero_text_color}
-            images={settings.hero_images || []}
-            banners={settings.hero_banners || []}
-            timerEnabled={settings.timer_enabled}
-            timerEndDate={settings.timer_end_date}
+            heroImages={settings.hero_images || []}
+            heroBanners={settings.hero_banners || []}
+            timerEndDate={settings.timer_end_date ? new Date(settings.timer_end_date) : undefined}
             viewerCountEnabled={settings.hero_viewer_count_enabled}
             viewerCountText={settings.hero_viewer_count_text}
           />
@@ -198,11 +197,11 @@ export function DefaultLayout({
             salePrice={settings.value_package_sale_price}
             deliveryText={settings.value_package_delivery_text}
             buttonText={settings.value_package_button_text}
+            buttonLink={settings.value_package_button_link}
             whatsappNumber={settings.value_package_whatsapp_number}
             discountText={settings.value_package_discount_text}
             promotionText={settings.value_package_promotion_text}
-            timerEnabled={settings.timer_enabled}
-            timerEndDate={settings.timer_end_date}
+            endDate={settings.timer_end_date ? new Date(settings.timer_end_date) : undefined}
           />
         )
       
@@ -211,9 +210,9 @@ export function DefaultLayout({
           <SocialProof
             key="social_proof"
             title={settings.social_proof_title}
-            reviews={settings.social_proof_reviews}
+            reviews={settings.social_proof_reviews || []}
             testimonialCount={settings.social_proof_testimonial_count}
-            showGoogleIcon={settings.social_proof_google_icon}
+            googleIcon={settings.social_proof_google_icon}
             allowPhotos={settings.social_proof_allow_photos}
           />
         )
@@ -282,7 +281,7 @@ export function DefaultLayout({
       {/* Fixed Timer */}
       {settings.timer_enabled && settings.timer_end_date && (
         <FixedTimer
-          endDate={settings.timer_end_date}
+          endDate={new Date(settings.timer_end_date)}
           backgroundColor={settings.fixed_timer_bg_color}
           textColor={settings.fixed_timer_text_color}
         />
@@ -292,8 +291,9 @@ export function DefaultLayout({
       {sectionOrder.map(sectionKey => renderSection(sectionKey))}
 
       {/* Exit Popup */}
-      {settings.exit_popup_enabled && (
+      {settings.exit_popup_enabled && settings.timer_end_date && (
         <ExitPopup
+          endDate={new Date(settings.timer_end_date)}
           title={settings.exit_popup_title}
           message={settings.exit_popup_message}
           buttonText={settings.exit_popup_button_text}
