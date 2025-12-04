@@ -275,17 +275,10 @@ export const useAuth = () => {
     }
   }, [supabase, ensureProfileExists]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const signInWithGoogle = async (returnUrl?: string) => {
-    // Salvar returnUrl no localStorage para recuperar após login
-    if (returnUrl && typeof window !== 'undefined') {
-      localStorage.setItem('auth_return_url', returnUrl)
-    }
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${getSiteUrl()}/auth/callback`,
-      },
+  const signInWithEmail = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     })
 
     if (error) {
@@ -348,7 +341,7 @@ export const useAuth = () => {
     user,
     profile,
     loading,
-    signInWithGoogle,
+    signInWithEmail,
     signOut,
     refreshProfile,
     isAdmin,
