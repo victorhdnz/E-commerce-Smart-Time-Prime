@@ -222,6 +222,9 @@ interface LandingSettings {
     secondary: string
     accent: string
     background: string
+    text: string
+    button: string
+    buttonText: string
   }
 }
 
@@ -473,6 +476,9 @@ function EditLandingPageContent() {
       secondary: '#ffffff',
       accent: '#FFD700',
       background: '#ffffff',
+      text: '#000000',
+      button: '#000000',
+      buttonText: '#ffffff',
     },
   })
 
@@ -1160,7 +1166,10 @@ function EditLandingPageContent() {
             primary: '#000000',
             secondary: '#666666',
             accent: '#FFD700',
-            background: '#FFFFFF'
+            background: '#FFFFFF',
+            text: '#000000',
+            button: '#000000',
+            buttonText: '#ffffff'
           }
         })
       } else {
