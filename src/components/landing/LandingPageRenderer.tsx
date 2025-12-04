@@ -24,27 +24,32 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
     if (sessionId && typeof window !== 'undefined') {
       sessionStorage.setItem('session_id', sessionId)
       
-      // Registrar analytics de forma assíncrona
-      supabase
-        .from('landing_analytics')
-        .insert({
-          layout_id: layout.id,
-          version_id: version?.id || null,
-          session_id: sessionId,
-          event_type: 'page_view',
-          event_data: {
-            url: window.location.href,
-            referrer: document.referrer,
-          },
-          user_agent: navigator.userAgent,
+    // Registrar analytics de forma assíncrona
+    const analyticsPromise = supabase
+      .from('landing_analytics')
+      .insert({
+        layout_id: layout.id,
+        version_id: version?.id || null,
+        session_id: sessionId,
+        event_type: 'page_view',
+        event_data: {
+          url: window.location.href,
           referrer: document.referrer,
-        })
+        },
+        user_agent: navigator.userAgent,
+        referrer: document.referrer,
+      })
+    
+    // Garantir que seja uma Promise
+    if (analyticsPromise && typeof analyticsPromise.then === 'function') {
+      analyticsPromise
         .then(() => {
           // Analytics registrado
         })
         .catch((error) => {
           console.error('Erro ao registrar analytics:', error)
         })
+    }
     }
 
     // Tracking de scroll
@@ -57,7 +62,7 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
         )
         
         if (sessionId) {
-          supabase
+          const scrollPromise = supabase
             .from('landing_analytics')
             .insert({
               layout_id: layout.id,
@@ -68,7 +73,12 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
                 scroll_depth: scrollDepth,
               },
             })
-            .catch(console.error)
+          
+          if (scrollPromise && typeof scrollPromise.then === 'function') {
+            scrollPromise
+              .then(() => {})
+              .catch((error) => console.error('Erro ao registrar scroll:', error))
+          }
         }
       }, 500)
     }
@@ -78,7 +88,7 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
     const handleBeforeUnload = () => {
       const timeOnPage = Math.round((Date.now() - startTime) / 1000)
       if (sessionId && timeOnPage > 5) {
-        supabase
+        const timePromise = supabase
           .from('landing_analytics')
           .insert({
             layout_id: layout.id,
@@ -89,7 +99,12 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
               time_seconds: timeOnPage,
             },
           })
-          .catch(console.error)
+        
+        if (timePromise && typeof timePromise.then === 'function') {
+          timePromise
+            .then(() => {})
+            .catch((error) => console.error('Erro ao registrar tempo:', error))
+        }
       }
     }
 
