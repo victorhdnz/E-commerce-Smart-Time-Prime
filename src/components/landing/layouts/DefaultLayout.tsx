@@ -7,10 +7,10 @@ import { createClient } from '@/lib/supabase/client'
 // Importar componentes da landing page
 import { HeroSection } from '@/components/landing/HeroSection'
 import { MediaShowcase } from '@/components/landing/MediaShowcase'
-import { ValuePackageSection } from '@/components/landing/ValuePackageSection'
-import { SocialProofSection } from '@/components/landing/SocialProofSection'
+import { ValuePackage } from '@/components/landing/ValuePackage'
+import { SocialProof } from '@/components/landing/SocialProof'
 import { StorySection } from '@/components/landing/StorySection'
-import { WhatsAppVipSection } from '@/components/landing/WhatsAppVipSection'
+import { WhatsAppVipRegistration } from '@/components/landing/WhatsAppVipRegistration'
 import { AboutUsSection } from '@/components/landing/AboutUsSection'
 import { FAQSection } from '@/components/landing/FAQSection'
 import { ContactSection } from '@/components/landing/ContactSection'
@@ -189,7 +189,7 @@ export function DefaultLayout({
       
       case 'value_package':
         return (
-          <ValuePackageSection
+          <ValuePackage
             key="value_package"
             title={settings.value_package_title}
             image={settings.value_package_image}
@@ -208,7 +208,7 @@ export function DefaultLayout({
       
       case 'social_proof':
         return (
-          <SocialProofSection
+          <SocialProof
             key="social_proof"
             title={settings.social_proof_title}
             reviews={settings.social_proof_reviews}
@@ -230,7 +230,7 @@ export function DefaultLayout({
         )
       
       case 'whatsapp_vip':
-        return <WhatsAppVipSection key="whatsapp_vip" />
+        return <WhatsAppVipRegistration key="whatsapp_vip" />
       
       case 'about_us':
         return (
