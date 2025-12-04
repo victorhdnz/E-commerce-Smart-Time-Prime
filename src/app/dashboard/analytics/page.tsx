@@ -5,21 +5,24 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
 import { LandingLayout, LandingVersion, LandingAnalytics } from '@/types'
-import { BarChart3, Clock, Eye, X, ArrowLeft, RefreshCw, Users, Activity, ChevronDown, ChevronUp } from 'lucide-react'
+import { BarChart3, Clock, Eye, X, ArrowLeft, RefreshCw, Users, Activity, ChevronDown, ChevronUp, MousePointer, Trash2, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
 interface AnalyticsSummary {
   totalViews: number
+  totalClicks: number
   uniqueVisitors: number
   averageTimeOnPage: number
   averageScrollDepth: number
   bounceRate: number
+  clickRate: number
 }
 
 interface DailyStats {
   date: string
   views: number
+  clicks: number
   visitors: number
   avgTime: number
   avgScroll: number
@@ -29,9 +32,22 @@ interface LayoutPerformance {
   layoutId: string
   layoutName: string
   views: number
+  clicks: number
   visitors: number
   avgTime: number
   avgScroll: number
+  bounceRate: number
+  insights: string[]
+}
+
+interface SessionData {
+  sessionId: string
+  layoutName: string
+  startTime: string
+  duration: number
+  scrollDepth: number
+  clicks: number
+  pageViews: number
 }
 
 export default function AnalyticsPage() {
@@ -45,10 +61,14 @@ export default function AnalyticsPage() {
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null)
   const [dailyStats, setDailyStats] = useState<DailyStats[]>([])
   const [layoutPerformance, setLayoutPerformance] = useState<LayoutPerformance[]>([])
+  const [sessions, setSessions] = useState<SessionData[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d')
   const [showDetails, setShowDetails] = useState(false)
+  const [showSessions, setShowSessions] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -121,7 +141,7 @@ export default function AnalyticsPage() {
         query = query.eq('version_id', selectedVersion)
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false }).limit(1000)
+      const { data, error } = await query.order('created_at', { ascending: false }).limit(2000)
 
       if (error) throw error
 
@@ -129,11 +149,41 @@ export default function AnalyticsPage() {
       calculateSummary(data || [])
       calculateDailyStats(data || [])
       calculateLayoutPerformance(data || [])
+      calculateSessions(data || [])
     } catch (error: any) {
       console.error('Erro ao carregar analytics:', error)
       toast.error('Erro ao carregar analytics')
     } finally {
       setRefreshing(false)
+    }
+  }
+
+  const handleDeleteAllData = async () => {
+    try {
+      setDeleting(true)
+      
+      let query = supabase.from('landing_analytics').delete()
+      
+      // Se tiver layout selecionado, deletar apenas desse layout
+      if (selectedLayout) {
+        query = query.eq('layout_id', selectedLayout)
+      } else {
+        // Deletar todos - precisa de uma condição, então usamos created_at > 1970
+        query = query.gte('created_at', '1970-01-01')
+      }
+
+      const { error } = await query
+
+      if (error) throw error
+
+      toast.success(selectedLayout ? 'Dados do layout apagados!' : 'Todos os dados de analytics foram apagados!')
+      setShowDeleteModal(false)
+      loadAnalytics()
+    } catch (error: any) {
+      console.error('Erro ao apagar dados:', error)
+      toast.error('Erro ao apagar dados')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -153,10 +203,12 @@ export default function AnalyticsPage() {
 
   const calculateSummary = (data: LandingAnalytics[]) => {
     const views = data.filter(a => a.event_type === 'page_view')
+    const clicks = data.filter(a => a.event_type === 'click')
     const scrolls = data.filter(a => a.event_type === 'scroll')
     const timeOnPage = data.filter(a => a.event_type === 'time_on_page')
 
     const totalViews = views.length
+    const totalClicks = clicks.length
     
     // Visitantes únicos baseado em session_id
     const uniqueSessions = new Set(views.map(v => v.session_id))
@@ -177,7 +229,7 @@ export default function AnalyticsPage() {
       const hasScroll = sessionEvents.some(e => {
         if (e.event_type === 'scroll') {
           const depth = (e.event_data as any)?.scroll_depth || 0
-          return depth > 25 // Considera engajamento se scrollou mais de 25%
+          return depth > 25
         }
         return false
       })
@@ -185,23 +237,28 @@ export default function AnalyticsPage() {
     }).length
     const bounceRate = sessions.size > 0 ? (bouncedSessions / sessions.size) * 100 : 0
 
+    // Taxa de cliques
+    const clickRate = totalViews > 0 ? (totalClicks / totalViews) * 100 : 0
+
     setSummary({
       totalViews,
+      totalClicks,
       uniqueVisitors,
       averageTimeOnPage: Math.round(avgTimeOnPage),
       averageScrollDepth: Math.round(avgScrollDepth),
       bounceRate: Math.round(bounceRate),
+      clickRate: Math.round(clickRate * 10) / 10,
     })
   }
 
   const calculateDailyStats = (data: LandingAnalytics[]) => {
-    const dailyMap = new Map<string, { views: number; sessions: Set<string>; times: number[]; scrolls: number[] }>()
+    const dailyMap = new Map<string, { views: number; clicks: number; sessions: Set<string>; times: number[]; scrolls: number[] }>()
 
     data.forEach(event => {
       const date = new Date(event.created_at).toLocaleDateString('pt-BR')
       
       if (!dailyMap.has(date)) {
-        dailyMap.set(date, { views: 0, sessions: new Set(), times: [], scrolls: [] })
+        dailyMap.set(date, { views: 0, clicks: 0, sessions: new Set(), times: [], scrolls: [] })
       }
       
       const dayStats = dailyMap.get(date)!
@@ -209,6 +266,8 @@ export default function AnalyticsPage() {
       if (event.event_type === 'page_view') {
         dayStats.views++
         dayStats.sessions.add(event.session_id)
+      } else if (event.event_type === 'click') {
+        dayStats.clicks++
       } else if (event.event_type === 'time_on_page') {
         dayStats.times.push((event.event_data as any)?.time_seconds || 0)
       } else if (event.event_type === 'scroll') {
@@ -220,31 +279,35 @@ export default function AnalyticsPage() {
       .map(([date, stats]) => ({
         date,
         views: stats.views,
+        clicks: stats.clicks,
         visitors: stats.sessions.size,
         avgTime: stats.times.length > 0 ? Math.round(stats.times.reduce((a, b) => a + b, 0) / stats.times.length) : 0,
         avgScroll: stats.scrolls.length > 0 ? Math.round(stats.scrolls.reduce((a, b) => a + b, 0) / stats.scrolls.length) : 0,
       }))
-      .slice(0, 7) // Últimos 7 dias
+      .slice(0, 7)
 
     setDailyStats(stats)
   }
 
   const calculateLayoutPerformance = (data: LandingAnalytics[]) => {
-    const layoutMap = new Map<string, { views: number; sessions: Set<string>; times: number[]; scrolls: number[] }>()
+    const layoutMap = new Map<string, { views: number; clicks: number; sessions: Set<string>; times: number[]; scrolls: number[]; allEvents: LandingAnalytics[] }>()
 
     data.forEach(event => {
       const layoutId = event.layout_id
-      if (!layoutId) return // Skip eventos sem layout_id
+      if (!layoutId) return
       
       if (!layoutMap.has(layoutId)) {
-        layoutMap.set(layoutId, { views: 0, sessions: new Set(), times: [], scrolls: [] })
+        layoutMap.set(layoutId, { views: 0, clicks: 0, sessions: new Set(), times: [], scrolls: [], allEvents: [] })
       }
       
       const layoutStats = layoutMap.get(layoutId)!
+      layoutStats.allEvents.push(event)
       
       if (event.event_type === 'page_view') {
         layoutStats.views++
         layoutStats.sessions.add(event.session_id)
+      } else if (event.event_type === 'click') {
+        layoutStats.clicks++
       } else if (event.event_type === 'time_on_page') {
         layoutStats.times.push((event.event_data as any)?.time_seconds || 0)
       } else if (event.event_type === 'scroll') {
@@ -255,18 +318,111 @@ export default function AnalyticsPage() {
     const performance: LayoutPerformance[] = Array.from(layoutMap.entries())
       .map(([layoutId, stats]) => {
         const layout = layouts.find(l => l.id === layoutId)
+        const avgTime = stats.times.length > 0 ? Math.round(stats.times.reduce((a, b) => a + b, 0) / stats.times.length) : 0
+        const avgScroll = stats.scrolls.length > 0 ? Math.round(stats.scrolls.reduce((a, b) => a + b, 0) / stats.scrolls.length) : 0
+        
+        // Calcular bounce rate do layout
+        const sessions = new Set(stats.allEvents.map(e => e.session_id))
+        const bouncedSessions = Array.from(sessions).filter(sessionId => {
+          const sessionEvents = stats.allEvents.filter(a => a.session_id === sessionId)
+          const hasScroll = sessionEvents.some(e => {
+            if (e.event_type === 'scroll') {
+              const depth = (e.event_data as any)?.scroll_depth || 0
+              return depth > 25
+            }
+            return false
+          })
+          return !hasScroll
+        }).length
+        const bounceRate = sessions.size > 0 ? Math.round((bouncedSessions / sessions.size) * 100) : 0
+
+        // Gerar insights específicos para o layout
+        const insights: string[] = []
+        
+        if (bounceRate > 70) {
+          insights.push('⚠️ Taxa de rejeição alta. Revise o conteúdo inicial.')
+        }
+        if (avgScroll < 40) {
+          insights.push('📜 Scroll baixo. Considere reorganizar o conteúdo.')
+        }
+        if (avgTime < 10) {
+          insights.push('⏱️ Tempo baixo. O conteúdo pode não estar engajando.')
+        }
+        if (stats.clicks === 0 && stats.views > 5) {
+          insights.push('👆 Nenhum clique registrado. Verifique os CTAs.')
+        }
+        if (stats.clicks > 0 && stats.views > 0) {
+          const clickRate = (stats.clicks / stats.views) * 100
+          if (clickRate > 10) {
+            insights.push('✅ Boa taxa de cliques!')
+          }
+        }
+        if (bounceRate <= 50 && avgScroll >= 50 && avgTime >= 15) {
+          insights.push('🎯 Ótima performance geral!')
+        }
+        if (insights.length === 0) {
+          insights.push('📊 Performance moderada. Continue monitorando.')
+        }
+
         return {
           layoutId,
           layoutName: layout?.name || 'Layout desconhecido',
           views: stats.views,
+          clicks: stats.clicks,
           visitors: stats.sessions.size,
-          avgTime: stats.times.length > 0 ? Math.round(stats.times.reduce((a, b) => a + b, 0) / stats.times.length) : 0,
-          avgScroll: stats.scrolls.length > 0 ? Math.round(stats.scrolls.reduce((a, b) => a + b, 0) / stats.scrolls.length) : 0,
+          avgTime,
+          avgScroll,
+          bounceRate,
+          insights,
         }
       })
       .sort((a, b) => b.views - a.views)
 
     setLayoutPerformance(performance)
+  }
+
+  const calculateSessions = (data: LandingAnalytics[]) => {
+    const sessionMap = new Map<string, { events: LandingAnalytics[]; layoutId: string | null }>()
+
+    data.forEach(event => {
+      if (!sessionMap.has(event.session_id)) {
+        sessionMap.set(event.session_id, { events: [], layoutId: event.layout_id })
+      }
+      sessionMap.get(event.session_id)!.events.push(event)
+    })
+
+    const sessionData: SessionData[] = Array.from(sessionMap.entries())
+      .map(([sessionId, { events, layoutId }]) => {
+        const layout = layouts.find(l => l.id === layoutId)
+        const pageViews = events.filter(e => e.event_type === 'page_view').length
+        const clicks = events.filter(e => e.event_type === 'click').length
+        
+        const scrollEvents = events.filter(e => e.event_type === 'scroll')
+        const maxScroll = scrollEvents.length > 0
+          ? Math.max(...scrollEvents.map(e => (e.event_data as any)?.scroll_depth || 0))
+          : 0
+        
+        const timeEvent = events.find(e => e.event_type === 'time_on_page')
+        const duration = timeEvent ? (timeEvent.event_data as any)?.time_seconds || 0 : 0
+        
+        const startTime = events.length > 0 
+          ? new Date(Math.min(...events.map(e => new Date(e.created_at).getTime()))).toISOString()
+          : ''
+
+        return {
+          sessionId,
+          layoutName: layout?.name || 'Desconhecido',
+          startTime,
+          duration,
+          scrollDepth: maxScroll,
+          clicks,
+          pageViews,
+        }
+      })
+      .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+      .slice(0, 50)
+
+    setSessions(sessionData)
   }
 
   const getEngagementLevel = (scrollDepth: number, timeOnPage: number): { label: string; color: string } => {
@@ -291,17 +447,26 @@ export default function AnalyticsPage() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <Link
-              href="/dashboard"
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft size={20} />
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-              <p className="text-gray-600">Acompanhe o desempenho das suas landing pages</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft size={20} />
+              </Link>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
+                <p className="text-gray-600">Acompanhe o desempenho das suas landing pages</p>
+              </div>
             </div>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2 transition-colors"
+            >
+              <Trash2 size={18} />
+              Limpar Dados
+            </button>
           </div>
         </div>
 
@@ -372,140 +537,105 @@ export default function AnalyticsPage() {
 
         {/* Resumo Principal */}
         {summary && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <div className="flex items-center justify-between mb-3">
-                <Eye className="w-8 h-8 text-blue-500" />
+                <Eye className="w-7 h-7 text-blue-500" />
               </div>
-              <p className="text-3xl font-bold text-gray-900">{summary.totalViews.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">{summary.totalViews.toLocaleString()}</p>
               <p className="text-sm text-gray-500">Visualizações</p>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <div className="flex items-center justify-between mb-3">
-                <Users className="w-8 h-8 text-green-500" />
+                <MousePointer className="w-7 h-7 text-green-500" />
               </div>
-              <p className="text-3xl font-bold text-gray-900">{summary.uniqueVisitors.toLocaleString()}</p>
-              <p className="text-sm text-gray-500">Visitantes únicos</p>
+              <p className="text-2xl font-bold text-gray-900">{summary.totalClicks.toLocaleString()}</p>
+              <p className="text-sm text-gray-500">Cliques ({summary.clickRate}%)</p>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <div className="flex items-center justify-between mb-3">
-                <Clock className="w-8 h-8 text-orange-500" />
+                <Users className="w-7 h-7 text-purple-500" />
               </div>
-              <p className="text-3xl font-bold text-gray-900">{summary.averageTimeOnPage}s</p>
+              <p className="text-2xl font-bold text-gray-900">{summary.uniqueVisitors.toLocaleString()}</p>
+              <p className="text-sm text-gray-500">Visitantes</p>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <Clock className="w-7 h-7 text-orange-500" />
+              </div>
+              <p className="text-2xl font-bold text-gray-900">{summary.averageTimeOnPage}s</p>
               <p className="text-sm text-gray-500">Tempo médio</p>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <div className="flex items-center justify-between mb-3">
-                <BarChart3 className="w-8 h-8 text-indigo-500" />
+                <BarChart3 className="w-7 h-7 text-indigo-500" />
               </div>
-              <p className="text-3xl font-bold text-gray-900">{summary.averageScrollDepth}%</p>
+              <p className="text-2xl font-bold text-gray-900">{summary.averageScrollDepth}%</p>
               <p className="text-sm text-gray-500">Scroll médio</p>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
               <div className="flex items-center justify-between mb-3">
-                <X className="w-8 h-8 text-red-500" />
+                <X className="w-7 h-7 text-red-500" />
               </div>
-              <p className="text-3xl font-bold text-gray-900">{summary.bounceRate}%</p>
+              <p className="text-2xl font-bold text-gray-900">{summary.bounceRate}%</p>
               <p className="text-sm text-gray-500">Taxa de rejeição</p>
             </div>
           </div>
         )}
 
-        {/* Análise de Engajamento */}
-        {summary && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">📊 Análise de Engajamento</h2>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Nível de Engajamento */}
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-600 mb-3">Nível Geral de Engajamento</h3>
-                {(() => {
-                  const engagement = getEngagementLevel(summary.averageScrollDepth, summary.averageTimeOnPage)
-                  return (
-                    <div className="flex items-center gap-3">
-                      <span className={`px-4 py-2 rounded-lg text-lg font-bold ${engagement.color}`}>
-                        {engagement.label}
-                      </span>
-                      <div className="text-sm text-gray-500">
-                        <p>Baseado em {summary.averageScrollDepth}% de scroll</p>
-                        <p>e {summary.averageTimeOnPage}s de tempo médio</p>
-                      </div>
-                    </div>
-                  )
-                })()}
-              </div>
-
-              {/* Insights */}
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-600 mb-3">💡 Insights</h3>
-                <ul className="space-y-2 text-sm">
-                  {summary.bounceRate > 70 && (
-                    <li className="flex items-start gap-2">
-                      <span className="text-red-500">⚠️</span>
-                      <span>Taxa de rejeição alta. Considere melhorar o conteúdo inicial da página.</span>
-                    </li>
-                  )}
-                  {summary.averageScrollDepth < 50 && (
-                    <li className="flex items-start gap-2">
-                      <span className="text-yellow-500">💡</span>
-                      <span>Visitantes não estão vendo toda a página. Considere reorganizar o conteúdo.</span>
-                    </li>
-                  )}
-                  {summary.averageTimeOnPage < 15 && (
-                    <li className="flex items-start gap-2">
-                      <span className="text-orange-500">⏱️</span>
-                      <span>Tempo na página baixo. O conteúdo pode não estar engajando o suficiente.</span>
-                    </li>
-                  )}
-                  {summary.bounceRate <= 70 && summary.averageScrollDepth >= 50 && summary.averageTimeOnPage >= 15 && (
-                    <li className="flex items-start gap-2">
-                      <span className="text-green-500">✅</span>
-                      <span>Boa performance! Continue monitorando e fazendo melhorias incrementais.</span>
-                    </li>
-                  )}
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Performance por Layout */}
-        {layoutPerformance.length > 0 && !selectedLayout && (
+        {/* Performance por Layout com Insights */}
+        {layoutPerformance.length > 0 && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">🏆 Performance por Layout</h2>
             
-            <div className="space-y-3">
+            <div className="space-y-4">
               {layoutPerformance.map((lp, index) => (
-                <div key={lp.layoutId} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-gray-900">{lp.layoutName}</h3>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-500 mt-1">
-                      <span className="flex items-center gap-1">
-                        <Eye size={14} /> {lp.views} views
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users size={14} /> {lp.visitors} visitantes
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock size={14} /> {lp.avgTime}s
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <BarChart3 size={14} /> {lp.avgScroll}%
-                      </span>
+                <div key={lp.layoutId} className="p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-gray-900 text-white rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{lp.layoutName}</h3>
+                        <div className="flex flex-wrap gap-3 text-sm text-gray-500 mt-1">
+                          <span className="flex items-center gap-1">
+                            <Eye size={14} /> {lp.views} views
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MousePointer size={14} /> {lp.clicks} cliques
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Users size={14} /> {lp.visitors} visitantes
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock size={14} /> {lp.avgTime}s
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <BarChart3 size={14} /> {lp.avgScroll}%
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <X size={14} /> {lp.bounceRate}% rejeição
+                          </span>
+                        </div>
+                        {/* Insights do layout */}
+                        <div className="mt-3 space-y-1">
+                          {lp.insights.map((insight, i) => (
+                            <p key={i} className="text-sm text-gray-600">{insight}</p>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    getEngagementLevel(lp.avgScroll, lp.avgTime).color
-                  }`}>
-                    {getEngagementLevel(lp.avgScroll, lp.avgTime).label}
+                    <div className={`px-3 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+                      getEngagementLevel(lp.avgScroll, lp.avgTime).color
+                    }`}>
+                      {getEngagementLevel(lp.avgScroll, lp.avgTime).label}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -524,9 +654,10 @@ export default function AnalyticsPage() {
                   <tr className="border-b border-gray-100">
                     <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Data</th>
                     <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Views</th>
+                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Cliques</th>
                     <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Visitantes</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Tempo Médio</th>
-                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Scroll Médio</th>
+                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Tempo</th>
+                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Scroll</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -534,6 +665,7 @@ export default function AnalyticsPage() {
                     <tr key={day.date} className="border-b border-gray-50 hover:bg-gray-50">
                       <td className="py-3 px-4 font-medium text-gray-900">{day.date}</td>
                       <td className="py-3 px-4 text-right text-gray-600">{day.views}</td>
+                      <td className="py-3 px-4 text-right text-gray-600">{day.clicks}</td>
                       <td className="py-3 px-4 text-right text-gray-600">{day.visitors}</td>
                       <td className="py-3 px-4 text-right text-gray-600">{day.avgTime}s</td>
                       <td className="py-3 px-4 text-right text-gray-600">{day.avgScroll}%</td>
@@ -545,6 +677,75 @@ export default function AnalyticsPage() {
           </div>
         )}
 
+        {/* Sessões/Acessos Agrupados */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+          <button
+            onClick={() => setShowSessions(!showSessions)}
+            className="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          >
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 text-left">👥 Acessos Individuais</h2>
+              <p className="text-sm text-gray-500 text-left">{sessions.length} sessões registradas (clique para {showSessions ? 'ocultar' : 'ver'})</p>
+            </div>
+            {showSessions ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+          </button>
+          
+          {showSessions && sessions.length > 0 && (
+            <div className="border-t max-h-96 overflow-y-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data/Hora</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Layout</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tempo</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Scroll</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Cliques</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Engajamento</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {sessions.map((session) => {
+                    const engagement = getEngagementLevel(session.scrollDepth, session.duration)
+                    return (
+                      <tr key={session.sessionId} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          {new Date(session.startTime).toLocaleString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900 font-medium">
+                          {session.layoutName}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-center text-gray-600">
+                          {session.duration}s
+                        </td>
+                        <td className="px-4 py-3 text-sm text-center text-gray-600">
+                          {session.scrollDepth}%
+                        </td>
+                        <td className="px-4 py-3 text-sm text-center">
+                          {session.clicks > 0 ? (
+                            <span className="text-green-600 font-medium">{session.clicks}</span>
+                          ) : (
+                            <span className="text-gray-400">0</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${engagement.color}`}>
+                            {engagement.label}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
         {/* Eventos Detalhados (colapsável) */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100">
           <button
@@ -553,7 +754,7 @@ export default function AnalyticsPage() {
           >
             <div>
               <h2 className="text-xl font-bold text-gray-900 text-left">📋 Eventos Detalhados</h2>
-              <p className="text-sm text-gray-500 text-left">{analytics.length} eventos registrados (clique para {showDetails ? 'ocultar' : 'expandir'})</p>
+              <p className="text-sm text-gray-500 text-left">{analytics.length} eventos (clique para {showDetails ? 'ocultar' : 'ver'})</p>
             </div>
             {showDetails ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
           </button>
@@ -613,7 +814,7 @@ export default function AnalyticsPage() {
                               {event.event_type === 'scroll' && `${eventData?.scroll_depth || 0}% da página`}
                               {event.event_type === 'time_on_page' && `${eventData?.time_seconds || 0} segundos`}
                               {event.event_type === 'page_view' && 'Nova visita'}
-                              {event.event_type === 'click' && (eventData?.text || 'Botão clicado')}
+                              {event.event_type === 'click' && (eventData?.element || eventData?.text || 'Botão clicado')}
                             </td>
                           </tr>
                         )
@@ -626,6 +827,56 @@ export default function AnalyticsPage() {
           )}
         </div>
       </div>
+
+      {/* Modal de Confirmação para Apagar Dados */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Apagar Dados</h2>
+                <p className="text-sm text-gray-500">Esta ação não pode ser desfeita</p>
+              </div>
+            </div>
+            
+            <p className="text-gray-600 mb-6">
+              {selectedLayout 
+                ? `Você está prestes a apagar todos os dados de analytics do layout "${layouts.find(l => l.id === selectedLayout)?.name}".`
+                : 'Você está prestes a apagar TODOS os dados de analytics de todas as landing pages.'
+              }
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 px-4 py-2.5 border rounded-lg hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteAllData}
+                disabled={deleting}
+                className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <RefreshCw size={16} className="animate-spin" />
+                    Apagando...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={16} />
+                    Apagar
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
