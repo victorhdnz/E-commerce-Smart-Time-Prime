@@ -10,6 +10,7 @@ import {
   GitCompare,
   FileText,
   Layers,
+  Eye,
   MousePointer,
   HelpCircle,
   ArrowRight,
