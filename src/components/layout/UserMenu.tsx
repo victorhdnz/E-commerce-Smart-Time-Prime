@@ -98,29 +98,24 @@ export const UserMenu = () => {
   }, [closeMenu, router])
 
   // Memoizar menuItems para evitar recriações
+  // REMOVIDO: Dashboard não aparece mais no menu (acessível apenas por /admin)
   const menuItems = useMemo(() => {
     const items = [
       {
         label: 'Minha Conta',
         href: '/minha-conta',
         icon: User,
-        visible: true,
+        visible: false, // Desabilitado - sistema não usa mais conta de cliente
         description: 'Configurações do perfil'
       },
       {
         label: 'Meus Pedidos',
         href: '/minha-conta/pedidos',
         icon: Package,
-        visible: true,
+        visible: false, // Desabilitado - sistema não usa mais pedidos
         description: 'Histórico de compras'
       },
-      {
-        label: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutDashboard,
-        visible: isAdminEmail(user?.email),
-        description: 'Painel administrativo'
-      }
+      // Dashboard removido - acessível apenas por URL /admin
     ]
     return items.filter(item => item.visible)
   }, [user?.email])

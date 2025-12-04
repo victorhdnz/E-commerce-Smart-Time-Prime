@@ -5,37 +5,22 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { motion } from 'framer-motion'
 import {
-  ShoppingBag,
-  Users,
-  DollarSign,
   Package,
   Layout,
   Settings,
-  ChevronLeft,
-  ChevronRight,
   Eye,
-  UserCheck,
   MessageCircle,
   FileText,
-  Tag,
+  BarChart3,
 } from 'lucide-react'
 import Link from 'next/link'
-import { formatCurrency } from '@/lib/utils/format'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+
 interface DashboardStats {
   todaySales: number
   newOrders: number
   activeProducts: number
   clients: number
-}
-
-interface Order {
-  id: string
-  order_number: string
-  total: number
-  status: string
-  created_at: string
-  user_id: string
 }
 
 export default function DashboardPage() {
@@ -47,19 +32,7 @@ export default function DashboardPage() {
     activeProducts: 0,
     clients: 0,
   })
-  const [recentOrders, setRecentOrders] = useState<Order[]>([])
   const [loadingData, setLoadingData] = useState(true)
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [currentDay, setCurrentDay] = useState<string>(() => {
-    // Armazenar dia atual para detectar mudança
-    const today = new Date()
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-  })
-  
-  // Estados para paginação
-  const [currentPage, setCurrentPage] = useState(1)
-  const [ordersPerPage] = useState(5)
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
   useEffect(() => {
     // Aguardar o carregamento da autenticação completar
@@ -69,8 +42,7 @@ export default function DashboardPage() {
     // O middleware já protege essa rota, mas verificamos novamente no cliente
     // para evitar problemas de sincronização em produção
     if (!isAuthenticated) {
-      const returnUrl = encodeURIComponent('/dashboard')
-      router.push(`/login?returnUrl=${returnUrl}`)
+      router.push('/admin')
       return
     }
 
@@ -85,28 +57,12 @@ export default function DashboardPage() {
       loadDashboardData()
       // Atualizar dados a cada 60 segundos
       const dataInterval = setInterval(loadDashboardData, 60000)
-      // Atualizar tempo a cada minuto
-      const timeInterval = setInterval(() => {
-        const now = new Date()
-        setCurrentTime(now)
-        
-        // Verificar se mudou o dia
-        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-        if (todayStr !== currentDay) {
-          // Dia mudou - limpar dados e recarregar
-          setCurrentDay(todayStr)
-          setStats({ todaySales: 0, newOrders: 0, activeProducts: 0, clients: 0 })
-          setRecentOrders([])
-          loadDashboardData()
-        }
-      }, 60000) // Verificar mudança de dia a cada minuto
       
       return () => {
         clearInterval(dataInterval)
-        clearInterval(timeInterval)
       }
     }
-  }, [isAuthenticated, isEditor, currentDay])
+  }, [isAuthenticated, isEditor])
 
   const loadDashboardData = async () => {
     try {
@@ -116,50 +72,20 @@ export default function DashboardPage() {
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
 
-      // Buscar estatísticas e pedidos em paralelo
-      // Selecionar apenas campos necessários para melhor performance
-      const [ordersResult, productsResult, clientsResult] = await Promise.all([
-        supabase
-          .from('orders')
-          .select('id, order_number, total, status, created_at, user_id')
-          .eq('status', 'completed')
-          .gte('created_at', new Date().toISOString().split('T')[0])
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('products')
-          .select('id')
-          .eq('is_active', true),
-        supabase
-          .from('profiles')
-          .select('id')
-          .order('created_at', { ascending: false }),
-      ])
+      // Buscar apenas produtos ativos (e-commerce removido, mantendo apenas para comparador)
+      const productsResult = await supabase
+        .from('products')
+        .select('id')
+        .eq('is_active', true)
 
-      // Calcular estatísticas
-      const todayOrders = ordersResult.data || []
-      const todaySales = todayOrders.reduce((sum, order) => sum + (order.total || 0), 0)
-      const newOrders = todayOrders.length
       const activeProducts = productsResult.data?.length || 0
-      const clients = clientsResult.data?.length || 0
 
       setStats({
-        todaySales,
-        newOrders,
+        todaySales: 0,
+        newOrders: 0,
         activeProducts,
-        clients,
+        clients: 0,
       })
-
-      // Mapear pedidos para o formato esperado
-      const mappedOrders: Order[] = (todayOrders || []).map(order => ({
-        id: order.id,
-        order_number: order.order_number || order.id,
-        total: order.total || 0,
-        status: order.status || 'pending',
-        created_at: order.created_at,
-        user_id: order.user_id,
-      }))
-
-      setRecentOrders(mappedOrders)
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error)
     } finally {
@@ -167,25 +93,7 @@ export default function DashboardPage() {
     }
   }
 
-  // Filtrar pedidos de hoje
-  const todayOrders = recentOrders.filter(order => {
-    if (!order || !order.created_at) {
-      return false
-    }
-    const orderDate = new Date(order.created_at).toISOString().split('T')[0]
-    return orderDate === currentDay
-  })
-
-  // Cálculos de paginação
-  const totalPages = Math.ceil(todayOrders.length / ordersPerPage)
-  const startIndex = (currentPage - 1) * ordersPerPage
-  const endIndex = startIndex + ordersPerPage
-  const currentOrders = todayOrders.slice(startIndex, endIndex)
-
-  // Resetar página quando mudar o dia
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [currentDay])
+  // Removido: Lógica de pedidos e vendas (e-commerce não utilizado)
 
   if (loading) {
     return (
@@ -197,31 +105,10 @@ export default function DashboardPage() {
 
   const statsCards = [
     {
-      title: 'Vendas Hoje',
-      value: formatCurrency(stats.todaySales),
-      icon: DollarSign,
-      color: 'bg-green-500',
-      change: stats.todaySales > 0 ? '+' : '',
-    },
-    {
-      title: 'Novos Pedidos',
-      value: stats.newOrders.toString(),
-      icon: ShoppingBag,
-      color: 'bg-blue-500',
-      change: `+${stats.newOrders}`,
-    },
-    {
       title: 'Produtos Ativos',
       value: stats.activeProducts.toString(),
       icon: Package,
       color: 'bg-purple-500',
-      change: '',
-    },
-    {
-      title: 'Clientes',
-      value: stats.clients.toString(),
-      icon: Users,
-      color: 'bg-orange-500',
       change: '',
     },
   ]
@@ -241,20 +128,7 @@ export default function DashboardPage() {
       href: '/dashboard/landing',
       color: 'bg-purple-500',
     },
-    {
-      title: 'Clientes',
-      description: 'Visualizar contas registradas e informações',
-      icon: UserCheck,
-      href: '/dashboard/clientes',
-      color: 'bg-green-500',
-    },
-    {
-      title: 'Vendas e Pedidos',
-      description: 'Filtrar e visualizar todas as vendas',
-      icon: ShoppingBag,
-      href: '/dashboard/vendas',
-      color: 'bg-indigo-500',
-    },
+    // Removido: Clientes e Vendas (e-commerce não utilizado)
     {
       title: 'Grupo VIP WhatsApp',
       description: 'Visualizar registros do Grupo VIP',
@@ -276,12 +150,27 @@ export default function DashboardPage() {
       href: '/dashboard/termos',
       color: 'bg-blue-600',
     },
+    // Removido: Cupons (e-commerce não utilizado)
     {
-      title: 'Cupons de Desconto',
-      description: 'Criar e gerenciar cupons promocionais',
-      icon: Tag,
-      href: '/dashboard/cupons',
-      color: 'bg-pink-500',
+      title: 'Layouts de Landing Page',
+      description: 'Criar e gerenciar layouts e versões de landing pages',
+      icon: Layout,
+      href: '/admin/layouts',
+      color: 'bg-indigo-600',
+    },
+    {
+      title: 'Analytics',
+      description: 'Acompanhar performance das landing pages',
+      icon: BarChart3,
+      href: '/admin/analytics',
+      color: 'bg-teal-500',
+    },
+    {
+      title: 'Páginas de Suporte',
+      description: 'Criar manuais e páginas de suporte por modelo',
+      icon: FileText,
+      href: '/admin/suporte',
+      color: 'bg-cyan-500',
     },
   ]
 
@@ -351,93 +240,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Recent Activity - Apenas Vendas de Hoje */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Vendas de Hoje</h2>
-            <div className="text-sm text-gray-500">
-              {todayOrders.length} {todayOrders.length === 1 ? 'venda' : 'vendas'}
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            {loadingData ? (
-              <div className="text-center py-8 text-gray-500">Carregando...</div>
-            ) : todayOrders.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Package size={48} className="mx-auto mb-4 text-gray-300" />
-                <p>Nenhuma venda hoje</p>
-                <p className="text-xs mt-2">As vendas aparecerão aqui conforme forem realizadas</p>
-              </div>
-            ) : (
-              <>
-                {currentOrders.map((order) => (
-                  <motion.div
-                    key={order.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                          <ShoppingBag size={20} className="text-green-600" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-lg">Pedido #{order.order_number}</p>
-                          <p className="text-sm text-gray-600">
-                            Status: {order.status}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xl font-bold text-green-600">
-                          {formatCurrency(order.total)}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(order.created_at).toLocaleTimeString('pt-BR', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-
-                {/* Paginação */}
-                {totalPages > 1 && (
-                  <div className="flex justify-between items-center mt-6 pt-4 border-t">
-                    <p className="text-sm text-gray-600">
-                      Mostrando {startIndex + 1} a {Math.min(endIndex, todayOrders.length)} de {todayOrders.length} vendas
-                    </p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="flex items-center gap-1 px-3 py-2 text-sm border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronLeft size={16} />
-                        Anterior
-                      </button>
-                      <span className="flex items-center px-3 py-2 text-sm">
-                        Página {currentPage} de {totalPages}
-                      </span>
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="flex items-center gap-1 px-3 py-2 text-sm border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Próxima
-                        <ChevronRight size={16} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+        {/* Removido: Seção de vendas (e-commerce não utilizado) */}
       </div>
     </div>
   )

@@ -28,21 +28,14 @@ async function getPageData() {
       supabase.from('reviews').select('*').eq('is_approved', true).order('created_at', { ascending: false }).limit(6),
       supabase.from('faqs').select('*').eq('is_active', true).order('order_position', { ascending: true }),
       supabase.from('seasonal_layouts').select('*').eq('is_active', true).maybeSingle(),
-      supabase.from('product_combos').select(`
-        *,
-        combo_items (
-          id,
-          product_id,
-          quantity,
-          product:products (id, name, local_price, national_price, images)
-        )
-      `).eq('is_featured', true).eq('is_active', true).limit(6),
+      // Removido: product_combos (e-commerce não utilizado)
+      Promise.resolve({ status: 'fulfilled' as const, value: { data: [] } }),
       supabase.from('site_settings').select('value').eq('key', 'whatsapp_vip_group_link').maybeSingle(),
       supabase.from('site_settings').select('value').eq('key', 'whatsapp_vip_require_registration').maybeSingle(),
       supabase.from('site_settings').select('value').eq('key', 'landing_section_order').maybeSingle(),
     ])
 
-    const [settingsResult, productsResult, reviewsResult, faqsResult, layoutResult, combosResult, whatsappLinkResult, requireRegistrationResult, sectionOrderResult] = results
+    const [settingsResult, productsResult, reviewsResult, faqsResult, layoutResult, , whatsappLinkResult, requireRegistrationResult, sectionOrderResult] = results
 
     // Extrair link do WhatsApp (pode vir do banco ou usar o padrão do código)
     const whatsappLinkData = whatsappLinkResult.status === 'fulfilled' ? whatsappLinkResult.value.data : null
@@ -94,7 +87,6 @@ async function getPageData() {
       reviews: reviewsResult.status === 'fulfilled' ? reviewsResult.value.data || [] : [],
       faqs: faqsResult.status === 'fulfilled' ? faqsResult.value.data || [] : [],
       activeLayout: layoutResult.status === 'fulfilled' ? layoutResult.value.data : null,
-      combos: combosResult.status === 'fulfilled' ? combosResult.value.data || [] : [],
       whatsappVipLink: whatsappLink,
       whatsappVipRequireRegistration: requireRegistration,
       sectionOrder: sectionOrder,
@@ -112,7 +104,6 @@ async function getPageData() {
       reviews: [],
       faqs: [],
       activeLayout: null,
-      combos: [],
       mapsLink: 'https://maps.app.goo.gl/sj7F35h9fJ86T7By6',
       contactWhatsApp: '+55 34 8413-6291',
     }
@@ -120,7 +111,7 @@ async function getPageData() {
 }
 
 export default async function Home() {
-  const { siteSettings, products, reviews, faqs, activeLayout, combos, whatsappVipLink, whatsappVipRequireRegistration, sectionOrder, mapsLink, contactWhatsApp } = await getPageData()
+  const { siteSettings, products, reviews, faqs, activeLayout, whatsappVipLink, whatsappVipRequireRegistration, sectionOrder, mapsLink, contactWhatsApp } = await getPageData()
 
   // Extrair configurações do formato key-value
   const settings = siteSettings?.value || {}
@@ -492,7 +483,7 @@ export default async function Home() {
         })
       })()}
 
-      {/* CTA Section */}
+      {/* CTA Section - Removido link para produtos (e-commerce não utilizado) */}
       <SectionTransition
         backgroundColor="transparent"
         previousBgColor="#ffffff"
@@ -501,16 +492,16 @@ export default async function Home() {
         <section className="py-20 text-white mb-0" style={{ backgroundColor: 'transparent' }}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Encontre o Produto Perfeito para Você
+              Compare Produtos
             </h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-              Explore nossa coleção completa com produtos exclusivos e de qualidade premium.
+              Use nosso comparador para encontrar o produto ideal para você.
             </p>
             <a
-              href="/produtos"
+              href="/comparar"
               className="inline-block bg-white text-black px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors"
             >
-              Ver Todos os Produtos
+              Comparar Produtos
             </a>
           </div>
         </section>

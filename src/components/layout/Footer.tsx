@@ -113,14 +113,7 @@ export const Footer = () => {
                   Contato
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/minha-conta"
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Minha Conta
-                </Link>
-              </li>
+              {/* Removido: Minha Conta (e-commerce não utilizado) */}
             </ul>
           </div>
 

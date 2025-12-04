@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, ShoppingCart, Star, Heart } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Star, Heart, GitCompare } from 'lucide-react'
 import { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
-import { useCart } from '@/hooks/useCart'
+// Removido: useCart (e-commerce não utilizado)
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -21,7 +21,6 @@ export const FeaturedProducts = ({
   subtitle = 'Conheça nossos relógios mais populares',
 }: FeaturedProductsProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const { addItem } = useCart()
 
   if (!products || products.length === 0) {
     return null
@@ -44,9 +43,7 @@ export const FeaturedProducts = ({
     return products.slice(start, start + itemsPerPage)
   }
 
-  const handleAddToCart = (product: Product) => {
-    addItem(product, undefined, 1)
-  }
+  // Removido: handleAddToCart (e-commerce não utilizado)
 
   return (
     <section className="py-20" style={{ backgroundColor: 'transparent' }}>
@@ -152,13 +149,13 @@ export const FeaturedProducts = ({
 
                   {/* Action Buttons */}
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => handleAddToCart(product)}
+                    <Link
+                      href="/comparar"
                       className="flex-1 bg-black text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
                     >
-                      <ShoppingCart size={16} />
-                      Adicionar
-                    </button>
+                      <GitCompare size={16} />
+                      Comparar
+                    </Link>
                     <Link
                       href={`/produtos/${product.id}`}
                       className="px-4 py-2 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors"

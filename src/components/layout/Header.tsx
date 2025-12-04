@@ -2,14 +2,10 @@
 
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { ShoppingCart, Menu, X, GitCompare } from 'lucide-react'
+import { Menu, X, GitCompare } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { useAuth } from '@/hooks/useAuth'
-import { useCart } from '@/hooks/useCart'
 import { useProductComparison } from '@/hooks/useProductComparison'
-import { Button } from '@/components/ui/Button'
-import { UserMenu } from './UserMenu'
 import { AuthDebug } from './AuthDebug'
 import { createClient } from '@/lib/supabase/client'
 
@@ -19,10 +15,7 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [siteName, setSiteName] = useState<string>('Smart Time Prime')
   const [siteLogo, setSiteLogo] = useState<string | undefined>(undefined)
-  const { isAuthenticated, profile, loading } = useAuth()
-  const { getItemCount } = useCart()
   const { products } = useProductComparison()
-  const itemCount = getItemCount()
   const comparisonCount = products.length
 
   // Carregar logo e nome do site
@@ -179,30 +172,9 @@ export const Header = () => {
                 </span>
               )}
             </Link>
-            
-            {/* Cart */}
-            <Link
-              href="/carrinho"
-              className="relative p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <ShoppingCart size={20} className="sm:w-6 sm:h-6" />
-              {itemCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 bg-black text-white text-[10px] sm:text-xs w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded-full">
-                  {itemCount}
-                </span>
-              )}
-            </Link>
 
-            {/* User Menu */}
-            {!loading && !isAuthenticated ? (
-              <Link href="/login" className="hidden sm:block">
-                <Button size="sm">Entrar</Button>
-              </Link>
-            ) : (
-              <div>
-                <UserMenu />
-              </div>
-            )}
+            {/* User Menu - Removido login público, apenas admin acessa via /admin */}
+            {/* Login removido - sistema não usa mais login público */}
 
             {/* Mobile Menu Toggle - apenas visível em mobile */}
             <button

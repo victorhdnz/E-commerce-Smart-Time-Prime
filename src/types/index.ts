@@ -185,3 +185,122 @@ export interface SiteSettings {
   facebook_url: string
 }
 
+// ==========================================
+// NOVOS TIPOS PARA LANDING PAGES
+// ==========================================
+
+export interface LandingLayout {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  custom_url: string | null
+  theme_colors: {
+    primary?: string
+    secondary?: string
+    accent?: string
+    background?: string
+    text?: string
+    button?: string
+    buttonText?: string
+  }
+  default_fonts: {
+    heading?: string
+    body?: string
+    button?: string
+  }
+  is_active: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  versions?: LandingVersion[]
+}
+
+export interface LandingVersion {
+  id: string
+  layout_id: string
+  name: string
+  slug: string
+  description: string | null
+  version_number: number
+  is_active: boolean
+  is_default: boolean
+  custom_styles: {
+    fonts?: {
+      heading?: string
+      body?: string
+      button?: string
+    }
+    colors?: {
+      primary?: string
+      secondary?: string
+      accent?: string
+      background?: string
+      text?: string
+      button?: string
+      buttonText?: string
+    }
+  }
+  sections_config: Record<string, any>
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface LandingAnalytics {
+  id: string
+  layout_id: string | null
+  version_id: string | null
+  session_id: string
+  event_type: 'page_view' | 'click' | 'scroll' | 'time_on_page' | 'exit' | 'conversion'
+  event_data: {
+    element?: string
+    scroll_depth?: number
+    time_seconds?: number
+    url?: string
+    [key: string]: any
+  }
+  user_agent: string | null
+  referrer: string | null
+  ip_address: string | null
+  created_at: string
+}
+
+export interface ProductComparison {
+  id: string
+  product_id: string
+  comparison_topics: Array<{
+    topic: string
+    value: string
+    icon?: string
+  }>
+  display_order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+  product?: Product
+}
+
+export interface ProductSupportPage {
+  id: string
+  product_id: string
+  model_slug: string
+  title: string
+  content: {
+    sections?: Array<{
+      id: string
+      type: 'text' | 'image' | 'video' | 'list' | 'accordion'
+      title?: string
+      content?: string
+      image?: string
+      video?: string
+      items?: Array<{ title: string; description: string }>
+    }>
+  }
+  is_active: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  product?: Product
+}
+
