@@ -10,7 +10,7 @@ DELETE FROM auth.users WHERE email = 'contato@smarttimeprime.com.br';
 -- OPÇÃO 2: Criar novo usuário via Supabase Dashboard
 -- 1. Vá em Authentication → Users → Add user → Create new user
 -- 2. Email: contato@smarttimeprime.com.br
--- 3. Password: SmartTime@2024!Prime
+-- 3. Password: [DEFINA UMA SENHA FORTE]
 -- 4. Marque "Auto Confirm User"
 -- 5. Clique em "Create user"
 
@@ -36,4 +36,3 @@ ON CONFLICT (id) DO UPDATE SET role = 'admin';
 
 -- Verificar se funcionou:
 SELECT id, email, role FROM profiles WHERE email = 'contato@smarttimeprime.com.br';
-
