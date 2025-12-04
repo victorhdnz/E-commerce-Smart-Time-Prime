@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
 import { LandingLayout, LandingVersion } from '@/types'
-import { Plus, Edit, Trash2, Eye, Palette, Link2, Check, ArrowLeft, Layers, Settings, Copy } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye, Palette, Link2, Check, ArrowLeft, Layers, Settings } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
@@ -376,18 +376,9 @@ export default function DashboardLayoutsPage() {
                         {selectedLayout.description && (
                           <p className="text-gray-600 mt-1">{selectedLayout.description}</p>
                         )}
-                        <div className="flex items-center gap-4 mt-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-500">URL base:</span>
-                            <code className="text-sm bg-gray-100 px-2 py-1 rounded">/lp/{selectedLayout.slug}</code>
-                          </div>
-                          <button
-                            onClick={() => copyToClipboard(getLayoutUrl(), 'layout')}
-                            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                          >
-                            {copiedLink === 'layout' ? <Check size={14} /> : <Copy size={14} />}
-                            Copiar
-                          </button>
+                        <div className="flex items-center gap-2 mt-4">
+                          <span className="text-sm text-gray-500">URL base:</span>
+                          <code className="text-sm bg-gray-100 px-2 py-1 rounded">/lp/{selectedLayout.slug}</code>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -570,126 +561,70 @@ export default function DashboardLayoutsPage() {
           </div>
         )}
 
-        {/* Modal de Versão */}
+        {/* Modal de Versão - Apenas para criar/editar nome */}
         {isVersionModalOpen && selectedLayout && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b sticky top-0 bg-white z-10">
-                <h2 className="text-2xl font-bold">
-                  {editingVersion ? 'Editar Versão' : 'Nova Versão'}
+            <div className="bg-white rounded-2xl max-w-md w-full">
+              <div className="p-6 border-b">
+                <h2 className="text-xl font-bold">
+                  {editingVersion ? 'Renomear Versão' : 'Nova Versão'}
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
                   Layout: {selectedLayout.name}
                 </p>
               </div>
-              <div className="p-6 space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Nome da Versão *</label>
-                    <input
-                      type="text"
-                      value={versionFormData.name}
-                      onChange={(e) => setVersionFormData({ ...versionFormData, name: e.target.value })}
-                      className="w-full border rounded-lg px-4 py-2.5"
-                      placeholder="Ex: Campanha Black Friday"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Slug *</label>
-                    <input
-                      type="text"
-                      value={versionFormData.slug}
-                      onChange={(e) => setVersionFormData({ ...versionFormData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })}
-                      className="w-full border rounded-lg px-4 py-2.5"
-                      placeholder="black-friday"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      URL: /lp/{selectedLayout.slug}/{versionFormData.slug || 'slug'}
-                    </p>
-                  </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Nome da Versão *</label>
+                  <input
+                    type="text"
+                    value={versionFormData.name}
+                    onChange={(e) => {
+                      const name = e.target.value
+                      const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+                      setVersionFormData({ ...versionFormData, name, slug: editingVersion ? versionFormData.slug : slug })
+                    }}
+                    className="w-full border rounded-lg px-4 py-2.5"
+                    placeholder="Ex: Campanha Black Friday"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Slug (URL)</label>
+                  <input
+                    type="text"
+                    value={versionFormData.slug}
+                    onChange={(e) => setVersionFormData({ ...versionFormData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })}
+                    className="w-full border rounded-lg px-4 py-2.5"
+                    placeholder="campanha-black-friday"
+                    disabled={!!editingVersion}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    URL: /lp/{selectedLayout.slug}/{versionFormData.slug || 'slug'}
+                  </p>
+                  {editingVersion && (
+                    <p className="text-xs text-amber-600 mt-1">O slug não pode ser alterado após criação</p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Descrição</label>
+                  <label className="block text-sm font-medium mb-2">Descrição (opcional)</label>
                   <textarea
                     value={versionFormData.description}
                     onChange={(e) => setVersionFormData({ ...versionFormData, description: e.target.value })}
-                    className="w-full border rounded-lg px-4 py-2.5"
+                    className="w-full border rounded-lg px-4 py-2.5 resize-none"
                     rows={2}
-                    placeholder="Descrição opcional..."
+                    placeholder="Breve descrição da versão..."
                   />
                 </div>
 
-                {/* Cores Customizadas */}
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-2">Cores Customizadas</h3>
-                  <p className="text-sm text-gray-500 mb-4">Deixe vazio para usar as cores do layout</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {['primary', 'accent', 'background', 'text'].map((key) => (
-                      <div key={key}>
-                        <label className="block text-sm font-medium mb-2 capitalize">{key}</label>
-                        <div className="flex gap-2">
-                          <input
-                            type="color"
-                            value={(versionFormData.custom_styles.colors as any)[key] || '#000000'}
-                            onChange={(e) => setVersionFormData({
-                              ...versionFormData,
-                              custom_styles: {
-                                ...versionFormData.custom_styles,
-                                colors: { ...versionFormData.custom_styles.colors, [key]: e.target.value }
-                              }
-                            })}
-                            className="w-10 h-10 border rounded cursor-pointer"
-                          />
-                          <input
-                            type="text"
-                            value={(versionFormData.custom_styles.colors as any)[key] || ''}
-                            onChange={(e) => setVersionFormData({
-                              ...versionFormData,
-                              custom_styles: {
-                                ...versionFormData.custom_styles,
-                                colors: { ...versionFormData.custom_styles.colors, [key]: e.target.value }
-                              }
-                            })}
-                            className="flex-1 border rounded-lg px-3 py-2 text-sm font-mono"
-                            placeholder="Padrão"
-                          />
-                        </div>
-                      </div>
-                    ))}
+                {!editingVersion && (
+                  <div className="p-3 bg-blue-50 rounded-lg text-sm text-blue-800">
+                    <strong>Dica:</strong> Após criar, clique no ícone de engrenagem para editar o conteúdo completo (textos, cores, fontes, imagens, etc.)
                   </div>
-                </div>
-
-                {/* Fontes Customizadas */}
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-2">Fontes Customizadas</h3>
-                  <p className="text-sm text-gray-500 mb-4">Deixe vazio para usar as fontes do layout</p>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {['heading', 'body', 'button'].map((key) => (
-                      <div key={key}>
-                        <label className="block text-sm font-medium mb-2 capitalize">{key}</label>
-                        <select
-                          value={(versionFormData.custom_styles.fonts as any)[key] || ''}
-                          onChange={(e) => setVersionFormData({
-                            ...versionFormData,
-                            custom_styles: {
-                              ...versionFormData.custom_styles,
-                              fonts: { ...versionFormData.custom_styles.fonts, [key]: e.target.value }
-                            }
-                          })}
-                          className="w-full border rounded-lg px-4 py-2.5"
-                        >
-                          <option value="">Usar padrão do layout</option>
-                          {AVAILABLE_FONTS.map(font => (
-                            <option key={font} value={font}>{font}</option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                )}
               </div>
-              <div className="p-6 border-t flex justify-end gap-4 sticky bottom-0 bg-white">
+              <div className="p-6 border-t flex justify-end gap-4">
                 <button
                   onClick={() => {
                     setIsVersionModalOpen(false)
@@ -704,7 +639,7 @@ export default function DashboardLayoutsPage() {
                   onClick={handleSaveVersion}
                   className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800"
                 >
-                  Salvar
+                  {editingVersion ? 'Salvar' : 'Criar Versão'}
                 </button>
               </div>
             </div>

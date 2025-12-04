@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -10,13 +10,13 @@ import { VideoUploader } from '@/components/ui/VideoUploader'
 import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Save, Plus, Trash2, Edit } from 'lucide-react'
+import { Save, Plus, Trash2, Edit, ArrowLeft, Home } from 'lucide-react'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import { createClient } from '@/lib/supabase/client'
 import { DashboardNavigation } from '@/components/dashboard/DashboardNavigation'
 import { Modal } from '@/components/ui/Modal'
-import { FAQ } from '@/types'
+import { FAQ, LandingLayout, LandingVersion } from '@/types'
 import { saveSiteSettings } from '@/lib/supabase/site-settings-helper'
 
 interface LandingSettings {
@@ -225,10 +225,15 @@ interface LandingSettings {
   }
 }
 
-export default function EditLandingPage() {
+function EditLandingPageContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { isAuthenticated, isEditor, loading: authLoading } = useAuth()
   const supabase = createClient()
+
+  // Parâmetros de URL para versão
+  const layoutId = searchParams.get('layout')
+  const versionId = searchParams.get('version')
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -250,6 +255,10 @@ export default function EditLandingPage() {
     'contact',
     'faq'
   ])
+  
+  // Estados para versão/layout
+  const [currentLayout, setCurrentLayout] = useState<LandingLayout | null>(null)
+  const [currentVersion, setCurrentVersion] = useState<LandingVersion | null>(null)
   
   // Estados para numeração de ordem
   const [sectionOrderNumbers, setSectionOrderNumbers] = useState<Record<string, number>>({})
@@ -475,10 +484,62 @@ export default function EditLandingPage() {
       return
     }
 
-    loadSettings()
+    // Carregar dados baseado na versão ou configurações globais
+    if (layoutId && versionId) {
+      loadLayoutAndVersion()
+    } else {
+      loadSettings()
+    }
     loadSectionOrder()
     loadFaqs()
-  }, [isAuthenticated, isEditor, authLoading])
+  }, [isAuthenticated, isEditor, authLoading, layoutId, versionId])
+
+  const loadLayoutAndVersion = async () => {
+    try {
+      setLoading(true)
+      
+      // Carregar layout
+      const { data: layoutData, error: layoutError } = await supabase
+        .from('landing_layouts')
+        .select('*')
+        .eq('id', layoutId)
+        .single()
+      
+      if (layoutError) throw layoutError
+      setCurrentLayout(layoutData)
+      
+      // Carregar versão
+      const { data: versionData, error: versionError } = await supabase
+        .from('landing_versions')
+        .select('*')
+        .eq('id', versionId)
+        .single()
+      
+      if (versionError) throw versionError
+      setCurrentVersion(versionData)
+      
+      // Carregar configurações da versão ou usar padrão
+      if (versionData.content && typeof versionData.content === 'object') {
+        const savedSettings = versionData.content as any
+        setSettings(prev => ({
+          ...prev,
+          ...savedSettings,
+          theme_colors: savedSettings.theme_colors || prev.theme_colors,
+        }))
+        
+        // Carregar ordem das seções se existir
+        if (savedSettings.section_order && Array.isArray(savedSettings.section_order)) {
+          setSectionOrder(savedSettings.section_order)
+        }
+      }
+      
+      setLoading(false)
+    } catch (error: any) {
+      console.error('Erro ao carregar versão:', error)
+      toast.error('Erro ao carregar versão')
+      setLoading(false)
+    }
+  }
 
   const loadSectionOrder = async () => {
     try {
@@ -1148,13 +1209,31 @@ export default function EditLandingPage() {
         }
       }
 
-      // Preparar todos os campos de settings para salvar usando o helper seguro
+      // Preparar todos os campos de settings para salvar
       const fieldsToSave: any = {
         ...settings,
         timer_end_date: timerEndDateISO, // Usar a data convertida
+        section_order: sectionOrder, // Incluir ordem das seções
       }
 
-      // Usar o helper seguro que faz merge inteligente preservando todos os dados
+      // Se estamos editando uma versão, salvar na tabela landing_versions
+      if (versionId && currentVersion) {
+        const { error: updateError } = await supabase
+          .from('landing_versions')
+          .update({
+            content: fieldsToSave,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', versionId)
+
+        if (updateError) throw updateError
+        
+        toast.success('Versão salva com sucesso!')
+        setSaving(false)
+        return
+      }
+
+      // Usar o helper seguro que faz merge inteligente preservando todos os dados (site_settings)
       const result = await saveSiteSettings({ fieldsToUpdate: fieldsToSave })
       
       if (!result.success) {
@@ -1205,18 +1284,38 @@ export default function EditLandingPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Navigation */}
-        <DashboardNavigation
-          title="Editar Landing Page"
-          subtitle="Personalize os textos da página inicial"
-          backUrl="/dashboard"
-          backLabel="Voltar ao Dashboard"
-          actions={
+        {/* Header customizado */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <Link
+              href={currentVersion ? '/dashboard/layouts' : '/dashboard'}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft size={20} />
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {currentVersion ? `Editar: ${currentVersion.name}` : 'Editar Landing Page'}
+              </h1>
+              <p className="text-gray-600">
+                {currentVersion && currentLayout 
+                  ? `Layout: ${currentLayout.name} • /lp/${currentLayout.slug}/${currentVersion.slug}`
+                  : 'Personalize os textos da página inicial'
+                }
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard" className="px-4 py-2 border rounded-lg hover:bg-gray-50 flex items-center gap-2">
+              <Home size={18} />
+              Dashboard
+            </Link>
             <Button onClick={handleSave} isLoading={saving}>
               <Save size={18} className="mr-2" />
               Salvar Alterações
             </Button>
-          }
-        />
+          </div>
+        </div>
 
         {/* Form */}
         <div className="max-w-4xl space-y-6">
@@ -2813,3 +2912,15 @@ export default function EditLandingPage() {
   )
 }
 
+// Wrapper com Suspense para useSearchParams
+export default function EditLandingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+      </div>
+    }>
+      <EditLandingPageContent />
+    </Suspense>
+  )
+}
