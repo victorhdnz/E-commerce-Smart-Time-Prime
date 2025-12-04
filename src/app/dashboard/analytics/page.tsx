@@ -82,14 +82,15 @@ export default function AnalyticsPage() {
     loadLayouts()
   }, [isAuthenticated, isEditor, authLoading, router])
 
+  // Carregar analytics quando layouts estiverem carregados
   useEffect(() => {
+    if (layouts.length === 0 && loading) return // Aguardar layouts carregarem
+    
     if (selectedLayout) {
       loadVersions(selectedLayout)
-      loadAnalytics()
-    } else {
-      loadAnalytics()
     }
-  }, [selectedLayout, selectedVersion, dateRange])
+    loadAnalytics()
+  }, [selectedLayout, selectedVersion, dateRange, layouts.length])
 
   const loadLayouts = async () => {
     try {

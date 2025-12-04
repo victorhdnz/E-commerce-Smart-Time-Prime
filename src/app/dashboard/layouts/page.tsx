@@ -133,7 +133,6 @@ export default function DashboardLayoutsPage() {
         custom_styles: versionFormData.custom_styles,
         sections_config: {},
         is_active: true,
-        is_default: versions.length === 0, // Primeira versão é default
       }
 
       if (editingVersion) {
@@ -180,31 +179,6 @@ export default function DashboardLayoutsPage() {
     } catch (error: any) {
       console.error('Erro ao excluir versão:', error)
       toast.error('Erro ao excluir versão')
-    }
-  }
-
-  const handleSetDefault = async (versionId: string) => {
-    if (!selectedLayout) return
-
-    try {
-      // Remover default de todas as versões do layout
-      await supabase
-        .from('landing_versions')
-        .update({ is_default: false })
-        .eq('layout_id', selectedLayout.id)
-
-      // Definir nova versão como default
-      const { error } = await supabase
-        .from('landing_versions')
-        .update({ is_default: true })
-        .eq('id', versionId)
-
-      if (error) throw error
-      toast.success('Versão definida como padrão!')
-      loadVersions(selectedLayout.id)
-    } catch (error: any) {
-      console.error('Erro ao definir versão padrão:', error)
-      toast.error('Erro ao definir versão padrão')
     }
   }
 
@@ -378,7 +352,13 @@ export default function DashboardLayoutsPage() {
                         )}
                         <div className="flex items-center gap-2 mt-4">
                           <span className="text-sm text-gray-500">URL base:</span>
-                          <code className="text-sm bg-gray-100 px-2 py-1 rounded">/lp/{selectedLayout.slug}</code>
+                          <Link
+                            href={`/lp/${selectedLayout.slug}`}
+                            target="_blank"
+                            className="text-sm bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition-colors text-blue-600 hover:underline"
+                          >
+                            /lp/{selectedLayout.slug}
+                          </Link>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -464,14 +444,7 @@ export default function DashboardLayoutsPage() {
                             <div key={version.id} className="p-4 hover:bg-gray-50">
                               <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-medium text-gray-900">{version.name}</h4>
-                                    {version.is_default && (
-                                      <span className="px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded-full">
-                                        Padrão
-                                      </span>
-                                    )}
-                                  </div>
+                                  <h4 className="font-medium text-gray-900">{version.name}</h4>
                                   <p className="text-sm text-gray-500 truncate">/lp/{selectedLayout.slug}/{version.slug}</p>
                                   {version.description && (
                                     <p className="text-sm text-gray-600 mt-1">{version.description}</p>
@@ -523,24 +496,13 @@ export default function DashboardLayoutsPage() {
                                   >
                                     <Edit size={16} />
                                   </button>
-                                  {!version.is_default && (
-                                    <>
-                                      <button
-                                        onClick={() => handleSetDefault(version.id)}
-                                        className="p-2 hover:bg-green-100 rounded-lg transition-colors text-green-600"
-                                        title="Definir como padrão"
-                                      >
-                                        <Check size={16} />
-                                      </button>
-                                      <button
-                                        onClick={() => handleDeleteVersion(version.id)}
-                                        className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors"
-                                        title="Excluir"
-                                      >
-                                        <Trash2 size={16} />
-                                      </button>
-                                    </>
-                                  )}
+                                  <button
+                                    onClick={() => handleDeleteVersion(version.id)}
+                                    className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors"
+                                    title="Excluir"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
                                 </div>
                               </div>
                             </div>
