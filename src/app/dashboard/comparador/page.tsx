@@ -20,7 +20,7 @@ interface SavedComparison {
 
 export default function ComparadorDashboardPage() {
   const router = useRouter()
-  const { isAuthenticated, profile, loading: authLoading } = useAuth()
+  const { isAuthenticated, isEditor, loading: authLoading } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -34,13 +34,13 @@ export default function ComparadorDashboardPage() {
   useEffect(() => {
     if (authLoading) return
 
-    if (!isAuthenticated || (profile?.role !== 'admin' && profile?.role !== 'editor')) {
-      router.push('/')
+    if (!isAuthenticated || !isEditor) {
+      router.push('/dashboard')
       return
     }
 
     loadData()
-  }, [isAuthenticated, profile, authLoading, router])
+  }, [isAuthenticated, isEditor, authLoading, router])
 
   const loadData = async () => {
     try {

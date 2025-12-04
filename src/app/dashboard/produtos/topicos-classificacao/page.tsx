@@ -41,7 +41,7 @@ export default function CategoryTopicsPage() {
     if (authLoading) return
 
     if (!isAuthenticated || !isEditor) {
-      router.push('/')
+      router.push('/dashboard')
       return
     }
 

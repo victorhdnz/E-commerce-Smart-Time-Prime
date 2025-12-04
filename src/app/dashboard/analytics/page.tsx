@@ -20,7 +20,7 @@ interface AnalyticsSummary {
 
 export default function AnalyticsPage() {
   const router = useRouter()
-  const { isAuthenticated, profile, loading: authLoading } = useAuth()
+  const { isAuthenticated, isEditor, loading: authLoading } = useAuth()
   const [layouts, setLayouts] = useState<LandingLayout[]>([])
   const [selectedLayout, setSelectedLayout] = useState<string | null>(null)
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null)
@@ -34,13 +34,13 @@ export default function AnalyticsPage() {
   useEffect(() => {
     if (authLoading) return
 
-    if (!isAuthenticated || (profile?.role !== 'admin' && profile?.role !== 'editor')) {
-      router.push('/')
+    if (!isAuthenticated || !isEditor) {
+      router.push('/dashboard')
       return
     }
 
     loadLayouts()
-  }, [isAuthenticated, profile, authLoading, router])
+  }, [isAuthenticated, isEditor, authLoading, router])
 
   useEffect(() => {
     if (selectedLayout) {

@@ -34,7 +34,7 @@ const AVAILABLE_FONTS = [
 
 export default function DashboardLayoutsPage() {
   const router = useRouter()
-  const { isAuthenticated, profile, loading: authLoading } = useAuth()
+  const { isAuthenticated, isEditor, loading: authLoading } = useAuth()
   const [layouts, setLayouts] = useState<LandingLayout[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -93,13 +93,13 @@ export default function DashboardLayoutsPage() {
   useEffect(() => {
     if (authLoading) return
 
-    if (!isAuthenticated || (profile?.role !== 'admin' && profile?.role !== 'editor')) {
-      router.push('/')
+    if (!isAuthenticated || !isEditor) {
+      router.push('/dashboard')
       return
     }
 
     loadLayouts()
-  }, [isAuthenticated, profile, authLoading, router])
+  }, [isAuthenticated, isEditor, authLoading, router])
 
   useEffect(() => {
     if (selectedLayout) {

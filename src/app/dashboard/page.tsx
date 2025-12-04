@@ -269,17 +269,10 @@ function DashboardContent() {
       items: [
         {
           title: 'Gerenciar Layouts e Versões',
-          description: 'Criar layouts, versões, editar cores, fontes e copiar links',
+          description: 'Criar, editar e visualizar todas as landing pages',
           href: '/dashboard/layouts',
           icon: Palette,
           color: 'bg-indigo-500',
-        },
-        {
-          title: 'Editar Página Principal',
-          description: 'Personalizar seções, textos e imagens da home',
-          href: '/dashboard/landing',
-          icon: Layout,
-          color: 'bg-purple-500',
         },
         {
           title: 'Analytics',

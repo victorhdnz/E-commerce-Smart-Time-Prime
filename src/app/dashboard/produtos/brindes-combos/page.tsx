@@ -95,7 +95,7 @@ export default function BrindesECombosPage() {
 
     if (!authLoading) {
       if (!isAuthenticated || !isEditor) {
-        router.push('/')
+        router.push('/dashboard')
         return
       }
       

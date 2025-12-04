@@ -197,7 +197,7 @@ export default function DashboardTermsPage() {
   useEffect(() => {
     if (!authLoading) {
       if (!isAuthenticated || !isEditor) {
-        router.push('/')
+        router.push('/dashboard')
         return
       }
       loadTerms()

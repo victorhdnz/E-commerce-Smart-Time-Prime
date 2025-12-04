@@ -11,7 +11,7 @@ import Link from 'next/link'
 
 export default function SupportPagesPage() {
   const router = useRouter()
-  const { isAuthenticated, profile, loading: authLoading } = useAuth()
+  const { isAuthenticated, isEditor, loading: authLoading } = useAuth()
   const [supportPages, setSupportPages] = useState<(ProductSupportPage & { product?: Product })[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -32,14 +32,14 @@ export default function SupportPagesPage() {
   useEffect(() => {
     if (authLoading) return
 
-    if (!isAuthenticated || (profile?.role !== 'admin' && profile?.role !== 'editor')) {
-      router.push('/')
+    if (!isAuthenticated || !isEditor) {
+      router.push('/dashboard')
       return
     }
 
     loadSupportPages()
     loadProducts()
-  }, [isAuthenticated, profile, authLoading, router])
+  }, [isAuthenticated, isEditor, authLoading, router])
 
   const loadSupportPages = async () => {
     try {

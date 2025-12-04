@@ -60,7 +60,7 @@ export default function ConfiguracoesPage() {
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !isAdmin)) {
-      router.push('/')
+      router.push('/dashboard')
     }
 
     if (isAuthenticated && isAdmin) {

@@ -32,7 +32,7 @@ export default function DashboardProductsPage() {
 
     if (!authLoading) {
       if (!isAuthenticated || !isEditor) {
-        router.push('/')
+        router.push('/dashboard')
       } else if (mounted) {
         loadProducts()
       }

@@ -107,8 +107,8 @@ export const Header = () => {
     }
   }, [pathname])
 
-  // Ocultar header em landing pages, página principal e dashboard
-  if (pathname?.startsWith('/lp/') || pathname === '/' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin')) {
+  // Ocultar header em landing pages, página principal, dashboard e comparador
+  if (pathname?.startsWith('/lp/') || pathname === '/' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin') || pathname?.startsWith('/comparar')) {
     return null
   }
 

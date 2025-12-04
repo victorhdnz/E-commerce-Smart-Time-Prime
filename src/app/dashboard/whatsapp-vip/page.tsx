@@ -31,7 +31,7 @@ export default function DashboardWhatsAppVipPage() {
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || !isAdmin)) {
-      router.push('/')
+      router.push('/dashboard')
       return
     }
 

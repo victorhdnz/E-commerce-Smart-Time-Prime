@@ -471,7 +471,7 @@ export default function EditLandingPage() {
     if (authLoading) return
 
     if (!isAuthenticated || !isEditor) {
-      router.push('/')
+      router.push('/dashboard')
       return
     }
 

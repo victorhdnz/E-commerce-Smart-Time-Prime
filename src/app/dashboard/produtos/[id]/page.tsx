@@ -146,7 +146,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
 
     if (!authLoading) {
       if (!isAuthenticated || !isEditor) {
-        router.push('/')
+        router.push('/dashboard')
       } else if (mounted) {
         loadProduct()
       }
