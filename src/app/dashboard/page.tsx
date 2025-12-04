@@ -19,10 +19,13 @@ import {
   Tags,
   Link2,
   Package,
+  LogOut,
+  Lock,
 } from 'lucide-react'
 import Link from 'next/link'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { createClient } from '@/lib/supabase/client'
+import toast from 'react-hot-toast'
 
 interface DashboardStats {
   totalLayouts: number
@@ -33,9 +36,148 @@ interface DashboardStats {
   supportPages: number
 }
 
-export default function DashboardPage() {
-  const router = useRouter()
-  const { isAuthenticated, isEditor, loading } = useAuth()
+// Componente de Login
+function LoginForm() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const supabase = createClient()
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        toast.error(error.message === 'Invalid login credentials' 
+          ? 'Email ou senha incorretos' 
+          : error.message)
+        return
+      }
+
+      toast.success('Login realizado com sucesso!')
+      // O useAuth vai detectar a mudança e atualizar o estado
+    } catch (error) {
+      toast.error('Erro ao fazer login')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md"
+      >
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Lock className="text-white" size={32} />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Acesso Administrativo</h1>
+          <p className="text-gray-500 mt-2">Entre com suas credenciais</p>
+        </div>
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+              placeholder="seu@email.com"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Senha
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Entrando...
+              </>
+            ) : (
+              'Entrar'
+            )}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
+            ← Voltar ao site
+          </Link>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+// Componente de Acesso Negado
+function AccessDenied() {
+  const supabase = createClient()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    toast.success('Logout realizado')
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Lock className="text-red-600" size={32} />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h1>
+        <p className="text-gray-500 mb-6">Você não tem permissão para acessar esta área.</p>
+        <div className="flex gap-3 justify-center">
+          <Link
+            href="/"
+            className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Voltar ao site
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            Sair
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Dashboard Principal
+function DashboardContent() {
+  const { profile } = useAuth()
   const [stats, setStats] = useState<DashboardStats>({
     totalLayouts: 0,
     totalVersions: 0,
@@ -48,32 +190,15 @@ export default function DashboardPage() {
   const supabase = createClient()
 
   useEffect(() => {
-    if (loading) return
-    
-    if (!isAuthenticated) {
-      router.push('/admin')
-      return
-    }
-
-    if (!isEditor) {
-      router.push('/')
-      return
-    }
-  }, [isAuthenticated, isEditor, loading, router])
-
-  useEffect(() => {
-    if (isAuthenticated && isEditor) {
-      loadDashboardData()
-      const dataInterval = setInterval(loadDashboardData, 60000)
-      return () => clearInterval(dataInterval)
-    }
-  }, [isAuthenticated, isEditor])
+    loadDashboardData()
+    const dataInterval = setInterval(loadDashboardData, 60000)
+    return () => clearInterval(dataInterval)
+  }, [])
 
   const loadDashboardData = async () => {
     try {
       setLoadingData(true)
 
-      // Buscar estatísticas em paralelo
       const [layoutsResult, versionsResult, analyticsResult, productsResult, supportResult] = await Promise.all([
         supabase.from('landing_layouts').select('id', { count: 'exact' }),
         supabase.from('landing_versions').select('id', { count: 'exact' }),
@@ -100,12 +225,9 @@ export default function DashboardPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <LoadingSpinner size="md" />
-      </div>
-    )
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    toast.success('Logout realizado')
   }
 
   const statsCards = [
@@ -188,6 +310,13 @@ export default function DashboardPage() {
           color: 'bg-amber-500',
         },
         {
+          title: 'Criar Links de Comparação',
+          description: 'Gerar URLs com produtos pré-selecionados',
+          href: '/dashboard/comparador',
+          icon: Link2,
+          color: 'bg-rose-500',
+        },
+        {
           title: 'Ver Comparador',
           description: 'Abrir o comparador público',
           href: '/comparar',
@@ -217,11 +346,30 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Administrativo</h1>
-          <p className="text-gray-600">
-            Gerencie landing pages, comparador e páginas de suporte
-          </p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Administrativo</h1>
+            <p className="text-gray-600">
+              Olá, <span className="font-medium">{profile?.full_name || profile?.email}</span>
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              target="_blank"
+              className="px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+            >
+              <Eye size={18} />
+              Ver Site
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+            >
+              <LogOut size={18} />
+              Sair
+            </button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -265,7 +413,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {section.items.map((item) => (
                   <Link 
                     key={item.title} 
@@ -326,4 +474,31 @@ export default function DashboardPage() {
       </div>
     </div>
   )
+}
+
+// Componente Principal com Lógica de Autenticação
+export default function DashboardPage() {
+  const { isAuthenticated, isEditor, loading } = useAuth()
+
+  // Loading
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner size="md" />
+      </div>
+    )
+  }
+
+  // Não autenticado - mostrar login
+  if (!isAuthenticated) {
+    return <LoginForm />
+  }
+
+  // Autenticado mas não é admin/editor - mostrar acesso negado
+  if (!isEditor) {
+    return <AccessDenied />
+  }
+
+  // Autenticado e autorizado - mostrar dashboard
+  return <DashboardContent />
 }
