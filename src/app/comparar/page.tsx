@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useProductComparison } from '@/hooks/useProductComparison'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { useAuth } from '@/hooks/useAuth'
@@ -18,7 +18,8 @@ import toast from 'react-hot-toast'
 import { useCart } from '@/hooks/useCart'
 import { createClient } from '@/lib/supabase/client'
 
-export default function ComparePage() {
+// Componente wrapper para usar Suspense com useSearchParams
+function ComparePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { isAuthenticated } = useAuth()
@@ -789,6 +790,19 @@ export default function ComparePage() {
         document.body
       )}
     </div>
+  )
+}
+
+// Export com Suspense para useSearchParams
+export default function ComparePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+      </div>
+    }>
+      <ComparePageContent />
+    </Suspense>
   )
 }
 
