@@ -32,6 +32,7 @@ export default function NovoProduct() {
     category: '',
     slug: '',
     product_code: '',
+    ecommerce_url: '', // URL do produto no e-commerce externo
     images: [] as string[],
     specifications: [] as { key: string; value: string }[],
     benefits: {
@@ -199,6 +200,7 @@ export default function NovoProduct() {
           category: formData.category || null,
           slug: finalSlug,
           product_code: formData.product_code || null,
+          ecommerce_url: formData.ecommerce_url || null,
           images: formData.images.length > 0 ? formData.images : [],
           specifications: formData.specifications.length > 0 ? formData.specifications : [],
           benefits: formData.benefits,
@@ -293,13 +295,13 @@ export default function NovoProduct() {
                 />
 
                 <Input
-                  label="Código do Produto (apenas no dashboard)"
-                  value={formData.product_code}
-                  onChange={(e) => setFormData({ ...formData, product_code: e.target.value })}
-                  placeholder="Código interno do produto (opcional)"
+                  label="URL do Produto no E-commerce"
+                  value={formData.ecommerce_url}
+                  onChange={(e) => setFormData({ ...formData, ecommerce_url: e.target.value })}
+                  placeholder="https://seu-ecommerce.com.br/produto/exemplo"
                 />
                 <p className="text-xs text-gray-500 -mt-2">
-                  Este código ficará visível apenas no dashboard para referência interna
+                  Link direto para o produto no e-commerce. Será usado nos botões de redirecionamento.
                 </p>
 
                 <div>

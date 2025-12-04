@@ -259,6 +259,15 @@ export default function DashboardLayoutsPage() {
     return `${baseUrl}/lp/${selectedLayout.slug}`
   }
 
+  // Determinar qual editor usar baseado no slug do layout
+  const getEditorUrl = (layout: LandingLayout, versionId: string) => {
+    const appleLayoutSlugs = ['apple-watch', 'apple', 'premium']
+    if (appleLayoutSlugs.includes(layout.slug.toLowerCase())) {
+      return `/dashboard/landing/apple?layout=${layout.id}&version=${versionId}`
+    }
+    return `/dashboard/landing?layout=${layout.id}&version=${versionId}`
+  }
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -456,7 +465,7 @@ export default function DashboardLayoutsPage() {
                                     )}
                                   </button>
                                   <Link
-                                    href={`/dashboard/landing?layout=${selectedLayout.id}&version=${version.id}`}
+                                    href={getEditorUrl(selectedLayout, version.id)}
                                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                                     title="Editar conteúdo"
                                   >

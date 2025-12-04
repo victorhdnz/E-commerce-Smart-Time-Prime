@@ -35,6 +35,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
     stock: '',
     category: '',
     product_code: '',
+    ecommerce_url: '',
     is_active: true,
     is_featured: false,
     images: [] as string[],
@@ -194,6 +195,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
           stock: data.stock?.toString() || '',
           category: data.category || '',
           product_code: (data as any).product_code || '',
+          ecommerce_url: (data as any).ecommerce_url || '',
           is_active: data.is_active ?? true,
           is_featured: data.is_featured ?? false,
           images: images,
@@ -232,6 +234,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         stock: parseInt(formData.stock) || 0,
         category: formData.category.trim(),
         product_code: formData.product_code.trim() || null,
+        ecommerce_url: formData.ecommerce_url?.trim() || null,
         is_active: formData.is_active,
         is_featured: formData.is_featured,
         images: formData.images,
@@ -402,13 +405,13 @@ export default function EditProductPage({ params }: EditProductPageProps) {
                 </div>
 
                 <Input
-                  label="Código do Produto (apenas no dashboard)"
-                  value={formData.product_code}
-                  onChange={(e) => setFormData(prev => ({ ...prev, product_code: e.target.value }))}
-                  placeholder="Código interno do produto (opcional)"
+                  label="URL do Produto no E-commerce"
+                  value={formData.ecommerce_url}
+                  onChange={(e) => setFormData(prev => ({ ...prev, ecommerce_url: e.target.value }))}
+                  placeholder="https://seu-ecommerce.com.br/produto/exemplo"
                 />
                 <p className="text-xs text-gray-500 -mt-2 mb-4">
-                  Este código ficará visível apenas no dashboard para referência interna
+                  Link direto para o produto no e-commerce. Será usado nos botões de redirecionamento.
                 </p>
 
                 <div>
