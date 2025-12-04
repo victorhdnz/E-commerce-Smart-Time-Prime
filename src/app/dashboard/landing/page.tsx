@@ -519,8 +519,8 @@ function EditLandingPageContent() {
       setCurrentVersion(versionData)
       
       // Carregar configurações da versão ou usar padrão
-      if (versionData.content && typeof versionData.content === 'object') {
-        const savedSettings = versionData.content as any
+      if (versionData.sections_config && typeof versionData.sections_config === 'object' && Object.keys(versionData.sections_config as any).length > 0) {
+        const savedSettings = versionData.sections_config as any
         setSettings(prev => ({
           ...prev,
           ...savedSettings,
@@ -530,6 +530,22 @@ function EditLandingPageContent() {
         // Carregar ordem das seções se existir
         if (savedSettings.section_order && Array.isArray(savedSettings.section_order)) {
           setSectionOrder(savedSettings.section_order)
+        }
+      } else {
+        // Se não tiver configurações na versão, carregar do site_settings como template
+        const { data: siteSettings } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'general')
+          .maybeSingle()
+        
+        if (siteSettings?.value) {
+          const savedSettings = siteSettings.value as any
+          setSettings(prev => ({
+            ...prev,
+            ...savedSettings,
+            theme_colors: savedSettings.theme_colors || prev.theme_colors,
+          }))
         }
       }
       
@@ -1221,7 +1237,7 @@ function EditLandingPageContent() {
         const { error: updateError } = await supabase
           .from('landing_versions')
           .update({
-            content: fieldsToSave,
+            sections_config: fieldsToSave,
             updated_at: new Date().toISOString(),
           })
           .eq('id', versionId)

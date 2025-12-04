@@ -107,7 +107,14 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
 
   const loadSettings = async () => {
     try {
-      // Buscar settings do site (landing page settings)
+      // Se a versão tiver conteúdo próprio (sections_config), usar ele
+      if (version?.sections_config && Object.keys(version.sections_config as any).length > 0) {
+        setLandingSettings({ value: version.sections_config })
+        setLoading(false)
+        return
+      }
+
+      // Caso contrário, buscar settings do site (landing page settings)
       const { data: siteSettings } = await supabase
         .from('site_settings')
         .select('*')
