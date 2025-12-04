@@ -165,39 +165,58 @@ export default function AnalyticsPage() {
     try {
       setDeleting(true)
       
-      // Supabase requer uma condição WHERE para delete, então usamos neq com valor impossível
-      let query = supabase.from('landing_analytics').delete()
+      // Primeiro, buscar todos os IDs que serão deletados
+      let selectQuery = supabase.from('landing_analytics').select('id')
       
-      // Se tiver layout selecionado, deletar apenas desse layout
       if (selectedLayout) {
-        const { error } = await supabase
+        selectQuery = selectQuery.eq('layout_id', selectedLayout)
+      }
+      
+      const { data: idsToDelete, error: selectError } = await selectQuery
+      
+      if (selectError) {
+        console.error('Erro ao buscar IDs:', selectError)
+        throw selectError
+      }
+      
+      if (!idsToDelete || idsToDelete.length === 0) {
+        toast.success('Não há dados para apagar!')
+        setShowDeleteModal(false)
+        setDeleting(false)
+        return
+      }
+      
+      console.log(`Deletando ${idsToDelete.length} registros...`)
+      
+      // Deletar em batches de 100 para evitar timeout
+      const batchSize = 100
+      const ids = idsToDelete.map(item => item.id)
+      
+      for (let i = 0; i < ids.length; i += batchSize) {
+        const batch = ids.slice(i, i + batchSize)
+        const { error: deleteError } = await supabase
           .from('landing_analytics')
           .delete()
-          .eq('layout_id', selectedLayout)
+          .in('id', batch)
         
-        if (error) throw error
-      } else {
-        // Deletar todos - usar id diferente de string vazia como condição
-        const { error } = await supabase
-          .from('landing_analytics')
-          .delete()
-          .neq('id', '00000000-0000-0000-0000-000000000000')
-        
-        if (error) throw error
+        if (deleteError) {
+          console.error('Erro ao deletar batch:', deleteError)
+          throw deleteError
+        }
       }
 
-      toast.success(selectedLayout ? 'Dados do layout apagados!' : 'Todos os dados de analytics foram apagados!')
+      toast.success(`${idsToDelete.length} registros apagados com sucesso!`)
       setShowDeleteModal(false)
       
-      // Limpar estados locais
+      // Limpar estados locais imediatamente
       setAnalytics([])
       setSummary(null)
       setDailyStats([])
       setLayoutPerformance([])
       setSessions([])
       
-      // Recarregar analytics (que deve estar vazio agora)
-      setTimeout(() => loadAnalytics(), 500)
+      // Recarregar analytics após um pequeno delay
+      setTimeout(() => loadAnalytics(), 300)
     } catch (error: any) {
       console.error('Erro ao apagar dados:', error)
       toast.error(`Erro ao apagar dados: ${error.message || 'Erro desconhecido'}`)

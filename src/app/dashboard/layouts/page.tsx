@@ -380,21 +380,6 @@ export default function DashboardLayoutsPage() {
                       </div>
                     </div>
 
-                    {/* Cores do Layout */}
-                    <div className="mt-6 pt-6 border-t">
-                      <h3 className="text-sm font-medium text-gray-700 mb-3">Cores do tema</h3>
-                      <div className="flex gap-3">
-                        {Object.entries((selectedLayout.theme_colors as any) || {}).slice(0, 5).map(([key, value]) => (
-                          <div key={key} className="flex items-center gap-2">
-                            <div
-                              className="w-6 h-6 rounded-full border border-gray-200"
-                              style={{ backgroundColor: value as string }}
-                            />
-                            <span className="text-xs text-gray-500 capitalize">{key}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
 
                   {/* Versões */}
