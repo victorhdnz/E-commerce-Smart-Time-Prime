@@ -1,8 +1,9 @@
 'use client'
 
 import { LandingLayout, LandingVersion } from '@/types'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { trackClick } from '@/lib/utils/analytics'
 
 // Importar componentes da landing page
 import { HeroSection } from '@/components/landing/HeroSection'
@@ -276,8 +277,38 @@ export function DefaultLayout({
     }
   }
 
+  // Handler para rastrear cliques em botões e links
+  const handleContainerClick = useCallback((event: React.MouseEvent) => {
+    const target = event.target as HTMLElement
+    const clickable = target.closest('a, button, [role="button"]')
+    
+    if (clickable) {
+      const text = clickable.textContent?.trim() || ''
+      const href = (clickable as HTMLAnchorElement).href || ''
+      const elementType = clickable.tagName.toLowerCase()
+      
+      // Identificar o tipo de elemento clicado
+      let element = 'button'
+      if (clickable.classList.contains('whatsapp') || href.includes('wa.me')) {
+        element = 'whatsapp_button'
+      } else if (clickable.classList.contains('cta') || text.toLowerCase().includes('comprar')) {
+        element = 'cta_button'
+      } else if (elementType === 'a') {
+        element = 'link'
+      }
+      
+      trackClick({
+        layoutId: layout.id,
+        versionId: version?.id,
+        element,
+        text: text.substring(0, 100), // Limitar tamanho
+        url: href || window.location.href,
+      })
+    }
+  }, [layout.id, version?.id])
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" onClick={handleContainerClick}>
       {/* Fixed Timer */}
       {settings.timer_enabled && settings.timer_end_date && (
         <FixedTimer

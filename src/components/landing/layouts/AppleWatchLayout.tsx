@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import Image from 'next/image'
+import { trackClick } from '@/lib/utils/analytics'
 
 // Cores por seção
 interface SectionColors {
@@ -29,6 +30,8 @@ interface AppleWatchLayoutProps {
   sectionVisibility?: Record<string, boolean>
   sectionColors?: AllSectionColors
   showWhatsAppButton?: boolean
+  layoutId?: string
+  versionId?: string | null
 }
 
 const defaultSectionColors: AllSectionColors = {
@@ -245,7 +248,22 @@ export function AppleWatchLayout({
   sectionVisibility = { hero: true, products: true, reasons: true, features: true, accessories: true, faq: true, cta: true },
   sectionColors = defaultSectionColors,
   showWhatsAppButton = true,
+  layoutId,
+  versionId,
 }: AppleWatchLayoutProps) {
+  
+  // Função para rastrear cliques
+  const handleClick = (element: string, text?: string, url?: string) => {
+    if (layoutId) {
+      trackClick({
+        layoutId,
+        versionId,
+        element,
+        text,
+        url,
+      })
+    }
+  }
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0)
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0)
   const featuresRef = useRef<HTMLDivElement>(null)
@@ -386,6 +404,7 @@ export function AppleWatchLayout({
                 <div className="flex gap-4 mt-6">
                   <a
                     href={product.learnMoreLink || '#'}
+                    onClick={() => handleClick('product_learn_more', product.learnMoreText || 'Saiba mais', product.learnMoreLink)}
                     className="px-6 py-2.5 rounded-full text-sm font-medium transition-colors hover:opacity-90"
                     style={{ 
                       backgroundColor: colors.products.buttonColor, 
@@ -396,6 +415,7 @@ export function AppleWatchLayout({
                   </a>
                   <a
                     href={product.buyLink || '#'}
+                    onClick={() => handleClick('product_buy', product.buyText || 'Comprar', product.buyLink)}
                     className="px-6 py-2.5 text-sm font-medium transition-colors hover:opacity-70"
                     style={{ color: colors.products.buttonColor }}
                   >
@@ -421,6 +441,7 @@ export function AppleWatchLayout({
             </h2>
             <a
               href={content.reasons.link.url}
+              onClick={() => handleClick('reasons_link', content.reasons.link.text, content.reasons.link.url)}
               className="block text-center mb-16 text-lg"
               style={{ color: colors.reasons.buttonColor }}
             >
@@ -541,6 +562,7 @@ export function AppleWatchLayout({
             </h2>
             <a
               href={content.accessories.link.url}
+              onClick={() => handleClick('accessories_link', content.accessories.link.text, content.accessories.link.url)}
               className="block text-center mb-16 text-lg"
               style={{ color: colors.accessories.buttonColor }}
             >
@@ -560,6 +582,7 @@ export function AppleWatchLayout({
               </p>
               <a
                 href={content.accessories.banner.link.url}
+                onClick={() => handleClick('accessories_banner_link', content.accessories.banner.link.text, content.accessories.banner.link.url)}
                 className="inline-block mb-8"
                 style={{ color: colors.accessories.buttonColor }}
               >
@@ -638,6 +661,7 @@ export function AppleWatchLayout({
           </h2>
           <a
             href={content.cta.buttonLink}
+            onClick={() => handleClick('cta_button', content.cta.buttonText, content.cta.buttonLink)}
             className="inline-block px-10 py-4 rounded-full text-lg font-medium transition-all hover:scale-105"
             style={{ 
               backgroundColor: colors.cta.buttonColor,
@@ -655,6 +679,7 @@ export function AppleWatchLayout({
           href={`https://wa.me/${content.settings.whatsappNumber}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => handleClick('whatsapp_button', 'WhatsApp', `https://wa.me/${content.settings.whatsappNumber}`)}
           className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:bg-green-600 transition-colors"
         >
           <svg viewBox="0 0 24 24" width="28" height="28" fill="white">
