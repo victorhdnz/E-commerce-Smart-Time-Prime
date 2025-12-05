@@ -1791,29 +1791,10 @@ function EditLandingPageContent() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </SectionWrapper>
 
           {/* FAQ Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">❓ Perguntas Frequentes (FAQ)</h2>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.section_faq_visible ?? true}
-                  onChange={(e) =>
-                    setSettings({ ...settings, section_faq_visible: e.target.checked })
-                  }
-                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                />
-                <span className="text-sm font-medium">Ativar Seção</span>
-              </label>
-            </div>
+          <SectionWrapper section="faq" icon="❓" title="Perguntas Frequentes (FAQ)">
             
             <div className="space-y-6">
               {/* Configurações da Seção */}
@@ -1946,29 +1927,10 @@ function EditLandingPageContent() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </SectionWrapper>
 
           {/* Media Showcase Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Galeria de Destaques</h2>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.section_media_showcase_visible ?? true}
-                  onChange={(e) =>
-                    setSettings({ ...settings, section_media_showcase_visible: e.target.checked })
-                  }
-                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                />
-                <span className="text-sm font-medium">Ativar Seção</span>
-              </label>
-            </div>
+          <SectionWrapper section="media_showcase" icon="📸" title="Galeria de Destaques">
             <p className="text-sm text-gray-600 mb-6">
               📸 Envie imagens no formato Instagram Post (1080x1080px) para o carrossel + 1 vídeo vertical tipo Reels
             </p>
@@ -2191,29 +2153,10 @@ function EditLandingPageContent() {
                 />
               </div>
             </div>
-          </motion.div>
+          </SectionWrapper>
 
           {/* Value Package Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Pacote de Valor</h2>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.section_value_package_visible ?? true}
-                  onChange={(e) =>
-                    setSettings({ ...settings, section_value_package_visible: e.target.checked })
-                  }
-                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                />
-                <span className="text-sm font-medium">Ativar Seção</span>
-              </label>
-            </div>
+          <SectionWrapper section="value_package" icon="💎" title="Pacote de Valor">
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -2375,29 +2318,10 @@ function EditLandingPageContent() {
                 )}
               </div>
             </div>
-          </motion.div>
+          </SectionWrapper>
 
           {/* Story Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Nossa História</h2>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.section_story_visible ?? true}
-                  onChange={(e) =>
-                    setSettings({ ...settings, section_story_visible: e.target.checked })
-                  }
-                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                />
-                <span className="text-sm font-medium">Ativar Seção</span>
-              </label>
-            </div>
+          <SectionWrapper section="story" icon="📖" title="Nossa História">
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -2460,29 +2384,10 @@ function EditLandingPageContent() {
                 />
               </div>
             </div>
-          </motion.div>
+          </SectionWrapper>
 
           {/* About Us Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Quem Somos</h2>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.section_about_us_visible ?? true}
-                  onChange={(e) =>
-                    setSettings({ ...settings, section_about_us_visible: e.target.checked })
-                  }
-                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                />
-                <span className="text-sm font-medium">Ativar Seção</span>
-              </label>
-            </div>
+          <SectionWrapper section="about_us" icon="ℹ️" title="Quem Somos">
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -2552,16 +2457,10 @@ function EditLandingPageContent() {
                 Localização que aparecerá no botão de endereço da loja
               </p>
             </div>
-          </motion.div>
+          </SectionWrapper>
 
           {/* WhatsApp Fixo (Botão Flutuante) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">💬 WhatsApp Fixo (Botão Flutuante)</h2>
+          <SectionWrapper section="whatsapp_float" icon="💬" title="WhatsApp Fixo (Botão Flutuante)">
             <p className="text-sm text-gray-600 mb-6">
               Configure o botão flutuante do WhatsApp que aparece fixo na tela.
             </p>
@@ -2588,16 +2487,10 @@ function EditLandingPageContent() {
                 placeholder="Olá! Gostaria de saber mais sobre os produtos."
               />
             </div>
-          </motion.div>
+          </SectionWrapper>
 
           {/* Controles de Visibilidade das Seções */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.75 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">👁️ Visibilidade e Ordem das Seções</h2>
+          <SectionWrapper section="visibility" icon="👁️" title="Visibilidade e Ordem das Seções">
             <p className="text-sm text-gray-600 mb-6">
               Controle quais seções da página inicial devem ser exibidas. Use os números para definir a ordem das seções e elementos (1 = primeiro, 2 = segundo, etc.).
             </p>
@@ -2696,26 +2589,7 @@ function EditLandingPageContent() {
           </motion.div>
 
           {/* Social Proof Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">⭐ Avaliações (Social Proof)</h2>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.section_social_proof_visible ?? true}
-                  onChange={(e) =>
-                    setSettings({ ...settings, section_social_proof_visible: e.target.checked })
-                  }
-                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                />
-                <span className="text-sm font-medium">Ativar Seção</span>
-              </label>
-            </div>
+          <SectionWrapper section="social_proof" icon="⭐" title="Avaliações (Social Proof)">
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
