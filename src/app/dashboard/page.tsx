@@ -38,12 +38,15 @@ interface DashboardStats {
 function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError(null)
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -52,16 +55,27 @@ function LoginForm() {
       })
 
       if (error) {
-        toast.error(error.message === 'Invalid login credentials' 
-          ? 'Email ou senha incorretos' 
-          : error.message)
+        if (error.message === 'Invalid login credentials') {
+          setError('Email ou senha incorretos')
+          toast.error('Email ou senha incorretos')
+        } else if (error.message.includes('fetch')) {
+          setError('Erro de conexão. Verifique sua internet e tente novamente.')
+          toast.error('Erro de conexão com o servidor')
+        } else {
+          setError(error.message)
+          toast.error(error.message)
+        }
         return
       }
 
       toast.success('Login realizado com sucesso!')
       // O useAuth vai detectar a mudança e atualizar o estado
-    } catch (error) {
-      toast.error('Erro ao fazer login')
+    } catch (err: any) {
+      const errorMessage = err?.message?.includes('fetch') 
+        ? 'Erro de conexão. Verifique sua internet e tente novamente.'
+        : 'Erro ao fazer login. Tente novamente.'
+      setError(errorMessage)
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -82,6 +96,12 @@ function LoginForm() {
           <p className="text-gray-500 mt-2">Entre com suas credenciais</p>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -101,14 +121,34 @@ function LoginForm() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Senha
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
-              placeholder="••••••••"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors p-1"
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
 
           <button
@@ -126,12 +166,6 @@ function LoginForm() {
             )}
           </button>
         </form>
-
-        <div className="mt-6 text-center">
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
-            ← Voltar ao site
-          </Link>
-        </div>
       </motion.div>
     </div>
   )
@@ -154,20 +188,12 @@ function AccessDenied() {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Acesso Negado</h1>
         <p className="text-gray-500 mb-6">Você não tem permissão para acessar esta área.</p>
-        <div className="flex gap-3 justify-center">
-          <Link
-            href="/"
-            className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Voltar ao site
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            Sair
-          </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+        >
+          Sair e tentar outra conta
+        </button>
       </div>
     </div>
   )
