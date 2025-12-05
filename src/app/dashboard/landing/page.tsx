@@ -250,10 +250,27 @@ interface ColorEditorPopupProps {
   sectionColors: Record<string, SectionColors>
   updateSectionColor: (section: string, colorKey: keyof SectionColors, value: string) => void
   onClose: () => void
+  settings?: any
 }
 
-const ColorEditorPopup: React.FC<ColorEditorPopupProps> = ({ section, sectionColors, updateSectionColor, onClose }) => {
-  const colors = sectionColors[section] || defaultSectionColors
+const ColorEditorPopup: React.FC<ColorEditorPopupProps> = ({ section, sectionColors, updateSectionColor, onClose, settings }) => {
+  // Buscar cores do sectionColors ou do settings (para seções com campos específicos)
+  const settingsColorMap: Record<string, { bg: string, text: string }> = {
+    hero: { bg: 'hero_bg_color', text: 'hero_text_color' },
+    timer: { bg: 'timer_bg_color', text: 'timer_text_color' },
+    exit_popup: { bg: 'exit_popup_bg_color', text: 'exit_popup_text_color' },
+  }
+  
+  const sectionSettingsKeys = settingsColorMap[section]
+  const savedColors = sectionColors[section] || defaultSectionColors
+  
+  // Usar cores do settings se existirem, senão usar do sectionColors
+  const colors = {
+    backgroundColor: (sectionSettingsKeys && settings?.[sectionSettingsKeys.bg]) || savedColors.backgroundColor,
+    textColor: (sectionSettingsKeys && settings?.[sectionSettingsKeys.text]) || savedColors.textColor,
+    buttonColor: savedColors.buttonColor,
+    buttonTextColor: savedColors.buttonTextColor,
+  }
 
   return (
     <>
@@ -501,6 +518,7 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
           sectionColors={sectionColors}
           updateSectionColor={updateSectionColor}
           onClose={() => setShowColorEditor(null)}
+          settings={settings}
         />
       )}
 
@@ -567,8 +585,9 @@ function EditLandingPageContent() {
     toast.success(`Seção ${newValue ? 'visível' : 'oculta'}! Clique em "Salvar Alterações" para aplicar.`)
   }
 
-  // Função para atualizar cores de uma seção
+  // Função para atualizar cores de uma seção (salva tanto no sectionColors quanto no settings)
   const updateSectionColor = (section: string, colorKey: keyof SectionColors, value: string) => {
+    // Atualizar o estado local de cores
     setSectionColors(prev => ({
       ...prev,
       [section]: {
@@ -576,6 +595,21 @@ function EditLandingPageContent() {
         [colorKey]: value
       }
     }))
+    
+    // Mapear para o campo específico no settings para compatibilidade com a landing page
+    const settingsKeyMap: Record<string, Record<string, string>> = {
+      hero: { backgroundColor: 'hero_bg_color', textColor: 'hero_text_color' },
+      timer: { backgroundColor: 'timer_bg_color', textColor: 'timer_text_color' },
+      exit_popup: { backgroundColor: 'exit_popup_bg_color', textColor: 'exit_popup_text_color' },
+    }
+    
+    const sectionMap = settingsKeyMap[section]
+    if (sectionMap && sectionMap[colorKey]) {
+      setSettings(prev => ({
+        ...prev,
+        [sectionMap[colorKey]]: value
+      }))
+    }
   }
 
   // Função para reordenar seções
@@ -864,6 +898,11 @@ function EditLandingPageContent() {
         // Carregar ordem das seções se existir
         if (savedSettings.section_order && Array.isArray(savedSettings.section_order)) {
           setSectionOrder(savedSettings.section_order)
+        }
+        
+        // Carregar cores das seções se existir
+        if (savedSettings.section_colors && typeof savedSettings.section_colors === 'object') {
+          setSectionColors(savedSettings.section_colors)
         }
       } else {
         // Se não tiver configurações na versão, carregar do site_settings como template
@@ -1567,6 +1606,7 @@ function EditLandingPageContent() {
         ...settings,
         timer_end_date: timerEndDateISO, // Usar a data convertida
         section_order: sectionOrder, // Incluir ordem das seções
+        section_colors: sectionColors, // Incluir cores das seções
       }
 
       // Se estamos editando uma versão, salvar na tabela landing_versions
