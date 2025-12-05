@@ -154,7 +154,10 @@ function AppleEditorContent() {
             setSectionColors({ ...defaultSectionColors, ...config.sectionColors })
           }
           if (config.showWhatsAppButton !== undefined) {
+            console.log('📥 Carregando showWhatsAppButton:', config.showWhatsAppButton)
             setShowWhatsAppButton(config.showWhatsAppButton)
+          } else {
+            console.log('⚠️ showWhatsAppButton não definido no config, usando padrão: false')
           }
         }
       }
@@ -172,16 +175,24 @@ function AppleEditorContent() {
     try {
       setSaving(true)
 
+      const configToSave = { 
+        appleWatchContent: content,
+        sectionOrder,
+        sectionVisibility,
+        sectionColors,
+        showWhatsAppButton,
+      }
+
+      console.log('💾 Salvando configuração:', {
+        showWhatsAppButton,
+        hasWhatsAppNumber: !!content.settings.whatsappNumber,
+        fullConfig: configToSave,
+      })
+
       const { error } = await supabase
         .from('landing_versions')
         .update({
-          sections_config: { 
-            appleWatchContent: content,
-            sectionOrder,
-            sectionVisibility,
-            sectionColors,
-            showWhatsAppButton,
-          },
+          sections_config: configToSave,
           updated_at: new Date().toISOString(),
         })
         .eq('id', versionId)

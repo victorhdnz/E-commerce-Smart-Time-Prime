@@ -169,6 +169,15 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
   // Determinar o tipo de layout baseado no slug
   const layoutType = getLayoutType(layout.slug)
 
+  // Debug: verificar valor do showWhatsAppButton
+  const showWhatsApp = sectionsConfig?.showWhatsAppButton === true
+  console.log('🔍 WhatsApp Button Config:', {
+    hasConfig: !!sectionsConfig,
+    rawValue: sectionsConfig?.showWhatsAppButton,
+    finalValue: showWhatsApp,
+    versionId: version?.id,
+  })
+
   return (
     <div style={colorStyles} className="min-h-screen">
       {/* Aplicar fontes via classes Tailwind ou inline */}
@@ -196,7 +205,7 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
           sectionOrder={sectionsConfig?.sectionOrder}
           sectionVisibility={sectionsConfig?.sectionVisibility}
           sectionColors={sectionsConfig?.sectionColors}
-          showWhatsAppButton={sectionsConfig?.showWhatsAppButton === true}
+          showWhatsAppButton={showWhatsApp}
           layoutId={layout.id}
           versionId={version?.id}
         />

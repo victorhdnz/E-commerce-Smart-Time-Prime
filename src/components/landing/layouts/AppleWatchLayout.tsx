@@ -252,6 +252,14 @@ export function AppleWatchLayout({
   versionId,
 }: AppleWatchLayoutProps) {
   
+  // Debug WhatsApp Button
+  console.log('🔍 AppleWatchLayout - WhatsApp:', {
+    showWhatsAppButton,
+    hasNumber: !!content.settings.whatsappNumber,
+    number: content.settings.whatsappNumber,
+    willShow: showWhatsAppButton === true && !!content.settings.whatsappNumber,
+  })
+
   // Função para rastrear cliques
   const handleClick = (element: string, text?: string, url?: string) => {
     if (layoutId) {
