@@ -448,88 +448,105 @@ function AppleEditorContent() {
   // Componente para editor de cores por seção
   const ColorEditorPopup = ({ section }: { section: SectionKey }) => {
     const colors = sectionColors[section]
+    
+    // Impedir propagação de eventos para não fechar a seção
+    const stopPropagation = (e: React.MouseEvent | React.FocusEvent) => {
+      e.stopPropagation()
+    }
+    
     return (
-      <div className="absolute right-0 top-12 z-50 bg-white rounded-lg shadow-xl border w-72 max-h-80 flex flex-col">
+      <div 
+        className="absolute right-0 top-12 z-50 bg-white rounded-lg shadow-xl border w-80"
+        onClick={stopPropagation}
+      >
         <div className="p-4 border-b bg-gray-50 rounded-t-lg">
           <h4 className="font-medium flex items-center gap-2">
             <Palette size={16} />
             Cores da Seção
           </h4>
         </div>
-        <div className="p-4 space-y-3 overflow-y-auto flex-1">
+        <div className="p-4 space-y-4">
           <div>
-            <label className="block text-xs font-medium mb-1">Cor de Fundo</label>
+            <label className="block text-xs font-medium mb-1.5">Cor de Fundo</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={colors.backgroundColor}
                 onChange={(e) => updateSectionColor(section, 'backgroundColor', e.target.value)}
-                className="w-8 h-8 rounded border cursor-pointer"
+                onClick={stopPropagation}
+                className="w-10 h-10 rounded border cursor-pointer"
               />
               <input
                 type="text"
                 value={colors.backgroundColor}
                 onChange={(e) => updateSectionColor(section, 'backgroundColor', e.target.value)}
-                className="flex-1 px-2 py-1 border rounded text-sm"
+                onClick={stopPropagation}
+                className="flex-1 px-3 py-2 border rounded text-sm"
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Cor do Texto</label>
+            <label className="block text-xs font-medium mb-1.5">Cor do Texto</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={colors.textColor}
                 onChange={(e) => updateSectionColor(section, 'textColor', e.target.value)}
-                className="w-8 h-8 rounded border cursor-pointer"
+                onClick={stopPropagation}
+                className="w-10 h-10 rounded border cursor-pointer"
               />
               <input
                 type="text"
                 value={colors.textColor}
                 onChange={(e) => updateSectionColor(section, 'textColor', e.target.value)}
-                className="flex-1 px-2 py-1 border rounded text-sm"
+                onClick={stopPropagation}
+                className="flex-1 px-3 py-2 border rounded text-sm"
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Cor do Botão</label>
+            <label className="block text-xs font-medium mb-1.5">Cor do Botão</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={colors.buttonColor}
                 onChange={(e) => updateSectionColor(section, 'buttonColor', e.target.value)}
-                className="w-8 h-8 rounded border cursor-pointer"
+                onClick={stopPropagation}
+                className="w-10 h-10 rounded border cursor-pointer"
               />
               <input
                 type="text"
                 value={colors.buttonColor}
                 onChange={(e) => updateSectionColor(section, 'buttonColor', e.target.value)}
-                className="flex-1 px-2 py-1 border rounded text-sm"
+                onClick={stopPropagation}
+                className="flex-1 px-3 py-2 border rounded text-sm"
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Texto do Botão</label>
+            <label className="block text-xs font-medium mb-1.5">Texto do Botão</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={colors.buttonTextColor}
                 onChange={(e) => updateSectionColor(section, 'buttonTextColor', e.target.value)}
-                className="w-8 h-8 rounded border cursor-pointer"
+                onClick={stopPropagation}
+                className="w-10 h-10 rounded border cursor-pointer"
               />
               <input
                 type="text"
                 value={colors.buttonTextColor}
                 onChange={(e) => updateSectionColor(section, 'buttonTextColor', e.target.value)}
-                className="flex-1 px-2 py-1 border rounded text-sm"
+                onClick={stopPropagation}
+                className="flex-1 px-3 py-2 border rounded text-sm"
               />
             </div>
           </div>
         </div>
-        <div className="p-3 border-t bg-gray-50 rounded-b-lg">
+        <div className="p-4 border-t bg-gray-50 rounded-b-lg">
           <button
-            onClick={() => setShowColorEditor(null)}
-            className="w-full py-1.5 bg-black text-white rounded text-sm hover:bg-gray-800"
+            onClick={(e) => { e.stopPropagation(); setShowColorEditor(null) }}
+            className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
           >
             Fechar
           </button>
