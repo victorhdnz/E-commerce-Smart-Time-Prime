@@ -321,7 +321,7 @@ export function DefaultLayout({
   }
 
   return (
-    <div className="min-h-screen bg-white" onClick={handleContainerClick}>
+    <div className="bg-white" onClick={handleContainerClick}>
       {/* Fixed Timer */}
       {settings.timer_enabled && settings.timer_end_date && (
         <FixedTimer

@@ -2958,51 +2958,6 @@ function EditLandingPageContent() {
             </div>
           </SectionWrapper>
 
-          {/* WhatsApp Fixo (Botão Flutuante) */}
-          <SectionWrapper 
-            section="whatsapp_float" 
-            icon="💬" 
-            title="WhatsApp Fixo (Botão Flutuante)" 
-            expandedSection={expandedSection} 
-            setExpandedSection={setExpandedSection} 
-            toggleSectionVisibility={toggleSectionVisibility} 
-            settings={settings}
-            showColorEditor={showColorEditor}
-            setShowColorEditor={setShowColorEditor}
-            index={9}
-            moveSection={moveSectionInOrder}
-            totalSections={12}
-            sectionColors={sectionColors}
-            updateSectionColor={updateSectionColor}
-          >
-            <p className="text-sm text-gray-600 mb-6">
-              Configure o botão flutuante do WhatsApp que aparece fixo na tela.
-            </p>
-            
-            <div className="space-y-4">
-              <Input
-                label="Número do WhatsApp"
-                value={settings.whatsapp_float_number}
-                onChange={(e) =>
-                  setSettings({ ...settings, whatsapp_float_number: e.target.value })
-                }
-                placeholder="5534984136291"
-              />
-              <p className="text-xs text-gray-500 -mt-2">
-                Formato: 5534984136291 (sem espaços, com código do país e DDD)
-              </p>
-
-              <Input
-                label="Mensagem Padrão"
-                value={settings.whatsapp_float_message}
-                onChange={(e) =>
-                  setSettings({ ...settings, whatsapp_float_message: e.target.value })
-                }
-                placeholder="Olá! Gostaria de saber mais sobre os produtos."
-              />
-            </div>
-          </SectionWrapper>
-
           {/* Controles de Visibilidade das Seções */}
           <SectionWrapper 
             section="visibility" 

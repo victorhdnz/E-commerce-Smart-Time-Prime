@@ -721,41 +721,6 @@ export function AppleWatchLayout({
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: content.settings.backgroundColor || '#ffffff' }}>
-      {/* Navigation Pills - Estilo Apple */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/50">
-        <div className="max-w-[1200px] mx-auto px-4">
-          <div className="flex items-center gap-8 py-3 overflow-x-auto scrollbar-hide">
-            {content.products.map((product, index) => (
-              <a
-                key={product.id}
-                href={`#product-${product.id}`}
-                className="flex flex-col items-center min-w-fit group"
-              >
-                <div className="w-16 h-16 rounded-lg overflow-hidden mb-2 bg-gray-100 flex items-center justify-center">
-                  {product.image ? (
-                    <Image src={product.image} alt={product.name} width={64} height={64} className="object-contain" />
-                  ) : (
-                    <span className="text-2xl">⌚</span>
-                  )}
-                </div>
-                <span className="text-xs text-center whitespace-nowrap text-gray-900 group-hover:text-[var(--primary-color)]">
-                  {product.name.split(' ').slice(0, 2).join(' ')}
-                </span>
-                {product.badge && (
-                  <span className="text-[10px] text-[var(--accent-color)]">{product.badge}</span>
-                )}
-              </a>
-            ))}
-            <a href="#comparar" className="flex flex-col items-center min-w-fit group">
-              <div className="w-16 h-16 rounded-lg overflow-hidden mb-2 bg-gray-100 flex items-center justify-center">
-                <span className="text-2xl">⚖️</span>
-              </div>
-              <span className="text-xs text-center whitespace-nowrap text-gray-900">Comparar</span>
-            </a>
-          </div>
-        </div>
-      </nav>
-
       {/* Renderização dinâmica das seções baseada em sectionOrder */}
       {orderedSections.map(renderSection)}
 
