@@ -228,6 +228,176 @@ interface LandingSettings {
   }
 }
 
+// Interface para cores de seção
+interface SectionColors {
+  backgroundColor: string
+  textColor: string
+  buttonColor: string
+  buttonTextColor: string
+}
+
+// Cores padrão para cada seção
+const defaultSectionColors: SectionColors = {
+  backgroundColor: '#ffffff',
+  textColor: '#111827',
+  buttonColor: '#000000',
+  buttonTextColor: '#ffffff'
+}
+
+// Componente popup de edição de cores (estilo Apple)
+interface ColorEditorPopupProps {
+  section: string
+  sectionColors: Record<string, SectionColors>
+  updateSectionColor: (section: string, colorKey: keyof SectionColors, value: string) => void
+  onClose: () => void
+}
+
+const ColorEditorPopup: React.FC<ColorEditorPopupProps> = ({ section, sectionColors, updateSectionColor, onClose }) => {
+  const colors = sectionColors[section] || defaultSectionColors
+
+  return (
+    <>
+      {/* Overlay para fechar ao clicar fora */}
+      <div 
+        className="fixed inset-0 z-40 bg-black/20"
+        onClick={(e) => { 
+          e.stopPropagation()
+          onClose()
+        }}
+      />
+      {/* Popup fixo no centro da tela */}
+      <div 
+        className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-2xl border w-96"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="p-4 border-b bg-gray-50 rounded-t-xl flex items-center justify-between">
+          <h4 className="font-semibold flex items-center gap-2">
+            <Palette size={18} />
+            Cores da Seção
+          </h4>
+          <button
+            onClick={(e) => { 
+              e.stopPropagation()
+              onClose() 
+            }}
+            className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+          <div>
+            <label className="block text-sm font-medium mb-2">Cor de Fundo</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={colors.backgroundColor}
+                onChange={(e) => updateSectionColor(section, 'backgroundColor', e.target.value)}
+                onInput={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onMouseUp={(e) => e.stopPropagation()}
+                className="w-12 h-12 rounded-lg border-2 cursor-pointer"
+              />
+              <input
+                type="text"
+                value={colors.backgroundColor}
+                onChange={(e) => updateSectionColor(section, 'backgroundColor', e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                onFocus={(e) => e.stopPropagation()}
+                className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Cor do Texto</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={colors.textColor}
+                onChange={(e) => updateSectionColor(section, 'textColor', e.target.value)}
+                onInput={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onMouseUp={(e) => e.stopPropagation()}
+                className="w-12 h-12 rounded-lg border-2 cursor-pointer"
+              />
+              <input
+                type="text"
+                value={colors.textColor}
+                onChange={(e) => updateSectionColor(section, 'textColor', e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                onFocus={(e) => e.stopPropagation()}
+                className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Cor do Botão</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={colors.buttonColor}
+                onChange={(e) => updateSectionColor(section, 'buttonColor', e.target.value)}
+                onInput={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onMouseUp={(e) => e.stopPropagation()}
+                className="w-12 h-12 rounded-lg border-2 cursor-pointer"
+              />
+              <input
+                type="text"
+                value={colors.buttonColor}
+                onChange={(e) => updateSectionColor(section, 'buttonColor', e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                onFocus={(e) => e.stopPropagation()}
+                className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Texto do Botão</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={colors.buttonTextColor}
+                onChange={(e) => updateSectionColor(section, 'buttonTextColor', e.target.value)}
+                onInput={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+                onMouseUp={(e) => e.stopPropagation()}
+                className="w-12 h-12 rounded-lg border-2 cursor-pointer"
+              />
+              <input
+                type="text"
+                value={colors.buttonTextColor}
+                onChange={(e) => updateSectionColor(section, 'buttonTextColor', e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+                onFocus={(e) => e.stopPropagation()}
+                className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="p-4 border-t bg-gray-50 rounded-b-xl">
+          <button
+            onClick={(e) => { 
+              e.stopPropagation()
+              onClose() 
+            }}
+            className="w-full py-3 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+          >
+            Aplicar Cores
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
 // Componente wrapper para seções colapsáveis (estilo Apple Editor)
 interface SectionWrapperProps {
   section: string
@@ -243,6 +413,8 @@ interface SectionWrapperProps {
   index: number
   moveSection: (index: number, direction: 'up' | 'down') => void
   totalSections: number
+  sectionColors: Record<string, SectionColors>
+  updateSectionColor: (section: string, colorKey: keyof SectionColors, value: string) => void
 }
 
 const SectionWrapper: React.FC<SectionWrapperProps> = ({ 
@@ -258,7 +430,9 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
   setShowColorEditor,
   index,
   moveSection,
-  totalSections
+  totalSections,
+  sectionColors,
+  updateSectionColor
 }) => {
   const isExpanded = expandedSection === section
   const isVisible = (settings[`section_${section}_visible` as keyof LandingSettings] ?? true) as boolean
@@ -317,6 +491,16 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
         </div>
       </div>
 
+      {/* Popup de Cores */}
+      {showColorEditor === section && (
+        <ColorEditorPopup
+          section={section}
+          sectionColors={sectionColors}
+          updateSectionColor={updateSectionColor}
+          onClose={() => setShowColorEditor(null)}
+        />
+      )}
+
       {/* Conteúdo colapsável */}
       {isExpanded && (
         <motion.div
@@ -370,11 +554,23 @@ function EditLandingPageContent() {
   // Estados para acordeão (estilo Apple Editor)
   const [expandedSection, setExpandedSection] = useState<string | null>('hero')
   const [showColorEditor, setShowColorEditor] = useState<string | null>(null)
+  const [sectionColors, setSectionColors] = useState<Record<string, SectionColors>>({})
 
   // Função para alternar visibilidade de seções
   const toggleSectionVisibility = (section: string) => {
     const key = `section_${section}_visible` as keyof LandingSettings
     setSettings({ ...settings, [key]: !(settings[key] ?? true) })
+  }
+
+  // Função para atualizar cores de uma seção
+  const updateSectionColor = (section: string, colorKey: keyof SectionColors, value: string) => {
+    setSectionColors(prev => ({
+      ...prev,
+      [section]: {
+        ...(prev[section] || defaultSectionColors),
+        [colorKey]: value
+      }
+    }))
   }
 
   // Função para reordenar seções
@@ -1492,6 +1688,8 @@ function EditLandingPageContent() {
               index={0}
               moveSection={moveSectionInOrder}
               totalSections={12}
+              sectionColors={sectionColors}
+              updateSectionColor={updateSectionColor}
             >
             <p className="text-sm text-gray-600 mb-6">
               Esta configuração controla TODOS os cronômetros da página (Fixed Timer, Hero Section, Value Package e Exit Popup).
@@ -1543,6 +1741,8 @@ function EditLandingPageContent() {
             index={1}
             moveSection={moveSectionInOrder}
             totalSections={12}
+            sectionColors={sectionColors}
+            updateSectionColor={updateSectionColor}
           >
             
             <div className="space-y-4">
@@ -1608,6 +1808,8 @@ function EditLandingPageContent() {
             index={2}
             moveSection={moveSectionInOrder}
             totalSections={12}
+            sectionColors={sectionColors}
+            updateSectionColor={updateSectionColor}
           >
             
             <div className="space-y-4">
@@ -1758,6 +1960,8 @@ function EditLandingPageContent() {
             index={3}
             moveSection={moveSectionInOrder}
             totalSections={12}
+            sectionColors={sectionColors}
+            updateSectionColor={updateSectionColor}
           >
             
             <div className="space-y-4">
@@ -1920,6 +2124,8 @@ function EditLandingPageContent() {
             index={4}
             moveSection={moveSectionInOrder}
             totalSections={12}
+            sectionColors={sectionColors}
+            updateSectionColor={updateSectionColor}
           >
             
             <div className="space-y-6">
@@ -2069,6 +2275,8 @@ function EditLandingPageContent() {
             index={5}
             moveSection={moveSectionInOrder}
             totalSections={12}
+            sectionColors={sectionColors}
+            updateSectionColor={updateSectionColor}
           >
             <p className="text-sm text-gray-600 mb-6">
               📸 Envie imagens no formato Instagram Post (1080x1080px) para o carrossel + 1 vídeo vertical tipo Reels
@@ -2308,6 +2516,8 @@ function EditLandingPageContent() {
             index={6}
             moveSection={moveSectionInOrder}
             totalSections={12}
+            sectionColors={sectionColors}
+            updateSectionColor={updateSectionColor}
           >
             
             <div className="space-y-4">
@@ -2486,6 +2696,8 @@ function EditLandingPageContent() {
             index={7}
             moveSection={moveSectionInOrder}
             totalSections={12}
+            sectionColors={sectionColors}
+            updateSectionColor={updateSectionColor}
           >
             
             <div className="space-y-4">
@@ -2565,6 +2777,8 @@ function EditLandingPageContent() {
             index={8}
             moveSection={moveSectionInOrder}
             totalSections={12}
+            sectionColors={sectionColors}
+            updateSectionColor={updateSectionColor}
           >
             
             <div className="space-y-4">
@@ -2651,6 +2865,8 @@ function EditLandingPageContent() {
             index={9}
             moveSection={moveSectionInOrder}
             totalSections={12}
+            sectionColors={sectionColors}
+            updateSectionColor={updateSectionColor}
           >
             <p className="text-sm text-gray-600 mb-6">
               Configure o botão flutuante do WhatsApp que aparece fixo na tela.
@@ -2694,6 +2910,8 @@ function EditLandingPageContent() {
             index={10}
             moveSection={moveSectionInOrder}
             totalSections={12}
+            sectionColors={sectionColors}
+            updateSectionColor={updateSectionColor}
           >
             <p className="text-sm text-gray-600 mb-6">
               Controle quais seções da página inicial devem ser exibidas. Use os números para definir a ordem das seções e elementos (1 = primeiro, 2 = segundo, etc.).
@@ -2806,6 +3024,8 @@ function EditLandingPageContent() {
             index={11}
             moveSection={moveSectionInOrder}
             totalSections={12}
+            sectionColors={sectionColors}
+            updateSectionColor={updateSectionColor}
           >
             
             <div className="space-y-4">
