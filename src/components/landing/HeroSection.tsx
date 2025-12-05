@@ -443,7 +443,7 @@ export const HeroSection = ({
 
   return (
     <section
-      style={{ backgroundColor: 'transparent', color: finalTextColor }}
+      style={{ backgroundColor: finalBackgroundColor, color: finalTextColor }}
       className="relative flex flex-col items-center justify-center"
     >
       {/* Banner carrossel acima do texto (1920x650) - renderizado primeiro se estiver na ordem */}
