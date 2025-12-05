@@ -289,12 +289,15 @@ export interface ProductSupportPage {
   content: {
     sections?: Array<{
       id: string
-      type: 'text' | 'image' | 'video' | 'list' | 'accordion'
+      type: 'hero' | 'text' | 'image' | 'video' | 'list' | 'accordion' | 'feature-card' | 'steps'
       title?: string
+      subtitle?: string
       content?: string
       image?: string
       video?: string
-      items?: Array<{ title: string; description: string }>
+      link?: string
+      linkText?: string
+      items?: Array<{ title: string; description: string; image?: string; link?: string }>
     }>
   }
   is_active: boolean
@@ -302,5 +305,52 @@ export interface ProductSupportPage {
   created_at: string
   updated_at: string
   product?: Product
+}
+
+// ==========================================
+// TIPOS PARA CATÁLOGOS DE PRODUTOS
+// ==========================================
+
+export interface ProductCatalog {
+  id: string
+  slug: string
+  title: string
+  description: string | null
+  cover_image: string | null
+  theme_colors: {
+    primary?: string
+    secondary?: string
+    accent?: string
+    background?: string
+    text?: string
+  }
+  content: {
+    hero?: {
+      title: string
+      subtitle: string
+      image?: string
+      badge?: string
+    }
+    categories?: Array<{
+      id: string
+      name: string
+      description?: string
+      image?: string
+      products: string[] // IDs dos produtos
+    }>
+    featured_products?: string[] // IDs dos produtos em destaque
+    sections?: Array<{
+      id: string
+      type: 'banner' | 'grid' | 'carousel' | 'comparison'
+      title?: string
+      products?: string[]
+      image?: string
+      link?: string
+    }>
+  }
+  is_active: boolean
+  created_by: string | null
+  created_at: string
+  updated_at: string
 }
 
