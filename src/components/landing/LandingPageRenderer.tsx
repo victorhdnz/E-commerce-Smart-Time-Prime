@@ -196,7 +196,7 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
           sectionOrder={sectionsConfig?.sectionOrder}
           sectionVisibility={sectionsConfig?.sectionVisibility}
           sectionColors={sectionsConfig?.sectionColors}
-          showWhatsAppButton={sectionsConfig?.showWhatsAppButton ?? true}
+          showWhatsAppButton={sectionsConfig?.showWhatsAppButton === true}
           layoutId={layout.id}
           versionId={version?.id}
         />

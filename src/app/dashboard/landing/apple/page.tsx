@@ -1112,89 +1112,39 @@ function AppleEditorContent() {
             {sectionOrder.map((key, index) => renderSection(key, index))}
           </div>
 
-          {/* Configurações Gerais */}
+          {/* WhatsApp e Ações */}
           <div className="space-y-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-lg shadow-md p-6 sticky top-4"
             >
-              <h2 className="text-xl font-bold mb-6">⚙️ Configurações Gerais</h2>
+              <h2 className="text-xl font-bold mb-6">💬 WhatsApp Flutuante</h2>
               
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Cor Primária (Links)</label>
-                  <div className="flex items-center gap-2">
+                <Input
+                  label="Número do WhatsApp"
+                  value={content.settings.whatsappNumber || ''}
+                  onChange={(e) => updateSettings('whatsappNumber', e.target.value)}
+                  placeholder="5534999999999"
+                />
+                <p className="text-xs text-gray-500">
+                  Formato: código do país + DDD + número (ex: 5534999999999)
+                </p>
+                
+                <div className="pt-3 border-t">
+                  <label className="flex items-center gap-3 cursor-pointer">
                     <input
-                      type="color"
-                      value={content.settings.primaryColor}
-                      onChange={(e) => updateSettings('primaryColor', e.target.value)}
-                      className="w-10 h-10 rounded border cursor-pointer"
+                      type="checkbox"
+                      checked={showWhatsAppButton}
+                      onChange={(e) => setShowWhatsAppButton(e.target.checked)}
+                      className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
                     />
-                    <input
-                      type="text"
-                      value={content.settings.primaryColor}
-                      onChange={(e) => updateSettings('primaryColor', e.target.value)}
-                      className="flex-1 px-3 py-2 border rounded-lg"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Cor de Destaque (Badges)</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={content.settings.accentColor}
-                      onChange={(e) => updateSettings('accentColor', e.target.value)}
-                      className="w-10 h-10 rounded border cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={content.settings.accentColor}
-                      onChange={(e) => updateSettings('accentColor', e.target.value)}
-                      className="flex-1 px-3 py-2 border rounded-lg"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Cor de Fundo Geral</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={content.settings.backgroundColor}
-                      onChange={(e) => updateSettings('backgroundColor', e.target.value)}
-                      className="w-10 h-10 rounded border cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={content.settings.backgroundColor}
-                      onChange={(e) => updateSettings('backgroundColor', e.target.value)}
-                      className="flex-1 px-3 py-2 border rounded-lg"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t">
-                  <h3 className="text-sm font-medium mb-3">WhatsApp</h3>
-                  <Input
-                    label="Número (opcional)"
-                    value={content.settings.whatsappNumber || ''}
-                    onChange={(e) => updateSettings('whatsappNumber', e.target.value)}
-                    placeholder="5534999999999"
-                  />
-                  <div className="mt-3">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={showWhatsAppButton}
-                        onChange={(e) => setShowWhatsAppButton(e.target.checked)}
-                        className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
-                      />
-                      <span className="text-sm">Mostrar botão flutuante do WhatsApp</span>
-                    </label>
-                  </div>
+                    <span className="text-sm font-medium">Mostrar botão flutuante</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1 ml-8">
+                    {showWhatsAppButton ? '✅ Botão visível na landing page' : '❌ Botão oculto na landing page'}
+                  </p>
                 </div>
               </div>
 
