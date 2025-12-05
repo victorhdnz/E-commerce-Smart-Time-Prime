@@ -47,8 +47,8 @@ export const HeroSection = ({
   heroButtonText,
   heroButtonLink,
   images = [],
-  backgroundColor, // Será ignorado, sempre usará preto
-  textColor, // Será ignorado, sempre usará branco
+  backgroundColor,
+  textColor,
   badgeText = '🚨 A BLACK FRIDAY CHEGOU!',
   viewerCountText = 'pessoas vendo agora',
   viewerCountEnabled = true,
@@ -69,9 +69,9 @@ export const HeroSection = ({
     viewerCount: true,
   },
 }: HeroSectionProps) => {
-  // Cores fixas da empresa (preto e branco)
-  const finalBackgroundColor = '#000000'
-  const finalTextColor = '#ffffff'
+  // Usar cores configuradas ou usar padrão preto/branco
+  const finalBackgroundColor = backgroundColor || '#000000'
+  const finalTextColor = textColor || '#ffffff'
   const [viewerCount, setViewerCount] = useState(15)
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
