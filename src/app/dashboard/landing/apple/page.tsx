@@ -452,19 +452,30 @@ function AppleEditorContent() {
     // Impedir propagação de eventos para não fechar a seção
     const stopPropagation = (e: React.MouseEvent | React.FocusEvent) => {
       e.stopPropagation()
+      e.preventDefault()
+    }
+
+    // Handler especial para inputs de cor - não fecha o modal
+    const handleColorInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+      e.stopPropagation()
     }
     
     return (
       <>
         {/* Overlay para fechar ao clicar fora */}
         <div 
-          className="fixed inset-0 z-40"
-          onClick={(e) => { e.stopPropagation(); setShowColorEditor(null) }}
+          className="fixed inset-0 z-40 bg-black/20"
+          onClick={(e) => { 
+            e.stopPropagation()
+            setShowColorEditor(null)
+          }}
         />
         {/* Popup fixo no centro da tela */}
         <div 
-          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-2xl border w-80"
-          onClick={stopPropagation}
+          className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-2xl border w-96"
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
         >
           <div className="p-4 border-b bg-gray-50 rounded-t-xl flex items-center justify-between">
             <h4 className="font-semibold flex items-center gap-2">
@@ -488,7 +499,9 @@ function AppleEditorContent() {
                   type="color"
                   value={colors.backgroundColor}
                   onChange={(e) => updateSectionColor(section, 'backgroundColor', e.target.value)}
-                  onClick={stopPropagation}
+                  onClick={handleColorInputClick}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
@@ -507,7 +520,9 @@ function AppleEditorContent() {
                   type="color"
                   value={colors.textColor}
                   onChange={(e) => updateSectionColor(section, 'textColor', e.target.value)}
-                  onClick={stopPropagation}
+                  onClick={handleColorInputClick}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
@@ -526,7 +541,9 @@ function AppleEditorContent() {
                   type="color"
                   value={colors.buttonColor}
                   onChange={(e) => updateSectionColor(section, 'buttonColor', e.target.value)}
-                  onClick={stopPropagation}
+                  onClick={handleColorInputClick}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
@@ -545,7 +562,9 @@ function AppleEditorContent() {
                   type="color"
                   value={colors.buttonTextColor}
                   onChange={(e) => updateSectionColor(section, 'buttonTextColor', e.target.value)}
-                  onClick={stopPropagation}
+                  onClick={handleColorInputClick}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
