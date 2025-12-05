@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { MainBackground } from '@/components/layout/MainBackground'
-import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
+import { ConditionalWhatsAppFloat } from '@/components/layout/ConditionalWhatsAppFloat'
 import { Toaster } from 'react-hot-toast'
 import { getSiteUrl } from '@/lib/utils/siteUrl'
 import { createServerClient } from '@/lib/supabase/server'
@@ -194,7 +194,7 @@ export default function RootLayout({
           </main>
         </PageTransition>
         <Footer />
-        <WhatsAppFloat />
+        <ConditionalWhatsAppFloat />
         <Toaster
           position="top-right"
           toastOptions={{
