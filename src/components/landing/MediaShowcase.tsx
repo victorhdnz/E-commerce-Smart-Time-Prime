@@ -14,6 +14,8 @@ interface MediaShowcaseProps {
     icon: string
     text: string
   }>
+  backgroundColor?: string
+  textColor?: string
   elementVisibility?: {
     title?: boolean
     features?: boolean
@@ -35,6 +37,8 @@ export const MediaShowcase = ({
     { icon: '🎨', text: 'Troque pulseiras em segundos' },
     { icon: '📲', text: 'Compatível com Android e iPhone' },
   ],
+  backgroundColor = '#000000',
+  textColor = '#ffffff',
   elementVisibility = {
     title: true,
     features: true,
@@ -76,7 +80,7 @@ export const MediaShowcase = ({
   // Sempre renderizar a seção, mas mostrar placeholders se não houver conteúdo
 
   return (
-    <section className="py-12 text-gray-900" style={{ backgroundColor: 'transparent' }}>
+    <section className="py-12" style={{ backgroundColor, color: textColor }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {elementVisibility.title && (
           <motion.div

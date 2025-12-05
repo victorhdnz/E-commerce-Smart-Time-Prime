@@ -9,6 +9,7 @@ interface FAQSectionProps {
   faqs: FAQ[]
   title?: string
   backgroundColor?: string
+  textColor?: string
   elementVisibility?: {
     title?: boolean
   }
@@ -17,7 +18,8 @@ interface FAQSectionProps {
 export const FAQSection = ({
   faqs,
   title = 'Perguntas Frequentes',
-  backgroundColor = '#ffffff',
+  backgroundColor = '#000000',
+  textColor = '#ffffff',
   elementVisibility = {
     title: true,
   },
@@ -25,7 +27,7 @@ export const FAQSection = ({
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section className="py-20" style={{ backgroundColor: 'transparent' }}>
+    <section className="py-20" style={{ backgroundColor, color: textColor }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {elementVisibility.title !== false && (
           <motion.div

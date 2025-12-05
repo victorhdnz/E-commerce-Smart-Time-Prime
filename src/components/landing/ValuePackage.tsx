@@ -23,6 +23,8 @@ interface ValuePackageProps {
   discountText?: string
   promotionText?: string
   endDate?: Date
+  backgroundColor?: string
+  textColor?: string
   elementVisibility?: {
     title?: boolean
     image?: boolean
@@ -59,6 +61,8 @@ export const ValuePackage = ({
   discountText = '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
   promotionText = '🕒 Promoção válida enquanto durar o estoque.',
   endDate,
+  backgroundColor = '#000000',
+  textColor = '#ffffff',
   elementVisibility = {
     title: true,
     image: true,
@@ -118,7 +122,7 @@ export const ValuePackage = ({
   }
 
   return (
-    <section className="py-20 relative overflow-hidden" style={{ backgroundColor: 'transparent' }}>
+    <section className="py-20 relative overflow-hidden" style={{ backgroundColor, color: textColor }}>
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-yellow-300/10 rounded-full blur-3xl"></div>

@@ -12,6 +12,8 @@ interface StorySectionProps {
   images?: string[] // Array de imagens
   image?: string // Mantido para compatibilidade
   foundersNames?: string
+  backgroundColor?: string
+  textColor?: string
   elementVisibility?: {
     title?: boolean
     content?: boolean
@@ -25,6 +27,8 @@ export const StorySection = ({
   images,
   image, // Compatibilidade com versão antiga
   foundersNames,
+  backgroundColor = '#000000',
+  textColor = '#ffffff',
   elementVisibility = {
     title: true,
     content: true,
@@ -94,7 +98,7 @@ export const StorySection = ({
   }, [displayImages, displayImages.length])
 
   return (
-    <section className="py-20" style={{ backgroundColor: 'transparent' }}>
+    <section className="py-20" style={{ backgroundColor, color: textColor }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {elementVisibility.title && (
           <motion.div

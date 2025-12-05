@@ -11,6 +11,8 @@ interface SocialProofProps {
   googleIcon?: boolean
   allowPhotos?: boolean
   testimonialCount?: string
+  backgroundColor?: string
+  textColor?: string
   elementVisibility?: {
     title?: boolean
     reviews?: boolean
@@ -23,6 +25,8 @@ export const SocialProof = ({
   googleIcon = true,
   allowPhotos = true,
   testimonialCount = '💬 Mais de 1.000 smartwatches entregues em Uberlândia.',
+  backgroundColor = '#000000',
+  textColor = '#ffffff',
   elementVisibility = {
     title: true,
     reviews: true,
@@ -69,7 +73,7 @@ export const SocialProof = ({
   const duplicatedReviews = [...reviewsToUse, ...reviewsToUse, ...reviewsToUse]
 
   return (
-    <section className="py-20 text-white overflow-hidden" style={{ backgroundColor: 'transparent' }}>
+    <section className="py-20 overflow-hidden" style={{ backgroundColor, color: textColor }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {elementVisibility.title && (
           <motion.div

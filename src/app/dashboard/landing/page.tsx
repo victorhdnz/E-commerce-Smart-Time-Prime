@@ -53,9 +53,13 @@ interface LandingSettings {
   exit_popup_message: string
   exit_popup_button_text: string
   exit_popup_whatsapp_number: string
+  exit_popup_bg_color: string
+  exit_popup_text_color: string
   
   // Media Showcase (expandido)
   media_showcase_title: string
+  media_showcase_bg_color: string
+  media_showcase_text_color: string
   media_showcase_features: Array<{icon: string, text: string}>
   showcase_images: string[] // Array de imagens
   showcase_image_1: string // Mantido para compatibilidade
@@ -78,6 +82,8 @@ interface LandingSettings {
   value_package_whatsapp_number: string
   value_package_discount_text: string
   value_package_promotion_text: string
+  value_package_bg_color: string
+  value_package_text_color: string
   
   // Story Section
   story_title: string
@@ -85,6 +91,8 @@ interface LandingSettings {
   story_images: string[] // Array de imagens
   story_image: string // Mantido para compatibilidade
   story_founders_names: string
+  story_bg_color: string
+  story_text_color: string
   
   // About Us Section
   about_us_title: string
@@ -94,6 +102,8 @@ interface LandingSettings {
   about_us_founders_image: string // Removido do dashboard mas mantido para compatibilidade
   about_us_founders_names: string // Removido do dashboard mas mantido para compatibilidade
   about_us_location: string
+  about_us_bg_color: string
+  about_us_text_color: string
   
   // Social Proof
   social_proof_title: string
@@ -108,6 +118,8 @@ interface LandingSettings {
     photo?: string
     google_review_link?: string
   }>
+  social_proof_bg_color: string
+  social_proof_text_color: string
   
   // WhatsApp Fixo (Botão Flutuante)
   whatsapp_float_number: string
@@ -132,10 +144,13 @@ interface LandingSettings {
   contact_email_visible: boolean
   contact_schedule_visible: boolean
   contact_location_visible: boolean
+  contact_bg_color: string
+  contact_text_color: string
   
   // FAQ Section
   faq_title: string
   faq_bg_color: string
+  faq_text_color: string
   
     // Controles de visibilidade das seções
   section_hero_visible: boolean
@@ -259,6 +274,14 @@ const ColorEditorPopup: React.FC<ColorEditorPopupProps> = ({ section, sectionCol
     hero: { bg: 'hero_bg_color', text: 'hero_text_color' },
     timer: { bg: 'timer_bg_color', text: 'timer_text_color' },
     exit_popup: { bg: 'exit_popup_bg_color', text: 'exit_popup_text_color' },
+    media_showcase: { bg: 'media_showcase_bg_color', text: 'media_showcase_text_color' },
+    value_package: { bg: 'value_package_bg_color', text: 'value_package_text_color' },
+    social_proof: { bg: 'social_proof_bg_color', text: 'social_proof_text_color' },
+    story: { bg: 'story_bg_color', text: 'story_text_color' },
+    about_us: { bg: 'about_us_bg_color', text: 'about_us_text_color' },
+    contact: { bg: 'contact_bg_color', text: 'contact_text_color' },
+    faq: { bg: 'faq_bg_color', text: 'faq_text_color' },
+    whatsapp_vip: { bg: 'whatsapp_vip_bg_color', text: 'whatsapp_vip_text_color' },
   }
   
   const sectionSettingsKeys = settingsColorMap[section]
@@ -601,6 +624,14 @@ function EditLandingPageContent() {
       hero: { backgroundColor: 'hero_bg_color', textColor: 'hero_text_color' },
       timer: { backgroundColor: 'timer_bg_color', textColor: 'timer_text_color' },
       exit_popup: { backgroundColor: 'exit_popup_bg_color', textColor: 'exit_popup_text_color' },
+      media_showcase: { backgroundColor: 'media_showcase_bg_color', textColor: 'media_showcase_text_color' },
+      value_package: { backgroundColor: 'value_package_bg_color', textColor: 'value_package_text_color' },
+      social_proof: { backgroundColor: 'social_proof_bg_color', textColor: 'social_proof_text_color' },
+      story: { backgroundColor: 'story_bg_color', textColor: 'story_text_color' },
+      about_us: { backgroundColor: 'about_us_bg_color', textColor: 'about_us_text_color' },
+      contact: { backgroundColor: 'contact_bg_color', textColor: 'contact_text_color' },
+      faq: { backgroundColor: 'faq_bg_color', textColor: 'faq_text_color' },
+      whatsapp_vip: { backgroundColor: 'whatsapp_vip_bg_color', textColor: 'whatsapp_vip_text_color' },
     }
     
     const sectionMap = settingsKeyMap[section]
@@ -659,8 +690,12 @@ function EditLandingPageContent() {
     exit_popup_message: 'Ainda dá tempo de garantir seu Smartwatch Série 11 com 4 brindes grátis.',
     exit_popup_button_text: '💬 FALAR AGORA NO WHATSAPP',
     exit_popup_whatsapp_number: '5534984136291',
+    exit_popup_bg_color: '#000000',
+    exit_popup_text_color: '#FFFFFF',
     // Media Showcase
     media_showcase_title: '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO',
+    media_showcase_bg_color: '#000000',
+    media_showcase_text_color: '#FFFFFF',
     media_showcase_features: [
       { icon: '📱', text: 'Responda mensagens e chamadas direto do relógio' },
       { icon: '❤️', text: 'Monitore batimentos, sono e pressão arterial' },
@@ -694,12 +729,16 @@ function EditLandingPageContent() {
           value_package_whatsapp_number: '5534984136291',
     value_package_discount_text: '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
     value_package_promotion_text: '🕒 Promoção válida enquanto durar o estoque.',
+    value_package_bg_color: '#000000',
+    value_package_text_color: '#FFFFFF',
     // Story
     story_title: '✍️ NOSSA HISTÓRIA',
     story_content: 'A Smart Time Prime nasceu em Uberlândia com o propósito de unir estilo e tecnologia no dia a dia das pessoas.\n\nHoje somos uma das lojas mais lembradas quando o assunto é smartwatch e confiança.',
     story_images: [],
     story_image: '',
     story_founders_names: 'Guilherme e Letícia',
+    story_bg_color: '#000000',
+    story_text_color: '#FFFFFF',
     // About Us
     about_us_title: '🏪 SOBRE A SMART TIME PRIME',
     about_us_description: 'A Smart Time Prime é uma loja de tecnologia localizada em Uberlândia/MG, dentro do Shopping Planalto.\n\nSomos referência em smartwatches e acessórios tecnológicos, com atendimento humano, entrega rápida e garantia total.',
@@ -708,6 +747,8 @@ function EditLandingPageContent() {
     about_us_founders_image: '',
     about_us_founders_names: 'Guilherme e Letícia',
     about_us_location: 'Shopping Planalto, Uberlândia/MG',
+    about_us_bg_color: '#000000',
+    about_us_text_color: '#FFFFFF',
     // Social Proof
     social_proof_title: '⭐ CLIENTES DE UBERLÂNDIA QUE JÁ ESTÃO USANDO',
     social_proof_google_icon: true,
@@ -739,6 +780,8 @@ function EditLandingPageContent() {
         google_review_link: '',
       },
     ],
+    social_proof_bg_color: '#000000',
+    social_proof_text_color: '#FFFFFF',
     // WhatsApp Fixo
     whatsapp_float_number: '5534984136291',
     whatsapp_float_message: 'Olá! Gostaria de saber mais sobre os produtos.',
@@ -761,9 +804,12 @@ function EditLandingPageContent() {
     contact_email_visible: true,
     contact_schedule_visible: true,
     contact_location_visible: true,
+    contact_bg_color: '#000000',
+    contact_text_color: '#FFFFFF',
     // FAQ
     faq_title: 'Perguntas Frequentes',
-    faq_bg_color: '#ffffff',
+    faq_bg_color: '#000000',
+    faq_text_color: '#FFFFFF',
     // Controles de visibilidade das seções (padrão: todas visíveis)
     section_hero_visible: true,
     section_media_showcase_visible: true,
@@ -1325,8 +1371,12 @@ function EditLandingPageContent() {
           exit_popup_message: savedSettings.exit_popup_message || 'Ainda dá tempo de garantir seu Smartwatch Série 11 com 4 brindes grátis.',
           exit_popup_button_text: savedSettings.exit_popup_button_text || '💬 FALAR AGORA NO WHATSAPP',
           exit_popup_whatsapp_number: savedSettings.exit_popup_whatsapp_number || '5534984136291',
+          exit_popup_bg_color: savedSettings.exit_popup_bg_color || '#000000',
+          exit_popup_text_color: savedSettings.exit_popup_text_color || '#FFFFFF',
           // Media Showcase
           media_showcase_title: savedSettings.media_showcase_title || '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO',
+          media_showcase_bg_color: savedSettings.media_showcase_bg_color || '#000000',
+          media_showcase_text_color: savedSettings.media_showcase_text_color || '#FFFFFF',
           media_showcase_features: Array.isArray(savedSettings.media_showcase_features) 
             ? savedSettings.media_showcase_features 
             : [
@@ -1372,12 +1422,16 @@ function EditLandingPageContent() {
           value_package_whatsapp_number: savedSettings.value_package_whatsapp_number || '5534984136291',
           value_package_discount_text: savedSettings.value_package_discount_text || '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
           value_package_promotion_text: savedSettings.value_package_promotion_text || '🕒 Promoção válida enquanto durar o estoque.',
+          value_package_bg_color: savedSettings.value_package_bg_color || '#000000',
+          value_package_text_color: savedSettings.value_package_text_color || '#FFFFFF',
           // Story
           story_title: savedSettings.story_title || '✍️ NOSSA HISTÓRIA',
           story_content: savedSettings.story_content || 'A Smart Time Prime nasceu em Uberlândia com o propósito de unir estilo e tecnologia no dia a dia das pessoas.\n\nHoje somos uma das lojas mais lembradas quando o assunto é smartwatch e confiança.',
           story_images: Array.isArray(savedSettings.story_images) ? savedSettings.story_images : (savedSettings.story_image ? [savedSettings.story_image] : []),
           story_image: savedSettings.story_image || '',
           story_founders_names: savedSettings.story_founders_names || 'Guilherme e Letícia',
+          story_bg_color: savedSettings.story_bg_color || '#000000',
+          story_text_color: savedSettings.story_text_color || '#FFFFFF',
           // About Us
           about_us_title: savedSettings.about_us_title || '🏪 SOBRE A SMART TIME PRIME',
           about_us_description: savedSettings.about_us_description || 'A Smart Time Prime é uma loja de tecnologia localizada em Uberlândia/MG, dentro do Shopping Planalto.\n\nSomos referência em smartwatches e acessórios tecnológicos, com atendimento humano, entrega rápida e garantia total.',
@@ -1386,6 +1440,8 @@ function EditLandingPageContent() {
           about_us_founders_image: savedSettings.about_us_founders_image || '',
           about_us_founders_names: savedSettings.about_us_founders_names || 'Guilherme e Letícia',
           about_us_location: savedSettings.about_us_location || 'Shopping Planalto, Uberlândia/MG',
+          about_us_bg_color: savedSettings.about_us_bg_color || '#000000',
+          about_us_text_color: savedSettings.about_us_text_color || '#FFFFFF',
           // Social Proof
           social_proof_title: savedSettings.social_proof_title || '⭐ CLIENTES DE UBERLÂNDIA QUE JÁ ESTÃO USANDO',
           social_proof_google_icon: savedSettings.social_proof_google_icon !== undefined ? savedSettings.social_proof_google_icon : true,
@@ -1419,6 +1475,8 @@ function EditLandingPageContent() {
                   google_review_link: '',
                 },
               ],
+          social_proof_bg_color: savedSettings.social_proof_bg_color || '#000000',
+          social_proof_text_color: savedSettings.social_proof_text_color || '#FFFFFF',
           // WhatsApp Fixo
           whatsapp_float_number: savedSettings.whatsapp_float_number || '5534984136291',
           whatsapp_float_message: savedSettings.whatsapp_float_message || 'Olá! Gostaria de saber mais sobre os produtos.',
@@ -1441,9 +1499,12 @@ function EditLandingPageContent() {
           contact_email_visible: savedSettings.contact_email_visible !== undefined ? savedSettings.contact_email_visible : true,
           contact_schedule_visible: savedSettings.contact_schedule_visible !== undefined ? savedSettings.contact_schedule_visible : true,
           contact_location_visible: savedSettings.contact_location_visible !== undefined ? savedSettings.contact_location_visible : true,
+          contact_bg_color: savedSettings.contact_bg_color || '#000000',
+          contact_text_color: savedSettings.contact_text_color || '#FFFFFF',
           // FAQ
           faq_title: savedSettings.faq_title || 'Perguntas Frequentes',
-          faq_bg_color: savedSettings.faq_bg_color || '#ffffff',
+          faq_bg_color: savedSettings.faq_bg_color || '#000000',
+          faq_text_color: savedSettings.faq_text_color || '#FFFFFF',
           // Controles de visibilidade das seções
           section_hero_visible: savedSettings.section_hero_visible !== undefined ? savedSettings.section_hero_visible : true,
           section_media_showcase_visible: savedSettings.section_media_showcase_visible !== undefined ? savedSettings.section_media_showcase_visible : true,

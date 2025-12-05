@@ -13,6 +13,8 @@ interface ContactSectionProps {
   locationNeighborhood?: string
   locationCityState?: string
   locationZip?: string
+  backgroundColor?: string
+  textColor?: string
   elementVisibility?: {
     title?: boolean
     description?: boolean
@@ -36,6 +38,8 @@ export function ContactSection({
   locationNeighborhood = 'Chácaras Tubalina e Quartel',
   locationCityState = 'Uberlândia - MG',
   locationZip = 'CEP: 38413-109',
+  backgroundColor = '#000000',
+  textColor = '#ffffff',
   elementVisibility = {
     title: true,
     description: true,
@@ -46,7 +50,7 @@ export function ContactSection({
   }
 }: ContactSectionProps) {
   return (
-    <section id="contato" className="py-20" style={{ backgroundColor: 'transparent' }}>
+    <section id="contato" className="py-20" style={{ backgroundColor, color: textColor }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           {elementVisibility.title && (

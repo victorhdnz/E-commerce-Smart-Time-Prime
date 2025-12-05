@@ -214,6 +214,8 @@ export function DefaultLayout({
             images={settings.showcase_images || []}
             videoUrl={settings.showcase_video_url}
             videoCaption={settings.showcase_video_caption}
+            backgroundColor={settings.media_showcase_bg_color}
+            textColor={settings.media_showcase_text_color}
           />
         )
       
@@ -233,6 +235,8 @@ export function DefaultLayout({
             discountText={settings.value_package_discount_text}
             promotionText={settings.value_package_promotion_text}
             endDate={settings.timer_end_date ? new Date(settings.timer_end_date) : undefined}
+            backgroundColor={settings.value_package_bg_color}
+            textColor={settings.value_package_text_color}
           />
         )
       
@@ -245,6 +249,8 @@ export function DefaultLayout({
             testimonialCount={settings.social_proof_testimonial_count}
             googleIcon={settings.social_proof_google_icon}
             allowPhotos={settings.social_proof_allow_photos}
+            backgroundColor={settings.social_proof_bg_color}
+            textColor={settings.social_proof_text_color}
           />
         )
       
@@ -256,6 +262,8 @@ export function DefaultLayout({
             content={settings.story_content}
             images={settings.story_images || []}
             foundersNames={settings.story_founders_names}
+            backgroundColor={settings.story_bg_color}
+            textColor={settings.story_text_color}
           />
         )
       
@@ -270,6 +278,8 @@ export function DefaultLayout({
             description={settings.about_us_description}
             storeImages={settings.about_us_store_images || []}
             location={settings.about_us_location}
+            backgroundColor={settings.about_us_bg_color}
+            textColor={settings.about_us_text_color}
           />
         )
       
@@ -289,6 +299,8 @@ export function DefaultLayout({
             locationNeighborhood={settings.contact_location_neighborhood}
             locationCityState={settings.contact_location_city_state}
             locationZip={settings.contact_location_zip}
+            backgroundColor={settings.contact_bg_color}
+            textColor={settings.contact_text_color}
           />
         )
       
@@ -299,6 +311,7 @@ export function DefaultLayout({
             title={settings.faq_title}
             faqs={faqs}
             backgroundColor={settings.faq_bg_color}
+            textColor={settings.faq_text_color}
           />
         )
       

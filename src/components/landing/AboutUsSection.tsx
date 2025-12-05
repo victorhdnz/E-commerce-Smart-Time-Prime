@@ -12,6 +12,8 @@ interface AboutUsSectionProps {
   storeImage?: string // Mantido para compatibilidade
   foundersNames?: string
   location?: string
+  backgroundColor?: string
+  textColor?: string
   elementVisibility?: {
     title?: boolean
     description?: boolean
@@ -27,6 +29,8 @@ export const AboutUsSection = ({
   storeImage, // Compatibilidade com versão antiga
   foundersNames,
   location = 'Shopping Planalto, Uberlândia/MG',
+  backgroundColor = '#000000',
+  textColor = '#ffffff',
   elementVisibility = {
     title: true,
     description: true,
@@ -71,7 +75,7 @@ export const AboutUsSection = ({
   }, [images, images.length])
 
   return (
-    <section id="about-us" className="py-20" style={{ backgroundColor: 'transparent' }}>
+    <section id="about-us" className="py-20" style={{ backgroundColor, color: textColor }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {elementVisibility.title && (
           <motion.div
