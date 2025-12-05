@@ -2782,11 +2782,11 @@ function EditLandingPageContent() {
                 )
               })}
             </div>
-          </motion.div>
+          </SectionWrapper>
 
           {/* Social Proof Section */}
-          <SectionWrapper 
-            section="social_proof" 
+          <SectionWrapper
+            section="social_proof"
             icon="⭐" 
             title="Avaliações (Social Proof)" 
             expandedSection={expandedSection} 
