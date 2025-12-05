@@ -451,6 +451,9 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
       >
         <div className="flex items-center gap-3">
           <GripVertical size={18} className="text-gray-400" />
+          <span className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
+            {index + 1}
+          </span>
           <span className="text-xl">{icon}</span>
           <h3 className="font-semibold text-gray-900">{title}</h3>
         </div>
@@ -559,7 +562,9 @@ function EditLandingPageContent() {
   // Função para alternar visibilidade de seções
   const toggleSectionVisibility = (section: string) => {
     const key = `section_${section}_visible` as keyof LandingSettings
-    setSettings({ ...settings, [key]: !(settings[key] ?? true) })
+    const newValue = !(settings[key] ?? true)
+    setSettings({ ...settings, [key]: newValue })
+    toast.success(`Seção ${newValue ? 'visível' : 'oculta'}! Clique em "Salvar Alterações" para aplicar.`)
   }
 
   // Função para atualizar cores de uma seção
@@ -583,6 +588,7 @@ function EditLandingPageContent() {
     newOrder[index] = newOrder[newIndex]
     newOrder[newIndex] = temp
     setSectionOrder(newOrder)
+    toast.success('Ordem alterada! Clique em "Salvar Alterações" para aplicar.')
   }
   
   // Estados para numeração de ordem
@@ -1670,7 +1676,7 @@ function EditLandingPageContent() {
             {/* Dica */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
               <p className="text-sm text-blue-800">
-                <strong>💡 Dica:</strong> Use as setas ↑↓ para reordenar. Clique na 🎨 paleta para editar cores de cada seção. Use o 👁️ olho para ocultar/mostrar.
+                <strong>💡 Dica:</strong> Use as setas ↑↓ para reordenar na página. Clique na 🎨 paleta para editar cores. Use o 👁️ olho para ocultar/mostrar. <strong>Clique em "Salvar Alterações" para aplicar as mudanças!</strong>
               </p>
             </div>
 
