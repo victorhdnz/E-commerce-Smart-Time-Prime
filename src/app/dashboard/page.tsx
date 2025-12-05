@@ -360,7 +360,7 @@ function DashboardContent() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Administrativo</h1>
             <p className="text-gray-600">
-              Olá, <span className="font-medium">{profile?.full_name || profile?.email}</span>
+              Olá, <span className="font-medium">{profile?.full_name || 'Smart Time Prime'}</span>
             </p>
           </div>
           <button
