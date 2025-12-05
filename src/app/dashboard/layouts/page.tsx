@@ -49,7 +49,6 @@ function LayoutsContent() {
 
   const [versionFormData, setVersionFormData] = useState({
     name: '',
-    slug: '',
     description: '',
     custom_styles: {
       fonts: { heading: '', body: '', button: '' },
@@ -64,6 +63,19 @@ function LayoutsContent() {
       },
     },
   })
+
+  // Função para gerar slug a partir do nome
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+      .replace(/[^a-z0-9\s-]/g, '') // Remove caracteres especiais
+      .replace(/\s+/g, '-') // Substitui espaços por hífens
+      .replace(/-+/g, '-') // Remove hífens duplicados
+      .replace(/^-|-$/g, '') // Remove hífens no início e fim
+      || 'versao'
+  }
 
   useEffect(() => {
     if (authLoading) return
@@ -130,19 +142,22 @@ function LayoutsContent() {
   }
 
   const handleSaveVersion = async () => {
-    if (!selectedLayout || !versionFormData.name || !versionFormData.slug) {
-      toast.error('Preencha nome e slug')
+    if (!selectedLayout || !versionFormData.name) {
+      toast.error('Preencha o nome da versão')
       return
     }
 
     try {
+      // Gerar slug automaticamente a partir do nome
+      const generatedSlug = generateSlug(versionFormData.name)
+      
       const versionData = {
         layout_id: selectedLayout.id,
         name: versionFormData.name,
-        slug: versionFormData.slug.toLowerCase().replace(/\s+/g, '-'),
+        slug: generatedSlug,
         description: versionFormData.description || null,
         custom_styles: versionFormData.custom_styles,
-        sections_config: {},
+        sections_config: editingVersion?.sections_config || {},
         is_active: true,
       }
 
@@ -196,7 +211,6 @@ function LayoutsContent() {
   const resetVersionForm = () => {
     setVersionFormData({
       name: '',
-      slug: '',
       description: '',
       custom_styles: {
         fonts: { heading: '', body: '', button: '' },
@@ -487,7 +501,6 @@ function LayoutsContent() {
                                       setEditingVersion(version)
                                       setVersionFormData({
                                         name: version.name,
-                                        slug: version.slug,
                                         description: version.description || '',
                                         custom_styles: (version.custom_styles as any) || {
                                           fonts: { heading: '', body: '', button: '' },
@@ -546,34 +559,17 @@ function LayoutsContent() {
                   <input
                     type="text"
                     value={versionFormData.name}
-                    onChange={(e) => {
-                      const name = e.target.value
-                      const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-                      setVersionFormData({ ...versionFormData, name, slug: editingVersion ? versionFormData.slug : slug })
-                    }}
+                    onChange={(e) => setVersionFormData({ ...versionFormData, name: e.target.value })}
                     className="w-full border rounded-lg px-4 py-2.5"
                     placeholder="Ex: Campanha Black Friday"
                   />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-2">Slug (URL)</label>
-                  <input
-                    type="text"
-                    value={versionFormData.slug}
-                    onChange={(e) => setVersionFormData({ ...versionFormData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') })}
-                    className="w-full border rounded-lg px-4 py-2.5"
-                    placeholder="campanha-black-friday"
-                    disabled={!!editingVersion}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    URL: /lp/{selectedLayout.slug}/{versionFormData.slug || 'slug'}
-                  </p>
-                  {editingVersion && (
-                    <p className="text-xs text-amber-600 mt-1">O slug não pode ser alterado após criação</p>
+                  {versionFormData.name && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      URL: /lp/{selectedLayout.slug}/{generateSlug(versionFormData.name)}
+                    </p>
                   )}
                 </div>
-
+                
                 <div>
                   <label className="block text-sm font-medium mb-2">Descrição (opcional)</label>
                   <textarea
@@ -644,10 +640,10 @@ function LayoutsContent() {
                     placeholder="Descrição opcional do layout"
                   />
                 </div>
-                <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
-                  <strong>Slug:</strong> /lp/{selectedLayout.slug}
+                <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                  <strong>📌 URL Base:</strong> /lp/{selectedLayout.slug}
                   <br />
-                  <span className="text-xs">O slug não pode ser alterado pois afetaria URLs existentes</span>
+                  <span className="text-xs text-blue-600">As versões terão URLs no formato: /lp/{selectedLayout.slug}/nome-da-versao</span>
                 </div>
               </div>
               <div className="p-6 border-t flex justify-end gap-4">
