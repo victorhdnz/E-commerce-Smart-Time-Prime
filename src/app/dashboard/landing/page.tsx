@@ -238,6 +238,11 @@ interface SectionWrapperProps {
   setExpandedSection: (section: string | null) => void
   toggleSectionVisibility: (section: string) => void
   settings: any
+  showColorEditor: string | null
+  setShowColorEditor: (section: string | null) => void
+  index: number
+  moveSection: (index: number, direction: 'up' | 'down') => void
+  totalSections: number
 }
 
 const SectionWrapper: React.FC<SectionWrapperProps> = ({ 
@@ -248,7 +253,12 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
   expandedSection,
   setExpandedSection,
   toggleSectionVisibility,
-  settings
+  settings,
+  showColorEditor,
+  setShowColorEditor,
+  index,
+  moveSection,
+  totalSections
 }) => {
   const isExpanded = expandedSection === section
   const isVisible = (settings[`section_${section}_visible` as keyof LandingSettings] ?? true) as boolean
@@ -267,14 +277,32 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
         <button
           onClick={handleToggle}
-          className="flex items-center gap-3 flex-1 text-left"
+          className="flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity"
         >
+          <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={(e) => { e.stopPropagation(); moveSection(index, 'up') }}
+                className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
+                disabled={index === 0}
+              >
+                <ChevronUp size={14} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); moveSection(index, 'down') }}
+                className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
+                disabled={index === totalSections - 1}
+              >
+                <ChevronDown size={14} />
+              </button>
+            </div>
+          </div>
           <span className="text-2xl">{icon}</span>
           <span className="text-xl font-bold">{title}</span>
           {isExpanded ? (
-            <ChevronUp size={20} className="text-gray-500" />
+            <ChevronUp size={20} className="text-gray-500 ml-auto" />
           ) : (
-            <ChevronDown size={20} className="text-gray-500" />
+            <ChevronDown size={20} className="text-gray-500 ml-auto" />
           )}
         </button>
         
@@ -348,6 +376,18 @@ function EditLandingPageContent() {
   const toggleSectionVisibility = (section: string) => {
     const key = `section_${section}_visible` as keyof LandingSettings
     setSettings({ ...settings, [key]: !(settings[key] ?? true) })
+  }
+
+  // Função para reordenar seções
+  const moveSectionInOrder = (index: number, direction: 'up' | 'down') => {
+    const newOrder = [...sectionOrder]
+    const newIndex = direction === 'up' ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= newOrder.length) return
+    
+    const temp = newOrder[index]
+    newOrder[index] = newOrder[newIndex]
+    newOrder[newIndex] = temp
+    setSectionOrder(newOrder)
   }
   
   // Estados para numeração de ordem
@@ -1431,7 +1471,23 @@ function EditLandingPageContent() {
         {/* Form */}
         <div className="max-w-4xl space-y-6">
           {/* Cronômetros Centralizados */}
-          <SectionWrapper section="timer" icon="⏰" title="Cronômetros (Centralizado)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="timer" 
+            icon="⏰" 
+            title="Cronômetros (Centralizado)" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={0}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
+            <p className="text-sm text-gray-600 mb-6">
+              Esta configuração controla TODOS os cronômetros da página (Fixed Timer, Hero Section, Value Package e Exit Popup).
+            </p>
             <p className="text-sm text-gray-600 mb-6">
               Esta configuração controla TODOS os cronômetros da página (Fixed Timer, Hero Section, Value Package e Exit Popup).
             </p>
@@ -1466,7 +1522,20 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Exit Popup */}
-          <SectionWrapper section="exit_popup" icon="⚠️" title="Pop-up de Saída (Exit Popup)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="exit_popup" 
+            icon="⚠️" 
+            title="Pop-up de Saída (Exit Popup)" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={1}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
             
             <div className="space-y-4">
               <label className="flex items-center gap-3 cursor-pointer">
@@ -1518,7 +1587,20 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Hero Section */}
-          <SectionWrapper section="hero" icon="🏠" title="Seção Principal (Hero)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="hero" 
+            icon="🏠" 
+            title="Seção Principal (Hero)" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={2}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -1655,7 +1737,20 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Contact Section */}
-          <SectionWrapper section="contact" icon="📞" title="Entre em Contato" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="contact" 
+            icon="📞" 
+            title="Entre em Contato" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={3}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -1804,7 +1899,20 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* FAQ Section */}
-          <SectionWrapper section="faq" icon="❓" title="Perguntas Frequentes (FAQ)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="faq" 
+            icon="❓" 
+            title="Perguntas Frequentes (FAQ)" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={4}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
             
             <div className="space-y-6">
               {/* Configurações da Seção */}
@@ -1940,7 +2048,20 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Media Showcase Section */}
-          <SectionWrapper section="media_showcase" icon="📸" title="Galeria de Destaques" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="media_showcase" 
+            icon="📸" 
+            title="Galeria de Destaques" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={5}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
             <p className="text-sm text-gray-600 mb-6">
               📸 Envie imagens no formato Instagram Post (1080x1080px) para o carrossel + 1 vídeo vertical tipo Reels
             </p>
@@ -2166,7 +2287,20 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Value Package Section */}
-          <SectionWrapper section="value_package" icon="💎" title="Pacote de Valor" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="value_package" 
+            icon="💎" 
+            title="Pacote de Valor" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={6}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -2331,7 +2465,20 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Story Section */}
-          <SectionWrapper section="story" icon="📖" title="Nossa História" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="story" 
+            icon="📖" 
+            title="Nossa História" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={7}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -2397,7 +2544,20 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* About Us Section */}
-          <SectionWrapper section="about_us" icon="ℹ️" title="Quem Somos" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="about_us" 
+            icon="ℹ️" 
+            title="Quem Somos" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={8}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -2470,7 +2630,20 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* WhatsApp Fixo (Botão Flutuante) */}
-          <SectionWrapper section="whatsapp_float" icon="💬" title="WhatsApp Fixo (Botão Flutuante)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="whatsapp_float" 
+            icon="💬" 
+            title="WhatsApp Fixo (Botão Flutuante)" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={9}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
             <p className="text-sm text-gray-600 mb-6">
               Configure o botão flutuante do WhatsApp que aparece fixo na tela.
             </p>
@@ -2500,7 +2673,20 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Controles de Visibilidade das Seções */}
-          <SectionWrapper section="visibility" icon="👁️" title="Visibilidade e Ordem das Seções" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="visibility" 
+            icon="👁️" 
+            title="Visibilidade e Ordem das Seções" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={10}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
             <p className="text-sm text-gray-600 mb-6">
               Controle quais seções da página inicial devem ser exibidas. Use os números para definir a ordem das seções e elementos (1 = primeiro, 2 = segundo, etc.).
             </p>
@@ -2599,7 +2785,20 @@ function EditLandingPageContent() {
           </motion.div>
 
           {/* Social Proof Section */}
-          <SectionWrapper section="social_proof" icon="⭐" title="Avaliações (Social Proof)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
+          <SectionWrapper 
+            section="social_proof" 
+            icon="⭐" 
+            title="Avaliações (Social Proof)" 
+            expandedSection={expandedSection} 
+            setExpandedSection={setExpandedSection} 
+            toggleSectionVisibility={toggleSectionVisibility} 
+            settings={settings}
+            showColorEditor={showColorEditor}
+            setShowColorEditor={setShowColorEditor}
+            index={11}
+            moveSection={moveSectionInOrder}
+            totalSections={12}
+          >
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
