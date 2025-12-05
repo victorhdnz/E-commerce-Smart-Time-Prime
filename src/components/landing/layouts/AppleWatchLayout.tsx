@@ -697,18 +697,18 @@ export function AppleWatchLayout({
                 className="text-4xl md:text-5xl font-semibold mb-8"
                 style={{ color: colors.cta.textColor }}
               >
-                {content.ctaFinal.title}
+                {content.cta.title}
               </h2>
               <a 
-                href={content.ctaFinal.buttonLink}
-                onClick={() => handleClick('cta_button', content.ctaFinal.buttonText, content.ctaFinal.buttonLink)}
+                href={content.cta.buttonLink}
+                onClick={() => handleClick('cta_button', content.cta.buttonText, content.cta.buttonLink)}
                 className="inline-block py-4 px-8 rounded-full text-lg font-semibold transition-all hover:opacity-90"
                 style={{
                   backgroundColor: colors.cta.buttonColor,
                   color: colors.cta.buttonTextColor,
                 }}
               >
-                {content.ctaFinal.buttonText}
+                {content.cta.buttonText}
               </a>
             </div>
           </section>
