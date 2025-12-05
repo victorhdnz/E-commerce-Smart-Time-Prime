@@ -95,7 +95,7 @@ function AppleEditorContent() {
   const [sectionColors, setSectionColors] = useState<AllSectionColors>(defaultSectionColors)
   const [expandedSection, setExpandedSection] = useState<SectionKey | null>('hero')
   const [showColorEditor, setShowColorEditor] = useState<SectionKey | null>(null)
-  const [showWhatsAppButton, setShowWhatsAppButton] = useState(true)
+  const [showWhatsAppButton, setShowWhatsAppButton] = useState(false)
 
   useEffect(() => {
     if (authLoading) return

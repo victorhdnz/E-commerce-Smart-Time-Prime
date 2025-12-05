@@ -247,7 +247,7 @@ export function AppleWatchLayout({
   sectionOrder = ['hero', 'products', 'reasons', 'features', 'accessories', 'faq', 'cta'],
   sectionVisibility = { hero: true, products: true, reasons: true, features: true, accessories: true, faq: true, cta: true },
   sectionColors = defaultSectionColors,
-  showWhatsAppButton = true,
+  showWhatsAppButton = false, // Padrão desativado - só aparece se explicitamente ativado
   layoutId,
   versionId,
 }: AppleWatchLayoutProps) {
@@ -673,8 +673,8 @@ export function AppleWatchLayout({
         </section>
       )}
 
-      {/* WhatsApp Float Button */}
-      {showWhatsAppButton && content.settings.whatsappNumber && (
+      {/* WhatsApp Float Button - só aparece se showWhatsAppButton for explicitamente true */}
+      {showWhatsAppButton === true && content.settings.whatsappNumber && (
         <a
           href={`https://wa.me/${content.settings.whatsappNumber}`}
           target="_blank"
