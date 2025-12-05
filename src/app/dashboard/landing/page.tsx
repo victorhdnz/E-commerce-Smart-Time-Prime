@@ -253,8 +253,8 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
   const isExpanded = expandedSection === section
   const isVisible = (settings[`section_${section}_visible` as keyof LandingSettings] ?? true) as boolean
 
-  const toggleSection = (sec: string) => {
-    setExpandedSection(expandedSection === sec ? null : sec)
+  const handleToggle = () => {
+    setExpandedSection(isExpanded ? null : section)
   }
 
   return (
@@ -266,7 +266,7 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
       {/* Header da seção */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
         <button
-          onClick={() => toggleSection(section)}
+          onClick={handleToggle}
           className="flex items-center gap-3 flex-1 text-left"
         >
           <span className="text-2xl">{icon}</span>
@@ -343,6 +343,12 @@ function EditLandingPageContent() {
   // Estados para acordeão (estilo Apple Editor)
   const [expandedSection, setExpandedSection] = useState<string | null>('hero')
   const [showColorEditor, setShowColorEditor] = useState<string | null>(null)
+
+  // Função para alternar visibilidade de seções
+  const toggleSectionVisibility = (section: string) => {
+    const key = `section_${section}_visible` as keyof LandingSettings
+    setSettings({ ...settings, [key]: !(settings[key] ?? true) })
+  }
   
   // Estados para numeração de ordem
   const [sectionOrderNumbers, setSectionOrderNumbers] = useState<Record<string, number>>({})
@@ -1264,16 +1270,6 @@ function EditLandingPageContent() {
     } finally {
       setLoading(false)
     }
-  }
-
-  // Funções para controle de acordeão (estilo Apple Editor)
-  const toggleSection = (section: string) => {
-    setExpandedSection(expandedSection === section ? null : section)
-  }
-
-  const toggleSectionVisibility = (section: string) => {
-    const key = `section_${section}_visible` as keyof LandingSettings
-    setSettings({ ...settings, [key]: !(settings[key] ?? true) })
   }
 
   const handleSave = async () => {
