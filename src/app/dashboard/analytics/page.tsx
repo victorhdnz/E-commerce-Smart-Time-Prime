@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
 import { LandingLayout, LandingVersion, LandingAnalytics } from '@/types'
-import { BarChart3, Clock, Eye, X, ArrowLeft, RefreshCw, Users, Activity, ChevronDown, ChevronUp, MousePointer, Trash2, AlertTriangle } from 'lucide-react'
+import { BarChart3, Clock, Eye, X, ArrowLeft, RefreshCw, Users, Activity, ChevronDown, ChevronUp, MousePointer, Trash2, AlertTriangle, Calendar } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
@@ -68,7 +68,10 @@ export default function AnalyticsPage() {
   const [refreshing, setRefreshing] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d')
+  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all' | 'custom'>('30d')
+  const [customStartDate, setCustomStartDate] = useState<string>('')
+  const [customEndDate, setCustomEndDate] = useState<string>('')
+  const [showDatePicker, setShowDatePicker] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [showSessions, setShowSessions] = useState(false)
   const supabase = createClient()
@@ -92,7 +95,7 @@ export default function AnalyticsPage() {
       loadVersions(selectedLayout)
     }
     loadAnalytics()
-  }, [selectedLayout, selectedVersion, dateRange, layouts.length])
+  }, [selectedLayout, selectedVersion, dateRange, customStartDate, customEndDate, layouts.length])
 
   const loadLayouts = async () => {
     try {
@@ -129,12 +132,13 @@ export default function AnalyticsPage() {
   const loadAnalytics = async () => {
     try {
       setRefreshing(true)
-      const dateFilter = getDateFilter(dateRange)
+      const { startDate, endDate } = getDateFilter(dateRange)
       
       let query = supabase
         .from('landing_analytics')
         .select('*')
-        .gte('created_at', dateFilter)
+        .gte('created_at', startDate)
+        .lte('created_at', endDate)
 
       if (selectedLayout) {
         query = query.eq('layout_id', selectedLayout)
@@ -225,17 +229,37 @@ export default function AnalyticsPage() {
     }
   }
 
-  const getDateFilter = (range: string): string => {
+  const getDateFilter = (range: string): { startDate: string; endDate: string } => {
     const now = new Date()
+    const endDate = now.toISOString()
+    
     switch (range) {
       case '7d':
-        return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
+        return {
+          startDate: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate
+        }
       case '30d':
-        return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        return {
+          startDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate
+        }
       case '90d':
-        return new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString()
+        return {
+          startDate: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+          endDate
+        }
+      case 'custom':
+        // Usar datas personalizadas
+        const customStart = customStartDate 
+          ? new Date(customStartDate + 'T00:00:00').toISOString() 
+          : '1970-01-01T00:00:00Z'
+        const customEnd = customEndDate 
+          ? new Date(customEndDate + 'T23:59:59').toISOString() 
+          : now.toISOString()
+        return { startDate: customStart, endDate: customEnd }
       default:
-        return '1970-01-01T00:00:00Z'
+        return { startDate: '1970-01-01T00:00:00Z', endDate }
     }
   }
 
@@ -573,19 +597,59 @@ export default function AnalyticsPage() {
               </div>
             )}
 
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[150px]">
               <label className="block text-sm font-medium mb-2">Período</label>
               <select
                 value={dateRange}
-                onChange={(e) => setDateRange(e.target.value as any)}
+                onChange={(e) => {
+                  const value = e.target.value as any
+                  setDateRange(value)
+                  if (value === 'custom') {
+                    setShowDatePicker(true)
+                  }
+                }}
                 className="w-full border rounded-lg px-4 py-2.5"
               >
                 <option value="7d">Últimos 7 dias</option>
                 <option value="30d">Últimos 30 dias</option>
                 <option value="90d">Últimos 90 dias</option>
                 <option value="all">Todo o período</option>
+                <option value="custom">Período personalizado</option>
               </select>
             </div>
+
+            {/* Seletor de datas personalizadas */}
+            {dateRange === 'custom' && (
+              <>
+                <div className="flex-1 min-w-[140px]">
+                  <label className="block text-sm font-medium mb-2">
+                    <Calendar size={14} className="inline mr-1" />
+                    Data Inicial
+                  </label>
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="w-full border rounded-lg px-4 py-2.5"
+                    max={customEndDate || new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div className="flex-1 min-w-[140px]">
+                  <label className="block text-sm font-medium mb-2">
+                    <Calendar size={14} className="inline mr-1" />
+                    Data Final
+                  </label>
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="w-full border rounded-lg px-4 py-2.5"
+                    min={customStartDate}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+              </>
+            )}
 
             <button
               onClick={loadAnalytics}
@@ -596,6 +660,13 @@ export default function AnalyticsPage() {
               {refreshing ? 'Atualizando...' : 'Atualizar'}
             </button>
           </div>
+
+          {/* Indicador de período selecionado */}
+          {dateRange === 'custom' && customStartDate && customEndDate && (
+            <div className="mt-3 text-sm text-gray-600">
+              📅 Exibindo dados de <strong>{new Date(customStartDate).toLocaleDateString('pt-BR')}</strong> até <strong>{new Date(customEndDate).toLocaleDateString('pt-BR')}</strong>
+            </div>
+          )}
         </div>
 
         {/* Resumo Principal */}
