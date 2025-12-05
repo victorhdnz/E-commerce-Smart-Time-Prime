@@ -503,6 +503,9 @@ function AppleEditorContent() {
                   value={colors.backgroundColor}
                   onChange={(e) => updateSectionColor(section, 'backgroundColor', e.target.value)}
                   onInput={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
@@ -511,6 +514,9 @@ function AppleEditorContent() {
                   onChange={(e) => updateSectionColor(section, 'backgroundColor', e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                   onFocus={(e) => e.stopPropagation()}
+                  onCopy={(e) => e.stopPropagation()}
+                  onCut={(e) => e.stopPropagation()}
+                  onPaste={(e) => e.stopPropagation()}
                   className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
                 />
               </div>
@@ -523,6 +529,9 @@ function AppleEditorContent() {
                   value={colors.textColor}
                   onChange={(e) => updateSectionColor(section, 'textColor', e.target.value)}
                   onInput={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
@@ -531,6 +540,9 @@ function AppleEditorContent() {
                   onChange={(e) => updateSectionColor(section, 'textColor', e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                   onFocus={(e) => e.stopPropagation()}
+                  onCopy={(e) => e.stopPropagation()}
+                  onCut={(e) => e.stopPropagation()}
+                  onPaste={(e) => e.stopPropagation()}
                   className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
                 />
               </div>
@@ -543,6 +555,9 @@ function AppleEditorContent() {
                   value={colors.buttonColor}
                   onChange={(e) => updateSectionColor(section, 'buttonColor', e.target.value)}
                   onInput={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
@@ -551,6 +566,9 @@ function AppleEditorContent() {
                   onChange={(e) => updateSectionColor(section, 'buttonColor', e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                   onFocus={(e) => e.stopPropagation()}
+                  onCopy={(e) => e.stopPropagation()}
+                  onCut={(e) => e.stopPropagation()}
+                  onPaste={(e) => e.stopPropagation()}
                   className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
                 />
               </div>
@@ -563,6 +581,9 @@ function AppleEditorContent() {
                   value={colors.buttonTextColor}
                   onChange={(e) => updateSectionColor(section, 'buttonTextColor', e.target.value)}
                   onInput={(e) => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onMouseUp={(e) => e.stopPropagation()}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
@@ -571,6 +592,9 @@ function AppleEditorContent() {
                   onChange={(e) => updateSectionColor(section, 'buttonTextColor', e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                   onFocus={(e) => e.stopPropagation()}
+                  onCopy={(e) => e.stopPropagation()}
+                  onCut={(e) => e.stopPropagation()}
+                  onPaste={(e) => e.stopPropagation()}
                   className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
                 />
               </div>
