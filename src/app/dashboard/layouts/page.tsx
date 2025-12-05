@@ -286,7 +286,7 @@ function LayoutsContent() {
 
   // Determinar qual editor usar baseado no slug do layout
   const getEditorUrl = (layout: LandingLayout, versionId: string) => {
-    const appleLayoutSlugs = ['apple-watch', 'apple', 'premium']
+    const appleLayoutSlugs = ['apple-watch', 'apple', 'premium', 'apple-style']
     if (appleLayoutSlugs.includes(layout.slug.toLowerCase())) {
       return `/dashboard/landing/apple?layout=${layout.id}&version=${versionId}`
     }

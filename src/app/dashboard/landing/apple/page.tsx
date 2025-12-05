@@ -449,12 +449,14 @@ function AppleEditorContent() {
   const ColorEditorPopup = ({ section }: { section: SectionKey }) => {
     const colors = sectionColors[section]
     return (
-      <div className="absolute right-0 top-12 z-50 bg-white rounded-lg shadow-xl border p-4 w-72">
-        <h4 className="font-medium mb-3 flex items-center gap-2">
-          <Palette size={16} />
-          Cores da Seção
-        </h4>
-        <div className="space-y-3">
+      <div className="absolute right-0 top-12 z-50 bg-white rounded-lg shadow-xl border w-72 max-h-80 flex flex-col">
+        <div className="p-4 border-b bg-gray-50 rounded-t-lg">
+          <h4 className="font-medium flex items-center gap-2">
+            <Palette size={16} />
+            Cores da Seção
+          </h4>
+        </div>
+        <div className="p-4 space-y-3 overflow-y-auto flex-1">
           <div>
             <label className="block text-xs font-medium mb-1">Cor de Fundo</label>
             <div className="flex items-center gap-2">
@@ -524,12 +526,14 @@ function AppleEditorContent() {
             </div>
           </div>
         </div>
-        <button
-          onClick={() => setShowColorEditor(null)}
-          className="mt-3 w-full py-1.5 bg-black text-white rounded text-sm hover:bg-gray-800"
-        >
-          Fechar
-        </button>
+        <div className="p-3 border-t bg-gray-50 rounded-b-lg">
+          <button
+            onClick={() => setShowColorEditor(null)}
+            className="w-full py-1.5 bg-black text-white rounded text-sm hover:bg-gray-800"
+          >
+            Fechar
+          </button>
+        </div>
       </div>
     )
   }
