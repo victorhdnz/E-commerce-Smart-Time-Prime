@@ -449,15 +449,10 @@ function AppleEditorContent() {
   const ColorEditorPopup = ({ section }: { section: SectionKey }) => {
     const colors = sectionColors[section]
     
-    // Impedir propagação de eventos para não fechar a seção
-    const stopPropagation = (e: React.MouseEvent | React.FocusEvent) => {
+    // Impedir TODOS os eventos de propagar para fora do modal
+    const preventAllPropagation = (e: any) => {
       e.stopPropagation()
-      e.preventDefault()
-    }
-
-    // Handler especial para inputs de cor - não fecha o modal
-    const handleColorInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
-      e.stopPropagation()
+      e.nativeEvent?.stopImmediatePropagation()
     }
     
     return (
@@ -473,9 +468,11 @@ function AppleEditorContent() {
         {/* Popup fixo no centro da tela */}
         <div 
           className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-xl shadow-2xl border w-96"
-          onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-          onMouseUp={(e) => e.stopPropagation()}
+          onClick={preventAllPropagation}
+          onMouseDown={preventAllPropagation}
+          onMouseUp={preventAllPropagation}
+          onFocus={preventAllPropagation}
+          onBlur={preventAllPropagation}
         >
           <div className="p-4 border-b bg-gray-50 rounded-t-xl flex items-center justify-between">
             <h4 className="font-semibold flex items-center gap-2">
@@ -483,7 +480,12 @@ function AppleEditorContent() {
               Cores da Seção
             </h4>
             <button
-              onClick={(e) => { e.stopPropagation(); setShowColorEditor(null) }}
+              onClick={(e) => { 
+                e.stopPropagation()
+                e.preventDefault()
+                setShowColorEditor(null) 
+              }}
+              onMouseDown={preventAllPropagation}
               className="p-1 hover:bg-gray-200 rounded-full transition-colors"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -499,16 +501,20 @@ function AppleEditorContent() {
                   type="color"
                   value={colors.backgroundColor}
                   onChange={(e) => updateSectionColor(section, 'backgroundColor', e.target.value)}
-                  onClick={handleColorInputClick}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onMouseUp={(e) => e.stopPropagation()}
+                  onClick={preventAllPropagation}
+                  onMouseDown={preventAllPropagation}
+                  onMouseUp={preventAllPropagation}
+                  onFocus={preventAllPropagation}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
                   type="text"
                   value={colors.backgroundColor}
                   onChange={(e) => updateSectionColor(section, 'backgroundColor', e.target.value)}
-                  onClick={stopPropagation}
+                  onClick={preventAllPropagation}
+                  onMouseDown={preventAllPropagation}
+                  onSelect={preventAllPropagation}
+                  onFocus={preventAllPropagation}
                   className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
                 />
               </div>
@@ -520,16 +526,20 @@ function AppleEditorContent() {
                   type="color"
                   value={colors.textColor}
                   onChange={(e) => updateSectionColor(section, 'textColor', e.target.value)}
-                  onClick={handleColorInputClick}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onMouseUp={(e) => e.stopPropagation()}
+                  onClick={preventAllPropagation}
+                  onMouseDown={preventAllPropagation}
+                  onMouseUp={preventAllPropagation}
+                  onFocus={preventAllPropagation}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
                   type="text"
                   value={colors.textColor}
                   onChange={(e) => updateSectionColor(section, 'textColor', e.target.value)}
-                  onClick={stopPropagation}
+                  onClick={preventAllPropagation}
+                  onMouseDown={preventAllPropagation}
+                  onSelect={preventAllPropagation}
+                  onFocus={preventAllPropagation}
                   className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
                 />
               </div>
@@ -541,16 +551,20 @@ function AppleEditorContent() {
                   type="color"
                   value={colors.buttonColor}
                   onChange={(e) => updateSectionColor(section, 'buttonColor', e.target.value)}
-                  onClick={handleColorInputClick}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onMouseUp={(e) => e.stopPropagation()}
+                  onClick={preventAllPropagation}
+                  onMouseDown={preventAllPropagation}
+                  onMouseUp={preventAllPropagation}
+                  onFocus={preventAllPropagation}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
                   type="text"
                   value={colors.buttonColor}
                   onChange={(e) => updateSectionColor(section, 'buttonColor', e.target.value)}
-                  onClick={stopPropagation}
+                  onClick={preventAllPropagation}
+                  onMouseDown={preventAllPropagation}
+                  onSelect={preventAllPropagation}
+                  onFocus={preventAllPropagation}
                   className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
                 />
               </div>
@@ -562,16 +576,20 @@ function AppleEditorContent() {
                   type="color"
                   value={colors.buttonTextColor}
                   onChange={(e) => updateSectionColor(section, 'buttonTextColor', e.target.value)}
-                  onClick={handleColorInputClick}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onMouseUp={(e) => e.stopPropagation()}
+                  onClick={preventAllPropagation}
+                  onMouseDown={preventAllPropagation}
+                  onMouseUp={preventAllPropagation}
+                  onFocus={preventAllPropagation}
                   className="w-12 h-12 rounded-lg border-2 cursor-pointer"
                 />
                 <input
                   type="text"
                   value={colors.buttonTextColor}
                   onChange={(e) => updateSectionColor(section, 'buttonTextColor', e.target.value)}
-                  onClick={stopPropagation}
+                  onClick={preventAllPropagation}
+                  onMouseDown={preventAllPropagation}
+                  onSelect={preventAllPropagation}
+                  onFocus={preventAllPropagation}
                   className="flex-1 px-3 py-2.5 border rounded-lg text-sm font-mono"
                 />
               </div>
@@ -579,7 +597,12 @@ function AppleEditorContent() {
           </div>
           <div className="p-4 border-t bg-gray-50 rounded-b-xl">
             <button
-              onClick={(e) => { e.stopPropagation(); setShowColorEditor(null) }}
+              onClick={(e) => { 
+                e.stopPropagation()
+                e.preventDefault()
+                setShowColorEditor(null) 
+              }}
+              onMouseDown={preventAllPropagation}
               className="w-full py-3 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
             >
               Aplicar Cores
