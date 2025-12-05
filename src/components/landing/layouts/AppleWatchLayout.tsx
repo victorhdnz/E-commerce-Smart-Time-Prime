@@ -340,6 +340,19 @@ export function AppleWatchLayout({
           className="pt-16 pb-20 px-4 text-center"
           style={{ backgroundColor: colors.hero.backgroundColor }}
         >
+          {content.hero.badge && (
+            <div className="mb-4">
+              <span 
+                className="inline-block px-4 py-1.5 rounded-full text-sm font-medium"
+                style={{ 
+                  backgroundColor: colors.hero.buttonColor,
+                  color: colors.hero.buttonTextColor 
+                }}
+              >
+                {content.hero.badge}
+              </span>
+            </div>
+          )}
           <h1 
             className="text-[56px] md:text-[80px] font-semibold tracking-tight leading-none mb-2"
             style={{ color: colors.hero.textColor }}
