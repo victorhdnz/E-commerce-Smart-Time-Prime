@@ -10,7 +10,7 @@ import { VideoUploader } from '@/components/ui/VideoUploader'
 import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Save, Plus, Trash2, Edit, ArrowLeft, Home, ChevronDown, ChevronUp, Eye, EyeOff, Palette } from 'lucide-react'
+import { Save, Plus, Trash2, Edit, ArrowLeft, Home, ChevronDown, ChevronUp, Eye, EyeOff, Palette, GripVertical } from 'lucide-react'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import { createClient } from '@/lib/supabase/client'
@@ -263,56 +263,56 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
   const isExpanded = expandedSection === section
   const isVisible = (settings[`section_${section}_visible` as keyof LandingSettings] ?? true) as boolean
 
-  const handleToggle = () => {
-    setExpandedSection(isExpanded ? null : section)
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-lg shadow-md overflow-hidden"
+      transition={{ delay: index * 0.05 }}
+      className={`bg-white rounded-lg shadow-md overflow-hidden ${!isVisible ? 'opacity-50' : ''}`}
     >
-      {/* Header da seção */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-200">
-        <button
-          onClick={handleToggle}
-          className="flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity"
-        >
-          <div className="flex items-center gap-2">
-            <div className="flex flex-col gap-1">
-              <button
-                onClick={(e) => { e.stopPropagation(); moveSection(index, 'up') }}
-                className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
-                disabled={index === 0}
-              >
-                <ChevronUp size={14} />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); moveSection(index, 'down') }}
-                className="p-1 hover:bg-gray-200 rounded disabled:opacity-30"
-                disabled={index === totalSections - 1}
-              >
-                <ChevronDown size={14} />
-              </button>
-            </div>
-          </div>
-          <span className="text-2xl">{icon}</span>
-          <span className="text-xl font-bold">{title}</span>
-          {isExpanded ? (
-            <ChevronUp size={20} className="text-gray-500 ml-auto" />
-          ) : (
-            <ChevronDown size={20} className="text-gray-500 ml-auto" />
-          )}
-        </button>
-        
+      {/* Header da Seção - Estilo Apple */}
+      <div
+        className="p-4 flex items-center justify-between bg-gray-50 cursor-pointer hover:bg-gray-100"
+        onClick={() => setExpandedSection(isExpanded ? null : section)}
+      >
+        <div className="flex items-center gap-3">
+          <GripVertical size={18} className="text-gray-400" />
+          <span className="text-xl">{icon}</span>
+          <h3 className="font-semibold text-gray-900">{title}</h3>
+        </div>
         <div className="flex items-center gap-2">
+          {/* Botão Cores */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowColorEditor(showColorEditor === section ? null : section) }}
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-purple-600"
+            title="Editar cores da seção"
+          >
+            <Palette size={18} />
+          </button>
+          {/* Botão Visibilidade */}
           <button
             onClick={(e) => { e.stopPropagation(); toggleSectionVisibility(section) }}
             className={`p-2 rounded-lg transition-colors ${isVisible ? 'hover:bg-gray-200 text-gray-600' : 'bg-red-100 text-red-500'}`}
             title={isVisible ? 'Ocultar seção' : 'Mostrar seção'}
           >
-            {isVisible ? <Eye size={20} /> : <EyeOff size={20} />}
+            {isVisible ? <Eye size={18} /> : <EyeOff size={18} />}
+          </button>
+          {/* Setas de Ordenação */}
+          <button
+            onClick={(e) => { e.stopPropagation(); moveSection(index, 'up') }}
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-30"
+            disabled={index === 0}
+            title="Mover para cima"
+          >
+            <ChevronUp size={18} />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); moveSection(index, 'down') }}
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-30"
+            disabled={index === totalSections - 1}
+            title="Mover para baixo"
+          >
+            <ChevronDown size={18} />
           </button>
         </div>
       </div>
@@ -320,11 +320,10 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
       {/* Conteúdo colapsável */}
       {isExpanded && (
         <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
-          className="p-6"
+          className="p-6 border-t"
         >
           {children}
         </motion.div>
@@ -1468,23 +1467,32 @@ function EditLandingPageContent() {
           </div>
         </div>
 
-        {/* Form */}
-        <div className="max-w-4xl space-y-6">
-          {/* Cronômetros Centralizados */}
-          <SectionWrapper 
-            section="timer" 
-            icon="⏰" 
-            title="Cronômetros (Centralizado)" 
-            expandedSection={expandedSection} 
-            setExpandedSection={setExpandedSection} 
-            toggleSectionVisibility={toggleSectionVisibility} 
-            settings={settings}
-            showColorEditor={showColorEditor}
-            setShowColorEditor={setShowColorEditor}
-            index={0}
-            moveSection={moveSectionInOrder}
-            totalSections={12}
-          >
+        {/* Layout Grid igual ao Apple Editor */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Seções Editáveis - Coluna Esquerda (2 colunas) */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Dica */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-blue-800">
+                <strong>💡 Dica:</strong> Use as setas ↑↓ para reordenar. Clique na 🎨 paleta para editar cores de cada seção. Use o 👁️ olho para ocultar/mostrar.
+              </p>
+            </div>
+
+            {/* Cronômetros Centralizados */}
+            <SectionWrapper 
+              section="timer" 
+              icon="⏰" 
+              title="Cronômetros (Centralizado)" 
+              expandedSection={expandedSection} 
+              setExpandedSection={setExpandedSection} 
+              toggleSectionVisibility={toggleSectionVisibility} 
+              settings={settings}
+              showColorEditor={showColorEditor}
+              setShowColorEditor={setShowColorEditor}
+              index={0}
+              moveSection={moveSectionInOrder}
+              totalSections={12}
+            >
             <p className="text-sm text-gray-600 mb-6">
               Esta configuração controla TODOS os cronômetros da página (Fixed Timer, Hero Section, Value Package e Exit Popup).
             </p>
@@ -2995,6 +3003,56 @@ function EditLandingPageContent() {
             </div>
           </SectionWrapper>
 
+          </div>
+
+          {/* Sidebar Direito - WhatsApp e Ações */}
+          <div className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-lg shadow-md p-6 sticky top-4"
+            >
+              <h2 className="text-xl font-bold mb-6">💬 WhatsApp Flutuante</h2>
+              
+              <div className="space-y-4">
+                <Input
+                  label="Número do WhatsApp"
+                  value={settings.whatsapp_float_number || ''}
+                  onChange={(e) => setSettings({ ...settings, whatsapp_float_number: e.target.value })}
+                  placeholder="5534999999999"
+                />
+                <p className="text-xs text-gray-500">
+                  Formato: código do país + DDD + número (ex: 5534999999999)
+                </p>
+                
+                <div className="pt-3 border-t">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={settings.section_whatsapp_vip_visible ?? true}
+                      onChange={(e) => setSettings({ ...settings, section_whatsapp_vip_visible: e.target.checked })}
+                      className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                    />
+                    <span className="text-sm font-medium">Mostrar botão flutuante</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1 ml-8">
+                    {settings.section_whatsapp_vip_visible !== false ? '✅ Botão visível na landing page' : '❌ Botão oculto na landing page'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-6 border-t">
+                <Link
+                  href={currentVersion && currentLayout ? `/lp/${currentLayout.slug}/${currentVersion.slug}` : '/lp'}
+                  target="_blank"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  <Eye size={18} />
+                  Ver Prévia
+                </Link>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
 
