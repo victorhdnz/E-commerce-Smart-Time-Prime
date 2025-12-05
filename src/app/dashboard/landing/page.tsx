@@ -10,7 +10,7 @@ import { VideoUploader } from '@/components/ui/VideoUploader'
 import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { Save, Plus, Trash2, Edit, ArrowLeft, Home } from 'lucide-react'
+import { Save, Plus, Trash2, Edit, ArrowLeft, Home, ChevronDown, ChevronUp, Eye, EyeOff, Palette } from 'lucide-react'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import { createClient } from '@/lib/supabase/client'
@@ -262,6 +262,10 @@ function EditLandingPageContent() {
   // Estados para versão/layout
   const [currentLayout, setCurrentLayout] = useState<LandingLayout | null>(null)
   const [currentVersion, setCurrentVersion] = useState<LandingVersion | null>(null)
+  
+  // Estados para acordeão (estilo Apple Editor)
+  const [expandedSection, setExpandedSection] = useState<string | null>('hero')
+  const [showColorEditor, setShowColorEditor] = useState<string | null>(null)
   
   // Estados para numeração de ordem
   const [sectionOrderNumbers, setSectionOrderNumbers] = useState<Record<string, number>>({})
@@ -1185,6 +1189,16 @@ function EditLandingPageContent() {
     }
   }
 
+  // Funções para controle de acordeão (estilo Apple Editor)
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section)
+  }
+
+  const toggleSectionVisibility = (section: string) => {
+    const key = `section_${section}_visible` as keyof LandingSettings
+    setSettings({ ...settings, [key]: !(settings[key] ?? true) })
+  }
+
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -1296,6 +1310,68 @@ function EditLandingPageContent() {
     }
   }
 
+  // Componente wrapper para seções colapsáveis (estilo Apple Editor)
+  const SectionWrapper = ({ 
+    section, 
+    icon, 
+    title, 
+    children 
+  }: { 
+    section: string
+    icon: string
+    title: string
+    children: React.ReactNode 
+  }) => {
+    const isExpanded = expandedSection === section
+    const isVisible = (settings[`section_${section}_visible` as keyof LandingSettings] ?? true) as boolean
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-lg shadow-md overflow-hidden"
+      >
+        {/* Header da seção */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <button
+            onClick={() => toggleSection(section)}
+            className="flex items-center gap-3 flex-1 text-left"
+          >
+            <span className="text-2xl">{icon}</span>
+            <span className="text-xl font-bold">{title}</span>
+            {isExpanded ? (
+              <ChevronUp size={20} className="text-gray-500" />
+            ) : (
+              <ChevronDown size={20} className="text-gray-500" />
+            )}
+          </button>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => { e.stopPropagation(); toggleSectionVisibility(section) }}
+              className={`p-2 rounded-lg transition-colors ${isVisible ? 'hover:bg-gray-200 text-gray-600' : 'bg-red-100 text-red-500'}`}
+              title={isVisible ? 'Ocultar seção' : 'Mostrar seção'}
+            >
+              {isVisible ? <Eye size={20} /> : <EyeOff size={20} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Conteúdo colapsável */}
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="p-6"
+          >
+            {children}
+          </motion.div>
+        )}
+      </motion.div>
+    )
+  }
 
   if (authLoading || loading) {
     return (
@@ -1345,13 +1421,7 @@ function EditLandingPageContent() {
         {/* Form */}
         <div className="max-w-4xl space-y-6">
           {/* Cronômetros Centralizados */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">⏰ Cronômetros (Centralizado)</h2>
+          <SectionWrapper section="timer" icon="⏰" title="Cronômetros (Centralizado)">
             <p className="text-sm text-gray-600 mb-6">
               Esta configuração controla TODOS os cronômetros da página (Fixed Timer, Hero Section, Value Package e Exit Popup).
             </p>
@@ -1383,16 +1453,10 @@ function EditLandingPageContent() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </SectionWrapper>
 
           {/* Exit Popup */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-2xl font-bold mb-6">⚠️ Pop-up de Saída (Exit Popup)</h2>
+          <SectionWrapper section="exit_popup" icon="⚠️" title="Pop-up de Saída (Exit Popup)">
             
             <div className="space-y-4">
               <label className="flex items-center gap-3 cursor-pointer">
@@ -1441,28 +1505,10 @@ function EditLandingPageContent() {
                 Formato: 5534984136291 (sem espaços, com código do país e DDD)
               </p>
             </div>
-          </motion.div>
+          </SectionWrapper>
 
           {/* Hero Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Seção Principal (Hero)</h2>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.section_hero_visible ?? true}
-                  onChange={(e) =>
-                    setSettings({ ...settings, section_hero_visible: e.target.checked })
-                  }
-                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                />
-                <span className="text-sm font-medium">Ativar Seção</span>
-              </label>
-            </div>
+          <SectionWrapper section="hero" icon="🏠" title="Seção Principal (Hero)">
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -1596,29 +1642,10 @@ function EditLandingPageContent() {
                 />
               </div>
             </div>
-          </motion.div>
+          </SectionWrapper>
 
           {/* Contact Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Entre em Contato</h2>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.section_contact_visible ?? true}
-                  onChange={(e) =>
-                    setSettings({ ...settings, section_contact_visible: e.target.checked })
-                  }
-                  className="w-5 h-5 text-black focus:ring-black border-gray-300 rounded"
-                />
-                <span className="text-sm font-medium">Ativar Seção</span>
-              </label>
-            </div>
+          <SectionWrapper section="contact" icon="📞" title="Entre em Contato">
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
