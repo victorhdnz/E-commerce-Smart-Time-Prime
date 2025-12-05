@@ -2784,7 +2784,7 @@ function EditLandingPageContent() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </SectionWrapper>
 
         </div>
       </div>
