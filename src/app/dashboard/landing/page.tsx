@@ -228,6 +228,83 @@ interface LandingSettings {
   }
 }
 
+// Componente wrapper para seções colapsáveis (estilo Apple Editor)
+interface SectionWrapperProps {
+  section: string
+  icon: string
+  title: string
+  children: React.ReactNode
+  expandedSection: string | null
+  setExpandedSection: (section: string | null) => void
+  toggleSectionVisibility: (section: string) => void
+  settings: any
+}
+
+const SectionWrapper: React.FC<SectionWrapperProps> = ({ 
+  section, 
+  icon, 
+  title, 
+  children,
+  expandedSection,
+  setExpandedSection,
+  toggleSectionVisibility,
+  settings
+}) => {
+  const isExpanded = expandedSection === section
+  const isVisible = (settings[`section_${section}_visible` as keyof LandingSettings] ?? true) as boolean
+
+  const toggleSection = (sec: string) => {
+    setExpandedSection(expandedSection === sec ? null : sec)
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-lg shadow-md overflow-hidden"
+    >
+      {/* Header da seção */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <button
+          onClick={() => toggleSection(section)}
+          className="flex items-center gap-3 flex-1 text-left"
+        >
+          <span className="text-2xl">{icon}</span>
+          <span className="text-xl font-bold">{title}</span>
+          {isExpanded ? (
+            <ChevronUp size={20} className="text-gray-500" />
+          ) : (
+            <ChevronDown size={20} className="text-gray-500" />
+          )}
+        </button>
+        
+        <div className="flex items-center gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleSectionVisibility(section) }}
+            className={`p-2 rounded-lg transition-colors ${isVisible ? 'hover:bg-gray-200 text-gray-600' : 'bg-red-100 text-red-500'}`}
+            title={isVisible ? 'Ocultar seção' : 'Mostrar seção'}
+          >
+            {isVisible ? <Eye size={20} /> : <EyeOff size={20} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Conteúdo colapsável */}
+      {isExpanded && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.2 }}
+          className="p-6"
+        >
+          {children}
+        </motion.div>
+      )}
+    </motion.div>
+  )
+}
+
 function EditLandingPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -1310,69 +1387,6 @@ function EditLandingPageContent() {
     }
   }
 
-  // Componente wrapper para seções colapsáveis (estilo Apple Editor)
-  const SectionWrapper = ({ 
-    section, 
-    icon, 
-    title, 
-    children 
-  }: { 
-    section: string
-    icon: string
-    title: string
-    children: React.ReactNode 
-  }) => {
-    const isExpanded = expandedSection === section
-    const isVisible = (settings[`section_${section}_visible` as keyof LandingSettings] ?? true) as boolean
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-lg shadow-md overflow-hidden"
-      >
-        {/* Header da seção */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <button
-            onClick={() => toggleSection(section)}
-            className="flex items-center gap-3 flex-1 text-left"
-          >
-            <span className="text-2xl">{icon}</span>
-            <span className="text-xl font-bold">{title}</span>
-            {isExpanded ? (
-              <ChevronUp size={20} className="text-gray-500" />
-            ) : (
-              <ChevronDown size={20} className="text-gray-500" />
-            )}
-          </button>
-          
-          <div className="flex items-center gap-2">
-            <button
-              onClick={(e) => { e.stopPropagation(); toggleSectionVisibility(section) }}
-              className={`p-2 rounded-lg transition-colors ${isVisible ? 'hover:bg-gray-200 text-gray-600' : 'bg-red-100 text-red-500'}`}
-              title={isVisible ? 'Ocultar seção' : 'Mostrar seção'}
-            >
-              {isVisible ? <Eye size={20} /> : <EyeOff size={20} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Conteúdo colapsável */}
-        {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="p-6"
-          >
-            {children}
-          </motion.div>
-        )}
-      </motion.div>
-    )
-  }
-
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -1421,7 +1435,7 @@ function EditLandingPageContent() {
         {/* Form */}
         <div className="max-w-4xl space-y-6">
           {/* Cronômetros Centralizados */}
-          <SectionWrapper section="timer" icon="⏰" title="Cronômetros (Centralizado)">
+          <SectionWrapper section="timer" icon="⏰" title="Cronômetros (Centralizado)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             <p className="text-sm text-gray-600 mb-6">
               Esta configuração controla TODOS os cronômetros da página (Fixed Timer, Hero Section, Value Package e Exit Popup).
             </p>
@@ -1456,7 +1470,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Exit Popup */}
-          <SectionWrapper section="exit_popup" icon="⚠️" title="Pop-up de Saída (Exit Popup)">
+          <SectionWrapper section="exit_popup" icon="⚠️" title="Pop-up de Saída (Exit Popup)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             
             <div className="space-y-4">
               <label className="flex items-center gap-3 cursor-pointer">
@@ -1508,7 +1522,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Hero Section */}
-          <SectionWrapper section="hero" icon="🏠" title="Seção Principal (Hero)">
+          <SectionWrapper section="hero" icon="🏠" title="Seção Principal (Hero)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -1645,7 +1659,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Contact Section */}
-          <SectionWrapper section="contact" icon="📞" title="Entre em Contato">
+          <SectionWrapper section="contact" icon="📞" title="Entre em Contato" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -1794,7 +1808,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* FAQ Section */}
-          <SectionWrapper section="faq" icon="❓" title="Perguntas Frequentes (FAQ)">
+          <SectionWrapper section="faq" icon="❓" title="Perguntas Frequentes (FAQ)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             
             <div className="space-y-6">
               {/* Configurações da Seção */}
@@ -1930,7 +1944,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Media Showcase Section */}
-          <SectionWrapper section="media_showcase" icon="📸" title="Galeria de Destaques">
+          <SectionWrapper section="media_showcase" icon="📸" title="Galeria de Destaques" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             <p className="text-sm text-gray-600 mb-6">
               📸 Envie imagens no formato Instagram Post (1080x1080px) para o carrossel + 1 vídeo vertical tipo Reels
             </p>
@@ -2156,7 +2170,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Value Package Section */}
-          <SectionWrapper section="value_package" icon="💎" title="Pacote de Valor">
+          <SectionWrapper section="value_package" icon="💎" title="Pacote de Valor" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -2321,7 +2335,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Story Section */}
-          <SectionWrapper section="story" icon="📖" title="Nossa História">
+          <SectionWrapper section="story" icon="📖" title="Nossa História" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -2387,7 +2401,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* About Us Section */}
-          <SectionWrapper section="about_us" icon="ℹ️" title="Quem Somos">
+          <SectionWrapper section="about_us" icon="ℹ️" title="Quem Somos" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -2460,7 +2474,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* WhatsApp Fixo (Botão Flutuante) */}
-          <SectionWrapper section="whatsapp_float" icon="💬" title="WhatsApp Fixo (Botão Flutuante)">
+          <SectionWrapper section="whatsapp_float" icon="💬" title="WhatsApp Fixo (Botão Flutuante)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             <p className="text-sm text-gray-600 mb-6">
               Configure o botão flutuante do WhatsApp que aparece fixo na tela.
             </p>
@@ -2490,7 +2504,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Controles de Visibilidade das Seções */}
-          <SectionWrapper section="visibility" icon="👁️" title="Visibilidade e Ordem das Seções">
+          <SectionWrapper section="visibility" icon="👁️" title="Visibilidade e Ordem das Seções" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             <p className="text-sm text-gray-600 mb-6">
               Controle quais seções da página inicial devem ser exibidas. Use os números para definir a ordem das seções e elementos (1 = primeiro, 2 = segundo, etc.).
             </p>
@@ -2589,7 +2603,7 @@ function EditLandingPageContent() {
           </motion.div>
 
           {/* Social Proof Section */}
-          <SectionWrapper section="social_proof" icon="⭐" title="Avaliações (Social Proof)">
+          <SectionWrapper section="social_proof" icon="⭐" title="Avaliações (Social Proof)" expandedSection={expandedSection} setExpandedSection={setExpandedSection} toggleSectionVisibility={toggleSectionVisibility} settings={settings}>
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
