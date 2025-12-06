@@ -128,9 +128,9 @@ export default function StepPage() {
       {/* Conteúdo Principal */}
       <main className="max-w-4xl mx-auto px-4 py-12">
         <div className="space-y-8">
-          {/* Imagem do Passo */}
-          {stepItem.image && (
-            <div className="w-full aspect-video bg-gray-100 rounded-2xl overflow-hidden">
+          {/* Imagem do Passo - Sempre mostra, mesmo vazia */}
+          <div className="w-full aspect-video bg-gray-100 rounded-2xl overflow-hidden flex items-center justify-center">
+            {stepItem.image ? (
               <Image
                 src={stepItem.image}
                 alt={stepItem.title}
@@ -138,19 +138,28 @@ export default function StepPage() {
                 height={675}
                 className="w-full h-full object-contain"
               />
-            </div>
-          )}
+            ) : (
+              <div className="text-gray-400 text-center">
+                <p className="text-lg">Sem imagem</p>
+                <p className="text-sm mt-2">Adicione uma imagem no editor</p>
+              </div>
+            )}
+          </div>
           
-          {/* Título e Descrição */}
+          {/* Título e Descrição - Sempre mostra, mesmo vazios */}
           <div className="space-y-4">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-              {stepItem.title}
+              {stepItem.title || 'Título do Passo'}
             </h1>
-            {stepItem.description && (
+            {stepItem.description ? (
               <div 
                 className="prose prose-lg max-w-none text-gray-600 whitespace-pre-line"
                 dangerouslySetInnerHTML={{ __html: stepItem.description.replace(/\n/g, '<br />') }}
               />
+            ) : (
+              <div className="prose prose-lg max-w-none text-gray-400">
+                <p>Descrição do passo aparecerá aqui. Adicione o conteúdo no editor.</p>
+              </div>
             )}
           </div>
         </div>

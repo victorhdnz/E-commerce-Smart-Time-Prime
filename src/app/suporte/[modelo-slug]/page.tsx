@@ -218,78 +218,95 @@ export default function SupportPage() {
 
       case 'steps':
         return (
-          <section key={index} className="py-16 px-4 bg-gray-50">
+          <section key={index} className="py-16 px-4 border-t border-gray-100">
             <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">
-                {section.title || 'Passo a Passo'}
-              </h2>
-              <p className="text-gray-600 text-center mb-12">
-                {section.subtitle || 'Configure seu dispositivo seguindo estes passos simples.'}
-              </p>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                {section.items && section.items.length > 0 ? (
-                  section.items.map((item, itemIndex) => {
-                    // Gerar slug único para o passo baseado no título
-                    const stepSlug = item.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `passo-${itemIndex + 1}`
-                    const stepLink = item.link || `/suporte/${slug}/${stepSlug}`
-                    
-                    return (
-                      <Link
-                        key={itemIndex}
-                        href={stepLink}
-                        className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all group"
-                      >
-                        <div className="space-y-4">
-                          <div className="w-full aspect-video bg-gray-200 rounded-xl overflow-hidden flex items-center justify-center">
-                            {item.image ? (
-                              <Image
-                                src={item.image}
-                                alt={item.title || `Passo ${itemIndex + 1}`}
-                                width={400}
-                                height={300}
-                                className="rounded-xl object-contain w-full h-full group-hover:scale-105 transition-transform"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                                Sem imagem
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                              {item.title || `Passo ${itemIndex + 1}`}
-                            </h3>
-                            {item.description && (
-                              <p className="text-gray-600 line-clamp-2 text-sm mb-3">
-                                {item.description}
-                              </p>
-                            )}
-                            <span className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1 text-sm">
-                              Ver mais <ChevronRight size={16} />
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    )
-                  })
-                ) : (
-                  // Placeholder quando não há itens
-                  [1, 2, 3].map((i) => (
-                    <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border-2 border-dashed border-gray-200">
-                      <div className="space-y-4">
-                        <div className="w-full aspect-video bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm opacity-50">
-                          Sem imagem
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900 mb-2 opacity-50">Passo {i}</h3>
-                          <p className="text-gray-600 opacity-50 text-sm">Subtítulo do passo</p>
-                        </div>
+              {section.items && section.items.length > 0 ? (
+                section.items.map((item, itemIndex) => {
+                  // Gerar slug único para o passo baseado no título
+                  const stepSlug = item.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `passo-${itemIndex + 1}`
+                  const stepLink = `/suporte/${slug}/${stepSlug}`
+                  
+                  return (
+                    <div key={itemIndex} className={itemIndex > 0 ? 'mt-16' : ''}>
+                      <div className="grid md:grid-cols-2 gap-12 items-center">
+                        {itemIndex % 2 === 0 ? (
+                          <>
+                            <div>
+                              <h2 className="text-3xl font-bold text-gray-900 mb-4">{item.title || `Passo ${itemIndex + 1}`}</h2>
+                              <p className="text-lg text-gray-600 mb-6 whitespace-pre-line">{item.description || 'Descrição do passo aparecerá aqui'}</p>
+                              <Link 
+                                href={stepLink}
+                                className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
+                              >
+                                Ver mais <ChevronRight size={16} />
+                              </Link>
+                            </div>
+                            <div className="flex justify-center">
+                              {item.image ? (
+                                <Image
+                                  src={item.image}
+                                  alt={item.title || ''}
+                                  width={350}
+                                  height={350}
+                                  className="rounded-2xl object-contain"
+                                />
+                              ) : (
+                                <div className="w-[350px] h-[350px] bg-gray-200 rounded-2xl flex items-center justify-center text-gray-400">
+                                  Sem imagem
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex justify-center md:order-1">
+                              {item.image ? (
+                                <Image
+                                  src={item.image}
+                                  alt={item.title || ''}
+                                  width={350}
+                                  height={350}
+                                  className="rounded-2xl object-contain"
+                                />
+                              ) : (
+                                <div className="w-[350px] h-[350px] bg-gray-200 rounded-2xl flex items-center justify-center text-gray-400">
+                                  Sem imagem
+                                </div>
+                              )}
+                            </div>
+                            <div className="md:order-2">
+                              <h2 className="text-3xl font-bold text-gray-900 mb-4">{item.title || `Passo ${itemIndex + 1}`}</h2>
+                              <p className="text-lg text-gray-600 mb-6 whitespace-pre-line">{item.description || 'Descrição do passo aparecerá aqui'}</p>
+                              <Link 
+                                href={stepLink}
+                                className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
+                              >
+                                Ver mais <ChevronRight size={16} />
+                              </Link>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
+                  )
+                })
+              ) : (
+                // Placeholder quando não há itens
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                  <div>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4 opacity-50">Passo 1</h2>
+                    <p className="text-lg text-gray-600 mb-6 opacity-50 whitespace-pre-line">Descrição do passo aparecerá aqui</p>
+                    <div className="text-blue-600 font-medium inline-flex items-center gap-1 opacity-50">
+                      Link aparecerá aqui <ChevronRight size={16} />
+                    </div>
+                  </div>
+                  <div className="flex justify-center">
+                    <div className="w-[350px] h-[350px] bg-gray-200 rounded-2xl flex items-center justify-center text-gray-400 opacity-50">
+                      Sem imagem
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         )

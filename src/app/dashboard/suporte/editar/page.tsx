@@ -125,10 +125,16 @@ function EditSupportContent() {
                   title: 'Passo 1',
                   description: 'Descrição completa do passo 1 aparecerá aqui na página individual.',
                   image: '',
-                  link: '',
                 },
               ],
             }
+          }
+          // Remover link dos items (será gerado automaticamente)
+          if (section.type === 'steps' && section.items) {
+            section.items = section.items.map((item: any) => {
+              const { link, ...itemWithoutLink } = item
+              return itemWithoutLink
+            })
           }
           return section
         })
@@ -251,27 +257,13 @@ function EditSupportContent() {
 
   // Mapeamento de tipos de seção com ícones emoji
   const sectionTypeIcons: Record<string, string> = {
-    hero: '🎯',
-    'feature-card': '✨',
     steps: '📋',
-    accordion: '❓',
-    text: '📝',
-    image: '🖼️',
-    video: '🎬',
-    list: '📋',
   }
 
   const SectionEditor = ({ section, index }: { section: SupportSection; index: number }) => {
     const isExpanded = editingSectionIndex === index
     const emojiIcon = sectionTypeIcons[section.type] || '📄'
-    const sectionLabel = section.type === 'hero' ? 'Hero' : 
-      section.type === 'feature-card' ? 'Feature Card' :
-      section.type === 'steps' ? 'Steps' :
-      section.type === 'accordion' ? 'FAQ/Accordion' :
-      section.type === 'text' ? 'Texto' :
-      section.type === 'image' ? 'Imagem' :
-      section.type === 'video' ? 'Vídeo' :
-      section.type === 'list' ? 'Lista' : section.type
+    const sectionLabel = section.type === 'steps' ? 'Tópico' : section.type
     
     return (
       <motion.div
@@ -341,14 +333,7 @@ function EditSupportContent() {
                 onChange={(e) => updateSection(index, { type: e.target.value as SupportSection['type'] })}
                 className="w-full border rounded-lg px-4 py-2.5"
               >
-                <option value="hero">Hero</option>
-                <option value="feature-card">Feature Card</option>
                 <option value="steps">Steps (Passos)</option>
-                <option value="text">Texto</option>
-                <option value="image">Imagem</option>
-                <option value="video">Vídeo</option>
-                <option value="list">Lista</option>
-                <option value="accordion">FAQ/Accordion</option>
               </select>
             </div>
 
@@ -363,10 +348,10 @@ function EditSupportContent() {
               }}
             />
 
-            {(section.type === 'hero' || section.type === 'feature-card' || section.type === 'steps') && (
+            {section.type === 'steps' && (
               <Input
                 key={`section-subtitle-${section.id}-${index}`}
-                label="Subtítulo"
+                label="Subtítulo (opcional)"
                 value={section.subtitle || ''}
                 onChange={(e) => {
                   const newValue = e.target.value
@@ -493,32 +478,19 @@ function EditSupportContent() {
                           />
                         </div>
                         {section.type === 'steps' && (
-                          <>
-                            <div>
-                              <label className="block text-sm font-medium mb-2">Imagem (opcional)</label>
-                              <ImageUploader
-                                value={item.image || ''}
-                                onChange={(url) => updateItemInSection(index, itemIndex, { image: url })}
-                                placeholder="Clique para fazer upload da imagem"
-                                recommendedDimensions="800 x 600px"
-                                cropType="square"
-                              />
-                            </div>
-                            <Input
-                              key={`item-link-${section.id}-${index}-${itemIndex}`}
-                              label="Link para página completa (opcional - deixe vazio para gerar automaticamente)"
-                              type="url"
-                              value={item.link || ''}
-                              onChange={(e) => {
-                                const newValue = e.target.value
-                                updateItemInSection(index, itemIndex, { link: newValue })
-                              }}
-                              placeholder="/suporte/modelo-slug/passo-slug"
+                          <div>
+                            <label className="block text-sm font-medium mb-2">Imagem (opcional)</label>
+                            <ImageUploader
+                              value={item.image || ''}
+                              onChange={(url) => updateItemInSection(index, itemIndex, { image: url })}
+                              placeholder="Clique para fazer upload da imagem"
+                              recommendedDimensions="800 x 600px"
+                              cropType="square"
                             />
-                            <p className="text-xs text-gray-500">
-                              Se deixado vazio, o link será gerado automaticamente baseado no título do passo.
+                            <p className="text-xs text-gray-500 mt-2">
+                              O link para a página completa será gerado automaticamente baseado no título do passo.
                             </p>
-                          </>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -588,34 +560,10 @@ function EditSupportContent() {
                 <h2 className="text-xl font-bold">Seções do Manual</h2>
                 <div className="flex gap-2 flex-wrap">
                   <button
-                    onClick={() => addSection('hero')}
-                    className="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50"
-                  >
-                    + Hero
-                  </button>
-                  <button
-                    onClick={() => addSection('feature-card')}
-                    className="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50"
-                  >
-                    + Feature Card
-                  </button>
-                  <button
                     onClick={() => addSection('steps')}
                     className="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50"
                   >
-                    + Steps
-                  </button>
-                  <button
-                    onClick={() => addSection('text')}
-                    className="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50"
-                  >
-                    + Texto
-                  </button>
-                  <button
-                    onClick={() => addSection('accordion')}
-                    className="px-3 py-1.5 border rounded-lg text-sm hover:bg-gray-50"
-                  >
-                    + FAQ
+                    + Adicionar Tópico
                   </button>
                 </div>
               </div>
@@ -651,16 +599,7 @@ function EditSupportContent() {
               </h2>
               <div className="space-y-3 text-sm text-gray-600">
                 <div>
-                  <strong className="text-gray-900">Hero:</strong> Seção principal com título, subtítulo e busca
-                </div>
-                <div>
-                  <strong className="text-gray-900">Feature Card:</strong> Cards com imagem alternando lados
-                </div>
-                <div>
-                  <strong className="text-gray-900">Steps:</strong> Lista de passos com imagens
-                </div>
-                <div>
-                  <strong className="text-gray-900">FAQ:</strong> Perguntas frequentes expansíveis
+                  <strong className="text-gray-900">Tópicos:</strong> Crie tópicos com foto, título, subtítulo e link automático para página detalhada
                 </div>
                 <div className="pt-3 border-t">
                   <strong className="text-gray-900">💡 Dica:</strong> Use as setas ↑↓ para reordenar as seções
