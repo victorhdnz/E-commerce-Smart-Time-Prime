@@ -138,13 +138,8 @@ export const FeaturedProducts = ({
                   {/* Price */}
                   <div className="mb-4">
                     <div className="text-2xl font-bold text-green-600">
-                      {formatCurrency(product.local_price)}
+                      {formatCurrency(product.price || 0)}
                     </div>
-                    {product.national_price && product.national_price > product.local_price && (
-                      <div className="text-sm text-gray-500 line-through">
-                        {formatCurrency(product.national_price)}
-                      </div>
-                    )}
                   </div>
 
                   {/* Action Buttons */}
