@@ -397,10 +397,10 @@ export default function SupportPage() {
             <span className="font-medium text-gray-900">{supportPage.title}</span>
           </div>
           <Link 
-            href="/dashboard/suporte"
+            href="/comparar"
             className="text-sm text-gray-600 hover:text-gray-900"
           >
-            Todos os manuais
+            Voltar ao comparador
           </Link>
         </div>
       </header>

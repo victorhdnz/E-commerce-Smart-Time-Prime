@@ -113,8 +113,8 @@ function ComparePageContent() {
         }
       })
       
-      // Campos padrão sempre presentes
-      const defaultFields = ['Nome', 'Preço', 'Categoria', 'Estoque']
+      // Campos padrão sempre presentes (sem Estoque)
+      const defaultFields = ['Nome', 'Preço', 'Categoria']
       
       // Buscar ordem dos tópicos da categoria (se todos os produtos forem da mesma categoria)
       const categories = new Set(products.map(p => p.category).filter(Boolean))
@@ -595,9 +595,6 @@ function ComparePageContent() {
                   case 'Categoria':
                     value = product.category || '—'
                     break
-                  case 'Estoque':
-                    value = product.stock > 0 ? `${product.stock} unidades` : 'Esgotado'
-                    break
                   default:
                     const spec = product.specifications?.find(s => s.key === field)
                     if (spec && spec.value && spec.value.trim() !== '') {
@@ -734,9 +731,6 @@ function ComparePageContent() {
                       break
                     case 'Categoria':
                       value = product.category || '—'
-                      break
-                    case 'Estoque':
-                      value = product.stock > 0 ? `${product.stock} unidades` : 'Esgotado'
                       break
                     default:
                       // Buscar na especificações

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
@@ -10,6 +10,9 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Input } from '@/components/ui/Input'
+import { ImageUploader } from '@/components/ui/ImageUploader'
+import { VideoUploader } from '@/components/ui/VideoUploader'
+import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
 
 interface CatalogSettings {
   title: string
@@ -138,23 +141,37 @@ function EditCatalogContent() {
       setCatalog(data as ProductCatalog)
       const content = (data.content as any) || {}
       
+      // Se não houver conteúdo, criar estrutura pré-definida
+      const hasContent = content.hero?.title || content.features?.length > 0 || content.gallery?.length > 0
+      
       setSettings({
         title: data.title || '',
         description: data.description || '',
         cover_image: data.cover_image || '',
-        hero: content.hero || { title: '', subtitle: '', badge: '', image: '', cta_text: '', cta_link: '' },
+        hero: content.hero || (hasContent ? { title: '', subtitle: '', badge: '', image: '', cta_text: '', cta_link: '' } : {
+          title: data.title || 'Smart Watch',
+          subtitle: 'O mais poderoso de todos os tempos.',
+          badge: 'Novo',
+          image: '',
+          cta_text: 'Comprar Agora',
+          cta_link: '/comparar',
+        }),
         video: content.video || undefined,
-        features: content.features || [],
-        features_title: content.features_title || '',
-        features_subtitle: content.features_subtitle || '',
+        features: content.features || (hasContent ? [] : [
+          { icon: '💡', title: 'Design Moderno', description: 'Estilo contemporâneo que combina com qualquer ocasião.' },
+          { icon: '⚡', title: 'Alta Performance', description: 'Processador rápido e eficiente para todas as suas necessidades.' },
+          { icon: '🔋', title: 'Bateria Duradoura', description: 'Bateria que dura o dia todo com uma única carga.' },
+        ]),
+        features_title: content.features_title || (hasContent ? '' : 'Recursos Principais'),
+        features_subtitle: content.features_subtitle || (hasContent ? '' : 'Descubra o que torna este produto especial'),
         gallery: content.gallery || [],
-        gallery_title: content.gallery_title || '',
+        gallery_title: content.gallery_title || (hasContent ? '' : 'Galeria de Imagens'),
         product_showcase: content.product_showcase || undefined,
-        featured_subtitle: content.featured_subtitle || '',
-        cta_title: content.cta_title || '',
-        cta_description: content.cta_description || '',
-        cta_text: content.cta_text || '',
-        cta_link: content.cta_link || '',
+        featured_subtitle: content.featured_subtitle || (hasContent ? '' : 'Produtos em Destaque'),
+        cta_title: content.cta_title || (hasContent ? '' : 'Pronto para começar?'),
+        cta_description: content.cta_description || (hasContent ? '' : 'Explore nossa coleção completa de produtos.'),
+        cta_text: content.cta_text || (hasContent ? '' : 'Ver todos os produtos'),
+        cta_link: content.cta_link || (hasContent ? '' : '/comparar'),
         theme_colors: (data.theme_colors as any) || {
           primary: '#000000',
           secondary: '#ffffff',
@@ -380,23 +397,33 @@ function EditCatalogContent() {
                   <Input
                     label="Título do Catálogo"
                     value={settings.title}
-                    onChange={(e) => setSettings({ ...settings, title: e.target.value })}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({ ...prev, title: newValue }))
+                    }}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea
                       value={settings.description}
-                      onChange={(e) => setSettings({ ...settings, description: e.target.value })}
+                      onChange={(e) => {
+                        const newValue = e.target.value
+                        setSettings(prev => ({ ...prev, description: newValue }))
+                      }}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={3}
                     />
                   </div>
-                  <Input
-                    label="Imagem de Capa (URL)"
-                    value={settings.cover_image}
-                    onChange={(e) => setSettings({ ...settings, cover_image: e.target.value })}
-                    placeholder="https://..."
-                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Imagem de Capa</label>
+                    <ImageUploader
+                      value={settings.cover_image}
+                      onChange={(url) => setSettings(prev => ({ ...prev, cover_image: url }))}
+                      placeholder="Clique para fazer upload da imagem de capa"
+                      recommendedDimensions="1920 x 1080px (Banner horizontal)"
+                      cropType="banner"
+                    />
+                  </div>
                 </div>
               </SectionWrapper>
 
@@ -406,55 +433,59 @@ function EditCatalogContent() {
                   <Input
                     label="Título do Hero"
                     value={settings.hero.title}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      hero: { ...settings.hero, title: e.target.value }
-                    })}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      hero: { ...prev.hero, title: e.target.value }
+                    }))}
                     placeholder="Smart Watch"
                   />
                   <Input
                     label="Subtítulo"
                     value={settings.hero.subtitle}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      hero: { ...settings.hero, subtitle: e.target.value }
-                    })}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      hero: { ...prev.hero, subtitle: e.target.value }
+                    }))}
                     placeholder="O mais poderoso de todos os tempos."
                   />
                   <Input
                     label="Badge (ex: Novo)"
                     value={settings.hero.badge}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      hero: { ...settings.hero, badge: e.target.value }
-                    })}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      hero: { ...prev.hero, badge: e.target.value }
+                    }))}
                     placeholder="Novo"
                   />
-                  <Input
-                    label="Imagem do Hero (URL)"
-                    value={settings.hero.image}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      hero: { ...settings.hero, image: e.target.value }
-                    })}
-                    placeholder="https://..."
-                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Imagem do Hero</label>
+                    <ImageUploader
+                      value={settings.hero.image}
+                      onChange={(url) => setSettings(prev => ({
+                        ...prev,
+                        hero: { ...prev.hero, image: url }
+                      }))}
+                      placeholder="Clique para fazer upload da imagem do hero"
+                      recommendedDimensions="1920 x 1080px (Banner horizontal)"
+                      cropType="banner"
+                    />
+                  </div>
                   <Input
                     label="Texto do Botão CTA"
                     value={settings.hero.cta_text || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      hero: { ...settings.hero, cta_text: e.target.value }
-                    })}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      hero: { ...prev.hero, cta_text: e.target.value }
+                    }))}
                     placeholder="Comprar Agora"
                   />
                   <Input
                     label="Link do Botão CTA"
                     value={settings.hero.cta_link || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      hero: { ...settings.hero, cta_link: e.target.value }
-                    })}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      hero: { ...prev.hero, cta_link: e.target.value }
+                    }))}
                     placeholder="/comparar"
                   />
                 </div>
@@ -463,40 +494,56 @@ function EditCatalogContent() {
               {/* Vídeo */}
               <SectionWrapper section="video" icon={<Package size={18} />} title="Seção de Vídeo">
                 <div className="space-y-4">
-                  <Input
-                    label="URL do Vídeo (YouTube)"
-                    value={settings.video?.url || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      video: { ...settings.video, url: e.target.value } as any
-                    })}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                  />
-                  <Input
-                    label="Thumbnail do Vídeo (URL)"
-                    value={settings.video?.thumbnail || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      video: { ...settings.video, thumbnail: e.target.value } as any
-                    })}
-                    placeholder="https://..."
-                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-2">URL do Vídeo (YouTube) ou Upload</label>
+                    <div className="space-y-2">
+                      <Input
+                        value={settings.video?.url || ''}
+                        onChange={(e) => setSettings(prev => ({
+                          ...prev,
+                          video: { ...prev.video, url: e.target.value } as any
+                        }))}
+                        placeholder="https://www.youtube.com/watch?v=... ou faça upload abaixo"
+                      />
+                      <VideoUploader
+                        value={settings.video?.url || ''}
+                        onChange={(url) => setSettings(prev => ({
+                          ...prev,
+                          video: { ...prev.video, url: url } as any
+                        }))}
+                        placeholder="Ou faça upload de um vídeo"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Thumbnail do Vídeo</label>
+                    <ImageUploader
+                      value={settings.video?.thumbnail || ''}
+                      onChange={(url) => setSettings(prev => ({
+                        ...prev,
+                        video: { ...prev.video, thumbnail: url } as any
+                      }))}
+                      placeholder="Clique para fazer upload da thumbnail"
+                      recommendedDimensions="1920 x 1080px"
+                      cropType="banner"
+                    />
+                  </div>
                   <Input
                     label="Título"
                     value={settings.video?.title || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      video: { ...settings.video, title: e.target.value } as any
-                    })}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      video: { ...prev.video, title: e.target.value } as any
+                    }))}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea
                       value={settings.video?.description || ''}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        video: { ...settings.video, description: e.target.value } as any
-                      })}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        video: { ...prev.video, description: e.target.value } as any
+                      }))}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={3}
                     />
@@ -510,12 +557,12 @@ function EditCatalogContent() {
                   <Input
                     label="Título da Seção"
                     value={settings.features_title || ''}
-                    onChange={(e) => setSettings({ ...settings, features_title: e.target.value })}
+                    onChange={(e) => setSettings(prev => ({ ...prev, features_title: e.target.value }))}
                   />
                   <Input
                     label="Subtítulo"
                     value={settings.features_subtitle || ''}
-                    onChange={(e) => setSettings({ ...settings, features_subtitle: e.target.value })}
+                    onChange={(e) => setSettings(prev => ({ ...prev, features_subtitle: e.target.value }))}
                   />
                   <div className="space-y-3">
                     {(settings.features || []).map((feature, index) => (
@@ -524,9 +571,11 @@ function EditCatalogContent() {
                           <h4 className="font-medium">Feature {index + 1}</h4>
                           <button
                             onClick={() => {
-                              const features = [...(settings.features || [])]
-                              features.splice(index, 1)
-                              setSettings({ ...settings, features })
+                              setSettings(prev => {
+                                const features = [...(prev.features || [])]
+                                features.splice(index, 1)
+                                return { ...prev, features }
+                              })
                             }}
                             className="text-red-600 hover:text-red-800 p-1"
                           >
@@ -538,9 +587,11 @@ function EditCatalogContent() {
                             label="Ícone (emoji ou texto)"
                             value={feature.icon || ''}
                             onChange={(e) => {
-                              const features = [...(settings.features || [])]
-                              features[index] = { ...features[index], icon: e.target.value }
-                              setSettings({ ...settings, features })
+                              setSettings(prev => {
+                                const features = [...(prev.features || [])]
+                                features[index] = { ...features[index], icon: e.target.value }
+                                return { ...prev, features }
+                              })
                             }}
                             placeholder="💡"
                           />
@@ -548,9 +599,11 @@ function EditCatalogContent() {
                             label="Título"
                             value={feature.title}
                             onChange={(e) => {
-                              const features = [...(settings.features || [])]
-                              features[index] = { ...features[index], title: e.target.value }
-                              setSettings({ ...settings, features })
+                              setSettings(prev => {
+                                const features = [...(prev.features || [])]
+                                features[index] = { ...features[index], title: e.target.value }
+                                return { ...prev, features }
+                              })
                             }}
                           />
                           <div>
@@ -558,9 +611,11 @@ function EditCatalogContent() {
                             <textarea
                               value={feature.description}
                               onChange={(e) => {
-                                const features = [...(settings.features || [])]
-                                features[index] = { ...features[index], description: e.target.value }
-                                setSettings({ ...settings, features })
+                                setSettings(prev => {
+                                  const features = [...(prev.features || [])]
+                                  features[index] = { ...features[index], description: e.target.value }
+                                  return { ...prev, features }
+                                })
                               }}
                               className="w-full border rounded-lg px-4 py-2.5"
                               rows={2}
@@ -571,10 +626,10 @@ function EditCatalogContent() {
                     ))}
                     <button
                       onClick={() => {
-                        setSettings({
-                          ...settings,
-                          features: [...(settings.features || []), { title: '', description: '', icon: '' }]
-                        })
+                        setSettings(prev => ({
+                          ...prev,
+                          features: [...(prev.features || []), { title: '', description: '', icon: '' }]
+                        }))
                       }}
                       className="w-full py-2 border-2 border-dashed rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 flex items-center justify-center gap-2"
                     >
@@ -591,44 +646,15 @@ function EditCatalogContent() {
                   <Input
                     label="Título da Galeria"
                     value={settings.gallery_title || ''}
-                    onChange={(e) => setSettings({ ...settings, gallery_title: e.target.value })}
+                    onChange={(e) => setSettings(prev => ({ ...prev, gallery_title: e.target.value }))}
                   />
-                  <div className="space-y-2">
-                    {(settings.gallery || []).map((image, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          label={`Imagem ${index + 1}`}
-                          value={image}
-                          onChange={(e) => {
-                            const gallery = [...(settings.gallery || [])]
-                            gallery[index] = e.target.value
-                            setSettings({ ...settings, gallery })
-                          }}
-                          placeholder="https://..."
-                        />
-                        <button
-                          onClick={() => {
-                            const gallery = settings.gallery?.filter((_, i) => i !== index) || []
-                            setSettings({ ...settings, gallery })
-                          }}
-                          className="text-red-600 hover:text-red-800 p-2 mt-6"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      onClick={() => {
-                        setSettings({
-                          ...settings,
-                          gallery: [...(settings.gallery || []), '']
-                        })
-                      }}
-                      className="w-full py-2 border-2 border-dashed rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 flex items-center justify-center gap-2"
-                    >
-                      <Plus size={18} />
-                      Adicionar Imagem
-                    </button>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Imagens da Galeria</label>
+                    <ArrayImageManager
+                      images={settings.gallery || []}
+                      onChange={(images) => setSettings(prev => ({ ...prev, gallery: images }))}
+                      maxImages={10}
+                    />
                   </div>
                 </div>
               </SectionWrapper>
@@ -639,43 +665,47 @@ function EditCatalogContent() {
                   <Input
                     label="Título"
                     value={settings.product_showcase?.title || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      product_showcase: { ...settings.product_showcase, title: e.target.value } as any
-                    })}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      product_showcase: { ...prev.product_showcase, title: e.target.value } as any
+                    }))}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea
                       value={settings.product_showcase?.description || ''}
-                      onChange={(e) => setSettings({
-                        ...settings,
-                        product_showcase: { ...settings.product_showcase, description: e.target.value } as any
-                      })}
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
+                        product_showcase: { ...prev.product_showcase, description: e.target.value } as any
+                      }))}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={3}
                     />
                   </div>
-                  <Input
-                    label="Imagem (URL)"
-                    value={settings.product_showcase?.image || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      product_showcase: { ...settings.product_showcase, image: e.target.value } as any
-                    })}
-                    placeholder="https://..."
-                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Imagem</label>
+                    <ImageUploader
+                      value={settings.product_showcase?.image || ''}
+                      onChange={(url) => setSettings(prev => ({
+                        ...prev,
+                        product_showcase: { ...prev.product_showcase, image: url } as any
+                      }))}
+                      placeholder="Clique para fazer upload da imagem"
+                      recommendedDimensions="1920 x 1080px"
+                      cropType="banner"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">Features (uma por linha)</label>
                     <textarea
                       value={(settings.product_showcase?.features || []).join('\n')}
-                      onChange={(e) => setSettings({
-                        ...settings,
+                      onChange={(e) => setSettings(prev => ({
+                        ...prev,
                         product_showcase: { 
-                          ...settings.product_showcase, 
+                          ...prev.product_showcase, 
                           features: e.target.value.split('\n').filter(Boolean) 
                         } as any
-                      })}
+                      }))}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={4}
                       placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
@@ -684,19 +714,19 @@ function EditCatalogContent() {
                   <Input
                     label="Texto do Botão CTA"
                     value={settings.product_showcase?.cta_text || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      product_showcase: { ...settings.product_showcase, cta_text: e.target.value } as any
-                    })}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      product_showcase: { ...prev.product_showcase, cta_text: e.target.value } as any
+                    }))}
                     placeholder="Comprar Agora"
                   />
                   <Input
                     label="Link do Botão CTA"
                     value={settings.product_showcase?.cta_link || ''}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      product_showcase: { ...settings.product_showcase, cta_link: e.target.value } as any
-                    })}
+                    onChange={(e) => setSettings(prev => ({
+                      ...prev,
+                      product_showcase: { ...prev.product_showcase, cta_link: e.target.value } as any
+                    }))}
                     placeholder="/comparar"
                   />
                 </div>
@@ -730,13 +760,13 @@ function EditCatalogContent() {
                   <Input
                     label="Título"
                     value={settings.cta_title || ''}
-                    onChange={(e) => setSettings({ ...settings, cta_title: e.target.value })}
+                    onChange={(e) => setSettings(prev => ({ ...prev, cta_title: e.target.value }))}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea
                       value={settings.cta_description || ''}
-                      onChange={(e) => setSettings({ ...settings, cta_description: e.target.value })}
+                      onChange={(e) => setSettings(prev => ({ ...prev, cta_description: e.target.value }))}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={2}
                     />
@@ -744,13 +774,13 @@ function EditCatalogContent() {
                   <Input
                     label="Texto do Botão"
                     value={settings.cta_text || ''}
-                    onChange={(e) => setSettings({ ...settings, cta_text: e.target.value })}
+                    onChange={(e) => setSettings(prev => ({ ...prev, cta_text: e.target.value }))}
                     placeholder="Ver todos os produtos"
                   />
                   <Input
                     label="Link do Botão"
                     value={settings.cta_link || ''}
-                    onChange={(e) => setSettings({ ...settings, cta_link: e.target.value })}
+                    onChange={(e) => setSettings(prev => ({ ...prev, cta_link: e.target.value }))}
                     placeholder="/comparar"
                   />
                 </div>
@@ -761,7 +791,7 @@ function EditCatalogContent() {
                 <Input
                   label="Subtítulo"
                   value={settings.featured_subtitle || ''}
-                  onChange={(e) => setSettings({ ...settings, featured_subtitle: e.target.value })}
+                  onChange={(e) => setSettings(prev => ({ ...prev, featured_subtitle: e.target.value }))}
                   placeholder="Veja nossa coleção completa"
                 />
               </SectionWrapper>
@@ -791,11 +821,16 @@ function EditCatalogContent() {
                           value={category.description}
                           onChange={(e) => updateCategory(index, { description: e.target.value })}
                         />
-                        <Input
-                          label="Imagem (URL)"
-                          value={category.image}
-                          onChange={(e) => updateCategory(index, { image: e.target.value })}
-                        />
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Imagem</label>
+                          <ImageUploader
+                            value={category.image}
+                            onChange={(url) => updateCategory(index, { image: url })}
+                            placeholder="Clique para fazer upload da imagem"
+                            recommendedDimensions="800 x 600px"
+                            cropType="square"
+                          />
+                        </div>
                         <div>
                           <p className="text-sm font-medium mb-2">Produtos ({category.products?.length || 0}):</p>
                           <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">

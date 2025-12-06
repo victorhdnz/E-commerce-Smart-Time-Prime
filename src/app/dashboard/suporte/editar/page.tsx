@@ -10,6 +10,7 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Input } from '@/components/ui/Input'
+import { ImageUploader } from '@/components/ui/ImageUploader'
 
 interface SupportSection {
   id: string
@@ -78,7 +79,50 @@ function EditSupportContent() {
 
       setSupportPage(data as ProductSupportPage)
       const content = (data.content as any) || {}
-      setSections(content.sections || [])
+      // Se não houver seções, criar estrutura pré-definida
+      if (!content.sections || content.sections.length === 0) {
+        const defaultSections: SupportSection[] = [
+          {
+            id: 'hero-1',
+            type: 'hero',
+            title: data.title || 'Bem-vindo',
+            subtitle: `Tudo o que você precisa saber sobre o ${(data as any).product?.name || 'produto'}.`,
+            content: '',
+            image: '',
+          },
+          {
+            id: 'feature-1',
+            type: 'feature-card',
+            title: 'Primeiros Passos',
+            subtitle: 'Comece aqui',
+            content: 'Configure seu dispositivo seguindo estes passos simples.',
+            image: '',
+            link: '',
+            linkText: 'Saiba mais',
+          },
+          {
+            id: 'steps-1',
+            type: 'steps',
+            title: 'Como Configurar',
+            subtitle: 'Siga estes passos',
+            items: [
+              {
+                title: 'Passo 1: Ligar o dispositivo',
+                description: 'Pressione e segure o botão de energia por 3 segundos.',
+                image: '',
+              },
+              {
+                title: 'Passo 2: Conectar ao app',
+                description: 'Baixe o app e conecte via Bluetooth.',
+                image: '',
+              },
+            ],
+          },
+        ]
+        setSections(defaultSections)
+      } else {
+        setSections(content.sections || [])
+      }
     } catch (error: any) {
       console.error('Erro ao carregar página:', error)
       toast.error('Erro ao carregar página')
@@ -302,12 +346,16 @@ function EditSupportContent() {
             )}
 
             {(section.type === 'hero' || section.type === 'image' || section.type === 'feature-card') && (
-              <Input
-                label="URL da Imagem"
-                value={section.image || ''}
-                onChange={(e) => updateSection(index, { image: e.target.value })}
-                placeholder="https://..."
-              />
+              <div>
+                <label className="block text-sm font-medium mb-2">Imagem</label>
+                <ImageUploader
+                  value={section.image || ''}
+                  onChange={(url) => updateSection(index, { image: url })}
+                  placeholder="Clique para fazer upload da imagem"
+                  recommendedDimensions="1920 x 1080px"
+                  cropType="banner"
+                />
+              </div>
             )}
 
             {section.type === 'video' && (
@@ -377,12 +425,16 @@ function EditSupportContent() {
                           />
                         </div>
                         {section.type === 'steps' && (
-                          <Input
-                            label="URL da Imagem (opcional)"
-                            value={item.image || ''}
-                            onChange={(e) => updateItemInSection(index, itemIndex, { image: e.target.value })}
-                            placeholder="https://..."
-                          />
+                          <div>
+                            <label className="block text-sm font-medium mb-2">Imagem (opcional)</label>
+                            <ImageUploader
+                              value={item.image || ''}
+                              onChange={(url) => updateItemInSection(index, itemIndex, { image: url })}
+                              placeholder="Clique para fazer upload da imagem"
+                              recommendedDimensions="800 x 600px"
+                              cropType="square"
+                            />
+                          </div>
                         )}
                       </div>
                     </div>
