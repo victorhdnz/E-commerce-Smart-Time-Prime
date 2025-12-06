@@ -130,6 +130,18 @@ function CatalogsContent() {
           features_subtitle: 'Descubra o que torna este produto especial',
           gallery: [],
           gallery_title: 'Galeria de Imagens',
+          product_showcase: {
+            title: 'Destaque do Produto',
+            description: 'Conheça os principais recursos e benefícios deste produto incrível.',
+            image: '',
+            features: [
+              'Recurso 1',
+              'Recurso 2',
+              'Recurso 3',
+            ],
+            cta_text: 'Comprar Agora',
+            cta_link: '/comparar',
+          },
           categories: [],
           featured_products: [],
           featured_subtitle: 'Produtos em Destaque',

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
@@ -8,7 +8,6 @@ import { ProductSupportPage } from '@/types'
 import { Save, ArrowLeft, Home, Eye, BookOpen, ChevronDown, ChevronUp, Plus, Trash2, GripVertical } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { motion } from 'framer-motion'
 import { Input } from '@/components/ui/Input'
 import { ImageUploader } from '@/components/ui/ImageUploader'
 
@@ -248,7 +247,7 @@ function EditSupportContent() {
     const isExpanded = editingSectionIndex === index
     
     return (
-      <motion.div className="border rounded-xl overflow-hidden mb-4">
+      <div className="border rounded-xl overflow-hidden mb-4" key={section.id || `section-${index}`}>
         <div className="bg-gray-50 p-4 flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1">
             <GripVertical size={18} className="text-gray-400 cursor-move" />
@@ -299,11 +298,7 @@ function EditSupportContent() {
         </div>
         
         {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="p-4 space-y-4"
-          >
+          <div className="p-4 space-y-4">
             {/* Tipo de seção */}
             <div>
               <label className="block text-sm font-medium mb-2">Tipo de Seção</label>
@@ -325,16 +320,24 @@ function EditSupportContent() {
 
             {/* Campos comuns */}
             <Input
+              key={`section-title-${section.id}-${index}`}
               label="Título"
               value={section.title || ''}
-              onChange={(e) => updateSection(index, { title: e.target.value })}
+              onChange={(e) => {
+                const newValue = e.target.value
+                updateSection(index, { title: newValue })
+              }}
             />
 
             {(section.type === 'hero' || section.type === 'feature-card' || section.type === 'steps') && (
               <Input
+                key={`section-subtitle-${section.id}-${index}`}
                 label="Subtítulo"
                 value={section.subtitle || ''}
-                onChange={(e) => updateSection(index, { subtitle: e.target.value })}
+                onChange={(e) => {
+                  const newValue = e.target.value
+                  updateSection(index, { subtitle: newValue })
+                }}
               />
             )}
 
@@ -343,8 +346,12 @@ function EditSupportContent() {
               <div>
                 <label className="block text-sm font-medium mb-2">Conteúdo</label>
                 <textarea
+                  key={`section-content-${section.id}-${index}`}
                   value={section.content || ''}
-                  onChange={(e) => updateSection(index, { content: e.target.value })}
+                  onChange={(e) => {
+                    const newValue = e.target.value
+                    updateSection(index, { content: newValue })
+                  }}
                   className="w-full border rounded-lg px-4 py-2.5"
                   rows={4}
                   placeholder="Digite o conteúdo..."
@@ -367,9 +374,13 @@ function EditSupportContent() {
 
             {section.type === 'video' && (
               <Input
+                key={`section-video-${section.id}-${index}`}
                 label="URL do Vídeo (YouTube, Vimeo)"
                 value={section.video || ''}
-                onChange={(e) => updateSection(index, { video: e.target.value })}
+                onChange={(e) => {
+                  const newValue = e.target.value
+                  updateSection(index, { video: newValue })
+                }}
                 placeholder="https://..."
               />
             )}
@@ -377,15 +388,23 @@ function EditSupportContent() {
             {section.type === 'feature-card' && (
               <>
                 <Input
+                  key={`section-link-${section.id}-${index}`}
                   label="URL do Link"
                   value={section.link || ''}
-                  onChange={(e) => updateSection(index, { link: e.target.value })}
+                  onChange={(e) => {
+                    const newValue = e.target.value
+                    updateSection(index, { link: newValue })
+                  }}
                   placeholder="https://..."
                 />
                 <Input
+                  key={`section-linktext-${section.id}-${index}`}
                   label="Texto do Link"
                   value={section.linkText || ''}
-                  onChange={(e) => updateSection(index, { linkText: e.target.value })}
+                  onChange={(e) => {
+                    const newValue = e.target.value
+                    updateSection(index, { linkText: newValue })
+                  }}
                   placeholder="Saiba mais"
                 />
               </>
@@ -418,15 +437,23 @@ function EditSupportContent() {
                       </div>
                       <div className="space-y-2">
                         <Input
+                          key={`item-title-${section.id}-${index}-${itemIndex}`}
                           label="Título"
                           value={item.title}
-                          onChange={(e) => updateItemInSection(index, itemIndex, { title: e.target.value })}
+                          onChange={(e) => {
+                            const newValue = e.target.value
+                            updateItemInSection(index, itemIndex, { title: newValue })
+                          }}
                         />
                         <div>
                           <label className="block text-sm font-medium mb-1">Descrição</label>
                           <textarea
+                            key={`item-desc-${section.id}-${index}-${itemIndex}`}
                             value={item.description}
-                            onChange={(e) => updateItemInSection(index, itemIndex, { description: e.target.value })}
+                            onChange={(e) => {
+                              const newValue = e.target.value
+                              updateItemInSection(index, itemIndex, { description: newValue })
+                            }}
                             className="w-full border rounded-lg px-3 py-2 text-sm"
                             rows={2}
                           />
@@ -449,9 +476,9 @@ function EditSupportContent() {
                 </div>
               </div>
             )}
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
     )
   }
 

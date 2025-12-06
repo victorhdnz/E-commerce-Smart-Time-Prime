@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense, useCallback } from 'react'
+import { useEffect, useState, Suspense, useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
@@ -8,7 +8,6 @@ import { ProductCatalog, Product } from '@/types'
 import { Save, ArrowLeft, Home, Eye, Package, Palette, ChevronDown, ChevronUp, Trash2, Plus } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { motion } from 'framer-motion'
 import { Input } from '@/components/ui/Input'
 import { ImageUploader } from '@/components/ui/ImageUploader'
 import { VideoUploader } from '@/components/ui/VideoUploader'
@@ -163,6 +162,18 @@ function EditCatalogContent() {
           features_subtitle: 'Descubra o que torna este produto especial',
           gallery: [],
           gallery_title: 'Galeria de Imagens',
+          product_showcase: {
+            title: 'Destaque do Produto',
+            description: 'Conheça os principais recursos e benefícios deste produto incrível.',
+            image: '',
+            features: [
+              'Recurso 1',
+              'Recurso 2',
+              'Recurso 3',
+            ],
+            cta_text: 'Comprar Agora',
+            cta_link: '/comparar',
+          },
           categories: [],
           featured_products: [],
           featured_subtitle: 'Produtos em Destaque',
@@ -186,6 +197,7 @@ function EditCatalogContent() {
         content.features_subtitle = defaultContent.features_subtitle
         content.gallery = defaultContent.gallery
         content.gallery_title = defaultContent.gallery_title
+        content.product_showcase = defaultContent.product_showcase
         content.featured_subtitle = defaultContent.featured_subtitle
         content.cta_title = defaultContent.cta_title
         content.cta_description = defaultContent.cta_description
@@ -204,7 +216,14 @@ function EditCatalogContent() {
         features_subtitle: content.features_subtitle || '',
         gallery: content.gallery || [],
         gallery_title: content.gallery_title || '',
-        product_showcase: content.product_showcase || undefined,
+        product_showcase: content.product_showcase || {
+          title: 'Destaque do Produto',
+          description: 'Conheça os principais recursos e benefícios deste produto incrível.',
+          image: '',
+          features: ['Recurso 1', 'Recurso 2', 'Recurso 3'],
+          cta_text: 'Comprar Agora',
+          cta_link: '/comparar',
+        } as any,
         featured_subtitle: content.featured_subtitle || '',
         cta_title: content.cta_title || '',
         cta_description: content.cta_description || '',
@@ -288,53 +307,61 @@ function EditCatalogContent() {
   }
 
   const toggleFeaturedProduct = (productId: string) => {
-    const featured = settings.featured_products || []
-    if (featured.includes(productId)) {
-      setSettings({
-        ...settings,
-        featured_products: featured.filter(id => id !== productId)
-      })
-    } else {
-      setSettings({
-        ...settings,
-        featured_products: [...featured, productId]
-      })
-    }
-  }
-
-  const addCategory = () => {
-    setSettings({
-      ...settings,
-      categories: [
-        ...settings.categories,
-        { id: Date.now().toString(), name: '', description: '', image: '', products: [] }
-      ]
+    setSettings(prev => {
+      const featured = prev.featured_products || []
+      if (featured.includes(productId)) {
+        return {
+          ...prev,
+          featured_products: featured.filter(id => id !== productId)
+        }
+      } else {
+        return {
+          ...prev,
+          featured_products: [...featured, productId]
+        }
+      }
     })
   }
 
-  const updateCategory = (index: number, updates: any) => {
-    const categories = [...settings.categories]
-    categories[index] = { ...categories[index], ...updates }
-    setSettings({ ...settings, categories })
+  const addCategory = () => {
+    setSettings(prev => ({
+      ...prev,
+      categories: [
+        ...prev.categories,
+        { id: Date.now().toString(), name: '', description: '', image: '', products: [] }
+      ]
+    }))
   }
 
-  const removeCategory = (index: number) => {
-    const categories = settings.categories.filter((_, i) => i !== index)
-    setSettings({ ...settings, categories })
-  }
+  const updateCategory = useCallback((index: number, updates: any) => {
+    setSettings(prev => {
+      const categories = [...prev.categories]
+      categories[index] = { ...categories[index], ...updates }
+      return { ...prev, categories }
+    })
+  }, [])
 
-  const toggleProductInCategory = (categoryIndex: number, productId: string) => {
-    const categories = [...settings.categories]
-    const products = categories[categoryIndex].products || []
-    
-    if (products.includes(productId)) {
-      categories[categoryIndex].products = products.filter((id: string) => id !== productId)
-    } else {
-      categories[categoryIndex].products = [...products, productId]
-    }
-    
-    setSettings({ ...settings, categories })
-  }
+  const removeCategory = useCallback((index: number) => {
+    setSettings(prev => ({
+      ...prev,
+      categories: prev.categories.filter((_, i) => i !== index)
+    }))
+  }, [])
+
+  const toggleProductInCategory = useCallback((categoryIndex: number, productId: string) => {
+    setSettings(prev => {
+      const categories = [...prev.categories]
+      const products = categories[categoryIndex].products || []
+      
+      if (products.includes(productId)) {
+        categories[categoryIndex].products = products.filter((id: string) => id !== productId)
+      } else {
+        categories[categoryIndex].products = [...products, productId]
+      }
+      
+      return { ...prev, categories }
+    })
+  }, [])
 
   if (authLoading || loading) {
     return (
@@ -350,11 +377,16 @@ function EditCatalogContent() {
 
   const SectionWrapper = ({ section, icon, title, children }: any) => {
     const isExpanded = expandedSection === section
+    const handleToggle = useCallback(() => {
+      setExpandedSection(isExpanded ? null : section)
+    }, [isExpanded, section])
+    
     return (
-      <motion.div className="border rounded-xl overflow-hidden mb-4">
+      <div className="border rounded-xl overflow-hidden mb-4">
         <button
-          onClick={() => setExpandedSection(isExpanded ? null : section)}
+          onClick={handleToggle}
           className="w-full p-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100"
+          type="button"
         >
           <span className="font-semibold flex items-center gap-2">
             {icon}
@@ -363,15 +395,11 @@ function EditCatalogContent() {
           {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </button>
         {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="p-4"
-          >
+          <div className="p-4">
             {children}
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
     )
   }
 
@@ -433,6 +461,7 @@ function EditCatalogContent() {
               <SectionWrapper section="basic" icon={<Package size={18} />} title="Informações Básicas">
                 <div className="space-y-4">
                   <Input
+                    key="catalog-title"
                     label="Título do Catálogo"
                     value={settings.title}
                     onChange={(e) => {
@@ -443,6 +472,7 @@ function EditCatalogContent() {
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea
+                      key="catalog-description"
                       value={settings.description}
                       onChange={(e) => {
                         const newValue = e.target.value
@@ -469,30 +499,42 @@ function EditCatalogContent() {
               <SectionWrapper section="hero" icon={<Package size={18} />} title="Seção Hero (Topo)">
                 <div className="space-y-4">
                   <Input
+                    key="hero-title"
                     label="Título do Hero"
                     value={settings.hero.title}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      hero: { ...prev.hero, title: e.target.value }
-                    }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({
+                        ...prev,
+                        hero: { ...prev.hero, title: newValue }
+                      }))
+                    }}
                     placeholder="Smart Watch"
                   />
                   <Input
+                    key="hero-subtitle"
                     label="Subtítulo"
                     value={settings.hero.subtitle}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      hero: { ...prev.hero, subtitle: e.target.value }
-                    }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({
+                        ...prev,
+                        hero: { ...prev.hero, subtitle: newValue }
+                      }))
+                    }}
                     placeholder="O mais poderoso de todos os tempos."
                   />
                   <Input
+                    key="hero-badge"
                     label="Badge (ex: Novo)"
                     value={settings.hero.badge}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      hero: { ...prev.hero, badge: e.target.value }
-                    }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({
+                        ...prev,
+                        hero: { ...prev.hero, badge: newValue }
+                      }))
+                    }}
                     placeholder="Novo"
                   />
                   <div>
@@ -509,21 +551,29 @@ function EditCatalogContent() {
                     />
                   </div>
                   <Input
+                    key="hero-cta-text"
                     label="Texto do Botão CTA"
                     value={settings.hero.cta_text || ''}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      hero: { ...prev.hero, cta_text: e.target.value }
-                    }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({
+                        ...prev,
+                        hero: { ...prev.hero, cta_text: newValue }
+                      }))
+                    }}
                     placeholder="Comprar Agora"
                   />
                   <Input
+                    key="hero-cta-link"
                     label="Link do Botão CTA"
                     value={settings.hero.cta_link || ''}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      hero: { ...prev.hero, cta_link: e.target.value }
-                    }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({
+                        ...prev,
+                        hero: { ...prev.hero, cta_link: newValue }
+                      }))
+                    }}
                     placeholder="/comparar"
                   />
                 </div>
@@ -536,11 +586,15 @@ function EditCatalogContent() {
                     <label className="block text-sm font-medium mb-2">URL do Vídeo (YouTube) ou Upload</label>
                     <div className="space-y-2">
                       <Input
+                        key="video-url"
                         value={settings.video?.url || ''}
-                        onChange={(e) => setSettings(prev => ({
-                          ...prev,
-                          video: { ...prev.video, url: e.target.value } as any
-                        }))}
+                        onChange={(e) => {
+                          const newValue = e.target.value
+                          setSettings(prev => ({
+                            ...prev,
+                            video: { ...prev.video, url: newValue } as any
+                          }))
+                        }}
                         placeholder="https://www.youtube.com/watch?v=... ou faça upload abaixo"
                       />
                       <VideoUploader
@@ -567,21 +621,29 @@ function EditCatalogContent() {
                     />
                   </div>
                   <Input
+                    key="video-title"
                     label="Título"
                     value={settings.video?.title || ''}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      video: { ...prev.video, title: e.target.value } as any
-                    }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({
+                        ...prev,
+                        video: { ...prev.video, title: newValue } as any
+                      }))
+                    }}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea
+                      key="video-description"
                       value={settings.video?.description || ''}
-                      onChange={(e) => setSettings(prev => ({
-                        ...prev,
-                        video: { ...prev.video, description: e.target.value } as any
-                      }))}
+                      onChange={(e) => {
+                        const newValue = e.target.value
+                        setSettings(prev => ({
+                          ...prev,
+                          video: { ...prev.video, description: newValue } as any
+                        }))
+                      }}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={3}
                     />
@@ -593,18 +655,26 @@ function EditCatalogContent() {
               <SectionWrapper section="features" icon={<Package size={18} />} title={`Features (${settings.features?.length || 0})`}>
                 <div className="space-y-4">
                   <Input
+                    key="features-title"
                     label="Título da Seção"
                     value={settings.features_title || ''}
-                    onChange={(e) => setSettings(prev => ({ ...prev, features_title: e.target.value }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({ ...prev, features_title: newValue }))
+                    }}
                   />
                   <Input
+                    key="features-subtitle"
                     label="Subtítulo"
                     value={settings.features_subtitle || ''}
-                    onChange={(e) => setSettings(prev => ({ ...prev, features_subtitle: e.target.value }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({ ...prev, features_subtitle: newValue }))
+                    }}
                   />
                   <div className="space-y-3">
                     {(settings.features || []).map((feature, index) => (
-                      <div key={index} className="border rounded-lg p-4">
+                      <div key={`feature-${index}-${feature.title || ''}`} className="border rounded-lg p-4">
                         <div className="flex justify-between items-start mb-3">
                           <h4 className="font-medium">Feature {index + 1}</h4>
                           <button
@@ -622,24 +692,28 @@ function EditCatalogContent() {
                         </div>
                         <div className="space-y-3">
                           <Input
+                            key={`feature-icon-${index}`}
                             label="Ícone (emoji ou texto)"
                             value={feature.icon || ''}
                             onChange={(e) => {
+                              const newValue = e.target.value
                               setSettings(prev => {
                                 const features = [...(prev.features || [])]
-                                features[index] = { ...features[index], icon: e.target.value }
+                                features[index] = { ...features[index], icon: newValue }
                                 return { ...prev, features }
                               })
                             }}
                             placeholder="💡"
                           />
                           <Input
+                            key={`feature-title-${index}`}
                             label="Título"
                             value={feature.title}
                             onChange={(e) => {
+                              const newValue = e.target.value
                               setSettings(prev => {
                                 const features = [...(prev.features || [])]
-                                features[index] = { ...features[index], title: e.target.value }
+                                features[index] = { ...features[index], title: newValue }
                                 return { ...prev, features }
                               })
                             }}
@@ -647,11 +721,13 @@ function EditCatalogContent() {
                           <div>
                             <label className="block text-sm font-medium mb-2">Descrição</label>
                             <textarea
+                              key={`feature-desc-${index}`}
                               value={feature.description}
                               onChange={(e) => {
+                                const newValue = e.target.value
                                 setSettings(prev => {
                                   const features = [...(prev.features || [])]
-                                  features[index] = { ...features[index], description: e.target.value }
+                                  features[index] = { ...features[index], description: newValue }
                                   return { ...prev, features }
                                 })
                               }}
@@ -682,9 +758,13 @@ function EditCatalogContent() {
               <SectionWrapper section="gallery" icon={<Package size={18} />} title={`Galeria (${settings.gallery?.length || 0})`}>
                 <div className="space-y-4">
                   <Input
+                    key="gallery-title"
                     label="Título da Galeria"
                     value={settings.gallery_title || ''}
-                    onChange={(e) => setSettings(prev => ({ ...prev, gallery_title: e.target.value }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({ ...prev, gallery_title: newValue }))
+                    }}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Imagens da Galeria</label>
@@ -702,21 +782,29 @@ function EditCatalogContent() {
               <SectionWrapper section="showcase" icon={<Package size={18} />} title="Destaque de Produto">
                 <div className="space-y-4">
                   <Input
+                    key="showcase-title"
                     label="Título"
                     value={settings.product_showcase?.title || ''}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      product_showcase: { ...prev.product_showcase, title: e.target.value } as any
-                    }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({
+                        ...prev,
+                        product_showcase: { ...prev.product_showcase, title: newValue } as any
+                      }))
+                    }}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea
+                      key="showcase-description"
                       value={settings.product_showcase?.description || ''}
-                      onChange={(e) => setSettings(prev => ({
-                        ...prev,
-                        product_showcase: { ...prev.product_showcase, description: e.target.value } as any
-                      }))}
+                      onChange={(e) => {
+                        const newValue = e.target.value
+                        setSettings(prev => ({
+                          ...prev,
+                          product_showcase: { ...prev.product_showcase, description: newValue } as any
+                        }))
+                      }}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={3}
                     />
@@ -737,35 +825,47 @@ function EditCatalogContent() {
                   <div>
                     <label className="block text-sm font-medium mb-2">Features (uma por linha)</label>
                     <textarea
+                      key="showcase-features"
                       value={(settings.product_showcase?.features || []).join('\n')}
-                      onChange={(e) => setSettings(prev => ({
-                        ...prev,
-                        product_showcase: { 
-                          ...prev.product_showcase, 
-                          features: e.target.value.split('\n').filter(Boolean) 
-                        } as any
-                      }))}
+                      onChange={(e) => {
+                        const newValue = e.target.value
+                        setSettings(prev => ({
+                          ...prev,
+                          product_showcase: { 
+                            ...prev.product_showcase, 
+                            features: newValue.split('\n').filter(Boolean) 
+                          } as any
+                        }))
+                      }}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={4}
                       placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
                     />
                   </div>
                   <Input
+                    key="showcase-cta-text"
                     label="Texto do Botão CTA"
                     value={settings.product_showcase?.cta_text || ''}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      product_showcase: { ...prev.product_showcase, cta_text: e.target.value } as any
-                    }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({
+                        ...prev,
+                        product_showcase: { ...prev.product_showcase, cta_text: newValue } as any
+                      }))
+                    }}
                     placeholder="Comprar Agora"
                   />
                   <Input
+                    key="showcase-cta-link"
                     label="Link do Botão CTA"
                     value={settings.product_showcase?.cta_link || ''}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      product_showcase: { ...prev.product_showcase, cta_link: e.target.value } as any
-                    }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({
+                        ...prev,
+                        product_showcase: { ...prev.product_showcase, cta_link: newValue } as any
+                      }))
+                    }}
                     placeholder="/comparar"
                   />
                 </div>
@@ -797,29 +897,45 @@ function EditCatalogContent() {
               <SectionWrapper section="cta" icon={<Package size={18} />} title="CTA Final">
                 <div className="space-y-4">
                   <Input
+                    key="cta-title"
                     label="Título"
                     value={settings.cta_title || ''}
-                    onChange={(e) => setSettings(prev => ({ ...prev, cta_title: e.target.value }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({ ...prev, cta_title: newValue }))
+                    }}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea
+                      key="cta-description"
                       value={settings.cta_description || ''}
-                      onChange={(e) => setSettings(prev => ({ ...prev, cta_description: e.target.value }))}
+                      onChange={(e) => {
+                        const newValue = e.target.value
+                        setSettings(prev => ({ ...prev, cta_description: newValue }))
+                      }}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={2}
                     />
                   </div>
                   <Input
+                    key="cta-text"
                     label="Texto do Botão"
                     value={settings.cta_text || ''}
-                    onChange={(e) => setSettings(prev => ({ ...prev, cta_text: e.target.value }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({ ...prev, cta_text: newValue }))
+                    }}
                     placeholder="Ver todos os produtos"
                   />
                   <Input
+                    key="cta-link"
                     label="Link do Botão"
                     value={settings.cta_link || ''}
-                    onChange={(e) => setSettings(prev => ({ ...prev, cta_link: e.target.value }))}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setSettings(prev => ({ ...prev, cta_link: newValue }))
+                    }}
                     placeholder="/comparar"
                   />
                 </div>
@@ -828,9 +944,13 @@ function EditCatalogContent() {
               {/* Produtos em Destaque - Subtítulo */}
               <SectionWrapper section="featured_subtitle" icon={<Package size={18} />} title="Subtítulo dos Produtos em Destaque">
                 <Input
+                  key="featured-subtitle"
                   label="Subtítulo"
                   value={settings.featured_subtitle || ''}
-                  onChange={(e) => setSettings(prev => ({ ...prev, featured_subtitle: e.target.value }))}
+                  onChange={(e) => {
+                    const newValue = e.target.value
+                    setSettings(prev => ({ ...prev, featured_subtitle: newValue }))
+                  }}
                   placeholder="Veja nossa coleção completa"
                 />
               </SectionWrapper>
@@ -851,14 +971,22 @@ function EditCatalogContent() {
                       </div>
                       <div className="space-y-3">
                         <Input
+                          key={`category-name-${category.id}-${index}`}
                           label="Nome"
                           value={category.name}
-                          onChange={(e) => updateCategory(index, { name: e.target.value })}
+                          onChange={(e) => {
+                            const newValue = e.target.value
+                            updateCategory(index, { name: newValue })
+                          }}
                         />
                         <Input
+                          key={`category-desc-${category.id}-${index}`}
                           label="Descrição"
                           value={category.description}
-                          onChange={(e) => updateCategory(index, { description: e.target.value })}
+                          onChange={(e) => {
+                            const newValue = e.target.value
+                            updateCategory(index, { description: newValue })
+                          }}
                         />
                         <div>
                           <label className="block text-sm font-medium mb-2">Imagem</label>
