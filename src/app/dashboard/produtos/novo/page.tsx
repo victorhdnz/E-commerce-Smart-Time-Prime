@@ -26,26 +26,14 @@ export default function NovoProduct() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    local_price: '',
-    national_price: '',
-    stock: '',
     category: '',
     slug: '',
     product_code: '',
     ecommerce_url: '', // URL do produto no e-commerce externo
     images: [] as string[],
     specifications: [] as { key: string; value: string }[],
-    benefits: {
-      free_shipping: { enabled: true, text: 'Frete grátis para Uberlândia acima de R$ 200' },
-      warranty: { enabled: true, text: 'Garantia de 1 ano' },
-      returns: { enabled: true, text: 'Troca grátis em 7 dias' },
-      gift: { enabled: false, text: '' },
-    },
-    is_featured: false,
     is_active: true,
   })
-
-  const [colors, setColors] = useState<{ name: string; hex: string; stock: number }[]>([])
   const [linkedGifts, setLinkedGifts] = useState<string[]>([])
 
   // Carregar categorias existentes
@@ -151,14 +139,6 @@ export default function NovoProduct() {
   }
 
 
-  const handleAddColor = () => {
-    setColors([...colors, { name: '', hex: '#000000', stock: 0 }])
-  }
-
-  const handleRemoveColor = (index: number) => {
-    setColors(colors.filter((_, i) => i !== index))
-  }
-
   const generateSlug = (name: string) => {
     return name
       .toLowerCase()
@@ -177,8 +157,8 @@ export default function NovoProduct() {
   }
 
   const handleSave = async () => {
-    if (!formData.name || !formData.local_price || !formData.national_price) {
-      toast.error('Preencha os campos obrigatórios')
+    if (!formData.name) {
+      toast.error('Preencha o nome do produto')
       return
     }
 
@@ -194,17 +174,12 @@ export default function NovoProduct() {
           name: formData.name,
           description: formData.description || null,
           short_description: formData.description ? formData.description.substring(0, 150) : null,
-          local_price: parseFloat(formData.local_price),
-          national_price: parseFloat(formData.national_price),
-          stock: parseInt(formData.stock) || 0,
           category: formData.category || null,
           slug: finalSlug,
           product_code: formData.product_code || null,
           ecommerce_url: formData.ecommerce_url || null,
           images: formData.images.length > 0 ? formData.images : [],
           specifications: formData.specifications.length > 0 ? formData.specifications : [],
-          benefits: formData.benefits,
-          is_featured: formData.is_featured,
           is_active: formData.is_active,
         })
         .select()
@@ -230,26 +205,6 @@ export default function NovoProduct() {
       }
 
       // Não salvar mais em category_specifications - sistema de tópicos fixos removido
-
-      // Criar variações de cor
-      if (colors.length > 0 && product) {
-        const colorInserts = colors.map(color => ({
-          product_id: product.id,
-          color_name: color.name, // Schema usa 'color_name', não 'name'
-          color_hex: color.hex,    // Schema usa 'color_hex', não 'hex_code'
-          stock: color.stock,
-        }))
-
-        const { error: colorError } = await supabase
-          .from('product_colors')
-          .insert(colorInserts)
-
-        if (colorError) {
-          console.error('Erro ao criar variações de cor:', colorError)
-          toast.error('Erro ao criar variações de cor. Verifique o console para mais detalhes.')
-          throw colorError
-        }
-      }
 
       toast.success('Produto criado com sucesso!')
       router.push('/dashboard/produtos')
@@ -435,257 +390,15 @@ export default function NovoProduct() {
               </div>
             )}
 
-            {/* Benefícios Editáveis */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold mb-6">Benefícios do Produto</h2>
-              
-              <div className="space-y-4">
-                {/* Frete Grátis */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="flex items-center gap-2 font-semibold">
-                      <input
-                        type="checkbox"
-                        checked={formData.benefits.free_shipping.enabled}
-                        onChange={(e) => {
-                          setFormData({
-                            ...formData,
-                            benefits: {
-                              ...formData.benefits,
-                              free_shipping: {
-                                ...formData.benefits.free_shipping,
-                                enabled: e.target.checked,
-                              },
-                            },
-                          })
-                        }}
-                        className="w-4 h-4"
-                      />
-                      🚚 Frete Grátis
-                    </label>
-                  </div>
-                  {formData.benefits.free_shipping.enabled && (
-                    <Input
-                      value={formData.benefits.free_shipping.text}
-                      onChange={(e) => {
-                        setFormData({
-                          ...formData,
-                          benefits: {
-                            ...formData.benefits,
-                            free_shipping: {
-                              ...formData.benefits.free_shipping,
-                              text: e.target.value,
-                            },
-                          },
-                        })
-                      }}
-                      placeholder="Ex: Frete grátis para Uberlândia acima de R$ 200"
-                      className="mt-2"
-                    />
-                  )}
-                </div>
-
-                {/* Garantia */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="flex items-center gap-2 font-semibold">
-                      <input
-                        type="checkbox"
-                        checked={formData.benefits.warranty.enabled}
-                        onChange={(e) => {
-                          setFormData({
-                            ...formData,
-                            benefits: {
-                              ...formData.benefits,
-                              warranty: {
-                                ...formData.benefits.warranty,
-                                enabled: e.target.checked,
-                              },
-                            },
-                          })
-                        }}
-                        className="w-4 h-4"
-                      />
-                      🛡️ Garantia
-                    </label>
-                  </div>
-                  {formData.benefits.warranty.enabled && (
-                    <Input
-                      value={formData.benefits.warranty.text}
-                      onChange={(e) => {
-                        setFormData({
-                          ...formData,
-                          benefits: {
-                            ...formData.benefits,
-                            warranty: {
-                              ...formData.benefits.warranty,
-                              text: e.target.value,
-                            },
-                          },
-                        })
-                      }}
-                      placeholder="Ex: Garantia de 1 ano"
-                      className="mt-2"
-                    />
-                  )}
-                </div>
-
-                {/* Troca */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="flex items-center gap-2 font-semibold">
-                      <input
-                        type="checkbox"
-                        checked={formData.benefits.returns.enabled}
-                        onChange={(e) => {
-                          setFormData({
-                            ...formData,
-                            benefits: {
-                              ...formData.benefits,
-                              returns: {
-                                ...formData.benefits.returns,
-                                enabled: e.target.checked,
-                              },
-                            },
-                          })
-                        }}
-                        className="w-4 h-4"
-                      />
-                      🔄 Troca
-                    </label>
-                  </div>
-                  {formData.benefits.returns.enabled && (
-                    <Input
-                      value={formData.benefits.returns.text}
-                      onChange={(e) => {
-                        setFormData({
-                          ...formData,
-                          benefits: {
-                            ...formData.benefits,
-                            returns: {
-                              ...formData.benefits.returns,
-                              text: e.target.value,
-                            },
-                          },
-                        })
-                      }}
-                      placeholder="Ex: Troca grátis em 7 dias"
-                      className="mt-2"
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Variações de Cor */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Variações de Cor</h2>
-                <Button onClick={handleAddColor} size="sm">
-                  <Plus size={16} className="mr-2" />
-                  Adicionar Cor
-                </Button>
-              </div>
-
-              <div className="space-y-3">
-                {colors.map((color, index) => (
-                  <div key={index} className="flex gap-3 items-end">
-                    <Input
-                      label="Nome"
-                      placeholder="Preto"
-                      value={color.name}
-                      onChange={(e) => {
-                        const newColors = [...colors]
-                        newColors[index].name = e.target.value
-                        setColors(newColors)
-                      }}
-                    />
-                    <div className="flex-shrink-0">
-                      <label className="block text-sm font-medium mb-2">Cor</label>
-                      <input
-                        type="color"
-                        value={color.hex}
-                        onChange={(e) => {
-                          const newColors = [...colors]
-                          newColors[index].hex = e.target.value
-                          setColors(newColors)
-                        }}
-                        className="h-10 w-16 rounded border border-gray-300 cursor-pointer"
-                      />
-                    </div>
-                    <Input
-                      label="Estoque"
-                      type="number"
-                      value={color.stock}
-                      onChange={(e) => {
-                        const newColors = [...colors]
-                        newColors[index].stock = parseInt(e.target.value) || 0
-                        setColors(newColors)
-                      }}
-                      className="w-24"
-                    />
-                    <button
-                      onClick={() => handleRemoveColor(index)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg mb-1"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Preços e Estoque */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold mb-4">Preços e Estoque</h2>
-              
-              <div className="space-y-4">
-                <Input
-                  label="Preço Local (Uberlândia) *"
-                  type="number"
-                  step="0.01"
-                  value={formData.local_price}
-                  onChange={(e) => setFormData({ ...formData, local_price: e.target.value })}
-                  placeholder="299.90"
-                />
-
-                <Input
-                  label="Preço Nacional *"
-                  type="number"
-                  step="0.01"
-                  value={formData.national_price}
-                  onChange={(e) => setFormData({ ...formData, national_price: e.target.value })}
-                  placeholder="349.90"
-                />
-
-                <Input
-                  label="Estoque Geral"
-                  type="number"
-                  value={formData.stock}
-                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                  placeholder="100"
-                />
-              </div>
-            </div>
-
             {/* Configurações */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-bold mb-4">Configurações</h2>
               
               <div className="space-y-4">
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.is_featured}
-                    onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                    className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
-                  />
-                  <span>Produto em Destaque</span>
-                </label>
-
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
