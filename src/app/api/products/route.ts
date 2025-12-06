@@ -10,6 +10,7 @@ export async function GET() {
     
     // Buscar todos os produtos ativos (sem limite)
     // Query otimizada - selecionar apenas campos necessários
+    // Incluindo local_price e national_price como fallback temporário até migração
     const { data: products, error } = await supabase
       .from('products')
       .select(`
@@ -20,6 +21,8 @@ export async function GET() {
         description,
         category,
         price,
+        local_price,
+        national_price,
         ecommerce_url,
         images,
         is_featured,
@@ -48,7 +51,17 @@ export async function GET() {
     }
 
     // Garantir que os campos images e specifications sejam sempre arrays válidos
+    // E normalizar o campo price (usar fallback se necessário)
     const normalizedProducts = (products || []).map((product: any) => {
+      // Normalizar price: usar price se existir, senão local_price, senão national_price, senão 0
+      if (!product.price || product.price === 0) {
+        product.price = product.local_price || product.national_price || 0
+      }
+      
+      // Remover campos antigos do objeto retornado
+      delete product.local_price
+      delete product.national_price
+      
       // Se images for string, parsear como JSON
       if (typeof product.images === 'string') {
         try {

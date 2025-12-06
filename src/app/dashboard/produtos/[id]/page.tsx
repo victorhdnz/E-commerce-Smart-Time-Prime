@@ -30,9 +30,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    local_price: '',
-    national_price: '',
-    stock: '',
+    price: '',
     category: '',
     product_code: '',
     ecommerce_url: '',
@@ -184,9 +182,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         setFormData({
           name: data.name || '',
           description: data.description || '',
-          local_price: data.local_price?.toString() || '',
-          national_price: data.national_price?.toString() || '',
-          stock: data.stock?.toString() || '',
+          price: (data.price || data.local_price || data.national_price || 0)?.toString() || '',
           category: data.category || '',
           product_code: (data as any).product_code || '',
           ecommerce_url: (data as any).ecommerce_url || '',
@@ -217,9 +213,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
       const updateData = {
         name: formData.name.trim(),
         description: formData.description.trim(),
-        local_price: parseFloat(formData.local_price) || 0,
-        national_price: parseFloat(formData.national_price) || 0,
-        stock: parseInt(formData.stock) || 0,
+        price: parseFloat(formData.price) || 0,
         category: formData.category.trim(),
         product_code: formData.product_code.trim() || null,
         ecommerce_url: formData.ecommerce_url?.trim() || null,
@@ -429,29 +423,12 @@ export default function EditProductPage({ params }: EditProductPageProps) {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
-                  label="Preço Local (R$) *"
+                  label="Preço (R$) *"
                   type="number"
                   step="0.01"
-                  value={formData.local_price}
-                  onChange={(e) => setFormData(prev => ({ ...prev, local_price: e.target.value }))}
+                  value={formData.price}
+                  onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                   placeholder="0.00"
-                />
-
-                <Input
-                  label="Preço Nacional (R$) *"
-                  type="number"
-                  step="0.01"
-                  value={formData.national_price}
-                  onChange={(e) => setFormData(prev => ({ ...prev, national_price: e.target.value }))}
-                  placeholder="0.00"
-                />
-
-                <Input
-                  label="Estoque *"
-                  type="number"
-                  value={formData.stock}
-                  onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
-                  placeholder="0"
                 />
               </div>
             </div>
@@ -646,18 +623,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
               
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Preço Local:</span>
-                  <span className="font-semibold">{formatCurrency(parseFloat(formData.local_price) || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Preço Nacional:</span>
-                  <span className="font-semibold">{formatCurrency(parseFloat(formData.national_price) || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Estoque:</span>
-                  <span className="text-lg font-bold text-gray-900">
-                    {formData.stock || 0} unidades
-                  </span>
+                  <span className="text-sm text-gray-600">Preço:</span>
+                  <span className="font-semibold">{formatCurrency(parseFloat(formData.price) || 0)}</span>
                 </div>
               </div>
 

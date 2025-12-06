@@ -174,15 +174,14 @@ export default function NovoProduct() {
       const finalSlug = formData.slug || generateSlug(formData.name) || `produto-${Date.now()}`
       const price = parseFloat(formData.price)
       
-      // Criar produto - usar o mesmo preço para local_price e national_price
+      // Criar produto - usar campo price único
       const { data: product, error: productError } = await supabase
         .from('products')
         .insert({
           name: formData.name,
           description: formData.description || null,
           short_description: formData.description ? formData.description.substring(0, 150) : null,
-          local_price: price,
-          national_price: price, // Usar o mesmo preço
+          price: price,
           category: formData.category || null,
           slug: finalSlug,
           product_code: formData.product_code || null,
