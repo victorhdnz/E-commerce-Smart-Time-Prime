@@ -405,58 +405,83 @@ export function CatalogLayout({ catalog, products }: CatalogLayoutProps) {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredProducts.length > 0 ? (
                 featuredProducts.map(product => (
-                <Link
-                  key={product.id}
-                  href={product.ecommerce_url || `/produto/${product.slug}`}
-                  target={product.ecommerce_url ? '_blank' : '_self'}
-                  className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
-                >
-                  <div className="aspect-square bg-gray-100 relative overflow-hidden">
-                    {product.images && product.images[0] ? (
-                      <Image
-                        src={product.images[0]}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <ShoppingBag size={48} className="text-gray-300" />
+                  <Link
+                    key={product.id}
+                    href={product.ecommerce_url || `/produto/${product.slug}`}
+                    target={product.ecommerce_url ? '_blank' : '_self'}
+                    className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+                  >
+                    <div className="aspect-square bg-gray-100 relative overflow-hidden">
+                      {product.images && product.images[0] ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={product.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <ShoppingBag size={48} className="text-gray-300" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="p-6">
+                      <h3 
+                        className="font-semibold text-xl mb-2 group-hover:opacity-80 transition-opacity"
+                        style={{ color: colors.text || '#000000' }}
+                      >
+                        {product.name}
+                      </h3>
+                      
+                      {product.short_description && (
+                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                          {product.short_description}
+                        </p>
+                      )}
+                      
+                      <div className="flex items-center justify-between">
+                        <span 
+                          className="text-2xl font-bold"
+                          style={{ color: colors.primary || '#000000' }}
+                        >
+                          {formatPrice(product.local_price || 0)}
+                        </span>
+                        <span 
+                          className="text-sm flex items-center gap-1 font-medium"
+                          style={{ color: colors.accent || '#D4AF37' }}
+                        >
+                          Ver produto <ChevronRight size={16} />
+                        </span>
                       </div>
-                    )}
-                  </div>
-                  
-                  <div className="p-6">
-                    <h3 
-                      className="font-semibold text-xl mb-2 group-hover:opacity-80 transition-opacity"
-                      style={{ color: colors.text || '#000000' }}
-                    >
-                      {product.name}
-                    </h3>
-                    
-                    {product.short_description && (
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                        {product.short_description}
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                // Placeholder quando não há produtos
+                [1, 2, 3].map((i) => (
+                  <div key={i} className="group bg-white rounded-2xl overflow-hidden shadow-sm border-2 border-dashed" style={{ borderColor: colors.text ? `${colors.text}33` : '#e5e7eb' }}>
+                    <div className="aspect-square bg-gray-100 relative overflow-hidden">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <ShoppingBag size={48} className="text-gray-300 opacity-50" />
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <h3 className="font-semibold text-xl mb-2 opacity-50" style={{ color: colors.text || '#000000' }}>
+                        Produto {i}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-4 opacity-50">
+                        Descrição do produto
                       </p>
-                    )}
-                    
-                    <div className="flex items-center justify-between">
-                      <span 
-                        className="text-2xl font-bold"
-                        style={{ color: colors.primary || '#000000' }}
-                      >
-                        {formatPrice(product.local_price || 0)}
-                      </span>
-                      <span 
-                        className="text-sm flex items-center gap-1 font-medium"
-                        style={{ color: colors.accent || '#D4AF37' }}
-                      >
-                        Ver produto <ChevronRight size={16} />
-                      </span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl font-bold opacity-50" style={{ color: colors.primary || '#000000' }}>
+                          R$ 0,00
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </Link>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </section>
