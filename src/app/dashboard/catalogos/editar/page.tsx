@@ -62,6 +62,7 @@ interface CatalogSettings {
     text: string
   }
   featured_products: string[]
+  featured_products_links?: Record<string, string> // Mapeia product_id -> link customizado
   categories: Array<{
     id: string
     name: string
@@ -102,6 +103,7 @@ function EditCatalogContent() {
       text: '#000000',
     },
     featured_products: [],
+    featured_products_links: {},
     categories: [],
   })
 
@@ -238,6 +240,7 @@ function EditCatalogContent() {
           text: '#000000',
         },
         featured_products: content.featured_products || [],
+        featured_products_links: content.featured_products_links || {},
         categories: content.categories || [],
       })
     } catch (error: any) {
@@ -277,6 +280,7 @@ function EditCatalogContent() {
         gallery_title: settings.gallery_title,
         product_showcase: settings.product_showcase,
         featured_products: settings.featured_products,
+        featured_products_links: settings.featured_products_links || {},
         featured_subtitle: settings.featured_subtitle,
         cta_title: settings.cta_title,
         cta_description: settings.cta_description,
@@ -638,31 +642,34 @@ function EditCatalogContent() {
               {/* Vídeo */}
               <SectionWrapper section="video" icon={<Package size={18} />} title="Seção de Vídeo" index={2}>
                 <div className="space-y-4">
-                  {/* Preview do Vídeo */}
-                  {settings.video?.url && (
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Preview do Vídeo:</p>
-                      <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-                        {settings.video?.thumbnail ? (
-                          <img 
-                            src={settings.video.thumbnail} 
-                            alt="Video thumbnail" 
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-white">
-                            <Play size={48} />
+                  {/* Preview do Vídeo - Sempre mostra */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+                    <p className="text-sm font-medium text-gray-700 mb-2">Preview do Vídeo:</p>
+                    <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                      {settings.video?.thumbnail ? (
+                        <img 
+                          src={settings.video.thumbnail} 
+                          alt="Video thumbnail" 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <div className="text-center">
+                            <Play size={48} className="mx-auto mb-2 opacity-50" />
+                            <p className="text-sm opacity-50">Sem thumbnail</p>
                           </div>
-                        )}
+                        </div>
+                      )}
+                      {settings.video?.url && (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="bg-black bg-opacity-50 rounded-full p-4">
                             <Play size={32} className="text-white ml-1" />
                           </div>
                         </div>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-2">Este vídeo aparecerá na seção de vídeo do catálogo</p>
+                      )}
                     </div>
-                  )}
+                    <p className="text-xs text-gray-500 mt-2">Este vídeo aparecerá na seção de vídeo do catálogo</p>
+                  </div>
                   
                   <div>
                     <label className="block text-sm font-medium mb-2">URL do Vídeo (YouTube) ou Upload</label>
@@ -969,23 +976,60 @@ function EditCatalogContent() {
 
               {/* Produtos em Destaque */}
               <SectionWrapper section="featured" icon={<Package size={18} />} title={`Produtos em Destaque (${settings.featured_products.length})`} index={7}>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
-                  {products.map(product => (
-                    <label 
-                      key={product.id}
-                      className={`flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-50 text-sm ${
-                        settings.featured_products.includes(product.id) ? 'border-purple-500 bg-purple-50' : ''
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={settings.featured_products.includes(product.id)}
-                        onChange={() => toggleFeaturedProduct(product.id)}
-                        className="rounded"
-                      />
-                      <span className="truncate">{product.name}</span>
-                    </label>
-                  ))}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto mb-4">
+                    {products.map(product => (
+                      <label 
+                        key={product.id}
+                        className={`flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-50 text-sm ${
+                          settings.featured_products.includes(product.id) ? 'border-purple-500 bg-purple-50' : ''
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={settings.featured_products.includes(product.id)}
+                          onChange={() => toggleFeaturedProduct(product.id)}
+                          className="rounded"
+                        />
+                        <span className="truncate">{product.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                  
+                  {/* Links customizados para produtos destacados */}
+                  {settings.featured_products.length > 0 && (
+                    <div className="border-t pt-4">
+                      <p className="text-sm font-medium mb-3">Links customizados (opcional - deixe vazio para usar link padrão do produto):</p>
+                      <div className="space-y-3">
+                        {settings.featured_products.map(productId => {
+                          const product = products.find(p => p.id === productId)
+                          if (!product) return null
+                          return (
+                            <div key={productId} className="border rounded-lg p-3">
+                              <label className="block text-sm font-medium mb-1">{product.name}</label>
+                              <Input
+                                key={`featured-link-${productId}`}
+                                type="url"
+                                value={settings.featured_products_links?.[productId] || ''}
+                                onChange={(e) => {
+                                  const newValue = e.target.value
+                                  setSettings(prev => ({
+                                    ...prev,
+                                    featured_products_links: {
+                                      ...prev.featured_products_links,
+                                      [productId]: newValue
+                                    }
+                                  }))
+                                }}
+                                placeholder={product.ecommerce_url || `/produto/${product.slug}`}
+                              />
+                              <p className="text-xs text-gray-500 mt-1">Deixe vazio para usar: {product.ecommerce_url || `/produto/${product.slug}`}</p>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </SectionWrapper>
 

@@ -404,11 +404,17 @@ export function CatalogLayout({ catalog, products }: CatalogLayoutProps) {
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredProducts.length > 0 ? (
-                featuredProducts.map(product => (
+                featuredProducts.map(product => {
+                  // Usa link customizado se disponível, senão usa ecommerce_url ou slug
+                  const customLink = (content.featured_products_links as any)?.[product.id]
+                  const productLink = customLink || product.ecommerce_url || `/produto/${product.slug}`
+                  const isExternal = customLink ? customLink.startsWith('http') : (product.ecommerce_url ? product.ecommerce_url.startsWith('http') : false)
+                  
+                  return (
                   <Link
                     key={product.id}
-                    href={product.ecommerce_url || `/produto/${product.slug}`}
-                    target={product.ecommerce_url ? '_blank' : '_self'}
+                    href={productLink}
+                    target={isExternal ? '_blank' : '_self'}
                     className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
                   >
                     <div className="aspect-square bg-gray-100 relative overflow-hidden">
@@ -456,7 +462,8 @@ export function CatalogLayout({ catalog, products }: CatalogLayoutProps) {
                       </div>
                     </div>
                   </Link>
-                ))
+                  )
+                })
               ) : (
                 // Placeholder quando não há produtos
                 [1, 2, 3].map((i) => (
@@ -483,6 +490,163 @@ export function CatalogLayout({ catalog, products }: CatalogLayoutProps) {
                 ))
               )}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* Categories Section - Sempre mostra, mesmo vazio */}
+      {content.categories !== undefined && (
+        <section className="py-20 px-4" style={{ backgroundColor: colors.background || '#ffffff' }}>
+          <div className="max-w-7xl mx-auto">
+            {content.categories && content.categories.length > 0 ? (
+              <div className="space-y-16">
+                {(content.categories as any[]).map((category: any, index: number) => {
+                  const categoryProducts = (category.products || [])
+                    .map((id: string) => getProductById(id))
+                    .filter(Boolean) as Product[]
+                  
+                  return (
+                    <div key={category.id || index} className="space-y-8">
+                      <div className="text-center">
+                        <h2 
+                          className="text-3xl md:text-4xl font-bold mb-4"
+                          style={{ color: colors.text || '#000000' }}
+                        >
+                          {category.name || `Categoria ${index + 1}`}
+                        </h2>
+                        {category.description && (
+                          <p 
+                            className="text-lg max-w-2xl mx-auto"
+                            style={{ color: colors.text ? `${colors.text}99` : '#666666' }}
+                          >
+                            {category.description}
+                          </p>
+                        )}
+                      </div>
+                      
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {categoryProducts.length > 0 ? (
+                          categoryProducts.map(product => {
+                            const customLink = (content.featured_products_links as any)?.[product.id]
+                            const productLink = customLink || product.ecommerce_url || `/produto/${product.slug}`
+                            const isExternal = customLink ? customLink.startsWith('http') : (product.ecommerce_url ? product.ecommerce_url.startsWith('http') : false)
+                            
+                            return (
+                              <Link
+                                key={product.id}
+                                href={productLink}
+                                target={isExternal ? '_blank' : '_self'}
+                                className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+                              >
+                                <div className="aspect-square bg-gray-100 relative overflow-hidden">
+                                  {product.images && product.images[0] ? (
+                                    <Image
+                                      src={product.images[0]}
+                                      alt={product.name}
+                                      fill
+                                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                  ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                      <ShoppingBag size={48} className="text-gray-300" />
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="p-6">
+                                  <h3 
+                                    className="font-semibold text-xl mb-2 group-hover:opacity-80 transition-opacity"
+                                    style={{ color: colors.text || '#000000' }}
+                                  >
+                                    {product.name}
+                                  </h3>
+                                  
+                                  {product.short_description && (
+                                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                                      {product.short_description}
+                                    </p>
+                                  )}
+                                  
+                                  <div className="flex items-center justify-between">
+                                    <span 
+                                      className="text-2xl font-bold"
+                                      style={{ color: colors.primary || '#000000' }}
+                                    >
+                                      {formatPrice(product.price || 0)}
+                                    </span>
+                                    <span 
+                                      className="text-sm flex items-center gap-1 font-medium"
+                                      style={{ color: colors.accent || '#D4AF37' }}
+                                    >
+                                      Ver produto <ChevronRight size={16} />
+                                    </span>
+                                  </div>
+                                </div>
+                              </Link>
+                            )
+                          })
+                        ) : (
+                          // Placeholder quando não há produtos na categoria
+                          [1, 2, 3].map((i) => (
+                            <div key={i} className="group bg-white rounded-2xl overflow-hidden shadow-sm border-2 border-dashed" style={{ borderColor: colors.text ? `${colors.text}33` : '#e5e7eb' }}>
+                              <div className="aspect-square bg-gray-100 relative overflow-hidden">
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <ShoppingBag size={48} className="text-gray-300 opacity-50" />
+                                </div>
+                              </div>
+                              <div className="p-6">
+                                <h3 className="font-semibold text-xl mb-2 opacity-50" style={{ color: colors.text || '#000000' }}>
+                                  Produto {i}
+                                </h3>
+                                <p className="text-sm text-gray-600 mb-4 opacity-50">
+                                  Descrição do produto
+                                </p>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-2xl font-bold opacity-50" style={{ color: colors.primary || '#000000' }}>
+                                    R$ 0,00
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              // Placeholder quando não há categorias
+              <div className="text-center py-12">
+                <h2 
+                  className="text-3xl md:text-4xl font-bold mb-4"
+                  style={{ color: colors.text || '#000000' }}
+                >
+                  Categorias
+                </h2>
+                <p 
+                  className="text-lg mb-8"
+                  style={{ color: colors.text ? `${colors.text}99` : '#666666' }}
+                >
+                  Adicione categorias de produtos no editor
+                </p>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm border-2 border-dashed p-8" style={{ borderColor: colors.text ? `${colors.text}33` : '#e5e7eb' }}>
+                      <div className="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center">
+                        <ShoppingBag size={48} className="text-gray-300 opacity-50" />
+                      </div>
+                      <h3 className="font-semibold text-xl mb-2 opacity-50" style={{ color: colors.text || '#000000' }}>
+                        Categoria {i}
+                      </h3>
+                      <p className="text-sm opacity-50" style={{ color: colors.text ? `${colors.text}99` : '#666666' }}>
+                        Descrição da categoria
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       )}
