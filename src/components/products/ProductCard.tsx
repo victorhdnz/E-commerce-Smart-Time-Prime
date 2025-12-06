@@ -136,11 +136,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault() // Previne navegação do Link pai
     e.stopPropagation()
-    
-    if (product.stock === 0) {
-      toast.error('Produto esgotado')
-      return
-    }
 
     // Se for um combo, adicionar o produto combo em si (não os produtos individuais)
     if (isCombo) {
@@ -373,9 +368,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             </button>
             <button
               onClick={handleAddToCart}
-              disabled={product.stock === 0}
               className="p-1.5 sm:p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all hover:scale-110 disabled:bg-gray-400 disabled:cursor-not-allowed flex-shrink-0"
-              title={product.stock === 0 ? 'Produto esgotado' : 'Adicionar ao carrinho'}
+              title="Adicionar ao carrinho"
             >
               <ShoppingCart size={16} className="sm:w-[20px] sm:h-[20px]" />
             </button>
