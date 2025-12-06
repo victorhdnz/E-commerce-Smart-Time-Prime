@@ -35,19 +35,19 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
       // Registrar page_view
       Promise.resolve(
         supabase
-          .from('landing_analytics')
-          .insert({
-            layout_id: layout.id,
-            version_id: version?.id || null,
-            session_id: sessionId,
-            event_type: 'page_view',
-            event_data: {
-              url: window.location.href,
-              referrer: document.referrer,
-            },
-            user_agent: navigator.userAgent,
-            referrer: document.referrer,
-          })
+      .from('landing_analytics')
+      .insert({
+        layout_id: layout.id,
+        version_id: version?.id || null,
+        session_id: sessionId,
+        event_type: 'page_view',
+        event_data: {
+          url: window.location.href,
+          referrer: document.referrer,
+        },
+        user_agent: navigator.userAgent,
+        referrer: document.referrer,
+      })
       ).then(() => {}).catch((error) => console.error('Erro ao registrar analytics:', error))
     }
 
@@ -63,14 +63,14 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
         if (sessionId) {
           Promise.resolve(
             supabase
-              .from('landing_analytics')
-              .insert({
-                layout_id: layout.id,
-                version_id: version?.id || null,
-                session_id: sessionId,
-                event_type: 'scroll',
+            .from('landing_analytics')
+            .insert({
+              layout_id: layout.id,
+              version_id: version?.id || null,
+              session_id: sessionId,
+              event_type: 'scroll',
                 event_data: { scroll_depth: scrollDepth },
-              })
+            })
           ).then(() => {}).catch((error) => console.error('Erro ao registrar scroll:', error))
         }
       }, 500)
@@ -83,14 +83,14 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
       if (sessionId && timeOnPage > 5) {
         Promise.resolve(
           supabase
-            .from('landing_analytics')
-            .insert({
-              layout_id: layout.id,
-              version_id: version?.id || null,
-              session_id: sessionId,
-              event_type: 'time_on_page',
+          .from('landing_analytics')
+          .insert({
+            layout_id: layout.id,
+            version_id: version?.id || null,
+            session_id: sessionId,
+            event_type: 'time_on_page',
               event_data: { time_seconds: timeOnPage },
-            })
+          })
         ).then(() => {}).catch((error) => console.error('Erro ao registrar tempo:', error))
       }
     }
@@ -213,7 +213,7 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
         <DefaultLayout 
           layout={layout} 
           version={version} 
-          sectionsConfig={sectionsConfig}
+          sectionsConfig={sectionsConfig} 
           landingSettings={landingSettings}
         />
       )}
