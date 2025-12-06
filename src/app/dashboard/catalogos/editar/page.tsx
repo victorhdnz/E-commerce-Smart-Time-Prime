@@ -651,9 +651,10 @@ function EditCatalogContent() {
                   <div>
                     <label className="block text-sm font-medium mb-2">Imagens da Galeria</label>
                     <ArrayImageManager
-                      images={settings.gallery || []}
+                      value={settings.gallery || []}
                       onChange={(images) => setSettings(prev => ({ ...prev, gallery: images }))}
                       maxImages={10}
+                      label=""
                     />
                   </div>
                 </div>
