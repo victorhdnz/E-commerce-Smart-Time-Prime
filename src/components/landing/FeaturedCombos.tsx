@@ -22,7 +22,7 @@ interface ComboItem {
   product?: {
     id: string
     name: string
-    local_price: number
+    price: number
     images: string[]
   }
 }
@@ -39,8 +39,7 @@ interface Combo {
   is_featured: boolean
   combo_items?: ComboItem[]
   comboProduct?: {
-    local_price: number
-    national_price: number
+    price: number
   }
 }
 
@@ -56,7 +55,7 @@ export const FeaturedCombos = ({
   subtitle = 'Economize mais comprando nossos kits promocionais',
 }: FeaturedCombosProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [comboProducts, setComboProducts] = useState<Record<string, { local_price: number; national_price: number }>>({})
+  const [comboProducts, setComboProducts] = useState<Record<string, { price: number }>>({})
   const [showAddressModal, setShowAddressModal] = useState(false)
   const { addItem } = useCart()
   const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
@@ -67,7 +66,7 @@ export const FeaturedCombos = ({
   // Buscar produtos combo para obter preços baseados na localização
   useEffect(() => {
     const loadComboProducts = async () => {
-      const productsMap: Record<string, { local_price: number; national_price: number }> = {}
+      const productsMap: Record<string, { price: number }> = {}
       
       await Promise.all(
         combos.map(async (combo) => {
@@ -75,15 +74,14 @@ export const FeaturedCombos = ({
           try {
             const { data: productData } = await supabase
               .from('products')
-              .select('local_price, national_price')
+              .select('price')
               .eq('slug', combo.slug)
               .eq('category', 'Combos')
               .maybeSingle()
             
             if (productData) {
               productsMap[combo.id] = {
-                local_price: productData.local_price || 0,
-                national_price: productData.national_price || 0
+                price: productData.price || 0
               }
             }
           } catch (error) {
@@ -124,7 +122,7 @@ export const FeaturedCombos = ({
   const calculateOriginalPrice = (combo: Combo) => {
     return combo.combo_items?.reduce((sum, item) => {
       if (!item.product) return sum
-      const itemPrice = getProductPrice(item.product as Product, isUberlandia)
+      const itemPrice = item.product.price || 0
       return sum + itemPrice * item.quantity
     }, 0) || 0
   }
@@ -133,7 +131,7 @@ export const FeaturedCombos = ({
     const originalPrice = calculateOriginalPrice(combo)
     const comboProduct = comboProducts[combo.id]
     const finalPrice = comboProduct 
-      ? getProductPrice(comboProduct as any, isUberlandia)
+      ? comboProduct.price
       : combo.final_price
     return originalPrice - finalPrice
   }
@@ -141,7 +139,7 @@ export const FeaturedCombos = ({
   const getComboFinalPrice = (combo: Combo) => {
     const comboProduct = comboProducts[combo.id]
     return comboProduct 
-      ? getProductPrice(comboProduct as any, isUberlandia)
+      ? comboProduct.price
       : combo.final_price
   }
 

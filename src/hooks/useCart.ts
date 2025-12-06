@@ -21,8 +21,8 @@ export const useCart = create<CartStore>()(
       items: [],
 
       addItem: async (product, color, quantity = 1) => {
-        // Verificar estoque disponível
-        const availableStock = color?.stock !== undefined ? color.stock : product.stock
+        // Verificar estoque disponível (apenas por cor, se disponível)
+        const availableStock = color?.stock !== undefined ? color.stock : undefined
         const existingItem = get().items.find(
           (item) =>
             item.product.id === product.id &&
@@ -127,10 +127,10 @@ export const useCart = create<CartStore>()(
         if (item) {
           const availableStock = item.color?.stock !== undefined 
             ? item.color.stock 
-            : item.product.stock
+            : undefined
           
-          // Limitar quantidade ao estoque disponível
-          if (quantity > availableStock) {
+          // Limitar quantidade ao estoque disponível (apenas se houver estoque definido)
+          if (availableStock !== undefined && quantity > availableStock) {
             throw new Error(`Estoque insuficiente. Disponível: ${availableStock} unidade(s)`)
           }
         }

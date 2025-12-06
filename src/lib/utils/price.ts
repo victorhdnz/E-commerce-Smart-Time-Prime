@@ -3,7 +3,7 @@
 import { Product } from '@/types'
 
 export const getProductPrice = (product: Product, isUberlandia: boolean): number => {
-  return isUberlandia ? product.local_price : product.national_price
+  return product.price || 0
 }
 
 export const calculateCartTotal = (
