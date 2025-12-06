@@ -10,6 +10,7 @@ export interface Product {
   national_price: number
   stock: number
   product_code: string | null
+  ecommerce_url?: string | null // URL do produto no e-commerce externo
   is_featured: boolean
   is_active: boolean
   weight: number | null

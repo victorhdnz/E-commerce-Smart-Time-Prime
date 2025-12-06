@@ -20,7 +20,37 @@ interface CatalogSettings {
     subtitle: string
     badge: string
     image: string
+    cta_text?: string
+    cta_link?: string
   }
+  video?: {
+    url: string
+    thumbnail?: string
+    title?: string
+    description?: string
+  }
+  features?: Array<{
+    icon?: string
+    title: string
+    description: string
+  }>
+  features_title?: string
+  features_subtitle?: string
+  gallery?: string[]
+  gallery_title?: string
+  product_showcase?: {
+    title: string
+    description: string
+    image: string
+    features?: string[]
+    cta_text?: string
+    cta_link?: string
+  }
+  featured_subtitle?: string
+  cta_title?: string
+  cta_description?: string
+  cta_text?: string
+  cta_link?: string
   theme_colors: {
     primary: string
     secondary: string
@@ -112,7 +142,19 @@ function EditCatalogContent() {
         title: data.title || '',
         description: data.description || '',
         cover_image: data.cover_image || '',
-        hero: content.hero || { title: '', subtitle: '', badge: '', image: '' },
+        hero: content.hero || { title: '', subtitle: '', badge: '', image: '', cta_text: '', cta_link: '' },
+        video: content.video || undefined,
+        features: content.features || [],
+        features_title: content.features_title || '',
+        features_subtitle: content.features_subtitle || '',
+        gallery: content.gallery || [],
+        gallery_title: content.gallery_title || '',
+        product_showcase: content.product_showcase || undefined,
+        featured_subtitle: content.featured_subtitle || '',
+        cta_title: content.cta_title || '',
+        cta_description: content.cta_description || '',
+        cta_text: content.cta_text || '',
+        cta_link: content.cta_link || '',
         theme_colors: (data.theme_colors as any) || {
           primary: '#000000',
           secondary: '#ffffff',
@@ -152,7 +194,19 @@ function EditCatalogContent() {
     try {
       const content = {
         hero: settings.hero,
+        video: settings.video,
+        features: settings.features,
+        features_title: settings.features_title,
+        features_subtitle: settings.features_subtitle,
+        gallery: settings.gallery,
+        gallery_title: settings.gallery_title,
+        product_showcase: settings.product_showcase,
         featured_products: settings.featured_products,
+        featured_subtitle: settings.featured_subtitle,
+        cta_title: settings.cta_title,
+        cta_description: settings.cta_description,
+        cta_text: settings.cta_text,
+        cta_link: settings.cta_link,
         categories: settings.categories,
         sections: [],
       }
@@ -385,6 +439,266 @@ function EditCatalogContent() {
                     })}
                     placeholder="https://..."
                   />
+                  <Input
+                    label="Texto do Botão CTA"
+                    value={settings.hero.cta_text || ''}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      hero: { ...settings.hero, cta_text: e.target.value }
+                    })}
+                    placeholder="Comprar Agora"
+                  />
+                  <Input
+                    label="Link do Botão CTA"
+                    value={settings.hero.cta_link || ''}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      hero: { ...settings.hero, cta_link: e.target.value }
+                    })}
+                    placeholder="/comparar"
+                  />
+                </div>
+              </SectionWrapper>
+
+              {/* Vídeo */}
+              <SectionWrapper section="video" icon={<Package size={18} />} title="Seção de Vídeo">
+                <div className="space-y-4">
+                  <Input
+                    label="URL do Vídeo (YouTube)"
+                    value={settings.video?.url || ''}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      video: { ...settings.video, url: e.target.value } as any
+                    })}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                  />
+                  <Input
+                    label="Thumbnail do Vídeo (URL)"
+                    value={settings.video?.thumbnail || ''}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      video: { ...settings.video, thumbnail: e.target.value } as any
+                    })}
+                    placeholder="https://..."
+                  />
+                  <Input
+                    label="Título"
+                    value={settings.video?.title || ''}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      video: { ...settings.video, title: e.target.value } as any
+                    })}
+                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Descrição</label>
+                    <textarea
+                      value={settings.video?.description || ''}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        video: { ...settings.video, description: e.target.value } as any
+                      })}
+                      className="w-full border rounded-lg px-4 py-2.5"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </SectionWrapper>
+
+              {/* Features */}
+              <SectionWrapper section="features" icon={<Package size={18} />} title={`Features (${settings.features?.length || 0})`}>
+                <div className="space-y-4">
+                  <Input
+                    label="Título da Seção"
+                    value={settings.features_title || ''}
+                    onChange={(e) => setSettings({ ...settings, features_title: e.target.value })}
+                  />
+                  <Input
+                    label="Subtítulo"
+                    value={settings.features_subtitle || ''}
+                    onChange={(e) => setSettings({ ...settings, features_subtitle: e.target.value })}
+                  />
+                  <div className="space-y-3">
+                    {(settings.features || []).map((feature, index) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="font-medium">Feature {index + 1}</h4>
+                          <button
+                            onClick={() => {
+                              const features = [...(settings.features || [])]
+                              features.splice(index, 1)
+                              setSettings({ ...settings, features })
+                            }}
+                            className="text-red-600 hover:text-red-800 p-1"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        <div className="space-y-3">
+                          <Input
+                            label="Ícone (emoji ou texto)"
+                            value={feature.icon || ''}
+                            onChange={(e) => {
+                              const features = [...(settings.features || [])]
+                              features[index] = { ...features[index], icon: e.target.value }
+                              setSettings({ ...settings, features })
+                            }}
+                            placeholder="💡"
+                          />
+                          <Input
+                            label="Título"
+                            value={feature.title}
+                            onChange={(e) => {
+                              const features = [...(settings.features || [])]
+                              features[index] = { ...features[index], title: e.target.value }
+                              setSettings({ ...settings, features })
+                            }}
+                          />
+                          <div>
+                            <label className="block text-sm font-medium mb-2">Descrição</label>
+                            <textarea
+                              value={feature.description}
+                              onChange={(e) => {
+                                const features = [...(settings.features || [])]
+                                features[index] = { ...features[index], description: e.target.value }
+                                setSettings({ ...settings, features })
+                              }}
+                              className="w-full border rounded-lg px-4 py-2.5"
+                              rows={2}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => {
+                        setSettings({
+                          ...settings,
+                          features: [...(settings.features || []), { title: '', description: '', icon: '' }]
+                        })
+                      }}
+                      className="w-full py-2 border-2 border-dashed rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 flex items-center justify-center gap-2"
+                    >
+                      <Plus size={18} />
+                      Adicionar Feature
+                    </button>
+                  </div>
+                </div>
+              </SectionWrapper>
+
+              {/* Gallery */}
+              <SectionWrapper section="gallery" icon={<Package size={18} />} title={`Galeria (${settings.gallery?.length || 0})`}>
+                <div className="space-y-4">
+                  <Input
+                    label="Título da Galeria"
+                    value={settings.gallery_title || ''}
+                    onChange={(e) => setSettings({ ...settings, gallery_title: e.target.value })}
+                  />
+                  <div className="space-y-2">
+                    {(settings.gallery || []).map((image, index) => (
+                      <div key={index} className="flex gap-2">
+                        <Input
+                          label={`Imagem ${index + 1}`}
+                          value={image}
+                          onChange={(e) => {
+                            const gallery = [...(settings.gallery || [])]
+                            gallery[index] = e.target.value
+                            setSettings({ ...settings, gallery })
+                          }}
+                          placeholder="https://..."
+                        />
+                        <button
+                          onClick={() => {
+                            const gallery = settings.gallery?.filter((_, i) => i !== index) || []
+                            setSettings({ ...settings, gallery })
+                          }}
+                          className="text-red-600 hover:text-red-800 p-2 mt-6"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => {
+                        setSettings({
+                          ...settings,
+                          gallery: [...(settings.gallery || []), '']
+                        })
+                      }}
+                      className="w-full py-2 border-2 border-dashed rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 flex items-center justify-center gap-2"
+                    >
+                      <Plus size={18} />
+                      Adicionar Imagem
+                    </button>
+                  </div>
+                </div>
+              </SectionWrapper>
+
+              {/* Product Showcase */}
+              <SectionWrapper section="showcase" icon={<Package size={18} />} title="Destaque de Produto">
+                <div className="space-y-4">
+                  <Input
+                    label="Título"
+                    value={settings.product_showcase?.title || ''}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      product_showcase: { ...settings.product_showcase, title: e.target.value } as any
+                    })}
+                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Descrição</label>
+                    <textarea
+                      value={settings.product_showcase?.description || ''}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        product_showcase: { ...settings.product_showcase, description: e.target.value } as any
+                      })}
+                      className="w-full border rounded-lg px-4 py-2.5"
+                      rows={3}
+                    />
+                  </div>
+                  <Input
+                    label="Imagem (URL)"
+                    value={settings.product_showcase?.image || ''}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      product_showcase: { ...settings.product_showcase, image: e.target.value } as any
+                    })}
+                    placeholder="https://..."
+                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Features (uma por linha)</label>
+                    <textarea
+                      value={(settings.product_showcase?.features || []).join('\n')}
+                      onChange={(e) => setSettings({
+                        ...settings,
+                        product_showcase: { 
+                          ...settings.product_showcase, 
+                          features: e.target.value.split('\n').filter(Boolean) 
+                        } as any
+                      })}
+                      className="w-full border rounded-lg px-4 py-2.5"
+                      rows={4}
+                      placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
+                    />
+                  </div>
+                  <Input
+                    label="Texto do Botão CTA"
+                    value={settings.product_showcase?.cta_text || ''}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      product_showcase: { ...settings.product_showcase, cta_text: e.target.value } as any
+                    })}
+                    placeholder="Comprar Agora"
+                  />
+                  <Input
+                    label="Link do Botão CTA"
+                    value={settings.product_showcase?.cta_link || ''}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      product_showcase: { ...settings.product_showcase, cta_link: e.target.value } as any
+                    })}
+                    placeholder="/comparar"
+                  />
                 </div>
               </SectionWrapper>
 
@@ -408,6 +722,48 @@ function EditCatalogContent() {
                     </label>
                   ))}
                 </div>
+              </SectionWrapper>
+
+              {/* CTA Final */}
+              <SectionWrapper section="cta" icon={<Package size={18} />} title="CTA Final">
+                <div className="space-y-4">
+                  <Input
+                    label="Título"
+                    value={settings.cta_title || ''}
+                    onChange={(e) => setSettings({ ...settings, cta_title: e.target.value })}
+                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Descrição</label>
+                    <textarea
+                      value={settings.cta_description || ''}
+                      onChange={(e) => setSettings({ ...settings, cta_description: e.target.value })}
+                      className="w-full border rounded-lg px-4 py-2.5"
+                      rows={2}
+                    />
+                  </div>
+                  <Input
+                    label="Texto do Botão"
+                    value={settings.cta_text || ''}
+                    onChange={(e) => setSettings({ ...settings, cta_text: e.target.value })}
+                    placeholder="Ver todos os produtos"
+                  />
+                  <Input
+                    label="Link do Botão"
+                    value={settings.cta_link || ''}
+                    onChange={(e) => setSettings({ ...settings, cta_link: e.target.value })}
+                    placeholder="/comparar"
+                  />
+                </div>
+              </SectionWrapper>
+
+              {/* Produtos em Destaque - Subtítulo */}
+              <SectionWrapper section="featured_subtitle" icon={<Package size={18} />} title="Subtítulo dos Produtos em Destaque">
+                <Input
+                  label="Subtítulo"
+                  value={settings.featured_subtitle || ''}
+                  onChange={(e) => setSettings({ ...settings, featured_subtitle: e.target.value })}
+                  placeholder="Veja nossa coleção completa"
+                />
               </SectionWrapper>
 
               {/* Categorias */}

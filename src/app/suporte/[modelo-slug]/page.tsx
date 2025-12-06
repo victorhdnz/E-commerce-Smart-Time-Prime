@@ -34,6 +34,7 @@ export default function SupportPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedAccordions, setExpandedAccordions] = useState<Record<string, boolean>>({})
+  const [activeSection, setActiveSection] = useState<string | null>(null)
   
   const supabase = createClient()
 
@@ -94,7 +95,7 @@ export default function SupportPage() {
       case 'hero':
         return (
           <section key={index} className="bg-gradient-to-b from-gray-50 to-white py-16 px-4">
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-4xl mx-auto">
               <div className="grid md:grid-cols-2 gap-12 items-center">
                 <div>
                   <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -145,7 +146,7 @@ export default function SupportPage() {
       case 'feature-card':
         return (
           <section key={index} className="py-16 px-4 border-t border-gray-100">
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-4xl mx-auto">
               <div className="grid md:grid-cols-2 gap-12 items-center">
                 {index % 2 === 0 ? (
                   <>
@@ -208,7 +209,7 @@ export default function SupportPage() {
       case 'steps':
         return (
           <section key={index} className="py-16 px-4 bg-gray-50">
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-4xl mx-auto">
               {section.title && (
                 <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">{section.title}</h2>
               )}
@@ -377,11 +378,20 @@ export default function SupportPage() {
     }
   }
 
+  // Gerar índice de navegação a partir das seções
+  const tableOfContents = sections
+    .filter(s => s.title && (s.type === 'feature-card' || s.type === 'steps' || s.type === 'text'))
+    .map((section, index) => ({
+      id: section.id || `section-${index}`,
+      title: section.title || '',
+      type: section.type,
+    }))
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header fixo estilo Apple */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-gray-200/50">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Book size={20} className="text-gray-600" />
             <span className="font-medium text-gray-900">{supportPage.title}</span>
@@ -395,24 +405,72 @@ export default function SupportPage() {
         </div>
       </header>
 
-      {/* Se não houver seções ou só texto básico, mostrar layout padrão */}
-      {sections.length === 0 ? (
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">{supportPage.title}</h1>
-          {supportPage.product && (
-            <p className="text-lg text-gray-600 mb-8">{supportPage.product.name}</p>
+      <div className="max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-[280px_1fr] gap-8">
+          {/* Sidebar de Navegação - Estilo Apple Guide */}
+          {sections.length > 0 && tableOfContents.length > 0 && (
+            <aside className="hidden lg:block sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto py-8">
+              <div className="border-r border-gray-200 pr-6">
+                <h2 className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">
+                  Neste manual
+                </h2>
+                <nav className="space-y-1">
+                  {tableOfContents.map((item) => (
+                    <a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setActiveSection(item.id)
+                        const element = document.getElementById(item.id)
+                        if (element) {
+                          element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }
+                      }}
+                      className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                        activeSection === item.id
+                          ? 'bg-blue-50 text-blue-700 font-medium'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      {item.title}
+                    </a>
+                  ))}
+                </nav>
+              </div>
+            </aside>
           )}
-          <div className="text-center py-16 text-gray-500">
-            <HelpCircle size={48} className="mx-auto mb-4 text-gray-300" />
-            <p>Conteúdo em desenvolvimento...</p>
-          </div>
+
+          {/* Conteúdo Principal */}
+          <main className="min-w-0">
+            {/* Se não houver seções ou só texto básico, mostrar layout padrão */}
+            {sections.length === 0 ? (
+              <div className="max-w-4xl mx-auto px-4 py-12">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">{supportPage.title}</h1>
+                {supportPage.product && (
+                  <p className="text-lg text-gray-600 mb-8">{supportPage.product.name}</p>
+                )}
+                <div className="text-center py-16 text-gray-500">
+                  <HelpCircle size={48} className="mx-auto mb-4 text-gray-300" />
+                  <p>Conteúdo em desenvolvimento...</p>
+                </div>
+              </div>
+            ) : (
+              // Renderizar seções
+              <div>
+                {sections.map((section, index) => {
+                  const sectionId = section.id || `section-${index}`
+                  return (
+                    <div key={sectionId} id={sectionId}>
+                      {renderSection(section, index)}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </main>
         </div>
-      ) : (
-        // Renderizar seções
-        <main>
-          {sections.map((section, index) => renderSection(section, index))}
-        </main>
-      )}
+      </div>
 
       {/* Links relacionados no final */}
       {sections.length > 0 && (
