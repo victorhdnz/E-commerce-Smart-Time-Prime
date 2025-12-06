@@ -2,18 +2,15 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useProductComparison } from '@/hooks/useProductComparison'
-import { useUserLocation } from '@/hooks/useUserLocation'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils/format'
-import { getProductPrice } from '@/lib/utils/price'
 import { Product } from '@/types'
 import Image from 'next/image'
-import { X, ShoppingCart, Eye, Check, XCircle, MapPin, GitCompare, Star, Link2, Copy, Gift } from 'lucide-react'
+import { X, ShoppingCart, Eye, Check, XCircle, GitCompare, Star, Link2, Copy, Gift } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { createPortal } from 'react-dom'
 import toast from 'react-hot-toast'
 import { useCart } from '@/hooks/useCart'
 import { createClient } from '@/lib/supabase/client'
@@ -30,11 +27,9 @@ function ComparePageContent() {
   const searchParams = useSearchParams()
   const { isAuthenticated } = useAuth()
   const { products, removeProduct, clearComparison, addProduct, canAddMore } = useProductComparison()
-  const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
   const { addItem } = useCart()
   const [comparisonFields, setComparisonFields] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-  const [showAddressModal, setShowAddressModal] = useState(false)
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -595,30 +590,7 @@ function ComparePageContent() {
                     value = product.name
                     break
                   case 'Preço':
-                    if (needsAddress && !locationLoading) {
-                      value = (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            if (!isAuthenticated) {
-                              router.push('/login')
-                              return
-                            }
-                            setShowAddressModal(true)
-                          }}
-                          className="relative cursor-pointer group w-full"
-                        >
-                          <div className="flex items-center justify-center gap-1">
-                            <Eye size={14} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
-                            <span className="text-gray-400 blur-sm select-none text-xs">
-                              {formatCurrency(product.local_price || product.national_price)}
-                            </span>
-                          </div>
-                        </button>
-                      )
-                    } else {
-                      value = formatCurrency(getProductPrice(product, isUberlandia))
-                    }
+                    value = formatCurrency(product.local_price || product.national_price || 0)
                     break
                   case 'Categoria':
                     value = product.category || '—'
@@ -758,31 +730,7 @@ function ComparePageContent() {
                       value = product.name
                       break
                     case 'Preço':
-                      // Mostrar preço embaçado se não tiver endereço
-                      if (needsAddress && !locationLoading) {
-                        value = (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              if (!isAuthenticated) {
-                                router.push('/login')
-                                return
-                              }
-                              setShowAddressModal(true)
-                            }}
-                            className="relative cursor-pointer group"
-                          >
-                            <div className="flex items-center justify-center gap-2">
-                              <Eye size={16} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
-                              <span className="text-gray-400 blur-sm select-none">
-                                {formatCurrency(product.local_price || product.national_price)}
-                              </span>
-                            </div>
-                          </button>
-                        )
-                      } else {
-                        value = formatCurrency(getProductPrice(product, isUberlandia))
-                      }
+                      value = formatCurrency(product.local_price || product.national_price || 0)
                       break
                     case 'Categoria':
                       value = product.category || '—'
@@ -941,67 +889,6 @@ function ComparePageContent() {
         )}
       </AnimatePresence>
 
-      {/* Modal para cadastrar endereço */}
-      {typeof window !== 'undefined' && showAddressModal && createPortal(
-        <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowAddressModal(false)
-            }
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-in fade-in zoom-in duration-200"
-          >
-            <button
-              onClick={() => setShowAddressModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
-              aria-label="Fechar"
-            >
-              ✕
-            </button>
-            
-            <div className="text-center space-y-6">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                <MapPin size={40} className="text-blue-600" />
-              </div>
-              
-              <div>
-                <h2 className="text-2xl font-bold mb-2">
-                  Cadastre seu endereço
-                </h2>
-                <p className="text-gray-600">
-                  Para visualizar o preço do produto, precisamos do seu endereço
-                </p>
-              </div>
-              
-              <div className="flex gap-3 pt-4">
-                <Button
-                  onClick={() => {
-                    setShowAddressModal(false)
-                    router.push('/minha-conta/enderecos')
-                  }}
-                  className="flex-1"
-                  size="lg"
-                >
-                  <MapPin size={18} className="mr-2" />
-                  Cadastrar Endereço
-                </Button>
-                <Button
-                  onClick={() => setShowAddressModal(false)}
-                  variant="outline"
-                  size="lg"
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   )
 }

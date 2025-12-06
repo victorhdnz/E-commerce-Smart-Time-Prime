@@ -26,6 +26,7 @@ export default function NovoProduct() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    price: '', // Preço único
     category: '',
     slug: '',
     product_code: '',
@@ -162,18 +163,26 @@ export default function NovoProduct() {
       return
     }
 
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      toast.error('Preencha um preço válido')
+      return
+    }
+
     setLoading(true)
     try {
       // Garantir que o slug não está vazio
       const finalSlug = formData.slug || generateSlug(formData.name) || `produto-${Date.now()}`
+      const price = parseFloat(formData.price)
       
-      // Criar produto
+      // Criar produto - usar o mesmo preço para local_price e national_price
       const { data: product, error: productError } = await supabase
         .from('products')
         .insert({
           name: formData.name,
           description: formData.description || null,
           short_description: formData.description ? formData.description.substring(0, 150) : null,
+          local_price: price,
+          national_price: price, // Usar o mesmo preço
           category: formData.category || null,
           slug: finalSlug,
           product_code: formData.product_code || null,
@@ -294,6 +303,24 @@ export default function NovoProduct() {
                     rows={6}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Preço *
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    placeholder="299.90"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Preço único do produto (será usado para local e nacional)
+                  </p>
                 </div>
               </div>
             </div>
