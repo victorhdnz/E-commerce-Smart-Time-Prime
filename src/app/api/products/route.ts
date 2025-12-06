@@ -28,10 +28,11 @@ export async function GET() {
         created_at,
         colors:product_colors(
           id,
-          name,
-          hex_code,
+          color_name,
+          color_hex,
           images,
-          stock
+          stock,
+          is_active
         )
       `)
       .eq('is_active', true)

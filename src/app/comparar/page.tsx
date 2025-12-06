@@ -239,13 +239,19 @@ function ComparePageContent() {
       try {
         setLoading(true)
         
-        // Usar API com cache em vez de query direta
+        // Usar API para carregar produtos
         const response = await fetch('/api/products', {
-          next: { revalidate: 60 } // Cache de 60 segundos
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-store', // Sempre buscar dados atualizados no cliente
         })
         
         if (!response.ok) {
-          throw new Error('Erro ao carregar produtos')
+          const errorText = await response.text()
+          console.error('Erro na resposta da API:', errorText)
+          throw new Error(`Erro ao carregar produtos: ${response.status} ${response.statusText}`)
         }
         
         const result = await response.json()
@@ -255,11 +261,17 @@ function ComparePageContent() {
           setAllProducts(productsData)
           const uniqueCategories = [...new Set(productsData.map((p: any) => p.category).filter(Boolean))] as string[]
           setCategories(uniqueCategories.sort())
+        } else {
+          console.warn('API retornou sem produtos:', result)
+          setAllProducts([])
+          setCategories([])
         }
         setLoading(false)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Erro ao carregar produtos:', error)
-        toast.error('Erro ao carregar produtos')
+        toast.error(`Erro ao carregar produtos: ${error.message || 'Erro desconhecido'}`)
+        setAllProducts([])
+        setCategories([])
         setLoading(false)
       }
     }
