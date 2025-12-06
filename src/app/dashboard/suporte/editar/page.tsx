@@ -79,9 +79,11 @@ function EditSupportContent() {
 
       setSupportPage(data as ProductSupportPage)
       const content = (data.content as any) || {}
-      // Se não houver seções, criar estrutura pré-definida e salvar automaticamente
-      if (!content.sections || content.sections.length === 0) {
-        const defaultSections: SupportSection[] = [
+      let sectionsToLoad = content.sections || []
+      
+      // Sempre garantir estrutura mínima pré-definida
+      if (sectionsToLoad.length === 0) {
+        sectionsToLoad = [
           {
             id: 'hero-1',
             type: 'hero',
@@ -91,45 +93,48 @@ function EditSupportContent() {
             image: '',
           },
           {
-            id: 'feature-1',
-            type: 'feature-card',
-            title: 'Primeiros Passos',
-            subtitle: 'Comece aqui',
-            content: 'Configure seu dispositivo seguindo estes passos simples.',
-            image: '',
-            link: '',
-            linkText: 'Saiba mais',
-          },
-          {
             id: 'steps-1',
             type: 'steps',
             title: 'Como Configurar',
             subtitle: 'Siga estes passos',
             items: [
               {
-                title: 'Passo 1: Ligar o dispositivo',
-                description: 'Pressione e segure o botão de energia por 3 segundos.',
+                title: 'Passo 1',
+                description: 'Descrição completa do passo 1 aparecerá aqui na página individual.',
                 image: '',
-              },
-              {
-                title: 'Passo 2: Conectar ao app',
-                description: 'Baixe o app e conecte via Bluetooth.',
-                image: '',
+                link: '',
               },
             ],
           },
         ]
-        setSections(defaultSections)
         // Salvar automaticamente a estrutura pré-definida
         await supabase
           .from('product_support_pages')
           .update({
-            content: { sections: defaultSections },
+            content: { sections: sectionsToLoad },
           })
           .eq('id', versionId)
       } else {
-        setSections(content.sections || [])
+        // Garantir que seções de steps sempre tenham pelo menos um item
+        sectionsToLoad = sectionsToLoad.map((section: SupportSection) => {
+          if (section.type === 'steps' && (!section.items || section.items.length === 0)) {
+            return {
+              ...section,
+              items: [
+                {
+                  title: 'Passo 1',
+                  description: 'Descrição completa do passo 1 aparecerá aqui na página individual.',
+                  image: '',
+                  link: '',
+                },
+              ],
+            }
+          }
+          return section
+        })
       }
+      
+      setSections(sectionsToLoad)
     } catch (error: any) {
       console.error('Erro ao carregar página:', error)
       toast.error('Erro ao carregar página')
@@ -488,16 +493,32 @@ function EditSupportContent() {
                           />
                         </div>
                         {section.type === 'steps' && (
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Imagem (opcional)</label>
-                            <ImageUploader
-                              value={item.image || ''}
-                              onChange={(url) => updateItemInSection(index, itemIndex, { image: url })}
-                              placeholder="Clique para fazer upload da imagem"
-                              recommendedDimensions="800 x 600px"
-                              cropType="square"
+                          <>
+                            <div>
+                              <label className="block text-sm font-medium mb-2">Imagem (opcional)</label>
+                              <ImageUploader
+                                value={item.image || ''}
+                                onChange={(url) => updateItemInSection(index, itemIndex, { image: url })}
+                                placeholder="Clique para fazer upload da imagem"
+                                recommendedDimensions="800 x 600px"
+                                cropType="square"
+                              />
+                            </div>
+                            <Input
+                              key={`item-link-${section.id}-${index}-${itemIndex}`}
+                              label="Link para página completa (opcional - deixe vazio para gerar automaticamente)"
+                              type="url"
+                              value={item.link || ''}
+                              onChange={(e) => {
+                                const newValue = e.target.value
+                                updateItemInSection(index, itemIndex, { link: newValue })
+                              }}
+                              placeholder="/suporte/modelo-slug/passo-slug"
                             />
-                          </div>
+                            <p className="text-xs text-gray-500">
+                              Se deixado vazio, o link será gerado automaticamente baseado no título do passo.
+                            </p>
+                          </>
                         )}
                       </div>
                     </div>

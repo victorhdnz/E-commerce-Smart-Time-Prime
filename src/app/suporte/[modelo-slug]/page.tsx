@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ProductSupportPage } from '@/types'
 import { notFound, useParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { ChevronDown, ChevronRight, Search, Book, Play, List, HelpCircle } from 'lucide-react'
+import { ChevronDown, ChevronRight, Book, Play, List, HelpCircle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -32,15 +32,26 @@ export default function SupportPage() {
   
   const [supportPage, setSupportPage] = useState<(ProductSupportPage & { product: any }) | null>(null)
   const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
   const [expandedAccordions, setExpandedAccordions] = useState<Record<string, boolean>>({})
   const [activeSection, setActiveSection] = useState<string | null>(null)
+  const [whatsappNumber, setWhatsappNumber] = useState<string>('5511999999999')
   
   const supabase = createClient()
 
   useEffect(() => {
     const loadPage = async () => {
       try {
+        // Buscar número do WhatsApp das configurações
+        const { data: settingsData } = await supabase
+          .from('site_settings')
+          .select('contact_whatsapp')
+          .eq('key', 'site_settings')
+          .single()
+        
+        if (settingsData?.contact_whatsapp) {
+          setWhatsappNumber(settingsData.contact_whatsapp)
+        }
+
         const { data, error } = await supabase
           .from('product_support_pages')
           .select(`
@@ -104,27 +115,6 @@ export default function SupportPage() {
                   <p className="text-xl text-gray-600 mb-6">
                     {section.subtitle || `Tudo o que você precisa saber sobre o ${supportPage.product?.name || 'produto'}.`}
                   </p>
-                  
-                  {/* Barra de busca */}
-                  <div className="relative max-w-md">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                      type="text"
-                      placeholder="Buscar neste manual"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  
-                  {/* Índice rápido */}
-                  {sections.length > 2 && (
-                    <div className="mt-6">
-                      <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2">
-                        Índice <ChevronDown size={16} />
-                      </button>
-                    </div>
-                  )}
                 </div>
                 
                 <div className="relative">
@@ -237,54 +227,63 @@ export default function SupportPage() {
                 {section.subtitle || 'Configure seu dispositivo seguindo estes passos simples.'}
               </p>
               
-              <div className="space-y-8">
+              <div className="grid md:grid-cols-2 gap-6">
                 {section.items && section.items.length > 0 ? (
-                  section.items.map((item, itemIndex) => (
-                  <div key={itemIndex} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <div className="grid md:grid-cols-[auto_1fr] gap-6 items-start">
-                      <div className="w-full md:w-48 flex-shrink-0">
-                        {item.image ? (
-                          <Image
-                            src={item.image}
-                            alt={item.title}
-                            width={200}
-                            height={200}
-                            className="rounded-xl object-contain w-full"
-                          />
-                        ) : (
-                          <div className="w-full h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm">
-                            Sem imagem
+                  section.items.map((item, itemIndex) => {
+                    // Gerar slug único para o passo baseado no título
+                    const stepSlug = item.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `passo-${itemIndex + 1}`
+                    const stepLink = item.link || `/suporte/${slug}/${stepSlug}`
+                    
+                    return (
+                      <Link
+                        key={itemIndex}
+                        href={stepLink}
+                        className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all group"
+                      >
+                        <div className="space-y-4">
+                          <div className="w-full aspect-video bg-gray-200 rounded-xl overflow-hidden flex items-center justify-center">
+                            {item.image ? (
+                              <Image
+                                src={item.image}
+                                alt={item.title || `Passo ${itemIndex + 1}`}
+                                width={400}
+                                height={300}
+                                className="rounded-xl object-contain w-full h-full group-hover:scale-105 transition-transform"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                                Sem imagem
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title || `Passo ${itemIndex + 1}`}</h3>
-                        <p className="text-gray-600 whitespace-pre-line">{item.description || 'Descrição do passo aparecerá aqui'}</p>
-                        {item.link && (
-                          <Link 
-                            href={item.link}
-                            className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1 mt-3"
-                          >
-                            Ver mais <ChevronRight size={16} />
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  ))
+                          <div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                              {item.title || `Passo ${itemIndex + 1}`}
+                            </h3>
+                            {item.description && (
+                              <p className="text-gray-600 line-clamp-2 text-sm mb-3">
+                                {item.description}
+                              </p>
+                            )}
+                            <span className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1 text-sm">
+                              Ver mais <ChevronRight size={16} />
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    )
+                  })
                 ) : (
                   // Placeholder quando não há itens
                   [1, 2, 3].map((i) => (
                     <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border-2 border-dashed border-gray-200">
-                      <div className="grid md:grid-cols-[auto_1fr] gap-6 items-start">
-                        <div className="w-full md:w-48 flex-shrink-0">
-                          <div className="w-full h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm">
-                            Sem imagem
-                          </div>
+                      <div className="space-y-4">
+                        <div className="w-full aspect-video bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm opacity-50">
+                          Sem imagem
                         </div>
                         <div>
                           <h3 className="text-xl font-bold text-gray-900 mb-2 opacity-50">Passo {i}</h3>
-                          <p className="text-gray-600 opacity-50">Descrição do passo</p>
+                          <p className="text-gray-600 opacity-50 text-sm">Subtítulo do passo</p>
                         </div>
                       </div>
                     </div>
@@ -477,12 +476,6 @@ export default function SupportPage() {
             <Book size={20} className="text-gray-600" />
             <span className="font-medium text-gray-900">{supportPage.title}</span>
           </div>
-          <Link 
-            href="/comparar"
-            className="text-sm text-gray-600 hover:text-gray-900"
-          >
-            Voltar ao comparador
-          </Link>
         </div>
       </header>
 
@@ -553,24 +546,20 @@ export default function SupportPage() {
         </div>
       </div>
 
-      {/* Links relacionados no final */}
+      {/* WhatsApp no final */}
       {sections.length > 0 && (
         <section className="py-12 px-4 bg-gray-50 border-t border-gray-200">
           <div className="max-w-4xl mx-auto">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Quer saber mais?</h3>
             <div className="flex flex-wrap gap-3">
-              <Link 
-                href="/produtos" 
-                className="text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                Ver produtos <ChevronRight size={16} />
-              </Link>
-              <Link 
-                href="/contato" 
+              <a 
+                href={`https://wa.me/${whatsappNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-700 flex items-center gap-1"
               >
                 Fale conosco <ChevronRight size={16} />
-              </Link>
+              </a>
             </div>
           </div>
         </section>
