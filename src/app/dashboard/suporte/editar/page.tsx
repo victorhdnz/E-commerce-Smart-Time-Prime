@@ -11,6 +11,7 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { Input } from '@/components/ui/Input'
 import { ImageUploader } from '@/components/ui/ImageUploader'
+import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
 
 interface SupportSection {
   id: string
@@ -27,6 +28,11 @@ interface SupportSection {
     description: string
     image?: string
     link?: string
+    detailed_content?: {
+      full_description?: string
+      additional_images?: string[]
+      steps?: Array<{ title: string; description: string; image?: string }>
+    }
   }>
 }
 
@@ -478,19 +484,169 @@ function EditSupportContent() {
                           />
                         </div>
                         {section.type === 'steps' && (
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Imagem (opcional)</label>
-                            <ImageUploader
-                              value={item.image || ''}
-                              onChange={(url) => updateItemInSection(index, itemIndex, { image: url })}
-                              placeholder="Clique para fazer upload da imagem"
-                              recommendedDimensions="800 x 600px"
-                              cropType="square"
-                            />
-                            <p className="text-xs text-gray-500 mt-2">
-                              O link para a página completa será gerado automaticamente baseado no título do passo.
-                            </p>
-                          </div>
+                          <>
+                            <div>
+                              <label className="block text-sm font-medium mb-2">Imagem (opcional)</label>
+                              <ImageUploader
+                                value={item.image || ''}
+                                onChange={(url) => updateItemInSection(index, itemIndex, { image: url })}
+                                placeholder="Clique para fazer upload da imagem"
+                                recommendedDimensions="800 x 600px"
+                                cropType="square"
+                              />
+                              <p className="text-xs text-gray-500 mt-2">
+                                O link para a página completa será gerado automaticamente baseado no título do passo.
+                              </p>
+                            </div>
+                            
+                            {/* Editor de Conteúdo Detalhado */}
+                            <div className="border-t pt-4 mt-4 space-y-4">
+                              <h4 className="text-sm font-semibold text-gray-900">Conteúdo Detalhado da Página</h4>
+                              
+                              {/* Descrição Completa */}
+                              <div>
+                                <label className="block text-sm font-medium mb-2">Descrição Completa</label>
+                                <textarea
+                                  key={`item-detailed-desc-${section.id}-${index}-${itemIndex}`}
+                                  value={item.detailed_content?.full_description || ''}
+                                  onChange={(e) => {
+                                    const newValue = e.target.value
+                                    updateItemInSection(index, itemIndex, {
+                                      detailed_content: {
+                                        ...item.detailed_content,
+                                        full_description: newValue
+                                      }
+                                    })
+                                  }}
+                                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                                  rows={6}
+                                  placeholder="Descrição completa e detalhada do passo..."
+                                />
+                              </div>
+
+                              {/* Imagens Adicionais */}
+                              <div>
+                                <label className="block text-sm font-medium mb-2">Imagens Adicionais</label>
+                                <ArrayImageManager
+                                  value={item.detailed_content?.additional_images || []}
+                                  onChange={(images) => {
+                                    updateItemInSection(index, itemIndex, {
+                                      detailed_content: {
+                                        ...item.detailed_content,
+                                        additional_images: images
+                                      }
+                                    })
+                                  }}
+                                  maxImages={6}
+                                  label=""
+                                  placeholder="Clique para fazer upload de imagens adicionais"
+                                  cropType="square"
+                                  aspectRatio={16/9}
+                                  targetSize={{ width: 1200, height: 675 }}
+                                  recommendedDimensions="1200 x 675px"
+                                />
+                              </div>
+
+                              {/* Sub-passos */}
+                              <div>
+                                <label className="block text-sm font-medium mb-2">Sub-passos Detalhados</label>
+                                <div className="space-y-3">
+                                  {(item.detailed_content?.steps || []).map((subStep: any, subIdx: number) => (
+                                    <div key={subIdx} className="border rounded-lg p-3 bg-gray-50">
+                                      <div className="flex justify-between items-start mb-2">
+                                        <span className="text-xs font-medium text-gray-500">Sub-passo {subIdx + 1}</span>
+                                        <button
+                                          onClick={() => {
+                                            const currentSteps = item.detailed_content?.steps || []
+                                            updateItemInSection(index, itemIndex, {
+                                              detailed_content: {
+                                                ...item.detailed_content,
+                                                steps: currentSteps.filter((_: any, i: number) => i !== subIdx)
+                                              }
+                                            })
+                                          }}
+                                          className="text-red-600 hover:text-red-800 p-1"
+                                        >
+                                          <Trash2 size={14} />
+                                        </button>
+                                      </div>
+                                      <Input
+                                        key={`substep-title-${section.id}-${index}-${itemIndex}-${subIdx}`}
+                                        label="Título"
+                                        value={subStep.title || ''}
+                                        onChange={(e) => {
+                                          const currentSteps = item.detailed_content?.steps || []
+                                          const updatedSteps = [...currentSteps]
+                                          updatedSteps[subIdx] = { ...updatedSteps[subIdx], title: e.target.value }
+                                          updateItemInSection(index, itemIndex, {
+                                            detailed_content: {
+                                              ...item.detailed_content,
+                                              steps: updatedSteps
+                                            }
+                                          })
+                                        }}
+                                      />
+                                      <div className="mt-2">
+                                        <label className="block text-sm font-medium mb-1">Descrição</label>
+                                        <textarea
+                                          key={`substep-desc-${section.id}-${index}-${itemIndex}-${subIdx}`}
+                                          value={subStep.description || ''}
+                                          onChange={(e) => {
+                                            const currentSteps = item.detailed_content?.steps || []
+                                            const updatedSteps = [...currentSteps]
+                                            updatedSteps[subIdx] = { ...updatedSteps[subIdx], description: e.target.value }
+                                            updateItemInSection(index, itemIndex, {
+                                              detailed_content: {
+                                                ...item.detailed_content,
+                                                steps: updatedSteps
+                                              }
+                                            })
+                                          }}
+                                          className="w-full border rounded-lg px-3 py-2 text-sm"
+                                          rows={2}
+                                        />
+                                      </div>
+                                      <div className="mt-2">
+                                        <label className="block text-sm font-medium mb-2">Imagem (opcional)</label>
+                                        <ImageUploader
+                                          value={subStep.image || ''}
+                                          onChange={(url) => {
+                                            const currentSteps = item.detailed_content?.steps || []
+                                            const updatedSteps = [...currentSteps]
+                                            updatedSteps[subIdx] = { ...updatedSteps[subIdx], image: url }
+                                            updateItemInSection(index, itemIndex, {
+                                              detailed_content: {
+                                                ...item.detailed_content,
+                                                steps: updatedSteps
+                                              }
+                                            })
+                                          }}
+                                          placeholder="Clique para fazer upload da imagem"
+                                          recommendedDimensions="800 x 600px"
+                                          cropType="square"
+                                        />
+                                      </div>
+                                    </div>
+                                  ))}
+                                  <button
+                                    onClick={() => {
+                                      const currentSteps = item.detailed_content?.steps || []
+                                      updateItemInSection(index, itemIndex, {
+                                        detailed_content: {
+                                          ...item.detailed_content,
+                                          steps: [...currentSteps, { title: '', description: '', image: '' }]
+                                        }
+                                      })
+                                    }}
+                                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                                  >
+                                    <Plus size={14} />
+                                    Adicionar Sub-passo
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>

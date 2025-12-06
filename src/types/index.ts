@@ -296,7 +296,17 @@ export interface ProductSupportPage {
       video?: string
       link?: string
       linkText?: string
-      items?: Array<{ title: string; description: string; image?: string; link?: string }>
+      items?: Array<{ 
+        title: string
+        description: string
+        image?: string
+        link?: string
+        detailed_content?: {
+          full_description?: string
+          additional_images?: string[]
+          steps?: Array<{ title: string; description: string; image?: string }>
+        }
+      }>
     }>
   }
   is_active: boolean

@@ -13,6 +13,11 @@ interface StepItem {
   description: string
   image?: string
   link?: string
+  detailed_content?: {
+    full_description?: string
+    additional_images?: string[]
+    steps?: Array<{ title: string; description: string; image?: string }>
+  }
 }
 
 export default function StepPage() {
@@ -127,41 +132,139 @@ export default function StepPage() {
 
       {/* Conteúdo Principal */}
       <main className="max-w-4xl mx-auto px-4 py-12">
-        <div className="space-y-8">
-          {/* Imagem do Passo - Sempre mostra, mesmo vazia */}
-          <div className="w-full aspect-video bg-gray-100 rounded-2xl overflow-hidden flex items-center justify-center">
-            {stepItem.image ? (
-              <Image
-                src={stepItem.image}
-                alt={stepItem.title}
-                width={1200}
-                height={675}
-                className="w-full h-full object-contain"
-              />
-            ) : (
-              <div className="text-gray-400 text-center">
-                <p className="text-lg">Sem imagem</p>
-                <p className="text-sm mt-2">Adicione uma imagem no editor</p>
-              </div>
-            )}
-          </div>
-          
-          {/* Título e Descrição - Sempre mostra, mesmo vazios */}
-          <div className="space-y-4">
+        <div className="space-y-12">
+          {/* Hero Section - Imagem Principal e Título */}
+          <section className="space-y-6">
+            {/* Imagem do Passo - Sempre mostra, mesmo vazia */}
+            <div className="w-full aspect-video bg-gray-100 rounded-2xl overflow-hidden flex items-center justify-center">
+              {stepItem.image ? (
+                <Image
+                  src={stepItem.image}
+                  alt={stepItem.title}
+                  width={1200}
+                  height={675}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <div className="text-gray-400 text-center">
+                  <p className="text-lg">Sem imagem</p>
+                  <p className="text-sm mt-2">Adicione uma imagem no editor</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Título */}
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
               {stepItem.title || 'Título do Passo'}
             </h1>
-            {stepItem.description ? (
-              <div 
-                className="prose prose-lg max-w-none text-gray-600 whitespace-pre-line"
-                dangerouslySetInnerHTML={{ __html: stepItem.description.replace(/\n/g, '<br />') }}
-              />
-            ) : (
-              <div className="prose prose-lg max-w-none text-gray-400">
-                <p>Descrição do passo aparecerá aqui. Adicione o conteúdo no editor.</p>
-              </div>
+            
+            {/* Descrição Resumida */}
+            {stepItem.description && (
+              <p className="text-xl text-gray-600">
+                {stepItem.description}
+              </p>
             )}
-          </div>
+          </section>
+
+          {/* Descrição Completa */}
+          {(stepItem.detailed_content?.full_description || !stepItem.detailed_content) && (
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-gray-900">Descrição Completa</h2>
+              {stepItem.detailed_content?.full_description ? (
+                <div 
+                  className="prose prose-lg max-w-none text-gray-600 whitespace-pre-line"
+                  dangerouslySetInnerHTML={{ __html: stepItem.detailed_content.full_description.replace(/\n/g, '<br />') }}
+                />
+              ) : (
+                <div className="prose prose-lg max-w-none text-gray-400 border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
+                  <p>Descrição completa do passo aparecerá aqui. Adicione o conteúdo no editor.</p>
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Imagens Adicionais */}
+          {stepItem.detailed_content?.additional_images && stepItem.detailed_content.additional_images.length > 0 ? (
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-gray-900">Imagens Adicionais</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                {stepItem.detailed_content.additional_images.map((img, idx) => (
+                  <div key={idx} className="aspect-video bg-gray-100 rounded-xl overflow-hidden">
+                    <Image
+                      src={img}
+                      alt={`Imagem adicional ${idx + 1}`}
+                      width={600}
+                      height={400}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : (
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-gray-900">Imagens Adicionais</h2>
+              <div className="grid md:grid-cols-2 gap-4">
+                {[1, 2].map((i) => (
+                  <div key={i} className="aspect-video bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-200">
+                    <p className="text-gray-400 text-sm">Sem imagem adicional {i}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Sub-passos (Steps dentro do passo) */}
+          {stepItem.detailed_content?.steps && stepItem.detailed_content.steps.length > 0 ? (
+            <section className="space-y-6">
+              <h2 className="text-2xl font-bold text-gray-900">Passos Detalhados</h2>
+              <div className="space-y-6">
+                {stepItem.detailed_content.steps.map((subStep, idx) => (
+                  <div key={idx} className="border border-gray-200 rounded-xl p-6 bg-white">
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{subStep.title}</h3>
+                        <p className="text-gray-600 whitespace-pre-line">{subStep.description}</p>
+                        {subStep.image && (
+                          <div className="mt-4 aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                            <Image
+                              src={subStep.image}
+                              alt={subStep.title}
+                              width={600}
+                              height={400}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : (
+            <section className="space-y-6">
+              <h2 className="text-2xl font-bold text-gray-900">Passos Detalhados</h2>
+              <div className="space-y-6">
+                {[1, 2].map((i) => (
+                  <div key={i} className="border-2 border-dashed border-gray-200 rounded-xl p-6 bg-white opacity-50">
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg opacity-50">
+                        {i}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-900 mb-2 opacity-50">Passo {i}</h3>
+                        <p className="text-gray-600 opacity-50">Descrição do passo detalhado</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </main>
 
