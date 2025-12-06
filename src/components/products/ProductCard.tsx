@@ -47,7 +47,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             id,
             product_id,
             quantity,
-            product:products (id, name, local_price, national_price, images)
+            product:products (id, name, price, images)
           )
         `)
         .eq('slug', product.slug)
@@ -301,7 +301,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 <div className="flex items-center gap-2 min-w-0">
                   <Eye size={18} className="text-gray-500 group-hover:text-blue-600 transition-colors flex-shrink-0" />
                   <span className="text-lg sm:text-xl font-bold text-gray-400 blur-sm select-none">
-                    {formatCurrency(product.local_price || product.national_price)}
+                    {formatCurrency(product.price || 0)}
                   </span>
                   <MapPin size={14} className="text-gray-400 flex-shrink-0" />
                 </div>
