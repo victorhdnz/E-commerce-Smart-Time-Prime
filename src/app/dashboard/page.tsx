@@ -19,6 +19,8 @@ import {
   Package,
   LogOut,
   Lock,
+  BookOpen,
+  Wrench,
 } from 'lucide-react'
 import Link from 'next/link'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -337,15 +339,22 @@ function DashboardContent() {
       ],
     },
     {
-      title: 'Páginas de Suporte',
-      description: 'Manuais e guias de configuração por modelo de relógio',
-      icon: HelpCircle,
+      title: 'Páginas Especiais',
+      description: 'Catálogos de produtos e manuais de configuração',
+      icon: BookOpen,
       items: [
         {
-          title: 'Gerenciar Páginas',
-          description: 'Criar e editar manuais e guias',
+          title: 'Catálogos de Produtos',
+          description: 'Criar catálogos visuais para exibir produtos',
+          href: '/dashboard/catalogos',
+          icon: Package,
+          color: 'bg-purple-500',
+        },
+        {
+          title: 'Manuais e Guias',
+          description: 'Páginas de suporte e configuração pós-compra',
           href: '/dashboard/suporte',
-          icon: FileText,
+          icon: Wrench,
           color: 'bg-cyan-500',
         },
       ],
