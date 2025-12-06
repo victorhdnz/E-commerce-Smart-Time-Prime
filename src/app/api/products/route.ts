@@ -21,10 +21,12 @@ export async function GET() {
         category,
         local_price,
         national_price,
+        price,
         ecommerce_url,
         images,
         is_featured,
         is_active,
+        specifications,
         created_at,
         colors:product_colors(
           id,
@@ -47,7 +49,7 @@ export async function GET() {
       }, { status: 500 })
     }
 
-    // Garantir que o campo images seja sempre um array válido
+    // Garantir que os campos images e specifications sejam sempre arrays válidos
     const normalizedProducts = (products || []).map((product: any) => {
       // Se images for string, parsear como JSON
       if (typeof product.images === 'string') {
@@ -62,6 +64,21 @@ export async function GET() {
       if (!Array.isArray(product.images)) {
         product.images = []
       }
+      
+      // Se specifications for string, parsear como JSON
+      if (typeof product.specifications === 'string') {
+        try {
+          product.specifications = JSON.parse(product.specifications)
+        } catch (e) {
+          // Se falhar o parse, usar array vazio
+          product.specifications = []
+        }
+      }
+      // Garantir que seja sempre um array
+      if (!Array.isArray(product.specifications)) {
+        product.specifications = []
+      }
+      
       return product
     })
 

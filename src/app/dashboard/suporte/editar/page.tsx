@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
 import { ProductSupportPage } from '@/types'
 import { Save, ArrowLeft, Home, Eye, BookOpen, ChevronDown, ChevronUp, Plus, Trash2, GripVertical } from 'lucide-react'
+import { motion } from 'framer-motion'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { Input } from '@/components/ui/Input'
@@ -243,62 +244,90 @@ function EditSupportContent() {
     return null
   }
 
+  // Mapeamento de tipos de seção com ícones emoji
+  const sectionTypeIcons: Record<string, string> = {
+    hero: '🎯',
+    'feature-card': '✨',
+    steps: '📋',
+    accordion: '❓',
+    text: '📝',
+    image: '🖼️',
+    video: '🎬',
+    list: '📋',
+  }
+
   const SectionEditor = ({ section, index }: { section: SupportSection; index: number }) => {
     const isExpanded = editingSectionIndex === index
+    const emojiIcon = sectionTypeIcons[section.type] || '📄'
+    const sectionLabel = section.type === 'hero' ? 'Hero' : 
+      section.type === 'feature-card' ? 'Feature Card' :
+      section.type === 'steps' ? 'Steps' :
+      section.type === 'accordion' ? 'FAQ/Accordion' :
+      section.type === 'text' ? 'Texto' :
+      section.type === 'image' ? 'Imagem' :
+      section.type === 'video' ? 'Vídeo' :
+      section.type === 'list' ? 'Lista' : section.type
     
     return (
-      <div className="border rounded-xl overflow-hidden mb-4" key={section.id || `section-${index}`}>
-        <div className="bg-gray-50 p-4 flex items-center justify-between">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05 }}
+        className="bg-white rounded-lg shadow-md overflow-hidden mb-4"
+        key={section.id || `section-${index}`}
+      >
+        {/* Header da Seção - Estilo Apple */}
+        <div
+          className="p-4 flex items-center justify-between bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+          onClick={() => setEditingSectionIndex(isExpanded ? null : index)}
+        >
           <div className="flex items-center gap-3 flex-1">
-            <GripVertical size={18} className="text-gray-400 cursor-move" />
-            <span className="font-semibold text-sm">
-              {index + 1}. {section.type === 'hero' ? 'Hero' : 
-                section.type === 'feature-card' ? 'Feature Card' :
-                section.type === 'steps' ? 'Steps' :
-                section.type === 'accordion' ? 'FAQ/Accordion' :
-                section.type === 'text' ? 'Texto' :
-                section.type === 'image' ? 'Imagem' :
-                section.type === 'video' ? 'Vídeo' :
-                section.type === 'list' ? 'Lista' : section.type}
+            <GripVertical size={18} className="text-gray-400" />
+            <span className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
+              {index + 1}
             </span>
-            {section.title && (
-              <span className="text-xs text-gray-500">- {section.title}</span>
-            )}
+            <span className="text-xl">{emojiIcon}</span>
+            <div className="flex flex-col">
+              <span className="font-semibold text-gray-900 text-sm">{sectionLabel}</span>
+              {section.title && (
+                <span className="text-xs text-gray-500">- {section.title}</span>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => moveSection(index, 'up')}
+              onClick={(e) => { e.stopPropagation(); moveSection(index, 'up') }}
               disabled={index === 0}
-              className="p-1 hover:bg-gray-200 rounded disabled:opacity-50"
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-30"
               title="Mover para cima"
             >
-              <ChevronUp size={16} />
+              <ChevronUp size={18} />
             </button>
             <button
-              onClick={() => moveSection(index, 'down')}
+              onClick={(e) => { e.stopPropagation(); moveSection(index, 'down') }}
               disabled={index === sections.length - 1}
-              className="p-1 hover:bg-gray-200 rounded disabled:opacity-50"
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-30"
               title="Mover para baixo"
             >
-              <ChevronDown size={16} />
+              <ChevronDown size={18} />
             </button>
             <button
-              onClick={() => setEditingSectionIndex(isExpanded ? null : index)}
-              className="p-1 hover:bg-gray-200 rounded"
+              onClick={(e) => { e.stopPropagation(); removeSection(index) }}
+              className="p-2 hover:bg-red-100 rounded-lg text-red-600 transition-colors"
+              title="Remover seção"
             >
-              {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </button>
-            <button
-              onClick={() => removeSection(index)}
-              className="p-1 hover:bg-red-100 rounded text-red-600"
-            >
-              <Trash2 size={16} />
+              <Trash2 size={18} />
             </button>
           </div>
         </div>
         
         {isExpanded && (
-          <div className="p-4 space-y-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            className="p-6 border-t space-y-4"
+          >
             {/* Tipo de seção */}
             <div>
               <label className="block text-sm font-medium mb-2">Tipo de Seção</label>
@@ -476,9 +505,9 @@ function EditSupportContent() {
                 </div>
               </div>
             )}
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     )
   }
 
@@ -568,6 +597,13 @@ function EditSupportContent() {
                     + FAQ
                   </button>
                 </div>
+              </div>
+              
+              {/* Dica */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-blue-800">
+                  <strong>💡 Dica:</strong> Use as setas ↑↓ para reordenar as seções. Clique em cada seção para expandir e editar.
+                </p>
               </div>
 
               {sections.length === 0 ? (

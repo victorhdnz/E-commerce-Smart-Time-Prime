@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
 import { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
-import { Plus, Edit, Trash2, Eye, EyeOff, Package, Search, Filter, Star, MoreVertical } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye, EyeOff, Package, Search, Filter, MoreVertical } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
@@ -20,7 +20,6 @@ export default function DashboardProductsPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
-  const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all')
   const [selectedProducts, setSelectedProducts] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20
@@ -98,21 +97,6 @@ export default function DashboardProductsPage() {
     }
   }
 
-  const toggleFeatured = async (productId: string, currentStatus: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('products')
-        .update({ is_featured: !currentStatus })
-        .eq('id', productId)
-
-      if (error) throw error
-
-      toast.success('Destaque atualizado')
-      loadProducts()
-    } catch (error) {
-      toast.error('Erro ao atualizar destaque')
-    }
-  }
 
 
   const deleteProduct = async (productId: string) => {
@@ -153,25 +137,9 @@ export default function DashboardProductsPage() {
       )
     }
 
-    // Stock filter
-    if (stockFilter !== 'all') {
-      filtered = filtered.filter(product => {
-        switch (stockFilter) {
-          case 'in_stock':
-            return product.stock > 10
-          case 'low_stock':
-            return product.stock > 0 && product.stock <= 10
-          case 'out_of_stock':
-            return product.stock === 0
-          default:
-            return true
-        }
-      })
-    }
-
     setFilteredProducts(filtered)
     setCurrentPage(1) // Reset to first page when filters change
-  }, [products, searchTerm, statusFilter, stockFilter])
+  }, [products, searchTerm, statusFilter])
 
   // Pagination calculations
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
@@ -184,7 +152,7 @@ export default function DashboardProductsPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleBulkAction = async (action: 'activate' | 'deactivate' | 'feature' | 'unfeature' | 'delete') => {
+  const handleBulkAction = async (action: 'activate' | 'deactivate' | 'delete') => {
     if (selectedProducts.length === 0) {
       toast.error('Selecione pelo menos um produto')
       return
@@ -203,12 +171,6 @@ export default function DashboardProductsPage() {
           break
         case 'deactivate':
           updateData = { is_active: false }
-          break
-        case 'feature':
-          updateData = { is_featured: true }
-          break
-        case 'unfeature':
-          updateData = { is_featured: false }
           break
         case 'delete':
           const { error: deleteError } = await supabase
@@ -326,16 +288,6 @@ export default function DashboardProductsPage() {
                 <option value="inactive">Inativos</option>
               </select>
 
-              <select
-                value={stockFilter}
-                onChange={(e) => setStockFilter(e.target.value as any)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-              >
-                <option value="all">Todo o estoque</option>
-                <option value="in_stock">Em estoque</option>
-                <option value="low_stock">Estoque baixo</option>
-                <option value="out_of_stock">Sem estoque</option>
-              </select>
             </div>
           </div>
 
@@ -372,14 +324,6 @@ export default function DashboardProductsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleBulkAction('feature')}
-                >
-                  <Star size={16} className="mr-1" />
-                  Destacar
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
                   onClick={() => handleBulkAction('delete')}
                   className="text-red-600 border-red-300 hover:bg-red-50"
                 >
@@ -409,13 +353,7 @@ export default function DashboardProductsPage() {
                     Produto
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Preço Local
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Preço Nacional
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estoque
+                    Preço
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -463,32 +401,7 @@ export default function DashboardProductsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {formatCurrency(product.local_price)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {formatCurrency(product.national_price)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`text-sm font-semibold ${
-                            product.stock === 0
-                              ? 'text-red-600'
-                              : product.stock < 10
-                              ? 'text-orange-600'
-                              : 'text-green-600'
-                          }`}
-                        >
-                          {product.stock} unidades
-                        </div>
-                        {(product as any).product_code && (
-                          <span className="text-xs text-gray-500 ml-2">
-                            Cód: {(product as any).product_code}
-                          </span>
-                        )}
+                        {formatCurrency(product.price || product.local_price || 0)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -502,24 +415,10 @@ export default function DashboardProductsPage() {
                         >
                           {product.is_active ? 'Ativo' : 'Inativo'}
                         </span>
-                        {product.is_featured && (
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-accent text-black">
-                            Destaque
-                          </span>
-                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => toggleFeatured(product.id, product.is_featured)}
-                          className={`${
-                            product.is_featured ? 'text-yellow-600' : 'text-gray-400'
-                          } hover:text-yellow-700`}
-                          title={product.is_featured ? 'Remover destaque' : 'Destacar produto'}
-                        >
-                          <Star size={18} />
-                        </button>
                         <button
                           onClick={() =>
                             toggleProductStatus(product.id, product.is_active)
@@ -569,16 +468,16 @@ export default function DashboardProductsPage() {
             <div className="text-center py-12">
               <Package size={48} className="mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm || statusFilter !== 'all' || stockFilter !== 'all'
+                {searchTerm || statusFilter !== 'all'
                   ? 'Nenhum produto encontrado'
                   : 'Nenhum produto cadastrado'}
               </h3>
               <p className="text-gray-500 mb-6">
-                {searchTerm || statusFilter !== 'all' || stockFilter !== 'all'
+                {searchTerm || statusFilter !== 'all'
                   ? 'Tente ajustar os filtros de busca'
                   : 'Comece adicionando seu primeiro produto'}
               </p>
-              {!searchTerm && statusFilter === 'all' && stockFilter === 'all' && (
+              {!searchTerm && statusFilter === 'all' && (
                 <Link href="/dashboard/produtos/novo">
                   <Button>
                     <Plus size={20} className="mr-2" />

@@ -127,8 +127,8 @@ export default function SupportPage() {
                   )}
                 </div>
                 
-                {section.image && (
-                  <div className="relative">
+                <div className="relative">
+                  {section.image ? (
                     <Image
                       src={section.image}
                       alt={section.title || 'Hero'}
@@ -136,8 +136,12 @@ export default function SupportPage() {
                       height={400}
                       className="rounded-2xl object-contain"
                     />
-                  </div>
-                )}
+                  ) : (
+                    <div className="w-full h-[400px] bg-gray-200 rounded-2xl flex items-center justify-center text-gray-400">
+                      Sem imagem
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </section>
@@ -151,19 +155,23 @@ export default function SupportPage() {
                 {index % 2 === 0 ? (
                   <>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-4">{section.title}</h2>
-                      <p className="text-lg text-gray-600 mb-6 whitespace-pre-line">{section.content}</p>
-                      {section.link && (
+                      <h2 className="text-3xl font-bold text-gray-900 mb-4">{section.title || 'Título do Card'}</h2>
+                      <p className="text-lg text-gray-600 mb-6 whitespace-pre-line">{section.content || section.subtitle || 'Conteúdo do card aparecerá aqui'}</p>
+                      {section.link ? (
                         <Link 
                           href={section.link}
                           className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
                         >
                           {section.linkText || 'Saiba mais'} <ChevronRight size={16} />
                         </Link>
+                      ) : (
+                        <div className="text-blue-600 font-medium inline-flex items-center gap-1 opacity-50">
+                          Link aparecerá aqui <ChevronRight size={16} />
+                        </div>
                       )}
                     </div>
-                    {section.image && (
-                      <div className="flex justify-center">
+                    <div className="flex justify-center">
+                      {section.image ? (
                         <Image
                           src={section.image}
                           alt={section.title || ''}
@@ -171,13 +179,17 @@ export default function SupportPage() {
                           height={350}
                           className="rounded-2xl object-contain"
                         />
-                      </div>
-                    )}
+                      ) : (
+                        <div className="w-[350px] h-[350px] bg-gray-200 rounded-2xl flex items-center justify-center text-gray-400">
+                          Sem imagem
+                        </div>
+                      )}
+                    </div>
                   </>
                 ) : (
                   <>
-                    {section.image && (
-                      <div className="flex justify-center md:order-1">
+                    <div className="flex justify-center md:order-1">
+                      {section.image ? (
                         <Image
                           src={section.image}
                           alt={section.title || ''}
@@ -185,18 +197,26 @@ export default function SupportPage() {
                           height={350}
                           className="rounded-2xl object-contain"
                         />
-                      </div>
-                    )}
+                      ) : (
+                        <div className="w-[350px] h-[350px] bg-gray-200 rounded-2xl flex items-center justify-center text-gray-400">
+                          Sem imagem
+                        </div>
+                      )}
+                    </div>
                     <div className="md:order-2">
-                      <h2 className="text-3xl font-bold text-gray-900 mb-4">{section.title}</h2>
-                      <p className="text-lg text-gray-600 mb-6 whitespace-pre-line">{section.content}</p>
-                      {section.link && (
+                      <h2 className="text-3xl font-bold text-gray-900 mb-4">{section.title || 'Título do Card'}</h2>
+                      <p className="text-lg text-gray-600 mb-6 whitespace-pre-line">{section.content || section.subtitle || 'Conteúdo do card aparecerá aqui'}</p>
+                      {section.link ? (
                         <Link 
                           href={section.link}
                           className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
                         >
                           {section.linkText || 'Saiba mais'} <ChevronRight size={16} />
                         </Link>
+                      ) : (
+                        <div className="text-blue-600 font-medium inline-flex items-center gap-1 opacity-50">
+                          Link aparecerá aqui <ChevronRight size={16} />
+                        </div>
                       )}
                     </div>
                   </>
@@ -210,19 +230,20 @@ export default function SupportPage() {
         return (
           <section key={index} className="py-16 px-4 bg-gray-50">
             <div className="max-w-4xl mx-auto">
-              {section.title && (
-                <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">{section.title}</h2>
-              )}
-              {section.subtitle && (
-                <p className="text-gray-600 text-center mb-12">{section.subtitle}</p>
-              )}
+              <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">
+                {section.title || 'Passo a Passo'}
+              </h2>
+              <p className="text-gray-600 text-center mb-12">
+                {section.subtitle || 'Configure seu dispositivo seguindo estes passos simples.'}
+              </p>
               
               <div className="space-y-8">
-                {section.items?.map((item, itemIndex) => (
+                {section.items && section.items.length > 0 ? (
+                  section.items.map((item, itemIndex) => (
                   <div key={itemIndex} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                     <div className="grid md:grid-cols-[auto_1fr] gap-6 items-start">
-                      {item.image && (
-                        <div className="w-full md:w-48 flex-shrink-0">
+                      <div className="w-full md:w-48 flex-shrink-0">
+                        {item.image ? (
                           <Image
                             src={item.image}
                             alt={item.title}
@@ -230,11 +251,15 @@ export default function SupportPage() {
                             height={200}
                             className="rounded-xl object-contain w-full"
                           />
-                        </div>
-                      )}
+                        ) : (
+                          <div className="w-full h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm">
+                            Sem imagem
+                          </div>
+                        )}
+                      </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
-                        <p className="text-gray-600 whitespace-pre-line">{item.description}</p>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title || `Passo ${itemIndex + 1}`}</h3>
+                        <p className="text-gray-600 whitespace-pre-line">{item.description || 'Descrição do passo aparecerá aqui'}</p>
                         {item.link && (
                           <Link 
                             href={item.link}
@@ -246,7 +271,25 @@ export default function SupportPage() {
                       </div>
                     </div>
                   </div>
-                ))}
+                  ))
+                ) : (
+                  // Placeholder quando não há itens
+                  [1, 2, 3].map((i) => (
+                    <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border-2 border-dashed border-gray-200">
+                      <div className="grid md:grid-cols-[auto_1fr] gap-6 items-start">
+                        <div className="w-full md:w-48 flex-shrink-0">
+                          <div className="w-full h-48 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-sm">
+                            Sem imagem
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2 opacity-50">Passo {i}</h3>
+                          <p className="text-gray-600 opacity-50">Descrição do passo</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </section>
@@ -256,12 +299,12 @@ export default function SupportPage() {
         return (
           <section key={index} className="py-12 px-4">
             <div className="max-w-4xl mx-auto">
-              {section.title && (
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">{section.title}</h2>
-              )}
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                {section.title || 'Texto'}
+              </h2>
               <div 
                 className="prose prose-lg max-w-none text-gray-600"
-                dangerouslySetInnerHTML={{ __html: section.content || '' }}
+                dangerouslySetInnerHTML={{ __html: section.content || '<p>Conteúdo do texto aparecerá aqui</p>' }}
               />
             </div>
           </section>
@@ -274,8 +317,8 @@ export default function SupportPage() {
               {section.title && (
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">{section.title}</h2>
               )}
-              {section.image && (
-                <div className="rounded-2xl overflow-hidden">
+              <div className="rounded-2xl overflow-hidden">
+                {section.image ? (
                   <Image
                     src={section.image}
                     alt={section.title || 'Imagem'}
@@ -283,8 +326,12 @@ export default function SupportPage() {
                     height={500}
                     className="w-full object-contain"
                   />
-                </div>
-              )}
+                ) : (
+                  <div className="w-full h-[500px] bg-gray-200 flex items-center justify-center text-gray-400">
+                    Sem imagem
+                  </div>
+                )}
+              </div>
               {section.content && (
                 <p className="text-gray-600 mt-4 text-center">{section.content}</p>
               )}
@@ -296,18 +343,22 @@ export default function SupportPage() {
         return (
           <section key={index} className="py-12 px-4">
             <div className="max-w-4xl mx-auto">
-              {section.title && (
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">{section.title}</h2>
-              )}
-              {section.video && (
-                <div className="aspect-video rounded-2xl overflow-hidden bg-gray-100">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                {section.title || 'Vídeo'}
+              </h2>
+              <div className="aspect-video rounded-2xl overflow-hidden bg-gray-100">
+                {section.video ? (
                   <iframe
                     src={section.video}
                     className="w-full h-full"
                     allowFullScreen
                   />
-                </div>
-              )}
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    Sem vídeo
+                  </div>
+                )}
+              </div>
             </div>
           </section>
         )
@@ -316,21 +367,36 @@ export default function SupportPage() {
         return (
           <section key={index} className="py-12 px-4 bg-gray-50">
             <div className="max-w-4xl mx-auto">
-              {section.title && (
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
-              )}
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                {section.title || 'Lista'}
+              </h2>
               <div className="space-y-4">
-                {section.items?.map((item, itemIndex) => (
+                {section.items && section.items.length > 0 ? (
+                  section.items.map((item, itemIndex) => (
                   <div key={itemIndex} className="flex gap-4 bg-white p-4 rounded-xl shadow-sm">
                     <div className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
                       {itemIndex + 1}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
-                      <p className="text-gray-600">{item.description}</p>
+                      <h3 className="font-semibold text-gray-900 mb-1">{item.title || `Item ${itemIndex + 1}`}</h3>
+                      <p className="text-gray-600">{item.description || 'Descrição do item aparecerá aqui'}</p>
                     </div>
                   </div>
-                ))}
+                  ))
+                ) : (
+                  // Placeholder quando não há itens
+                  [1, 2, 3].map((i) => (
+                    <div key={i} className="flex gap-4 bg-white p-4 rounded-xl shadow-sm border-2 border-dashed border-gray-200">
+                      <div className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold opacity-50">
+                        {i}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-1 opacity-50">Item {i}</h3>
+                        <p className="text-gray-600 opacity-50">Descrição do item</p>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </section>
@@ -340,11 +406,12 @@ export default function SupportPage() {
         return (
           <section key={index} className="py-12 px-4">
             <div className="max-w-4xl mx-auto">
-              {section.title && (
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">{section.title}</h2>
-              )}
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                {section.title || 'Perguntas Frequentes'}
+              </h2>
               <div className="space-y-3">
-                {section.items?.map((item, itemIndex) => {
+                {section.items && section.items.length > 0 ? (
+                  section.items.map((item, itemIndex) => {
                   const accordionId = `${index}-${itemIndex}`
                   const isExpanded = expandedAccordions[accordionId]
                   
@@ -354,7 +421,7 @@ export default function SupportPage() {
                         onClick={() => toggleAccordion(accordionId)}
                         className="w-full p-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
                       >
-                        <span className="font-semibold text-gray-900 text-left">{item.title}</span>
+                        <span className="font-semibold text-gray-900 text-left">{item.title || `Pergunta ${itemIndex + 1}`}</span>
                         <ChevronDown 
                           size={20} 
                           className={`text-gray-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -362,12 +429,26 @@ export default function SupportPage() {
                       </button>
                       {isExpanded && (
                         <div className="p-4 pt-0 bg-white">
-                          <p className="text-gray-600 whitespace-pre-line">{item.description}</p>
+                          <p className="text-gray-600 whitespace-pre-line">{item.description || 'Resposta aparecerá aqui'}</p>
                         </div>
                       )}
                     </div>
                   )
-                })}
+                  })
+                ) : (
+                  // Placeholder quando não há itens
+                  [1, 2, 3].map((i) => {
+                    const accordionId = `placeholder-${index}-${i}`
+                    return (
+                      <div key={i} className="border-2 border-dashed border-gray-200 rounded-xl overflow-hidden opacity-50">
+                        <div className="w-full p-4 flex items-center justify-between bg-white">
+                          <span className="font-semibold text-gray-900 text-left">Pergunta {i}</span>
+                          <ChevronDown size={20} className="text-gray-500" />
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
               </div>
             </div>
           </section>

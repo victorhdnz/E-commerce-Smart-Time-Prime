@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState, Suspense, useCallback, useMemo } from 'react'
+import { useEffect, useState, Suspense, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
 import { ProductCatalog, Product } from '@/types'
-import { Save, ArrowLeft, Home, Eye, Package, Palette, ChevronDown, ChevronUp, Trash2, Plus } from 'lucide-react'
+import { Save, ArrowLeft, Home, Eye, Package, Palette, ChevronDown, ChevronUp, Trash2, Plus, Play, GripVertical } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { Input } from '@/components/ui/Input'
@@ -375,31 +376,65 @@ function EditCatalogContent() {
     return null
   }
 
-  const SectionWrapper = ({ section, icon, title, children }: any) => {
+  // Mapeamento de seções com ícones emoji
+  const sectionIcons: Record<string, string> = {
+    basic: '📋',
+    hero: '🎯',
+    video: '🎬',
+    features: '✨',
+    gallery: '🖼️',
+    showcase: '⭐',
+    featured: '🔥',
+    cta: '🚀',
+    featured_subtitle: '📝',
+    categories: '📦',
+  }
+
+  const sectionOrder = ['basic', 'hero', 'video', 'features', 'gallery', 'showcase', 'featured_subtitle', 'featured', 'categories', 'cta']
+  const sectionIndexMap = new Map(sectionOrder.map((s, i) => [s, i]))
+
+  const SectionWrapper = ({ section, icon, title, children, index }: any) => {
     const isExpanded = expandedSection === section
-    const handleToggle = useCallback(() => {
-      setExpandedSection(isExpanded ? null : section)
-    }, [isExpanded, section])
+    const sectionIndex = sectionIndexMap.get(section) ?? index ?? 0
+    const emojiIcon = sectionIcons[section] || '📄'
     
     return (
-      <div className="border rounded-xl overflow-hidden mb-4">
-        <button
-          onClick={handleToggle}
-          className="w-full p-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100"
-          type="button"
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: sectionIndex * 0.05 }}
+        className="bg-white rounded-lg shadow-md overflow-hidden mb-4"
+      >
+        {/* Header da Seção - Estilo Apple */}
+        <div
+          className="p-4 flex items-center justify-between bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+          onClick={() => setExpandedSection(isExpanded ? null : section)}
         >
-          <span className="font-semibold flex items-center gap-2">
-            {icon}
-            {title}
-          </span>
-          {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-        </button>
-        {isExpanded && (
-          <div className="p-4">
-            {children}
+          <div className="flex items-center gap-3">
+            <GripVertical size={18} className="text-gray-400" />
+            <span className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
+              {sectionIndex + 1}
+            </span>
+            <span className="text-xl">{emojiIcon}</span>
+            <h3 className="font-semibold text-gray-900">{title}</h3>
           </div>
+          <div className="flex items-center gap-2">
+            {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </div>
+        </div>
+
+        {/* Conteúdo colapsável */}
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            className="p-6 border-t"
+          >
+            {children}
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     )
   }
 
@@ -456,9 +491,16 @@ function EditCatalogContent() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-xl font-bold mb-6">Conteúdo do Catálogo</h2>
+              
+              {/* Dica */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-blue-800">
+                  <strong>💡 Dica:</strong> Clique em cada seção para expandir e editar. Todas as seções já estão pré-configuradas e prontas para uso.
+                </p>
+              </div>
 
               {/* Informações Básicas */}
-              <SectionWrapper section="basic" icon={<Package size={18} />} title="Informações Básicas">
+              <SectionWrapper section="basic" icon={<Package size={18} />} title="Informações Básicas" index={0}>
                 <div className="space-y-4">
                   <Input
                     key="catalog-title"
@@ -496,7 +538,7 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* Hero */}
-              <SectionWrapper section="hero" icon={<Package size={18} />} title="Seção Hero (Topo)">
+              <SectionWrapper section="hero" icon={<Package size={18} />} title="Seção Hero (Topo)" index={1}>
                 <div className="space-y-4">
                   <Input
                     key="hero-title"
@@ -539,6 +581,20 @@ function EditCatalogContent() {
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Imagem do Hero</label>
+                    {/* Preview da Imagem do Hero */}
+                    {settings.hero.image && (
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 mb-4">
+                        <p className="text-sm font-medium text-gray-700 mb-2">Preview da Imagem do Hero:</p>
+                        <div className="relative aspect-[16/9] bg-gray-200 rounded-lg overflow-hidden">
+                          <img 
+                            src={settings.hero.image} 
+                            alt="Hero preview" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">Esta imagem aparecerá no topo do catálogo</p>
+                      </div>
+                    )}
                     <ImageUploader
                       value={settings.hero.image}
                       onChange={(url) => setSettings(prev => ({
@@ -580,8 +636,34 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* Vídeo */}
-              <SectionWrapper section="video" icon={<Package size={18} />} title="Seção de Vídeo">
+              <SectionWrapper section="video" icon={<Package size={18} />} title="Seção de Vídeo" index={2}>
                 <div className="space-y-4">
+                  {/* Preview do Vídeo */}
+                  {settings.video?.url && (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+                      <p className="text-sm font-medium text-gray-700 mb-2">Preview do Vídeo:</p>
+                      <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                        {settings.video?.thumbnail ? (
+                          <img 
+                            src={settings.video.thumbnail} 
+                            alt="Video thumbnail" 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white">
+                            <Play size={48} />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="bg-black bg-opacity-50 rounded-full p-4">
+                            <Play size={32} className="text-white ml-1" />
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">Este vídeo aparecerá na seção de vídeo do catálogo</p>
+                    </div>
+                  )}
+                  
                   <div>
                     <label className="block text-sm font-medium mb-2">URL do Vídeo (YouTube) ou Upload</label>
                     <div className="space-y-2">
@@ -652,7 +734,7 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* Features */}
-              <SectionWrapper section="features" icon={<Package size={18} />} title={`Features (${settings.features?.length || 0})`}>
+              <SectionWrapper section="features" icon={<Package size={18} />} title={`Features (${settings.features?.length || 0})`} index={3}>
                 <div className="space-y-4">
                   <Input
                     key="features-title"
@@ -755,7 +837,7 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* Gallery */}
-              <SectionWrapper section="gallery" icon={<Package size={18} />} title={`Galeria (${settings.gallery?.length || 0})`}>
+              <SectionWrapper section="gallery" icon={<Package size={18} />} title={`Galeria (${settings.gallery?.length || 0})`} index={4}>
                 <div className="space-y-4">
                   <Input
                     key="gallery-title"
@@ -779,7 +861,7 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* Product Showcase */}
-              <SectionWrapper section="showcase" icon={<Package size={18} />} title="Destaque de Produto">
+              <SectionWrapper section="showcase" icon={<Package size={18} />} title="Destaque de Produto" index={5}>
                 <div className="space-y-4">
                   <Input
                     key="showcase-title"
@@ -871,8 +953,22 @@ function EditCatalogContent() {
                 </div>
               </SectionWrapper>
 
+              {/* Produtos em Destaque - Subtítulo */}
+              <SectionWrapper section="featured_subtitle" icon={<Package size={18} />} title="Subtítulo dos Produtos em Destaque" index={6}>
+                <Input
+                  key="featured-subtitle"
+                  label="Subtítulo"
+                  value={settings.featured_subtitle || ''}
+                  onChange={(e) => {
+                    const newValue = e.target.value
+                    setSettings(prev => ({ ...prev, featured_subtitle: newValue }))
+                  }}
+                  placeholder="Veja nossa coleção completa"
+                />
+              </SectionWrapper>
+
               {/* Produtos em Destaque */}
-              <SectionWrapper section="featured" icon={<Package size={18} />} title={`Produtos em Destaque (${settings.featured_products.length})`}>
+              <SectionWrapper section="featured" icon={<Package size={18} />} title={`Produtos em Destaque (${settings.featured_products.length})`} index={7}>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
                   {products.map(product => (
                     <label 
@@ -893,8 +989,85 @@ function EditCatalogContent() {
                 </div>
               </SectionWrapper>
 
+              {/* Categorias */}
+              <SectionWrapper section="categories" icon={<Package size={18} />} title={`Categorias (${settings.categories.length})`} index={8}>
+                <div className="space-y-4">
+                  {settings.categories.map((category, index) => (
+                    <div key={category.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <h4 className="font-medium">Categoria {index + 1}</h4>
+                        <button
+                          onClick={() => removeCategory(index)}
+                          className="text-red-600 hover:text-red-800 p-1"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                      <div className="space-y-3">
+                        <Input
+                          key={`category-name-${category.id}-${index}`}
+                          label="Nome"
+                          value={category.name}
+                          onChange={(e) => {
+                            const newValue = e.target.value
+                            updateCategory(index, { name: newValue })
+                          }}
+                        />
+                        <Input
+                          key={`category-desc-${category.id}-${index}`}
+                          label="Descrição"
+                          value={category.description}
+                          onChange={(e) => {
+                            const newValue = e.target.value
+                            updateCategory(index, { description: newValue })
+                          }}
+                        />
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Imagem</label>
+                          <ImageUploader
+                            value={category.image}
+                            onChange={(url) => updateCategory(index, { image: url })}
+                            placeholder="Clique para fazer upload da imagem"
+                            recommendedDimensions="800 x 600px"
+                            cropType="square"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Produtos</label>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+                            {products.map(product => (
+                              <label
+                                key={product.id}
+                                className={`flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50 text-sm ${
+                                  category.products.includes(product.id) ? 'border-purple-500 bg-purple-50' : ''
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={category.products.includes(product.id)}
+                                  onChange={() => toggleProductInCategory(index, product.id)}
+                                  className="rounded"
+                                />
+                                <span className="truncate">{product.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    onClick={addCategory}
+                    className="w-full py-2 border-2 border-dashed rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 flex items-center justify-center gap-2"
+                  >
+                    <Plus size={18} />
+                    Adicionar Categoria
+                  </button>
+                </div>
+              </SectionWrapper>
+
               {/* CTA Final */}
-              <SectionWrapper section="cta" icon={<Package size={18} />} title="CTA Final">
+              <SectionWrapper section="cta" icon={<Package size={18} />} title="CTA Final" index={9}>
                 <div className="space-y-4">
                   <Input
                     key="cta-title"
@@ -938,97 +1111,6 @@ function EditCatalogContent() {
                     }}
                     placeholder="/comparar"
                   />
-                </div>
-              </SectionWrapper>
-
-              {/* Produtos em Destaque - Subtítulo */}
-              <SectionWrapper section="featured_subtitle" icon={<Package size={18} />} title="Subtítulo dos Produtos em Destaque">
-                <Input
-                  key="featured-subtitle"
-                  label="Subtítulo"
-                  value={settings.featured_subtitle || ''}
-                  onChange={(e) => {
-                    const newValue = e.target.value
-                    setSettings(prev => ({ ...prev, featured_subtitle: newValue }))
-                  }}
-                  placeholder="Veja nossa coleção completa"
-                />
-              </SectionWrapper>
-
-              {/* Categorias */}
-              <SectionWrapper section="categories" icon={<Package size={18} />} title={`Categorias (${settings.categories.length})`}>
-                <div className="space-y-4">
-                  {settings.categories.map((category, index) => (
-                    <div key={category.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <h4 className="font-medium">Categoria {index + 1}</h4>
-                        <button
-                          onClick={() => removeCategory(index)}
-                          className="text-red-600 hover:text-red-800 p-1"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                      <div className="space-y-3">
-                        <Input
-                          key={`category-name-${category.id}-${index}`}
-                          label="Nome"
-                          value={category.name}
-                          onChange={(e) => {
-                            const newValue = e.target.value
-                            updateCategory(index, { name: newValue })
-                          }}
-                        />
-                        <Input
-                          key={`category-desc-${category.id}-${index}`}
-                          label="Descrição"
-                          value={category.description}
-                          onChange={(e) => {
-                            const newValue = e.target.value
-                            updateCategory(index, { description: newValue })
-                          }}
-                        />
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Imagem</label>
-                          <ImageUploader
-                            value={category.image}
-                            onChange={(url) => updateCategory(index, { image: url })}
-                            placeholder="Clique para fazer upload da imagem"
-                            recommendedDimensions="800 x 600px"
-                            cropType="square"
-                          />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium mb-2">Produtos ({category.products?.length || 0}):</p>
-                          <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
-                            {products.map(product => (
-                              <label 
-                                key={product.id}
-                                className={`flex items-center gap-2 p-2 border rounded cursor-pointer text-xs ${
-                                  category.products?.includes(product.id) ? 'border-blue-500 bg-blue-50' : ''
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={category.products?.includes(product.id) || false}
-                                  onChange={() => toggleProductInCategory(index, product.id)}
-                                  className="rounded"
-                                />
-                                <span className="truncate">{product.name}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    onClick={addCategory}
-                    className="w-full py-2 border-2 border-dashed rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 flex items-center justify-center gap-2"
-                  >
-                    <Plus size={18} />
-                    Adicionar Categoria
-                  </button>
                 </div>
               </SectionWrapper>
             </div>
