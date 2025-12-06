@@ -182,8 +182,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                     id,
                     name,
                     description,
-                    local_price,
-                    national_price,
+                    price,
                     images,
                     slug
                   )
@@ -489,7 +488,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 <div className="flex items-center gap-3 mb-2">
                   <Eye size={32} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
                   <span className="text-4xl font-bold text-gray-400 blur-md select-none">
-                    {formatCurrency(product.local_price || product.national_price)}
+                    {formatCurrency(product.price || 0)}
                   </span>
                   <MapPin size={24} className="text-gray-400" />
                 </div>
@@ -762,7 +761,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                               <div className="flex items-center gap-1">
                                 <Eye size={14} className="text-gray-500 group-hover:text-blue-600 transition-colors" />
                                 <span className="text-sm font-bold text-gray-400 blur-sm select-none">
-                                  {formatCurrency(item.product.local_price || item.product.national_price)}
+                                  {formatCurrency(item.product.price || 0)}
                                 </span>
                                 <MapPin size={12} className="text-gray-400" />
                               </div>
