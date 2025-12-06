@@ -6,9 +6,7 @@ export interface Product {
   slug: string
   description: string | null
   short_description: string | null
-  local_price: number
-  national_price: number
-  stock: number
+  price: number
   product_code: string | null
   ecommerce_url?: string | null // URL do produto no e-commerce externo
   is_featured: boolean

@@ -445,7 +445,7 @@ export function CatalogLayout({ catalog, products }: CatalogLayoutProps) {
                           className="text-2xl font-bold"
                           style={{ color: colors.primary || '#000000' }}
                         >
-                          {formatPrice(product.local_price || 0)}
+                          {formatPrice(product.price || 0)}
                         </span>
                         <span 
                           className="text-sm flex items-center gap-1 font-medium"

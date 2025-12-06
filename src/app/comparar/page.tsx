@@ -590,7 +590,7 @@ function ComparePageContent() {
                     value = product.name
                     break
                   case 'Preço':
-                    value = formatCurrency(product.local_price || product.national_price || 0)
+                    value = formatCurrency(product.price || 0)
                     break
                   case 'Categoria':
                     value = product.category || '—'
@@ -727,7 +727,7 @@ function ComparePageContent() {
                       value = product.name
                       break
                     case 'Preço':
-                      value = formatCurrency(product.price || product.local_price || product.national_price || 0)
+                      value = formatCurrency(product.price || 0)
                       break
                     case 'Categoria':
                       value = product.category || '—'

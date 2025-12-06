@@ -19,8 +19,6 @@ export async function GET() {
         short_description,
         description,
         category,
-        local_price,
-        national_price,
         price,
         ecommerce_url,
         images,
