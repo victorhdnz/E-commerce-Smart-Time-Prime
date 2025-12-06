@@ -319,17 +319,18 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       return
     }
 
-    // Verificar estoque antes de adicionar
-    const availableStock = selectedColor?.stock !== undefined ? selectedColor.stock : product.stock
-    if (availableStock <= 0) {
-      toast.error('Produto esgotado')
-      return
-    }
+    // Verificar estoque antes de adicionar (apenas se houver cor selecionada com estoque definido)
+    if (selectedColor?.stock !== undefined) {
+      if (selectedColor.stock <= 0) {
+        toast.error('Produto esgotado')
+        return
+      }
 
-    if (quantity > availableStock) {
-      toast.error(`Estoque insuficiente. Disponível: ${availableStock} unidade(s)`)
-      setQuantity(availableStock)
-      return
+      if (quantity > selectedColor.stock) {
+        toast.error(`Estoque insuficiente. Disponível: ${selectedColor.stock} unidade(s)`)
+        setQuantity(selectedColor.stock)
+        return
+      }
     }
 
     try {
@@ -956,14 +957,11 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           <div className="mb-6">
             <h3 className="font-semibold mb-3">
               Quantidade
-              {(() => {
-                const availableStock = selectedColor?.stock !== undefined ? selectedColor.stock : product.stock
-                return (
-                  <span className="ml-2 text-sm font-normal text-gray-600">
-                    ({availableStock} {availableStock === 1 ? 'unidade' : 'unidades'} disponível{availableStock === 1 ? '' : 'eis'})
-                  </span>
-                )
-              })()}
+              {selectedColor?.stock !== undefined && (
+                <span className="ml-2 text-sm font-normal text-gray-600">
+                  ({selectedColor.stock} {selectedColor.stock === 1 ? 'unidade' : 'unidades'} disponível{selectedColor.stock === 1 ? '' : 'eis'})
+                </span>
+              )}
             </h3>
             <div className="flex items-center gap-4">
               <button
@@ -977,11 +975,14 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               </span>
               <button
                 onClick={() => {
-                  const availableStock = selectedColor?.stock !== undefined ? selectedColor.stock : product.stock
-                  setQuantity(Math.min(availableStock, quantity + 1))
+                  if (selectedColor?.stock !== undefined) {
+                    setQuantity(Math.min(selectedColor.stock, quantity + 1))
+                  } else {
+                    setQuantity(quantity + 1)
+                  }
                 }}
                 className="w-10 h-10 rounded-full border-2 border-gray-300 hover:border-black transition-colors"
-                disabled={quantity >= (selectedColor?.stock !== undefined ? selectedColor.stock : product.stock)}
+                disabled={selectedColor?.stock !== undefined && quantity >= selectedColor.stock}
               >
                 +
               </button>
@@ -994,11 +995,11 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               size="sm"
               className="flex-1 sm:flex-initial min-w-[140px] sm:min-w-0 text-xs sm:text-base"
               onClick={handleAddToCart}
-              disabled={product.stock === 0}
+              disabled={selectedColor?.stock !== undefined && selectedColor.stock === 0}
             >
               <ShoppingCart size={16} className="sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">{product.stock === 0 ? 'Esgotado' : 'Adicionar ao Carrinho'}</span>
-              <span className="sm:hidden">{product.stock === 0 ? 'Esgotado' : 'Adicionar'}</span>
+              <span className="hidden sm:inline">{(selectedColor?.stock !== undefined && selectedColor.stock === 0) ? 'Esgotado' : 'Adicionar ao Carrinho'}</span>
+              <span className="sm:hidden">{(selectedColor?.stock !== undefined && selectedColor.stock === 0) ? 'Esgotado' : 'Adicionar'}</span>
             </Button>
             <Button
               onClick={() => {
@@ -1094,12 +1095,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             </button>
           </div>
 
-          {/* Stock Status */}
-          {product.stock > 0 && product.stock < 10 && (
-            <p className="text-orange-600 mb-6">
-              ⚠️ Apenas {product.stock} unidades disponíveis!
-            </p>
-          )}
 
           {/* Benefits */}
           {product.benefits && (
