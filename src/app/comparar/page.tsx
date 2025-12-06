@@ -8,11 +8,10 @@ import { Button } from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils/format'
 import { Product } from '@/types'
 import Image from 'next/image'
-import { X, ShoppingCart, Eye, Check, XCircle, GitCompare, Star, Link2, Copy, Gift } from 'lucide-react'
+import { X, Eye, Check, XCircle, GitCompare, Star, Link2, Copy, Gift } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
-import { useCart } from '@/hooks/useCart'
 import { createClient } from '@/lib/supabase/client'
 
 interface ProductGift {
@@ -27,7 +26,6 @@ function ComparePageContent() {
   const searchParams = useSearchParams()
   const { isAuthenticated } = useAuth()
   const { products, removeProduct, clearComparison, addProduct, canAddMore } = useProductComparison()
-  const { addItem } = useCart()
   const [comparisonFields, setComparisonFields] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [allProducts, setAllProducts] = useState<Product[]>([])
@@ -218,15 +216,6 @@ function ComparePageContent() {
     // Remover redirecionamento - manter na página de comparação mesmo quando vazio
   }
 
-  const handleAddToCart = (product: Product) => {
-    if (product.colors && product.colors.length > 0) {
-      toast.error('Selecione uma cor na página do produto antes de adicionar ao carrinho')
-      router.push(`/produtos/${product.slug}`)
-      return
-    }
-    addItem(product, undefined, 1)
-    toast.success('Produto adicionado ao carrinho!')
-  }
 
   // Carregar produtos e categorias
   useEffect(() => {
@@ -556,14 +545,6 @@ function ComparePageContent() {
                       Detalhes
                     </Button>
                   </Link>
-                  <Button
-                    size="sm"
-                    onClick={() => handleAddToCart(product)}
-                    className="w-full text-xs py-1.5 px-2 h-auto"
-                  >
-                    <ShoppingCart size={12} className="mr-1" />
-                    Add
-                  </Button>
                 </div>
               </div>
             ))}
@@ -690,15 +671,6 @@ function ComparePageContent() {
                             <span className="sm:hidden">Detalhes</span>
                           </Button>
                         </Link>
-                        <Button
-                          size="sm"
-                          onClick={() => handleAddToCart(product)}
-                          className="w-full text-[10px] sm:text-sm py-1 sm:py-2 px-2 sm:px-4 h-auto"
-                        >
-                          <ShoppingCart size={12} className="sm:w-4 sm:h-4 mr-0.5 sm:mr-2" />
-                          <span className="hidden sm:inline">Adicionar</span>
-                          <span className="sm:hidden">Add</span>
-                        </Button>
                       </div>
                     </div>
                   </th>

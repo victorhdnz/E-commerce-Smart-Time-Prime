@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Package, Star, Percent, ShoppingCart, ChevronLeft, ChevronRight, Eye, MapPin } from 'lucide-react'
+import { Package, Star, Percent, ChevronLeft, ChevronRight, Eye, MapPin } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format'
 import { getProductPrice } from '@/lib/utils/price'
-import { useCart } from '@/hooks/useCart'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { useAuth } from '@/hooks/useAuth'
 import { Product } from '@/types'
@@ -57,7 +56,6 @@ export const FeaturedCombos = ({
   const [currentIndex, setCurrentIndex] = useState(0)
   const [comboProducts, setComboProducts] = useState<Record<string, { price: number }>>({})
   const [showAddressModal, setShowAddressModal] = useState(false)
-  const { addItem } = useCart()
   const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
   const { isAuthenticated } = useAuth()
   const router = useRouter()
@@ -143,14 +141,6 @@ export const FeaturedCombos = ({
       : combo.final_price
   }
 
-  const handleAddComboToCart = (combo: Combo) => {
-    // Adicionar cada produto do combo ao carrinho
-    combo.combo_items?.forEach(item => {
-      if (item.product) {
-        addItem(item.product as Product, undefined, item.quantity)
-      }
-    })
-  }
 
   return (
     <section className="py-20" style={{ backgroundColor: 'transparent' }}>
@@ -314,18 +304,11 @@ export const FeaturedCombos = ({
 
                   {/* Action Buttons */}
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => handleAddComboToCart(combo)}
-                      className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <ShoppingCart size={18} />
-                      Adicionar Combo
-                    </button>
                     <Link
                       href={`/combos/${combo.id}`}
-                      className="px-4 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center"
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center"
                     >
-                      Ver
+                      Ver Detalhes
                     </Link>
                   </div>
                 </div>

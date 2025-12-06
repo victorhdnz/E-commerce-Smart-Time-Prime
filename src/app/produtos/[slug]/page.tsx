@@ -6,13 +6,12 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks/useAuth'
-import { useCart } from '@/hooks/useCart'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils/format'
 import { createClient } from '@/lib/supabase/client'
 import { Product, ProductColor } from '@/types'
 import Image from 'next/image'
-import { ShoppingCart, Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin, Eye, X, ChevronLeft, ChevronRight, GitCompare, Package, Plus } from 'lucide-react'
+import { Heart, Share2, Star, Truck, Shield, RefreshCw, MapPin, Eye, X, ChevronLeft, ChevronRight, GitCompare, Package, Plus } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { useProductComparison } from '@/hooks/useProductComparison'
@@ -21,7 +20,6 @@ import { getProductPrice } from '@/lib/utils/price'
 export default function ProductPage({ params }: { params: { slug: string } }) {
   const router = useRouter()
   const { isAuthenticated } = useAuth()
-  const { addItem } = useCart()
   const { addProduct, products, canAddMore } = useProductComparison()
   const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
 
@@ -304,49 +302,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     }
   }
 
-  const handleAddToCart = async () => {
-    if (!isAuthenticated) {
-      router.push('/login')
-      return
-    }
-
-    if (!product) return
-
-    // Verificar se o produto tem cores e se uma cor foi selecionada
-    if (product.colors && product.colors.length > 0 && !selectedColor) {
-      toast.error('Por favor, selecione uma cor antes de adicionar ao carrinho')
-      return
-    }
-
-    // Verificar estoque antes de adicionar (apenas se houver cor selecionada com estoque definido)
-    if (selectedColor?.stock !== undefined) {
-      if (selectedColor.stock <= 0) {
-        toast.error('Produto esgotado')
-        return
-      }
-
-      if (quantity > selectedColor.stock) {
-        toast.error(`Estoque insuficiente. Disponível: ${selectedColor.stock} unidade(s)`)
-        setQuantity(selectedColor.stock)
-        return
-      }
-    }
-
-    try {
-      // Se for um combo, adicionar o produto combo em si (não os produtos individuais)
-      if (comboItems.length > 0) {
-        await addItem(product, selectedColor || undefined, quantity)
-        toast.success('Combo adicionado ao carrinho!')
-      } else {
-        await addItem(product, selectedColor || undefined, quantity)
-        // Os brindes são adicionados automaticamente pelo hook useCart
-        // Não precisamos adicionar manualmente aqui para evitar duplicação
-        toast.success('Produto adicionado ao carrinho!')
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Erro ao adicionar ao carrinho')
-    }
-  }
 
   const handleUnlockPrice = () => {
     if (!isAuthenticated) {
@@ -990,16 +945,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
           {/* Actions */}
           <div className="flex flex-wrap gap-2 sm:gap-4 mb-6">
-            <Button
-              size="sm"
-              className="flex-1 sm:flex-initial min-w-[140px] sm:min-w-0 text-xs sm:text-base"
-              onClick={handleAddToCart}
-              disabled={selectedColor?.stock !== undefined && selectedColor.stock === 0}
-            >
-              <ShoppingCart size={16} className="sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">{(selectedColor?.stock !== undefined && selectedColor.stock === 0) ? 'Esgotado' : 'Adicionar ao Carrinho'}</span>
-              <span className="sm:hidden">{(selectedColor?.stock !== undefined && selectedColor.stock === 0) ? 'Esgotado' : 'Adicionar'}</span>
-            </Button>
             <Button
               onClick={() => {
                 if (products.some(p => p.id === product.id)) {

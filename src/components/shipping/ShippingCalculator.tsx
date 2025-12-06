@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useCart } from '@/hooks/useCart'
 import { useUserLocation } from '@/hooks/useUserLocation'
 import { formatCurrency } from '@/lib/utils/format'
 import { Input } from '@/components/ui/Input'
@@ -35,7 +34,8 @@ export function ShippingCalculator({
   selectedShipping,
 }: ShippingCalculatorProps) {
   const router = useRouter()
-  const { items } = useCart()
+  // Carrinho removido - componente não utilizado no sistema atual
+  const items: any[] = []
   const { userAddress, needsAddress } = useUserLocation()
   const [cep, setCep] = useState('')
   const [loading, setLoading] = useState(false)

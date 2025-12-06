@@ -8,9 +8,8 @@ import Image from 'next/image'
 import { Card } from '@/components/ui/Card'
 import { Product } from '@/types'
 import { formatCurrency } from '@/lib/utils/format'
-import { ShoppingCart, Eye, MapPin, GitCompare, Package, Gift } from 'lucide-react'
+import { Eye, MapPin, GitCompare, Package, Gift } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { useCart } from '@/hooks/useCart'
 import { useProductComparison } from '@/hooks/useProductComparison'
 import toast from 'react-hot-toast'
 import { useUserLocation } from '@/hooks/useUserLocation'
@@ -25,7 +24,6 @@ interface ProductCardProps {
 export const ProductCard = ({ product }: ProductCardProps) => {
   const router = useRouter()
   const mainImage = product.images?.[0] || product.colors?.[0]?.images[0]
-  const { addItem } = useCart()
   const { addProduct, products, canAddMore } = useProductComparison()
   const { isAuthenticated } = useAuth()
   const { isUberlandia, needsAddress, loading: locationLoading } = useUserLocation()
@@ -133,19 +131,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     }
   }, [showAddressModal])
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault() // Previne navegação do Link pai
-    e.stopPropagation()
-
-    // Se for um combo, adicionar o produto combo em si (não os produtos individuais)
-    if (isCombo) {
-      addItem(product, undefined, 1)
-      toast.success('Combo adicionado ao carrinho!')
-    } else {
-      addItem(product)
-      toast.success('Produto adicionado ao carrinho!')
-    }
-  }
 
   return (
     <Card hover className="group">
@@ -365,13 +350,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               title={isInComparison ? 'Ver comparação' : canAddMore() ? 'Adicionar à comparação' : 'Limite de comparação atingido'}
             >
               <GitCompare size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </button>
-            <button
-              onClick={handleAddToCart}
-              className="p-1.5 sm:p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-all hover:scale-110 disabled:bg-gray-400 disabled:cursor-not-allowed flex-shrink-0"
-              title="Adicionar ao carrinho"
-            >
-              <ShoppingCart size={16} className="sm:w-[20px] sm:h-[20px]" />
             </button>
           </div>
         </div>
