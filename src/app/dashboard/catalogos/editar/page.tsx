@@ -141,37 +141,75 @@ function EditCatalogContent() {
       setCatalog(data as ProductCatalog)
       const content = (data.content as any) || {}
       
-      // Se não houver conteúdo, criar estrutura pré-definida
+      // Se não houver conteúdo, criar estrutura pré-definida e salvar automaticamente
       const hasContent = content.hero?.title || content.features?.length > 0 || content.gallery?.length > 0
+      
+      if (!hasContent) {
+        const defaultContent = {
+          hero: {
+            title: data.title || 'Smart Watch',
+            subtitle: 'O mais poderoso de todos os tempos.',
+            badge: 'Novo',
+            image: '',
+            cta_text: 'Comprar Agora',
+            cta_link: '/comparar',
+          },
+          features: [
+            { icon: '💡', title: 'Design Moderno', description: 'Estilo contemporâneo que combina com qualquer ocasião.' },
+            { icon: '⚡', title: 'Alta Performance', description: 'Processador rápido e eficiente para todas as suas necessidades.' },
+            { icon: '🔋', title: 'Bateria Duradoura', description: 'Bateria que dura o dia todo com uma única carga.' },
+          ],
+          features_title: 'Recursos Principais',
+          features_subtitle: 'Descubra o que torna este produto especial',
+          gallery: [],
+          gallery_title: 'Galeria de Imagens',
+          categories: [],
+          featured_products: [],
+          featured_subtitle: 'Produtos em Destaque',
+          cta_title: 'Pronto para começar?',
+          cta_description: 'Explore nossa coleção completa de produtos.',
+          cta_text: 'Ver todos os produtos',
+          cta_link: '/comparar',
+          sections: [],
+        }
+        
+        // Salvar automaticamente a estrutura pré-definida
+        await supabase
+          .from('product_catalogs')
+          .update({ content: defaultContent })
+          .eq('id', versionId)
+        
+        // Usar o conteúdo padrão
+        content.hero = defaultContent.hero
+        content.features = defaultContent.features
+        content.features_title = defaultContent.features_title
+        content.features_subtitle = defaultContent.features_subtitle
+        content.gallery = defaultContent.gallery
+        content.gallery_title = defaultContent.gallery_title
+        content.featured_subtitle = defaultContent.featured_subtitle
+        content.cta_title = defaultContent.cta_title
+        content.cta_description = defaultContent.cta_description
+        content.cta_text = defaultContent.cta_text
+        content.cta_link = defaultContent.cta_link
+      }
       
       setSettings({
         title: data.title || '',
         description: data.description || '',
         cover_image: data.cover_image || '',
-        hero: content.hero || (hasContent ? { title: '', subtitle: '', badge: '', image: '', cta_text: '', cta_link: '' } : {
-          title: data.title || 'Smart Watch',
-          subtitle: 'O mais poderoso de todos os tempos.',
-          badge: 'Novo',
-          image: '',
-          cta_text: 'Comprar Agora',
-          cta_link: '/comparar',
-        }),
+        hero: content.hero || { title: '', subtitle: '', badge: '', image: '', cta_text: '', cta_link: '' },
         video: content.video || undefined,
-        features: content.features || (hasContent ? [] : [
-          { icon: '💡', title: 'Design Moderno', description: 'Estilo contemporâneo que combina com qualquer ocasião.' },
-          { icon: '⚡', title: 'Alta Performance', description: 'Processador rápido e eficiente para todas as suas necessidades.' },
-          { icon: '🔋', title: 'Bateria Duradoura', description: 'Bateria que dura o dia todo com uma única carga.' },
-        ]),
-        features_title: content.features_title || (hasContent ? '' : 'Recursos Principais'),
-        features_subtitle: content.features_subtitle || (hasContent ? '' : 'Descubra o que torna este produto especial'),
+        features: content.features || [],
+        features_title: content.features_title || '',
+        features_subtitle: content.features_subtitle || '',
         gallery: content.gallery || [],
-        gallery_title: content.gallery_title || (hasContent ? '' : 'Galeria de Imagens'),
+        gallery_title: content.gallery_title || '',
         product_showcase: content.product_showcase || undefined,
-        featured_subtitle: content.featured_subtitle || (hasContent ? '' : 'Produtos em Destaque'),
-        cta_title: content.cta_title || (hasContent ? '' : 'Pronto para começar?'),
-        cta_description: content.cta_description || (hasContent ? '' : 'Explore nossa coleção completa de produtos.'),
-        cta_text: content.cta_text || (hasContent ? '' : 'Ver todos os produtos'),
-        cta_link: content.cta_link || (hasContent ? '' : '/comparar'),
+        featured_subtitle: content.featured_subtitle || '',
+        cta_title: content.cta_title || '',
+        cta_description: content.cta_description || '',
+        cta_text: content.cta_text || '',
+        cta_link: content.cta_link || '',
         theme_colors: (data.theme_colors as any) || {
           primary: '#000000',
           secondary: '#ffffff',

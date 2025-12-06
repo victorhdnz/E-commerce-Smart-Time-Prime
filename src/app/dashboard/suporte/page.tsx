@@ -123,7 +123,44 @@ function SupportContent() {
         model_slug: versionFormData.model_slug.toLowerCase().replace(/\s+/g, '-'),
         title: versionFormData.title,
         content: editingVersion?.content || {
-          sections: [],
+          sections: [
+            {
+              id: 'hero-1',
+              type: 'hero',
+              title: versionFormData.title || 'Bem-vindo',
+              subtitle: `Tudo o que você precisa saber sobre o produto.`,
+              content: '',
+              image: '',
+            },
+            {
+              id: 'feature-1',
+              type: 'feature-card',
+              title: 'Primeiros Passos',
+              subtitle: 'Comece aqui',
+              content: 'Configure seu dispositivo seguindo estes passos simples.',
+              image: '',
+              link: '',
+              linkText: 'Saiba mais',
+            },
+            {
+              id: 'steps-1',
+              type: 'steps',
+              title: 'Como Configurar',
+              subtitle: 'Siga estes passos',
+              items: [
+                {
+                  title: 'Passo 1: Ligar o dispositivo',
+                  description: 'Pressione e segure o botão de energia por 3 segundos.',
+                  image: '',
+                },
+                {
+                  title: 'Passo 2: Conectar ao app',
+                  description: 'Baixe o app e conecte via Bluetooth.',
+                  image: '',
+                },
+              ],
+            },
+          ],
         },
         is_active: true,
       }

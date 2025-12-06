@@ -35,6 +35,30 @@ export function CatalogLayout({ catalog, products }: CatalogLayoutProps) {
     return match ? match[1] : null
   }
 
+  // Verificar se há conteúdo para exibir
+  const hasContent = content.hero?.title || content.hero?.image || 
+                     content.video?.url || 
+                     (content.features && content.features.length > 0) ||
+                     (content.gallery && content.gallery.length > 0) ||
+                     content.product_showcase ||
+                     (featuredProducts && featuredProducts.length > 0)
+
+  // Se não houver conteúdo, mostrar mensagem
+  if (!hasContent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background || '#ffffff' }}>
+        <div className="text-center px-4">
+          <h1 className="text-3xl font-bold mb-4" style={{ color: colors.text || '#000000' }}>
+            {catalog.title || 'Catálogo'}
+          </h1>
+          <p className="text-lg mb-8" style={{ color: colors.text ? `${colors.text}99` : '#666666' }}>
+            Este catálogo ainda não possui conteúdo. Edite-o no dashboard para adicionar informações.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: colors.background || '#ffffff' }}>
       {/* Hero Section */}

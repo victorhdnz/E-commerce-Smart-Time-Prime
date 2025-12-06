@@ -79,7 +79,7 @@ function EditSupportContent() {
 
       setSupportPage(data as ProductSupportPage)
       const content = (data.content as any) || {}
-      // Se não houver seções, criar estrutura pré-definida
+      // Se não houver seções, criar estrutura pré-definida e salvar automaticamente
       if (!content.sections || content.sections.length === 0) {
         const defaultSections: SupportSection[] = [
           {
@@ -120,6 +120,13 @@ function EditSupportContent() {
           },
         ]
         setSections(defaultSections)
+        // Salvar automaticamente a estrutura pré-definida
+        await supabase
+          .from('product_support_pages')
+          .update({
+            content: { sections: defaultSections },
+          })
+          .eq('id', versionId)
       } else {
         setSections(content.sections || [])
       }
