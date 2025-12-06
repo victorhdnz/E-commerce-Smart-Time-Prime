@@ -92,8 +92,8 @@ export default function ProductsPage() {
 
     // Filtrar por faixa de preço
     filtered = filtered.filter(product => 
-      product.local_price >= filters.priceRange[0] && 
-      product.local_price <= filters.priceRange[1]
+      product.price >= filters.priceRange[0] && 
+      product.price <= filters.priceRange[1]
     )
 
     // Filtrar por busca
@@ -112,10 +112,10 @@ export default function ProductsPage() {
         // Mostrar todos os produtos sem ordenação especial (ordem padrão do banco)
         break
       case 'price_asc':
-        filtered.sort((a, b) => a.local_price - b.local_price)
+        filtered.sort((a, b) => a.price - b.price)
         break
       case 'price_desc':
-        filtered.sort((a, b) => b.local_price - a.local_price)
+        filtered.sort((a, b) => b.price - a.price)
         break
       case 'name_asc':
         filtered.sort((a, b) => a.name.localeCompare(b.name))
