@@ -19,8 +19,8 @@ interface CartStore {
 
 export const useCart = create<CartStore>()(
   persist(
-    () => ({
-      items: [],
+    (set, get) => ({
+      items: [] as CartItem[],
       addItem: async () => {
         // Função desabilitada - carrinho não utilizado
       },
