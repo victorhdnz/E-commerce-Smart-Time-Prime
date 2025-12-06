@@ -499,7 +499,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             ) : !isAuthenticated ? (
               <div className="p-4 rounded-xl bg-gray-100 border-2 border-dashed border-gray-300">
                 <div className="text-4xl font-bold text-gray-400 blur-md select-none mb-2">
-                  {formatCurrency(product.local_price || product.national_price)}
+                  {formatCurrency(product.price || 0)}
                 </div>
                 <Button onClick={() => router.push('/login')} variant="outline" size="sm">
                   Faça login para ver o preço
@@ -769,7 +769,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                           ) : !isAuthenticated ? (
                             <div className="text-left">
                               <span className="text-sm font-bold text-gray-400 blur-sm select-none">
-                                {formatCurrency(item.product.local_price || item.product.national_price)}
+                                {formatCurrency(item.product.price || 0)}
                               </span>
                             </div>
                           ) : (
