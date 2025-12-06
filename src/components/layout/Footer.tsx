@@ -62,8 +62,8 @@ export const Footer = () => {
     loadSiteSettings()
   }, [])
 
-  // Ocultar footer em landing pages, página principal, dashboard e comparador
-  if (pathname?.startsWith('/lp/') || pathname === '/' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin') || pathname?.startsWith('/comparar')) {
+  // Ocultar footer em landing pages, página principal, dashboard, comparador, catálogos e suporte
+  if (pathname?.startsWith('/lp/') || pathname === '/' || pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin') || pathname?.startsWith('/comparar') || pathname?.startsWith('/catalogo') || pathname?.startsWith('/suporte')) {
     return null
   }
 

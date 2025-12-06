@@ -10,10 +10,12 @@ import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
 export function ConditionalWhatsAppFloat() {
   const pathname = usePathname()
   
-  // Não mostrar o botão global nas landing pages (/lp/*)
+  // Não mostrar o botão global nas landing pages, catálogos e suporte
   const isLandingPage = pathname?.startsWith('/lp/')
+  const isCatalog = pathname?.startsWith('/catalogo')
+  const isSupport = pathname?.startsWith('/suporte')
   
-  if (isLandingPage) {
+  if (isLandingPage || isCatalog || isSupport) {
     return null
   }
   
