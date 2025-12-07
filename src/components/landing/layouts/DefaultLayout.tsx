@@ -199,7 +199,7 @@ export function DefaultLayout({
             textColor={settings.hero_text_color}
             heroImages={settings.hero_images || []}
             heroBanners={settings.hero_banners || []}
-            timerEndDate={settings.timer_end_date ? new Date(settings.timer_end_date) : undefined}
+            timerEndDate={settings.timer_enabled && settings.timer_end_date ? new Date(settings.timer_end_date) : undefined}
             viewerCountEnabled={settings.hero_viewer_count_enabled}
             viewerCountText={settings.hero_viewer_count_text}
           />
@@ -235,7 +235,7 @@ export function DefaultLayout({
             whatsappNumber={settings.value_package_whatsapp_number}
             discountText={settings.value_package_discount_text}
             promotionText={settings.value_package_promotion_text}
-            endDate={settings.timer_end_date ? new Date(settings.timer_end_date) : undefined}
+            endDate={settings.timer_enabled && settings.timer_end_date ? new Date(settings.timer_end_date) : undefined}
             backgroundColor={settings.value_package_bg_color}
             textColor={settings.value_package_text_color}
           />
@@ -336,7 +336,7 @@ export function DefaultLayout({
       {sectionOrder.map(sectionKey => renderSection(sectionKey))}
 
       {/* Exit Popup */}
-      {settings.exit_popup_enabled && settings.timer_end_date && (
+      {settings.exit_popup_enabled && settings.timer_enabled && settings.timer_end_date && (
         <ExitPopup
           endDate={new Date(settings.timer_end_date)}
           title={settings.exit_popup_title}
