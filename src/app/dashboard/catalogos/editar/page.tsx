@@ -62,6 +62,11 @@ interface CatalogSettings {
   }
   featured_products: string[]
   featured_products_links?: Record<string, string> // Mapeia product_id -> link customizado
+  categories?: Array<{
+    id: string
+    name: string
+    products: string[]
+  }>
 }
 
 function EditCatalogContent() {
