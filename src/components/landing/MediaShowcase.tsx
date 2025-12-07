@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import { Play } from 'lucide-react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 
@@ -49,6 +50,7 @@ export const MediaShowcase = ({
   },
 }: MediaShowcaseProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false)
 
   const nextSlide = () => {
     if (images.length === 0) return
@@ -253,10 +255,11 @@ export const MediaShowcase = ({
                             />
                           )
                         }
-                        return (
+                        return isVideoPlaying ? (
                           <video
                             src={videoUrl}
                             controls
+                            autoPlay
                             loop
                             playsInline
                             className="w-full h-full object-cover"
@@ -264,6 +267,24 @@ export const MediaShowcase = ({
                           >
                             Seu navegador não suporta vídeo.
                           </video>
+                        ) : (
+                          <div className="relative w-full h-full">
+                            <video
+                              src={videoUrl}
+                              className="w-full h-full object-cover"
+                              style={{ backgroundColor: '#000000' }}
+                              muted
+                              playsInline
+                            />
+                            <button
+                              onClick={() => setIsVideoPlaying(true)}
+                              className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
+                            >
+                              <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center">
+                                <Play size={32} className="text-black ml-1" fill="currentColor" />
+                              </div>
+                            </button>
+                          </div>
                         )
                       })()}
                       

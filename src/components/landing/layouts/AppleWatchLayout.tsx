@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Play } from 'lucide-react'
 import Image from 'next/image'
 import { trackClick } from '@/lib/utils/analytics'
 
@@ -283,6 +283,7 @@ export function AppleWatchLayout({
   }
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0)
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0)
+  const [playingVideos, setPlayingVideos] = useState<Record<string, boolean>>({})
   const featuresRef = useRef<HTMLDivElement>(null)
   
   // Merge das cores com defaults
@@ -651,23 +652,54 @@ export function AppleWatchLayout({
                     )}
                   </div>
                 ) : (
-                  <div className={`relative ${videoOrientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'} bg-black`}>
-                    <video
-                      src={content.video.url}
-                      controls
-                      loop
-                      playsInline
-                      className="w-full h-full object-cover rounded-xl"
-                      style={{ backgroundColor: '#000000' }}
-                    >
-                      Seu navegador não suporta vídeo.
-                    </video>
-                    {videoOrientation === 'vertical' && (
-                      <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2">
-                        <span>▶</span> Reels
+                  (() => {
+                    const videoKey = `apple-video-${content.video.url}`
+                    const isPlaying = playingVideos[videoKey]
+                    
+                    return isPlaying ? (
+                      <div className={`relative ${videoOrientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'} bg-black`}>
+                        <video
+                          src={content.video.url}
+                          controls
+                          autoPlay
+                          loop
+                          playsInline
+                          className="w-full h-full object-cover rounded-xl"
+                          style={{ backgroundColor: '#000000' }}
+                        >
+                          Seu navegador não suporta vídeo.
+                        </video>
+                        {videoOrientation === 'vertical' && (
+                          <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2">
+                            <span>▶</span> Reels
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    ) : (
+                      <div className={`relative ${videoOrientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'} bg-black rounded-xl overflow-hidden`}>
+                        <video
+                          src={content.video.url}
+                          className="w-full h-full object-cover"
+                          style={{ backgroundColor: '#000000' }}
+                          muted
+                          playsInline
+                        />
+                        <button
+                          onClick={() => setPlayingVideos(prev => ({ ...prev, [videoKey]: true }))}
+                          className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
+                        >
+                          <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center">
+                            <Play size={32} className="text-black ml-1" fill="currentColor" />
+                          </div>
+                        </button>
+                        {videoOrientation === 'vertical' && (
+                          <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2">
+                            <span>▶</span> Reels
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()
                 )}
               </div>
             </div>

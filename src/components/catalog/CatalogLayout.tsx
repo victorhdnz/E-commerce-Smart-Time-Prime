@@ -14,7 +14,7 @@ interface CatalogLayoutProps {
 export function CatalogLayout({ catalog, products }: CatalogLayoutProps) {
   const content = catalog.content as any
   const colors = catalog.theme_colors as any || {}
-  const [playingVideo, setPlayingVideo] = useState<string | null>(null)
+  const [playingVideos, setPlayingVideos] = useState<Record<string, boolean>>({})
 
   const getProductById = (id: string) => products.find(p => p.id === id)
   const featuredProducts = (content.featured_products || [])
@@ -35,13 +35,6 @@ export function CatalogLayout({ catalog, products }: CatalogLayoutProps) {
     return match ? match[1] : null
   }
 
-  const getYouTubeThumbnail = (url: string) => {
-    const videoId = getVideoId(url)
-    if (videoId) {
-      return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-    }
-    return null
-  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: colors.background || '#ffffff' }}>
@@ -143,46 +136,66 @@ export function CatalogLayout({ catalog, products }: CatalogLayoutProps) {
               {content.video.description || 'Descrição do vídeo aparecerá aqui'}
             </p>
             
-            <div className="relative aspect-video rounded-2xl overflow-hidden bg-black">
-              {content.video.url ? (
-                playingVideo === content.video.url ? (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${getVideoId(content.video.url)}?autoplay=1`}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <div className="relative w-full h-full">
-                    {(() => {
-                      const thumbnailUrl = content.video.thumbnail || getYouTubeThumbnail(content.video.url)
-                      return thumbnailUrl ? (
-                        <Image
-                          src={thumbnailUrl}
-                          alt={content.video.title || 'Video'}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400">
-                          Sem thumbnail
-                        </div>
-                      )
-                    })()}
-                    <button
-                      onClick={() => setPlayingVideo(content.video.url)}
-                      className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
+            <div className={`relative rounded-2xl overflow-hidden bg-black ${
+              content.video?.orientation === 'vertical' 
+                ? 'aspect-[9/16] max-w-sm mx-auto' 
+                : 'aspect-video'
+            }`}>
+              {content.video?.url ? (() => {
+                const videoId = getVideoId(content.video.url)
+                const isYouTube = !!videoId
+                const videoOrientation = content.video?.orientation || 'horizontal'
+
+                if (isYouTube) {
+                  // YouTube: mostrar iframe diretamente
+                  return (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${videoId}`}
+                      title={content.video.title || 'Vídeo'}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  )
+                } else {
+                  // Vídeo direto (upload): mostrar preview com botão de play
+                  const videoKey = `catalog-video-${content.video.url}`
+                  const isPlaying = playingVideos[videoKey]
+                  
+                  return isPlaying ? (
+                    <video
+                      src={content.video.url}
+                      controls
+                      autoPlay
+                      className="w-full h-full object-cover"
+                      style={{ backgroundColor: '#000000' }}
                     >
-                      <div 
-                        className="w-20 h-20 rounded-full flex items-center justify-center"
-                        style={{ backgroundColor: colors.accent || '#D4AF37' }}
+                      Seu navegador não suporta vídeo.
+                    </video>
+                  ) : (
+                    <div className="relative w-full h-full">
+                      <video
+                        src={content.video.url}
+                        className="w-full h-full object-cover"
+                        style={{ backgroundColor: '#000000' }}
+                        muted
+                        playsInline
+                      />
+                      <button
+                        onClick={() => setPlayingVideos(prev => ({ ...prev, [videoKey]: true }))}
+                        className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
                       >
-                        <Play size={32} className="text-black ml-1" fill="currentColor" />
-                      </div>
-                    </button>
-                  </div>
-                )
-              ) : (
+                        <div 
+                          className="w-20 h-20 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: colors.accent || '#D4AF37' }}
+                        >
+                          <Play size={32} className="text-black ml-1" fill="currentColor" />
+                        </div>
+                      </button>
+                    </div>
+                  )
+                }
+              })() : (
                 <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400 text-lg">
                   Sem vídeo
                 </div>

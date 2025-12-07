@@ -30,6 +30,7 @@ interface CatalogSettings {
     url: string
     title?: string
     description?: string
+    orientation?: 'horizontal' | 'vertical'
   }
   features?: Array<{
     icon?: string
@@ -577,7 +578,11 @@ function EditCatalogContent() {
                   {/* Preview do Vídeo - Sempre mostra */}
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
                     <p className="text-sm font-medium text-gray-700 mb-2">Preview do Vídeo:</p>
-                    <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                    <div className={`relative bg-black rounded-lg overflow-hidden ${
+                      settings.video?.orientation === 'vertical' 
+                        ? 'aspect-[9/16] max-w-sm mx-auto' 
+                        : 'aspect-video'
+                    }`}>
                       {!settings.video?.url ? (
                         <div className="w-full h-full flex items-center justify-center text-gray-400">
                           <div className="text-center">
@@ -637,9 +642,14 @@ function EditCatalogContent() {
                       />
                       <VideoUploader
                         value={settings.video?.url || ''}
+                        orientation={settings.video?.orientation || 'horizontal'}
+                        onOrientationChange={(orientation) => setSettings(prev => ({
+                          ...prev,
+                          video: { ...prev.video, orientation, url: prev.video?.url || '' } as any
+                        }))}
                         onChange={(url) => setSettings(prev => ({
                           ...prev,
-                          video: { ...prev.video, url: url } as any
+                          video: { ...prev.video, url: url, orientation: prev.video?.orientation || 'horizontal' } as any
                         }))}
                         placeholder="Ou faça upload de um vídeo"
                       />

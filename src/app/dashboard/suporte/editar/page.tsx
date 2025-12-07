@@ -33,6 +33,7 @@ interface SupportSection {
       full_description?: string
       additional_images?: string[]
       video?: string
+      video_orientation?: 'horizontal' | 'vertical'
       steps?: Array<{ title: string; description: string; image?: string }>
     }
   }>
@@ -547,11 +548,22 @@ function EditSupportContent() {
                                   />
                                   <VideoUploader
                                     value={item.detailed_content?.video || ''}
+                                    orientation={item.detailed_content?.video_orientation || 'horizontal'}
+                                    onOrientationChange={(orientation) => {
+                                      updateItemInSection(index, itemIndex, {
+                                        detailed_content: {
+                                          ...item.detailed_content,
+                                          video_orientation: orientation,
+                                          video: item.detailed_content?.video || ''
+                                        }
+                                      })
+                                    }}
                                     onChange={(url) => {
                                       updateItemInSection(index, itemIndex, {
                                         detailed_content: {
                                           ...item.detailed_content,
-                                          video: url
+                                          video: url,
+                                          video_orientation: item.detailed_content?.video_orientation || 'horizontal'
                                         }
                                       })
                                     }}
