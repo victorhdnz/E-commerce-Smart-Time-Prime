@@ -1,6 +1,6 @@
-# 🛍️ E-commerce Template
+# 🎨 Editor de Landing Page / Comparador de Produtos
 
-> Template completo e reutilizável de E-commerce com Design Moderno e Dashboard Administrativo
+> Sistema completo para criar e gerenciar Landing Pages personalizadas e comparar produtos de forma visual e interativa
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
@@ -12,24 +12,26 @@
 
 ## ✨ Sobre o Projeto
 
-Este é um **template completo de e-commerce** desenvolvido com as melhores tecnologias do mercado. Pode ser facilmente adaptado para qualquer tipo de negócio, oferecendo uma experiência de compra excepcional com design elegante, animações suaves e funcionalidades avançadas.
+Este é um **sistema completo de Editor de Landing Pages e Comparador de Produtos** desenvolvido com as melhores tecnologias do mercado. Permite criar landing pages personalizadas com múltiplos layouts, gerenciar catálogos de produtos, comparar produtos de forma visual e criar páginas de suporte/manuais.
 
 **🎯 Perfeito para:**
-- Lojas de produtos físicos
-- E-commerce de qualquer nicho
-- Empresas que precisam de uma solução completa e personalizável
+- Agências de marketing digital
+- E-commerces que precisam de landing pages personalizadas
+- Empresas que vendem produtos comparáveis
 - Projetos que precisam ser replicados para múltiplos clientes
+- Campanhas de marketing com múltiplas versões
 
 ### 🎯 Principais Destaques
 
-- 🎨 **Design Elegante** - Interface sofisticada em preto, branco e dourado
-- ⚡ **Performance** - Next.js 14 com App Router e otimizações automáticas
+- 🎨 **Editor Visual de Landing Pages** - Crie landing pages sem código
+- 📊 **Comparador de Produtos** - Compare produtos lado a lado com tópicos customizáveis
 - 📱 **100% Responsivo** - Funciona perfeitamente em todos os dispositivos
 - 🎛️ **Dashboard Admin** - Gerenciamento completo via interface visual
-- 🎭 **Layouts Sazonais** - Temas para Black Friday, Natal e outras datas
-- 💰 **Preços Dinâmicos** - Sistema flexível de preços (local/nacional)
-- 🎁 **Sistema de Brindes** - Brindes automáticos vinculados aos produtos
-- 🔐 **Login Social** - Autenticação rápida com Google OAuth
+- 🎭 **Múltiplos Layouts** - Layout Padrão, Apple Watch e mais
+- 📹 **Upload de Vídeos** - Suporte para vídeos verticais e horizontais
+- 📚 **Catálogos de Produtos** - Crie catálogos personalizados com categorias
+- 📖 **Páginas de Suporte** - Crie manuais e guias para produtos
+- 📈 **Analytics Integrado** - Acompanhe performance das landing pages
 
 ---
 
@@ -42,8 +44,8 @@ Este é um **template completo de e-commerce** desenvolvido com as melhores tecn
 npm install
 
 # 2. Configurar ambiente
-cp .env.local.example .env.local
-# Preencha as credenciais do Supabase e Google
+cp .env.example .env.local
+# Preencha as credenciais do Supabase
 
 # 3. Rodar o projeto
 npm run dev
@@ -62,38 +64,37 @@ http://localhost:3000
 
 ## 🎨 Funcionalidades Principais
 
-### 🛍️ E-commerce Completo
+### 🎨 Editor de Landing Pages
 
-- ✅ **Catálogo de Produtos** - Grid responsivo com filtros
-- ✅ **Página de Detalhes** - Galeria de imagens, variações de cor
-- ✅ **Carrinho Persistente** - Salva itens entre sessões
-- ✅ **Checkout Inteligente** - Busca CEP, calcula frete automaticamente
-- ✅ **Múltiplos Pagamentos** - Cartão, PIX com desconto
+- ✅ **Múltiplos Layouts** - Layout Padrão, Apple Watch e mais
+- ✅ **Editor Visual** - Configure seções, cores, textos e imagens
+- ✅ **Versões de Campanha** - Crie múltiplas versões da mesma landing page
+- ✅ **Preview em Tempo Real** - Veja as mudanças antes de publicar
+- ✅ **Analytics Integrado** - Acompanhe visualizações, cliques e conversões
+- ✅ **Vídeos com Orientação** - Suporte para vídeos verticais e horizontais
+- ✅ **Cronômetros** - Adicione contagem regressiva para promoções
+- ✅ **Seções Modulares** - Hero, Produtos, Vídeo, FAQ, Sobre Nós e mais
 
-### 💎 Recursos Premium
+### 📊 Comparador de Produtos
 
-- 🎁 **Brindes Automáticos** - Produtos ganham brindes configuráveis
-- 💰 **Preços Dinâmicos** - Sistema flexível de preços (local/nacional)
-- 🔒 **Login para Ver Preço** - Preços revelados apenas após autenticação
-- ⏱️ **Cronômetros** - Contagem regressiva para ofertas
-- ⭐ **Avaliações** - Sistema de reviews com 5 estrelas
+- ✅ **Comparação Visual** - Compare produtos lado a lado
+- ✅ **Tópicos Customizáveis** - Defina quais características comparar
+- ✅ **Links Salvos** - Crie links de comparação pré-definidos
+- ✅ **Responsivo** - Funciona perfeitamente em mobile
 
-### 🎛️ Dashboard Administrativo
+### 📚 Catálogos de Produtos
 
-- 📦 **Gerenciar Produtos** - CRUD completo com upload de imagens
-- 🎨 **Landing Page** - Editor visual de seções (drag & drop)
-- 🎭 **Layouts Sazonais** - Crie temas para datas especiais
-- ❓ **FAQ Editável** - Adicione e reordene perguntas
-- 📊 **Estatísticas** - Vendas, pedidos e clientes em tempo real
-- ⚙️ **Configurações** - Cores, frete, SEO e mais
+- ✅ **Catálogos Personalizados** - Crie catálogos com layout próprio
+- ✅ **Categorias** - Organize produtos por categorias
+- ✅ **Produtos em Destaque** - Destaque produtos específicos
+- ✅ **Temas Customizáveis** - Personalize cores e estilos
 
-### 🎨 Design e UX
+### 📖 Páginas de Suporte
 
-- ✨ **Animações Suaves** - Framer Motion em toda interface
-- 🖼️ **Imagens Otimizadas** - Lazy loading e WebP automático
-- 📱 **Mobile First** - Design pensado para smartphones
-- ♿ **Acessibilidade** - Navegação por teclado, ARIA labels
-- 🌙 **Loading States** - Feedback visual em todas ações
+- ✅ **Manuais e Guias** - Crie páginas de suporte para produtos
+- ✅ **Passo a Passo** - Crie tutoriais com múltiplos passos
+- ✅ **Vídeos e Imagens** - Adicione conteúdo multimídia
+- ✅ **Navegação por Modelo** - Organize por modelo de produto
 
 ---
 
@@ -114,14 +115,14 @@ Row Level Security (RLS)
 
 ### Gerenciamento de Estado
 ```
-Zustand (Carrinho)
+Zustand (Estado Global)
 React Hooks
 Context API
 ```
 
 ### Integrações
 ```
-Google OAuth    ViaCEP    Melhor Envio
+Cloudinary (Upload de Imagens/Vídeos)
 ```
 
 ---
@@ -129,28 +130,28 @@ Google OAuth    ViaCEP    Melhor Envio
 ## 📁 Estrutura do Projeto
 
 ```
-e-commerce-template/
+landing-page-editor/
 ├── 📚 Documentação
 │   ├── README.md              Este arquivo
 │   └── REPLICACAO_PROJETO.md  Guia completo de replicação
 │
 ├── 🗄️ supabase/
-│   ├── schema_completo.sql    Script completo do banco de dados
-│   └── setup_storage_policies.sql  Políticas de storage
+│   ├── schema_completo_landing_editor.sql    Script completo do banco de dados
+│   └── setup_storage_policies_landing_editor.sql  Políticas de storage
 │
 ├── 📱 src/
 │   ├── app/                   Páginas (App Router)
 │   │   ├── page.tsx          Landing Page
-│   │   ├── produtos/         Catálogo
-│   │   ├── carrinho/         Carrinho
-│   │   ├── checkout/         Checkout
-│   │   ├── minha-conta/      Área do cliente
+│   │   ├── lp/               Landing Pages públicas
+│   │   ├── comparar/         Comparador de produtos
+│   │   ├── catalogo/         Catálogos de produtos
+│   │   ├── suporte/          Páginas de suporte
 │   │   └── dashboard/        Admin
 │   │
 │   ├── components/           Componentes
-│   │   ├── ui/              Botões, Inputs
-│   │   ├── landing/         Seções Home
-│   │   ├── products/        Cards
+│   │   ├── ui/              Botões, Inputs, VideoUploader
+│   │   ├── landing/         Seções de Landing Page
+│   │   ├── catalog/         Componentes de Catálogo
 │   │   └── layout/          Header, Footer
 │   │
 │   ├── lib/                 Bibliotecas
@@ -172,72 +173,29 @@ e-commerce-template/
 
 ## 🗄️ Banco de Dados
 
-### 13 Tabelas Criadas
+### Tabelas Principais
 
 | Tabela | Descrição |
 |--------|-----------|
 | `profiles` | Usuários e perfis |
 | `products` | Catálogo de produtos |
 | `product_colors` | Variações de cor |
-| `product_gifts` | Brindes vinculados |
-| `product_combos` | Combos de produtos |
-| `combo_items` | Itens dos combos |
-| `addresses` | Endereços de entrega |
-| `orders` | Pedidos realizados |
-| `order_items` | Itens dos pedidos |
-| `reviews` | Avaliações de produtos |
-| `coupons` | Cupons de desconto |
-| `coupon_usage` | Uso de cupons |
-| `favorites` | Lista de desejos |
-| `faqs` | Perguntas frequentes |
-| `seasonal_layouts` | Layouts temáticos |
-| `landing_sections` | Seções da home |
-| `timers` | Cronômetros |
+| `landing_layouts` | Layouts principais de landing pages |
+| `landing_versions` | Versões/campanhas de landing pages |
+| `landing_analytics` | Analytics e tracking |
+| `product_comparisons` | Dados de comparação de produtos |
+| `saved_comparisons` | Links de comparação salvos |
+| `product_support_pages` | Páginas de suporte/manuais |
+| `product_catalogs` | Catálogos de produtos |
 | `site_settings` | Configurações globais |
 | `site_terms` | Termos e políticas |
-| `whatsapp_vip_registrations` | Cadastros VIP |
 
-### 3 Buckets de Storage
+### Buckets de Storage
 
 - **products** - Imagens de produtos
 - **banners** - Banners da landing page
 - **profiles** - Fotos de perfil
-
----
-
-## 🎯 Casos de Uso
-
-### Para Empresas
-- Venda online com interface profissional
-- Dashboard completo para gerenciar produtos, pedidos e configurações
-- Campanhas sazonais (Black Friday, Natal, etc.)
-- Sistema totalmente personalizável sem necessidade de programação
-- Fácil replicação para múltiplos clientes/negócios
-
-### Para Desenvolvedores
-- Template limpo e bem documentado
-- TypeScript para segurança de tipos
-- Componentes reutilizáveis e modulares
-- Fácil de customizar e estender
-- Guia completo de replicação incluído
-- SQL consolidado e pronto para uso
-
-### Para Clientes Finais
-- Experiência de compra fluida e intuitiva
-- Login rápido com Google OAuth
-- Rastreamento de pedidos
-- Interface 100% responsiva
-
----
-
-## 📊 Estatísticas
-
-- 📝 **8.500+** linhas de código
-- 🧩 **20+** componentes React
-- 📄 **14** páginas completas
-- 🗄️ **13** tabelas no banco
-- ✨ **200+** funcionalidades
-- 📚 Documentação completa de replicação
+- **videos** - Vídeos para landing pages e suporte
 
 ---
 
@@ -251,9 +209,10 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...
 SUPABASE_SERVICE_ROLE_KEY=eyJxxx...
 
-# Google OAuth
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=GOCSPX-xxx
+# Cloudinary (Upload de Imagens/Vídeos)
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=seu-cloud-name
+CLOUDINARY_API_KEY=sua-api-key
+CLOUDINARY_API_SECRET=seu-api-secret
 
 # Configurações
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
@@ -264,17 +223,18 @@ NEXT_PUBLIC_SITE_NAME=Nome da Sua Empresa
 
 ```bash
 # Execute no SQL Editor do Supabase
-# Use o arquivo: supabase/schema_completo.sql
+# Use o arquivo: supabase/schema_completo_landing_editor.sql
 ```
 
 📋 **Veja o guia completo**: [REPLICACAO_PROJETO.md](REPLICACAO_PROJETO.md)
 
 ### 3️⃣ Storage
 
-Crie 3 buckets **públicos**:
+Crie 4 buckets **públicos**:
 - products
 - banners
 - profiles
+- videos
 
 ---
 
@@ -293,29 +253,16 @@ npm run build
 
 ---
 
-## 📸 Características Visuais
-
-### Landing Page
-Design moderno e personalizável com hero animado, cronômetro para promoções e produtos em destaque.
-
-### Dashboard Administrativo
-Interface completa para gerenciar produtos, pedidos, FAQ, layouts sazonais e todas as configurações do site.
-
-### Checkout
-Fluxo de compra intuitivo com cálculo automático de frete, múltiplas formas de pagamento e validações em tempo real.
-
----
-
 ## 🔄 Replicação e Personalização
 
-Este template foi projetado para ser facilmente replicado e personalizado para diferentes empresas e negócios.
+Este sistema foi projetado para ser facilmente replicado e personalizado para diferentes empresas e negócios.
 
 ### Como Replicar
 1. Siga o guia completo em **[REPLICACAO_PROJETO.md](REPLICACAO_PROJETO.md)**
 2. Configure as variáveis de ambiente
 3. Execute o SQL completo
 4. Personalize cores, textos e imagens
-5. Configure integrações (Stripe, Google OAuth, etc.)
+5. Configure integrações (Cloudinary, etc.)
 
 ### Personalização Rápida
 - **Cores**: Configure no dashboard ou edite `tailwind.config.js`
@@ -348,8 +295,7 @@ Consulte a seção de troubleshooting em [REPLICACAO_PROJETO.md](REPLICACAO_PROJ
 - **Supabase** - Backend completo (PostgreSQL + Auth + Storage)
 - **Tailwind CSS** - Estilização utilitária
 - **Framer Motion** - Animações
-- **Stripe** - Pagamentos (estrutura preparada)
-- **Cloudinary** - Otimização de imagens
+- **Cloudinary** - Upload e otimização de imagens/vídeos
 
 ---
 
@@ -358,7 +304,7 @@ Consulte a seção de troubleshooting em [REPLICACAO_PROJETO.md](REPLICACAO_PROJ
 ```bash
 # 1. Clone o repositório
 git clone seu-repositorio
-cd e-commerce-template
+cd landing-page-editor
 
 # 2. Instale as dependências
 npm install
@@ -380,9 +326,7 @@ npm run dev
 Após clonar o projeto:
 
 - [ ] Configurar Supabase (criar projeto e executar SQL)
-- [ ] Configurar Google OAuth
-- [ ] Configurar Cloudinary (opcional, para upload de imagens)
-- [ ] Configurar Stripe (para pagamentos)
+- [ ] Configurar Cloudinary (para upload de imagens/vídeos)
 - [ ] Configurar variáveis de ambiente
 - [ ] Criar buckets no Supabase Storage
 - [ ] Configurar primeiro administrador
@@ -393,5 +337,4 @@ Após clonar o projeto:
 
 ---
 
-**E-commerce Template** - Template reutilizável para qualquer negócio
-
+**Editor de Landing Page / Comparador de Produtos** - Sistema completo para criar e gerenciar landing pages personalizadas
