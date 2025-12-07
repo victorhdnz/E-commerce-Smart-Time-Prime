@@ -317,6 +317,13 @@ function EditCatalogContent() {
     })
   }
 
+  const toggleProductInCategory = useCallback((productId: string, categoryId: string) => {
+    setSettings(prev => {
+      const categories = [...(prev.categories || [])]
+      const categoryIndex = categories.findIndex(cat => cat.id === categoryId)
+      if (categoryIndex === -1) return prev
+      
+      const products = categories[categoryIndex].products || []
       
       if (products.includes(productId)) {
         categories[categoryIndex].products = products.filter((id: string) => id !== productId)
