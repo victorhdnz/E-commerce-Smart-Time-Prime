@@ -10,6 +10,7 @@ interface MediaShowcaseProps {
   images?: string[]
   videoUrl?: string
   videoCaption?: string
+  videoOrientation?: 'horizontal' | 'vertical'
   features?: Array<{
     icon: string
     text: string
@@ -29,6 +30,7 @@ export const MediaShowcase = ({
   images = [],
   videoUrl,
   videoCaption = '🔥 Confira nossos lançamentos',
+  videoOrientation = 'vertical',
   features = [
     { icon: '📱', text: 'Responda mensagens e chamadas direto do relógio' },
     { icon: '❤️', text: 'Monitore batimentos, sono e pressão arterial' },
@@ -214,43 +216,72 @@ export const MediaShowcase = ({
             </div>
           )}
 
-          {/* Vídeo Vertical (Reels) */}
+          {/* Vídeo */}
           {elementVisibility.video && (
-            <div className={elementVisibility.images ? '' : 'lg:col-span-1 max-w-sm mx-auto'}>
+            <div className={elementVisibility.images 
+              ? (videoOrientation === 'vertical' ? '' : 'lg:col-span-1') 
+              : (videoOrientation === 'vertical' ? 'lg:col-span-1 max-w-sm mx-auto' : 'lg:col-span-1 max-w-4xl mx-auto')
+            }>
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="sticky top-24 max-w-sm mx-auto"
+                className={videoOrientation === 'vertical' ? 'sticky top-24 max-w-sm mx-auto' : 'w-full'}
               >
-              <div className="bg-gradient-to-br from-accent/20 to-transparent p-1 rounded-2xl">
-                <div className="bg-black rounded-xl overflow-hidden">
+              <div className={`${videoOrientation === 'vertical' ? 'bg-gradient-to-br from-accent/20 to-transparent p-1 rounded-2xl' : 'bg-black rounded-xl overflow-hidden'}`}>
+                <div className={`${videoOrientation === 'vertical' ? 'bg-black rounded-xl overflow-hidden' : ''}`}>
                   {videoUrl ? (
-                    <div className="aspect-[9/16] relative bg-black">
-                      <video
-                        src={videoUrl}
-                        controls
-                        loop
-                        playsInline
-                        className="w-full h-full object-cover"
-                        style={{ backgroundColor: '#000000' }}
-                      >
-                        Seu navegador não suporta vídeo.
-                      </video>
+                    <div className={`${videoOrientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'} relative bg-black rounded-xl overflow-hidden`}>
+                      {/* Verificar se é YouTube */}
+                      {(() => {
+                        const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
+                        const getYouTubeId = (url: string) => {
+                          const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+                          const match = url.match(regExp)
+                          return (match && match[2].length === 11) ? match[2] : null
+                        }
+                        const youtubeId = isYouTube ? getYouTubeId(videoUrl) : null
+
+                        if (isYouTube && youtubeId) {
+                          return (
+                            <iframe
+                              src={`https://www.youtube.com/embed/${youtubeId}`}
+                              title="Vídeo"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              className="w-full h-full"
+                            />
+                          )
+                        }
+                        return (
+                          <video
+                            src={videoUrl}
+                            controls
+                            loop
+                            playsInline
+                            className="w-full h-full object-cover"
+                            style={{ backgroundColor: '#000000' }}
+                          >
+                            Seu navegador não suporta vídeo.
+                          </video>
+                        )
+                      })()}
                       
-                      {/* Badge Reels */}
-                      <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2">
-                        <span>▶</span> Reels
-                      </div>
+                      {/* Badge Reels - apenas para vertical */}
+                      {videoOrientation === 'vertical' && (
+                        <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2">
+                          <span>▶</span> Reels
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <div className="aspect-[9/16] flex flex-col items-center justify-center text-center p-8">
+                    <div className={`${videoOrientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'} flex flex-col items-center justify-center text-center p-8`}>
                       <div className="text-6xl mb-4">🎬</div>
                       <p className="text-gray-400 mb-2">
-                        Adicione um vídeo vertical
+                        Adicione um vídeo {videoOrientation === 'vertical' ? 'vertical' : 'horizontal'}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Formato Reels/Stories (9:16)
+                        {videoOrientation === 'vertical' ? 'Formato Reels/Stories (9:16)' : 'Formato Horizontal (16:9)'}
                       </p>
                       <p className="text-xs text-gray-700 mt-4">
                         Configure no Dashboard

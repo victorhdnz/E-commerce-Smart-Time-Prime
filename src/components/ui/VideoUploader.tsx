@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Upload, X, Video as VideoIcon, Play } from 'lucide-react'
+import { Upload, X, Video as VideoIcon, Play, Maximize2, Minimize2 } from 'lucide-react'
 import { Button } from './Button'
 import { MediaManager } from '@/components/dashboard/MediaManager'
 import { createClient } from '@/lib/supabase/client'
@@ -14,6 +14,8 @@ interface VideoUploaderProps {
   placeholder?: string
   className?: string
   showMediaManager?: boolean
+  orientation?: 'horizontal' | 'vertical'
+  onOrientationChange?: (orientation: 'horizontal' | 'vertical') => void
 }
 
 export function VideoUploader({ 
@@ -21,7 +23,9 @@ export function VideoUploader({
   onChange, 
   placeholder = "Clique para fazer upload de um vídeo",
   className = "",
-  showMediaManager = true
+  showMediaManager = true,
+  orientation = 'horizontal',
+  onOrientationChange
 }: VideoUploaderProps) {
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -167,13 +171,52 @@ export function VideoUploader({
 
   return (
     <div className={`space-y-4 ${className}`}>
+      {/* Seletor de Orientação */}
+      {onOrientationChange && (
+        <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg border">
+          <span className="text-sm font-medium text-gray-700">Orientação do Vídeo:</span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => onOrientationChange('horizontal')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                orientation === 'horizontal'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              <Maximize2 size={16} />
+              Horizontal
+            </button>
+            <button
+              type="button"
+              onClick={() => onOrientationChange('vertical')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                orientation === 'vertical'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              <Minimize2 size={16} />
+              Vertical
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="relative">
         {preview ? (
-          <div className="relative group bg-black rounded-lg">
+          <div className={`relative group bg-black rounded-lg overflow-hidden ${
+            orientation === 'vertical' ? 'max-w-sm mx-auto' : 'w-full'
+          }`}>
             <video
               src={preview}
               controls
-              className="w-full h-48 object-cover rounded-lg border"
+              className={`w-full rounded-lg border ${
+                orientation === 'vertical' 
+                  ? 'aspect-[9/16] object-cover' 
+                  : 'aspect-video object-cover'
+              }`}
               style={{ backgroundColor: '#000000' }}
             />
             <div className="absolute top-2 right-2">
@@ -186,6 +229,17 @@ export function VideoUploader({
                 <X size={16} />
               </Button>
             </div>
+            {orientation && (
+              <div className="absolute top-2 left-2">
+                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  orientation === 'vertical'
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                    : 'bg-blue-600 text-white'
+                }`}>
+                  {orientation === 'vertical' ? '📱 Vertical' : '🖥️ Horizontal'}
+                </span>
+              </div>
+            )}
           </div>
         ) : (
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
@@ -198,7 +252,10 @@ export function VideoUploader({
                 📐 Dimensões Recomendadas
               </p>
               <p className="text-xs text-blue-700">
-                <strong>Vídeos:</strong> 1920 x 1080px (Full HD)
+                <strong>Horizontal:</strong> 1920 x 1080px (16:9)
+              </p>
+              <p className="text-xs text-blue-700">
+                <strong>Vertical:</strong> 1080 x 1920px (9:16)
               </p>
             </div>
             

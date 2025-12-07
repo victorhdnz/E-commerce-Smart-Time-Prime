@@ -28,7 +28,6 @@ interface CatalogSettings {
   }
   video?: {
     url: string
-    thumbnail?: string
     title?: string
     description?: string
   }
@@ -63,13 +62,6 @@ interface CatalogSettings {
   }
   featured_products: string[]
   featured_products_links?: Record<string, string> // Mapeia product_id -> link customizado
-  categories: Array<{
-    id: string
-    name: string
-    description: string
-    image: string
-    products: string[]
-  }>
 }
 
 function EditCatalogContent() {
@@ -104,7 +96,6 @@ function EditCatalogContent() {
     },
     featured_products: [],
     featured_products_links: {},
-    categories: [],
   })
 
   useEffect(() => {
@@ -241,7 +232,6 @@ function EditCatalogContent() {
         },
         featured_products: content.featured_products || [],
         featured_products_links: content.featured_products_links || {},
-        categories: content.categories || [],
       })
     } catch (error: any) {
       console.error('Erro ao carregar catálogo:', error)
@@ -286,7 +276,6 @@ function EditCatalogContent() {
         cta_description: settings.cta_description,
         cta_text: settings.cta_text,
         cta_link: settings.cta_link,
-        categories: settings.categories,
         sections: [],
       }
 
@@ -328,35 +317,6 @@ function EditCatalogContent() {
     })
   }
 
-  const addCategory = () => {
-    setSettings(prev => ({
-      ...prev,
-      categories: [
-        ...prev.categories,
-        { id: Date.now().toString(), name: '', description: '', image: '', products: [] }
-      ]
-    }))
-  }
-
-  const updateCategory = useCallback((index: number, updates: any) => {
-    setSettings(prev => {
-      const categories = [...prev.categories]
-      categories[index] = { ...categories[index], ...updates }
-      return { ...prev, categories }
-    })
-  }, [])
-
-  const removeCategory = useCallback((index: number) => {
-    setSettings(prev => ({
-      ...prev,
-      categories: prev.categories.filter((_, i) => i !== index)
-    }))
-  }, [])
-
-  const toggleProductInCategory = useCallback((categoryIndex: number, productId: string) => {
-    setSettings(prev => {
-      const categories = [...prev.categories]
-      const products = categories[categoryIndex].products || []
       
       if (products.includes(productId)) {
         categories[categoryIndex].products = products.filter((id: string) => id !== productId)
@@ -382,7 +342,6 @@ function EditCatalogContent() {
 
   // Mapeamento de seções com ícones emoji
   const sectionIcons: Record<string, string> = {
-    basic: '📋',
     hero: '🎯',
     video: '🎬',
     features: '✨',
@@ -391,10 +350,9 @@ function EditCatalogContent() {
     featured: '🔥',
     cta: '🚀',
     featured_subtitle: '📝',
-    categories: '📦',
   }
 
-  const sectionOrder = ['basic', 'hero', 'video', 'features', 'gallery', 'showcase', 'featured_subtitle', 'featured', 'categories', 'cta']
+  const sectionOrder = ['hero', 'video', 'features', 'gallery', 'showcase', 'featured_subtitle', 'featured', 'cta']
   const sectionIndexMap = new Map(sectionOrder.map((s, i) => [s, i]))
 
   const SectionWrapper = ({ section, icon, title, children, index }: any) => {
@@ -503,46 +461,8 @@ function EditCatalogContent() {
                 </p>
               </div>
 
-              {/* Informações Básicas */}
-              <SectionWrapper section="basic" icon={<Package size={18} />} title="Informações Básicas" index={0}>
-                <div className="space-y-4">
-                  <Input
-                    key="catalog-title"
-                    label="Título do Catálogo"
-                    value={settings.title}
-                    onChange={(e) => {
-                      const newValue = e.target.value
-                      setSettings(prev => ({ ...prev, title: newValue }))
-                    }}
-                  />
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Descrição</label>
-                    <textarea
-                      key="catalog-description"
-                      value={settings.description}
-                      onChange={(e) => {
-                        const newValue = e.target.value
-                        setSettings(prev => ({ ...prev, description: newValue }))
-                      }}
-                      className="w-full border rounded-lg px-4 py-2.5"
-                      rows={3}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Imagem de Capa</label>
-                    <ImageUploader
-                      value={settings.cover_image}
-                      onChange={(url) => setSettings(prev => ({ ...prev, cover_image: url }))}
-                      placeholder="Clique para fazer upload da imagem de capa"
-                      recommendedDimensions="1920 x 1080px (Banner horizontal)"
-                      cropType="banner"
-                    />
-                  </div>
-                </div>
-              </SectionWrapper>
-
               {/* Hero */}
-              <SectionWrapper section="hero" icon={<Package size={18} />} title="Seção Hero (Topo)" index={1}>
+              <SectionWrapper section="hero" icon={<Package size={18} />} title="Seção Hero (Topo)" index={0}>
                 <div className="space-y-4">
                   <Input
                     key="hero-title"
@@ -646,27 +566,47 @@ function EditCatalogContent() {
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
                     <p className="text-sm font-medium text-gray-700 mb-2">Preview do Vídeo:</p>
                     <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-                      {settings.video?.thumbnail ? (
-                        <img 
-                          src={settings.video.thumbnail} 
-                          alt="Video thumbnail" 
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          <div className="text-center">
-                            <Play size={48} className="mx-auto mb-2 opacity-50" />
-                            <p className="text-sm opacity-50">Sem thumbnail</p>
-                          </div>
-                        </div>
-                      )}
-                      {settings.video?.url && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-black bg-opacity-50 rounded-full p-4">
-                            <Play size={32} className="text-white ml-1" />
-                          </div>
-                        </div>
-                      )}
+                      {(() => {
+                        if (!settings.video?.url) {
+                          return (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              <div className="text-center">
+                                <Play size={48} className="mx-auto mb-2 opacity-50" />
+                                <p className="text-sm opacity-50">Sem vídeo</p>
+                              </div>
+                            </div>
+                          )
+                        }
+                        
+                        // Tentar obter thumbnail do YouTube
+                        const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+                        const match = settings.video.url.match(youtubeRegex)
+                        const thumbnailUrl = match ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` : settings.video.thumbnail
+                        
+                        return (
+                          <>
+                            {thumbnailUrl ? (
+                              <img 
+                                src={thumbnailUrl} 
+                                alt="Video thumbnail" 
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                <div className="text-center">
+                                  <Play size={48} className="mx-auto mb-2 opacity-50" />
+                                  <p className="text-sm opacity-50">Sem preview</p>
+                                </div>
+                              </div>
+                            )}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="bg-black bg-opacity-50 rounded-full p-4">
+                                <Play size={32} className="text-white ml-1" />
+                              </div>
+                            </div>
+                          </>
+                        )
+                      })()}
                     </div>
                     <p className="text-xs text-gray-500 mt-2">Este vídeo aparecerá na seção de vídeo do catálogo</p>
                   </div>
@@ -695,19 +635,6 @@ function EditCatalogContent() {
                         placeholder="Ou faça upload de um vídeo"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Thumbnail do Vídeo</label>
-                    <ImageUploader
-                      value={settings.video?.thumbnail || ''}
-                      onChange={(url) => setSettings(prev => ({
-                        ...prev,
-                        video: { ...prev.video, thumbnail: url } as any
-                      }))}
-                      placeholder="Clique para fazer upload da thumbnail"
-                      recommendedDimensions="1920 x 1080px"
-                      cropType="banner"
-                    />
                   </div>
                   <Input
                     key="video-title"
@@ -1033,85 +960,8 @@ function EditCatalogContent() {
                 </div>
               </SectionWrapper>
 
-              {/* Categorias */}
-              <SectionWrapper section="categories" icon={<Package size={18} />} title={`Categorias (${settings.categories.length})`} index={8}>
-                <div className="space-y-4">
-                  {settings.categories.map((category, index) => (
-                    <div key={category.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <h4 className="font-medium">Categoria {index + 1}</h4>
-                        <button
-                          onClick={() => removeCategory(index)}
-                          className="text-red-600 hover:text-red-800 p-1"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                      <div className="space-y-3">
-                        <Input
-                          key={`category-name-${category.id}-${index}`}
-                          label="Nome"
-                          value={category.name}
-                          onChange={(e) => {
-                            const newValue = e.target.value
-                            updateCategory(index, { name: newValue })
-                          }}
-                        />
-                        <Input
-                          key={`category-desc-${category.id}-${index}`}
-                          label="Descrição"
-                          value={category.description}
-                          onChange={(e) => {
-                            const newValue = e.target.value
-                            updateCategory(index, { description: newValue })
-                          }}
-                        />
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Imagem</label>
-                          <ImageUploader
-                            value={category.image}
-                            onChange={(url) => updateCategory(index, { image: url })}
-                            placeholder="Clique para fazer upload da imagem"
-                            recommendedDimensions="800 x 600px"
-                            cropType="square"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Produtos</label>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
-                            {products.map(product => (
-                              <label
-                                key={product.id}
-                                className={`flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-gray-50 text-sm ${
-                                  category.products.includes(product.id) ? 'border-purple-500 bg-purple-50' : ''
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={category.products.includes(product.id)}
-                                  onChange={() => toggleProductInCategory(index, product.id)}
-                                  className="rounded"
-                                />
-                                <span className="truncate">{product.name}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    onClick={addCategory}
-                    className="w-full py-2 border-2 border-dashed rounded-lg text-gray-500 hover:text-gray-700 hover:border-gray-400 flex items-center justify-center gap-2"
-                  >
-                    <Plus size={18} />
-                    Adicionar Categoria
-                  </button>
-                </div>
-              </SectionWrapper>
-
               {/* CTA Final */}
-              <SectionWrapper section="cta" icon={<Package size={18} />} title="CTA Final" index={9}>
+              <SectionWrapper section="cta" icon={<Package size={18} />} title="CTA Final" index={7}>
                 <div className="space-y-4">
                   <Input
                     key="cta-title"

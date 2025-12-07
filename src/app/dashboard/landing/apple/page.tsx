@@ -10,18 +10,20 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { ImageUploader } from '@/components/ui/ImageUploader'
+import { VideoUploader } from '@/components/ui/VideoUploader'
 import { motion } from 'framer-motion'
 import { LandingLayout, LandingVersion } from '@/types'
 import { AppleWatchContent, defaultAppleWatchContent } from '@/components/landing/layouts/AppleWatchLayout'
 
 // Seções disponíveis para ordenação
-type SectionKey = 'hero' | 'products' | 'reasons' | 'features' | 'accessories' | 'faq' | 'cta'
+type SectionKey = 'hero' | 'products' | 'reasons' | 'features' | 'video' | 'accessories' | 'faq' | 'cta'
 
 interface SectionVisibility {
   hero: boolean
   products: boolean
   reasons: boolean
   features: boolean
+  video: boolean
   accessories: boolean
   faq: boolean
   cta: boolean
@@ -40,6 +42,7 @@ interface AllSectionColors {
   products: SectionColors
   reasons: SectionColors
   features: SectionColors
+  video: SectionColors
   accessories: SectionColors
   faq: SectionColors
   cta: SectionColors
@@ -50,17 +53,19 @@ const defaultSectionColors: AllSectionColors = {
   products: { backgroundColor: '#f9fafb', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
   reasons: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
   features: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
+  video: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
   accessories: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
   faq: { backgroundColor: '#f9fafb', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
   cta: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
 }
 
-const defaultSectionOrder: SectionKey[] = ['hero', 'products', 'reasons', 'features', 'accessories', 'faq', 'cta']
+const defaultSectionOrder: SectionKey[] = ['hero', 'products', 'reasons', 'features', 'video', 'accessories', 'faq', 'cta']
 const defaultSectionVisibility: SectionVisibility = {
   hero: true,
   products: true,
   reasons: true,
   features: true,
+  video: true,
   accessories: true,
   faq: true,
   cta: true,
@@ -71,6 +76,7 @@ const sectionLabels: Record<SectionKey, { emoji: string; label: string }> = {
   products: { emoji: '📦', label: 'Produtos em Destaque' },
   reasons: { emoji: '💡', label: 'Motivos para Comprar' },
   features: { emoji: '✨', label: 'Conheça Melhor' },
+  video: { emoji: '🎬', label: 'Vídeo' },
   accessories: { emoji: '🎨', label: 'Acessórios' },
   faq: { emoji: '❓', label: 'FAQ / Perguntas Frequentes' },
   cta: { emoji: '🚀', label: 'CTA Final' },
@@ -680,6 +686,7 @@ function AppleEditorContent() {
             {key === 'products' && renderProductsEditor()}
             {key === 'reasons' && renderReasonsEditor()}
             {key === 'features' && renderFeaturesEditor()}
+            {key === 'video' && renderVideoEditor()}
             {key === 'accessories' && renderAccessoriesEditor()}
             {key === 'faq' && renderFaqEditor()}
             {key === 'cta' && renderCtaEditor()}
@@ -1008,6 +1015,58 @@ function AppleEditorContent() {
           </div>
         </div>
       ))}
+    </div>
+  )
+
+  const renderVideoEditor = () => (
+    <div className="space-y-6">
+      <Input
+        label="Título do Vídeo (opcional)"
+        value={content.video?.title || ''}
+        onChange={(e) => setContent(prev => ({
+          ...prev,
+          video: { ...prev.video, title: e.target.value, url: prev.video?.url || '', orientation: prev.video?.orientation || 'horizontal' }
+        }))}
+      />
+      <div>
+        <label className="block text-sm font-medium mb-2">Descrição do Vídeo (opcional)</label>
+        <textarea
+          value={content.video?.description || ''}
+          onChange={(e) => setContent(prev => ({
+            ...prev,
+            video: { ...prev.video, description: e.target.value, url: prev.video?.url || '', orientation: prev.video?.orientation || 'horizontal' }
+          }))}
+          className="w-full px-4 py-2 border rounded-lg"
+          rows={2}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-2">URL do Vídeo (YouTube) ou Upload</label>
+        <div className="space-y-2">
+          <Input
+            type="url"
+            value={content.video?.url || ''}
+            onChange={(e) => setContent(prev => ({
+              ...prev,
+              video: { ...prev.video, url: e.target.value, orientation: prev.video?.orientation || 'horizontal' }
+            }))}
+            placeholder="https://www.youtube.com/watch?v=... ou faça upload abaixo"
+          />
+          <VideoUploader
+            value={content.video?.url || ''}
+            onChange={(url) => setContent(prev => ({
+              ...prev,
+              video: { ...prev.video, url, orientation: prev.video?.orientation || 'horizontal' }
+            }))}
+            placeholder="Ou faça upload de um vídeo"
+            orientation={content.video?.orientation || 'horizontal'}
+            onOrientationChange={(orientation) => setContent(prev => ({
+              ...prev,
+              video: { ...prev.video, orientation, url: prev.video?.url || '' }
+            }))}
+          />
+        </div>
+      </div>
     </div>
   )
 

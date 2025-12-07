@@ -68,6 +68,7 @@ interface LandingSettings {
   showcase_image_4: string
   showcase_video_url: string
   showcase_video_caption: string // Texto abaixo do vídeo (ex: "🔥 Confira nossos lançamentos")
+  showcase_video_orientation: 'horizontal' | 'vertical' // Orientação do vídeo
   
   // Value Package
   value_package_title: string
@@ -711,6 +712,7 @@ function EditLandingPageContent() {
     showcase_image_4: '',
     showcase_video_url: '',
     showcase_video_caption: '🔥 Confira nossos lançamentos',
+    showcase_video_orientation: 'vertical' as 'horizontal' | 'vertical',
     // Value Package
     value_package_title: '🎁 VOCÊ LEVA TUDO ISSO',
     value_package_image: '',
@@ -1402,6 +1404,7 @@ function EditLandingPageContent() {
           showcase_image_4: savedSettings.showcase_image_4 || '',
           showcase_video_url: savedSettings.showcase_video_url || '',
           showcase_video_caption: savedSettings.showcase_video_caption || '🔥 Confira nossos lançamentos',
+          showcase_video_orientation: savedSettings.showcase_video_orientation || 'vertical',
           // Value Package
           value_package_title: savedSettings.value_package_title || '🎁 VOCÊ LEVA TUDO ISSO',
           value_package_image: savedSettings.value_package_image || '',
@@ -2520,6 +2523,60 @@ function EditLandingPageContent() {
                 </label>
                 <VideoUploader
                   value={settings.showcase_video_url}
+                  orientation={settings.showcase_video_orientation || 'vertical'}
+                  onOrientationChange={async (orientation) => {
+                    // Salvar orientação diretamente no banco
+                    try {
+                      const supabase = createClient()
+                      const { data: existing } = await supabase
+                        .from('site_settings')
+                        .select('value')
+                        .eq('key', 'general')
+                        .maybeSingle()
+
+                      let currentValue: any = {}
+                      if (existing?.value) {
+                        if (typeof existing.value === 'string') {
+                          try {
+                            currentValue = JSON.parse(existing.value)
+                          } catch (e) {
+                            currentValue = {}
+                          }
+                        } else if (typeof existing.value === 'object' && existing.value !== null) {
+                          currentValue = existing.value
+                        }
+                      }
+                      
+                      const updatedValue = {
+                        ...currentValue,
+                        showcase_video_orientation: orientation,
+                      }
+                      
+                      if (existing) {
+                        await supabase
+                          .from('site_settings')
+                          .update({
+                            value: updatedValue,
+                            updated_at: new Date().toISOString(),
+                          })
+                          .eq('key', 'general')
+                      } else {
+                        await supabase
+                          .from('site_settings')
+                          .insert({
+                            key: 'general',
+                            value: updatedValue,
+                            description: 'Configurações gerais do site',
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString(),
+                          })
+                      }
+                      
+                      setSettings((prev) => ({ ...prev, showcase_video_orientation: orientation }))
+                    } catch (error) {
+                      console.error('Erro ao salvar orientação:', error)
+                    }
+                  }}
                   onChange={async (url) => {
                     console.log('VideoUploader onChange:', url)
                     // Salvar vídeo diretamente no banco ao mudar

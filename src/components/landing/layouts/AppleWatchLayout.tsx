@@ -18,6 +18,7 @@ interface AllSectionColors {
   products: SectionColors
   reasons: SectionColors
   features: SectionColors
+  video: SectionColors
   accessories: SectionColors
   faq: SectionColors
   cta: SectionColors
@@ -39,6 +40,7 @@ const defaultSectionColors: AllSectionColors = {
   products: { backgroundColor: '#f9fafb', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
   reasons: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
   features: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
+  video: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
   accessories: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
   faq: { backgroundColor: '#f9fafb', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
   cta: { backgroundColor: '#ffffff', textColor: '#111827', buttonColor: '#0071e3', buttonTextColor: '#ffffff' },
@@ -86,6 +88,13 @@ export interface AppleWatchContent {
       image: string
       textColor?: string
     }>
+  }
+  // Seção de vídeo
+  video?: {
+    url: string
+    title?: string
+    description?: string
+    orientation?: 'horizontal' | 'vertical' // Orientação do vídeo
   }
   // Seção de acessórios
   accessories: {
@@ -244,7 +253,7 @@ export const defaultAppleWatchContent: AppleWatchContent = {
 export function AppleWatchLayout({ 
   content = defaultAppleWatchContent, 
   isEditing = false,
-  sectionOrder = ['hero', 'products', 'reasons', 'features', 'accessories', 'faq', 'cta'],
+  sectionOrder = ['hero', 'products', 'reasons', 'features', 'video', 'accessories', 'faq', 'cta'],
   sectionVisibility = { hero: true, products: true, reasons: true, features: true, accessories: true, faq: true, cta: true },
   sectionColors = defaultSectionColors,
   showWhatsAppButton = false, // Padrão desativado - só aparece se explicitamente ativado
@@ -282,6 +291,7 @@ export function AppleWatchLayout({
     products: { ...defaultSectionColors.products, ...sectionColors?.products },
     reasons: { ...defaultSectionColors.reasons, ...sectionColors?.reasons },
     features: { ...defaultSectionColors.features, ...sectionColors?.features },
+    video: { ...defaultSectionColors.video, ...sectionColors?.video },
     accessories: { ...defaultSectionColors.accessories, ...sectionColors?.accessories },
     faq: { ...defaultSectionColors.faq, ...sectionColors?.faq },
     cta: { ...defaultSectionColors.cta, ...sectionColors?.cta },
@@ -573,6 +583,92 @@ export function AppleWatchLayout({
                 >
                   <ChevronRight size={24} />
                 </button>
+              </div>
+            </div>
+          </section>
+        )
+
+      case 'video':
+        if (!content.video?.url) return null
+        
+        // Função para extrair ID do YouTube
+        const getYouTubeId = (url: string) => {
+          const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+          const match = url.match(regExp)
+          return (match && match[2].length === 11) ? match[2] : null
+        }
+
+        const isYouTube = content.video.url.includes('youtube.com') || content.video.url.includes('youtu.be')
+        const youtubeId = isYouTube ? getYouTubeId(content.video.url) : null
+        const videoOrientation = content.video.orientation || 'horizontal'
+
+        return (
+          <section 
+            key="video" 
+            className={`py-20 px-4 ${videoOrientation === 'vertical' ? 'bg-gradient-to-b from-gray-50 to-white' : ''}`}
+            style={{ backgroundColor: colors.video.backgroundColor }}
+          >
+            <div className={`max-w-[1200px] mx-auto ${videoOrientation === 'vertical' ? 'max-w-md' : ''}`}>
+              {(content.video.title || content.video.description) && (
+                <div className="text-center mb-12">
+                  {content.video.title && (
+                    <h2 
+                      className="text-4xl md:text-5xl font-semibold mb-4"
+                      style={{ color: colors.video.textColor }}
+                    >
+                      {content.video.title}
+                    </h2>
+                  )}
+                  {content.video.description && (
+                    <p 
+                      className="text-lg max-w-2xl mx-auto"
+                      style={{ color: colors.video.textColor, opacity: 0.7 }}
+                    >
+                      {content.video.description}
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              <div className={`relative rounded-2xl overflow-hidden shadow-2xl ${
+                videoOrientation === 'vertical' 
+                  ? 'max-w-sm mx-auto bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-1' 
+                  : 'bg-black'
+              }`}>
+                {isYouTube && youtubeId ? (
+                  <div className={`relative ${videoOrientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'} bg-black`}>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${youtubeId}`}
+                      title={content.video.title || 'Vídeo'}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full rounded-xl"
+                    />
+                    {videoOrientation === 'vertical' && (
+                      <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2">
+                        <span>▶</span> Reels
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className={`relative ${videoOrientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'} bg-black`}>
+                    <video
+                      src={content.video.url}
+                      controls
+                      loop
+                      playsInline
+                      className="w-full h-full object-cover rounded-xl"
+                      style={{ backgroundColor: '#000000' }}
+                    >
+                      Seu navegador não suporta vídeo.
+                    </video>
+                    {videoOrientation === 'vertical' && (
+                      <div className="absolute top-4 left-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2">
+                        <span>▶</span> Reels
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </section>

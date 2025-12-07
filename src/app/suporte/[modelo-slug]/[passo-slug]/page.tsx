@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ProductSupportPage } from '@/types'
 import { notFound, useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { ChevronRight, Book, ArrowLeft } from 'lucide-react'
+import { ChevronRight, Book, ArrowLeft, Play } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -16,6 +16,7 @@ interface StepItem {
   detailed_content?: {
     full_description?: string
     additional_images?: string[]
+    video?: string
     steps?: Array<{ title: string; description: string; image?: string }>
   }
 }
@@ -30,6 +31,7 @@ export default function StepPage() {
   const [stepItem, setStepItem] = useState<StepItem | null>(null)
   const [loading, setLoading] = useState(true)
   const [whatsappNumber, setWhatsappNumber] = useState<string>('5511999999999')
+  const [playingVideo, setPlayingVideo] = useState<string | null>(null)
   
   const supabase = createClient()
 
@@ -164,6 +166,69 @@ export default function StepPage() {
                 {stepItem.description}
               </p>
             )}
+          </section>
+
+          {/* Vídeo - Sempre mostra, mesmo vazio */}
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold text-gray-900">Vídeo Explicativo</h2>
+            <div className="relative aspect-video rounded-2xl overflow-hidden bg-black">
+              {stepItem.detailed_content?.video ? (
+                playingVideo === stepItem.detailed_content.video ? (
+                  <iframe
+                    src={(() => {
+                      const url = stepItem.detailed_content!.video!
+                      const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+                      const match = url.match(youtubeRegex)
+                      if (match) {
+                        return `https://www.youtube.com/embed/${match[1]}?autoplay=1`
+                      }
+                      return url
+                    })()}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="relative w-full h-full">
+                    {(() => {
+                      const url = stepItem.detailed_content!.video!
+                      const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+                      const match = url.match(youtubeRegex)
+                      const thumbnailUrl = match ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` : null
+                      
+                      return thumbnailUrl ? (
+                        <Image
+                          src={thumbnailUrl}
+                          alt="Video thumbnail"
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400">
+                          Sem preview
+                        </div>
+                      )
+                    })()}
+                    <button
+                      onClick={() => setPlayingVideo(stepItem.detailed_content!.video!)}
+                      className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
+                    >
+                      <div className="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center">
+                        <Play size={32} className="text-black ml-1" fill="currentColor" />
+                      </div>
+                    </button>
+                  </div>
+                )
+              ) : (
+                <div className="w-full h-full bg-gray-800 flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-600">
+                  <div className="text-center">
+                    <Play size={48} className="mx-auto mb-2 opacity-50" />
+                    <p className="text-lg">Sem vídeo</p>
+                    <p className="text-sm mt-2">Adicione um vídeo no editor</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Descrição Completa */}

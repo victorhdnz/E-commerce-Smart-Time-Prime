@@ -12,6 +12,7 @@ import toast from 'react-hot-toast'
 import { Input } from '@/components/ui/Input'
 import { ImageUploader } from '@/components/ui/ImageUploader'
 import { ArrayImageManager } from '@/components/ui/ArrayImageManager'
+import { VideoUploader } from '@/components/ui/VideoUploader'
 
 interface SupportSection {
   id: string
@@ -31,6 +32,7 @@ interface SupportSection {
     detailed_content?: {
       full_description?: string
       additional_images?: string[]
+      video?: string
       steps?: Array<{ title: string; description: string; image?: string }>
     }
   }>
@@ -522,6 +524,43 @@ function EditSupportContent() {
                                   rows={6}
                                   placeholder="Descrição completa e detalhada do passo..."
                                 />
+                              </div>
+
+                              {/* Vídeo */}
+                              <div>
+                                <label className="block text-sm font-medium mb-2">Vídeo Explicativo (YouTube ou Upload)</label>
+                                <div className="space-y-2">
+                                  <Input
+                                    key={`item-video-url-${section.id}-${index}-${itemIndex}`}
+                                    type="url"
+                                    value={item.detailed_content?.video || ''}
+                                    onChange={(e) => {
+                                      const newValue = e.target.value
+                                      updateItemInSection(index, itemIndex, {
+                                        detailed_content: {
+                                          ...item.detailed_content,
+                                          video: newValue
+                                        }
+                                      })
+                                    }}
+                                    placeholder="https://www.youtube.com/watch?v=... ou faça upload abaixo"
+                                  />
+                                  <VideoUploader
+                                    value={item.detailed_content?.video || ''}
+                                    onChange={(url) => {
+                                      updateItemInSection(index, itemIndex, {
+                                        detailed_content: {
+                                          ...item.detailed_content,
+                                          video: url
+                                        }
+                                      })
+                                    }}
+                                    placeholder="Ou faça upload de um vídeo"
+                                  />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">
+                                  Adicione um vídeo explicativo para este passo. Pode ser um link do YouTube ou fazer upload de um vídeo.
+                                </p>
                               </div>
 
                               {/* Imagens Adicionais */}

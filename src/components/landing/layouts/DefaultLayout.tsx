@@ -214,6 +214,7 @@ export function DefaultLayout({
             images={settings.showcase_images || []}
             videoUrl={settings.showcase_video_url}
             videoCaption={settings.showcase_video_caption}
+            videoOrientation={settings.showcase_video_orientation || 'vertical'}
             backgroundColor={settings.media_showcase_bg_color}
             textColor={settings.media_showcase_text_color}
           />
