@@ -578,46 +578,43 @@ function EditCatalogContent() {
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
                     <p className="text-sm font-medium text-gray-700 mb-2">Preview do Vídeo:</p>
                     <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
-                      {(() => {
-                        if (!settings.video?.url) {
-                          return (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                              <div className="text-center">
-                                <Play size={48} className="mx-auto mb-2 opacity-50" />
-                                <p className="text-sm opacity-50">Sem vídeo</p>
-                              </div>
-                            </div>
-                          )
-                        }
-                        
-                        // Tentar obter thumbnail do YouTube
+                      {!settings.video?.url ? (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <div className="text-center">
+                            <Play size={48} className="mx-auto mb-2 opacity-50" />
+                            <p className="text-sm opacity-50">Sem vídeo</p>
+                          </div>
+                        </div>
+                      ) : (() => {
+                        // Verificar se é YouTube
                         const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
                         const match = settings.video.url.match(youtubeRegex)
-                        const thumbnailUrl = match ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` : settings.video.thumbnail
-                        
-                        return (
-                          <>
-                            {thumbnailUrl ? (
-                              <img 
-                                src={thumbnailUrl} 
-                                alt="Video thumbnail" 
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                <div className="text-center">
-                                  <Play size={48} className="mx-auto mb-2 opacity-50" />
-                                  <p className="text-sm opacity-50">Sem preview</p>
-                                </div>
-                              </div>
-                            )}
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="bg-black bg-opacity-50 rounded-full p-4">
-                                <Play size={32} className="text-white ml-1" />
-                              </div>
-                            </div>
-                          </>
-                        )
+                        const youtubeId = match ? match[1] : null
+
+                        if (youtubeId) {
+                          // Preview do YouTube
+                          return (
+                            <iframe
+                              src={`https://www.youtube.com/embed/${youtubeId}`}
+                              title="Video preview"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              className="w-full h-full"
+                            />
+                          )
+                        } else {
+                          // Preview de vídeo direto (upload)
+                          return (
+                            <video
+                              src={settings.video.url}
+                              controls
+                              className="w-full h-full object-cover"
+                              style={{ backgroundColor: '#000000' }}
+                            >
+                              Seu navegador não suporta vídeo.
+                            </video>
+                          )
+                        }
                       })()}
                     </div>
                     <p className="text-xs text-gray-500 mt-2">Este vídeo aparecerá na seção de vídeo do catálogo</p>
