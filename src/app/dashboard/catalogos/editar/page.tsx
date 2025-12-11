@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense, useCallback } from 'react'
+import { useEffect, useState, Suspense, useCallback, memo } from 'react'
 import { motion } from 'framer-motion'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
@@ -368,16 +368,13 @@ function EditCatalogContent() {
   const sectionOrder = ['hero', 'video', 'features', 'gallery', 'showcase', 'featured_subtitle', 'featured', 'cta']
   const sectionIndexMap = new Map(sectionOrder.map((s, i) => [s, i]))
 
-  const SectionWrapper = ({ section, icon, title, children, index }: any) => {
+  const SectionWrapper = memo(({ section, icon, title, children, index }: any) => {
     const isExpanded = expandedSection === section
     const sectionIndex = sectionIndexMap.get(section) ?? index ?? 0
     const emojiIcon = sectionIcons[section] || '📄'
     
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: sectionIndex * 0.05 }}
+      <div
         className="bg-white rounded-lg shadow-md overflow-hidden mb-4"
       >
         {/* Header da Seção - Estilo Apple */}
@@ -400,20 +397,17 @@ function EditCatalogContent() {
 
         {/* Conteúdo colapsável */}
         {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.2 }}
+          <div
             className="p-6 border-t"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
           >
             {children}
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
     )
-  }
+  })
 
   return (
     <div className="min-h-screen bg-gray-50">

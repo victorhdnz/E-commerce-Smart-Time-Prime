@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense, useCallback } from 'react'
+import { useEffect, useState, Suspense, useCallback, memo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { createClient } from '@/lib/supabase/client'
@@ -200,11 +200,13 @@ function EditSupportContent() {
     setEditingSectionIndex(sections.length)
   }
 
-  const updateSection = (index: number, updates: Partial<SupportSection>) => {
-    const updated = [...sections]
-    updated[index] = { ...updated[index], ...updates }
-    setSections(updated)
-  }
+  const updateSection = useCallback((index: number, updates: Partial<SupportSection>) => {
+    setSections(prev => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], ...updates }
+      return updated
+    })
+  }, [])
 
   const removeSection = (index: number) => {
     setSections(sections.filter((_, i) => i !== index))
@@ -234,15 +236,17 @@ function EditSupportContent() {
     setSections(updated)
   }
 
-  const updateItemInSection = (sectionIndex: number, itemIndex: number, updates: any) => {
-    const updated = [...sections]
-    if (!updated[sectionIndex].items) return
-    
-    const items = [...updated[sectionIndex].items!]
-    items[itemIndex] = { ...items[itemIndex], ...updates }
-    updated[sectionIndex].items = items
-    setSections(updated)
-  }
+  const updateItemInSection = useCallback((sectionIndex: number, itemIndex: number, updates: any) => {
+    setSections(prev => {
+      const updated = [...prev]
+      if (!updated[sectionIndex].items) return prev
+      
+      const items = [...updated[sectionIndex].items!]
+      items[itemIndex] = { ...items[itemIndex], ...updates }
+      updated[sectionIndex].items = items
+      return updated
+    })
+  }, [])
 
   const removeItemFromSection = (sectionIndex: number, itemIndex: number) => {
     const updated = [...sections]
@@ -269,16 +273,13 @@ function EditSupportContent() {
     steps: '📋',
   }
 
-  const SectionEditor = ({ section, index }: { section: SupportSection; index: number }) => {
+  const SectionEditor = memo(({ section, index }: { section: SupportSection; index: number }) => {
     const isExpanded = editingSectionIndex === index
     const emojiIcon = sectionTypeIcons[section.type] || '📄'
     const sectionLabel = section.type === 'steps' ? 'Tópico' : section.type
     
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
+      <div
         className="bg-white rounded-lg shadow-md overflow-hidden mb-4"
         key={section.id || `section-${index}`}
       >
@@ -328,10 +329,7 @@ function EditSupportContent() {
         </div>
         
         {isExpanded && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.2 }}
+          <div
             className="p-6 border-t space-y-4"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
@@ -746,11 +744,11 @@ function EditSupportContent() {
                 </div>
               </div>
             )}
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
     )
-  }
+  })
 
   return (
     <div className="min-h-screen bg-gray-50">
