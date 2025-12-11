@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils/format'
 import { Product } from '@/types'
 import Image from 'next/image'
-import { X, Eye, Check, XCircle, GitCompare, Star, Link2, Copy, Gift, ShoppingCart } from 'lucide-react'
+import { X, Check, XCircle, GitCompare, Star, Link2, Copy, Gift, ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
@@ -538,14 +538,6 @@ function ComparePageContent() {
                   )}
                 </div>
                 <h3 className="font-bold text-xs text-center line-clamp-2 leading-tight">{product.name}</h3>
-                <div className="flex flex-col gap-1.5 w-full">
-                  <Link href={`/produtos/${product.slug}`} className="w-full">
-                    <Button size="sm" variant="outline" className="w-full text-xs py-1.5 px-2 h-auto">
-                      <Eye size={12} className="mr-1" />
-                      Detalhes
-                    </Button>
-                  </Link>
-                </div>
               </div>
             ))}
           </div>
@@ -663,15 +655,6 @@ function ComparePageContent() {
                         )}
                       </div>
                       <h3 className="font-bold text-[10px] sm:text-lg text-center px-0.5 leading-tight line-clamp-2">{product.name}</h3>
-                      <div className="flex flex-col gap-1 w-full">
-                        <Link href={`/produtos/${product.slug}`} className="w-full">
-                          <Button size="sm" variant="outline" className="w-full text-[10px] sm:text-sm py-1 sm:py-2 px-2 sm:px-4 h-auto">
-                            <Eye size={12} className="sm:w-4 sm:h-4 mr-0.5 sm:mr-2" />
-                            <span className="hidden sm:inline">Ver Detalhes</span>
-                            <span className="sm:hidden">Detalhes</span>
-                          </Button>
-                        </Link>
-                      </div>
                     </div>
                   </th>
                 ))}
