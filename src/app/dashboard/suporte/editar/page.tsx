@@ -333,6 +333,8 @@ function EditSupportContent() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
             className="p-6 border-t space-y-4"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             {/* Tipo de seção */}
             <div>
@@ -340,6 +342,9 @@ function EditSupportContent() {
               <select
                 value={section.type}
                 onChange={(e) => updateSection(index, { type: e.target.value as SupportSection['type'] })}
+                onClick={(e) => e.stopPropagation()}
+                onFocus={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
                 className="w-full border rounded-lg px-4 py-2.5"
               >
                 <option value="steps">Steps (Passos)</option>
@@ -355,6 +360,9 @@ function EditSupportContent() {
                 const newValue = e.target.value
                 updateSection(index, { title: newValue })
               }}
+              onClick={(e) => e.stopPropagation()}
+              onFocus={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
             />
 
             {section.type === 'steps' && (
@@ -366,6 +374,9 @@ function EditSupportContent() {
                   const newValue = e.target.value
                   updateSection(index, { subtitle: newValue })
                 }}
+                onClick={(e) => e.stopPropagation()}
+                onFocus={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
               />
             )}
 
@@ -380,6 +391,9 @@ function EditSupportContent() {
                     const newValue = e.target.value
                     updateSection(index, { content: newValue })
                   }}
+                  onClick={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
                   className="w-full border rounded-lg px-4 py-2.5"
                   rows={4}
                   placeholder="Digite o conteúdo..."
@@ -409,6 +423,9 @@ function EditSupportContent() {
                   const newValue = e.target.value
                   updateSection(index, { video: newValue })
                 }}
+                onClick={(e) => e.stopPropagation()}
+                onFocus={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
                 placeholder="https://..."
               />
             )}
@@ -423,6 +440,9 @@ function EditSupportContent() {
                     const newValue = e.target.value
                     updateSection(index, { link: newValue })
                   }}
+                  onClick={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
                   placeholder="https://..."
                 />
                 <Input
@@ -433,6 +453,9 @@ function EditSupportContent() {
                     const newValue = e.target.value
                     updateSection(index, { linkText: newValue })
                   }}
+                  onClick={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
                   placeholder="Saiba mais"
                 />
               </>
@@ -472,6 +495,9 @@ function EditSupportContent() {
                             const newValue = e.target.value
                             updateItemInSection(index, itemIndex, { title: newValue })
                           }}
+                          onClick={(e) => e.stopPropagation()}
+                          onFocus={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
                         />
                         <div>
                           <label className="block text-sm font-medium mb-1">Descrição</label>
@@ -482,6 +508,9 @@ function EditSupportContent() {
                               const newValue = e.target.value
                               updateItemInSection(index, itemIndex, { description: newValue })
                             }}
+                            onClick={(e) => e.stopPropagation()}
+                            onFocus={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
                             className="w-full border rounded-lg px-3 py-2 text-sm"
                             rows={2}
                           />
@@ -521,6 +550,9 @@ function EditSupportContent() {
                                       }
                                     })
                                   }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  onFocus={(e) => e.stopPropagation()}
+                                  onMouseDown={(e) => e.stopPropagation()}
                                   className="w-full border rounded-lg px-3 py-2 text-sm"
                                   rows={6}
                                   placeholder="Descrição completa e detalhada do passo..."
@@ -544,6 +576,9 @@ function EditSupportContent() {
                                         }
                                       })
                                     }}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onFocus={(e) => e.stopPropagation()}
+                                    onMouseDown={(e) => e.stopPropagation()}
                                     placeholder="https://www.youtube.com/watch?v=... ou faça upload abaixo"
                                   />
                                   <VideoUploader
@@ -636,6 +671,9 @@ function EditSupportContent() {
                                             }
                                           })
                                         }}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onFocus={(e) => e.stopPropagation()}
+                                        onMouseDown={(e) => e.stopPropagation()}
                                       />
                                       <div className="mt-2">
                                         <label className="block text-sm font-medium mb-1">Descrição</label>
@@ -653,6 +691,9 @@ function EditSupportContent() {
                                               }
                                             })
                                           }}
+                                          onClick={(e) => e.stopPropagation()}
+                                          onFocus={(e) => e.stopPropagation()}
+                                          onMouseDown={(e) => e.stopPropagation()}
                                           className="w-full border rounded-lg px-3 py-2 text-sm"
                                           rows={2}
                                         />

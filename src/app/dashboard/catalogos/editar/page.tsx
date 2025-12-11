@@ -405,6 +405,8 @@ function EditCatalogContent() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
             className="p-6 border-t"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
           >
             {children}
           </motion.div>
@@ -488,6 +490,9 @@ function EditCatalogContent() {
                         hero: { ...prev.hero, title: newValue }
                       }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                     placeholder="Smart Watch"
                   />
                   <Input
@@ -501,6 +506,9 @@ function EditCatalogContent() {
                         hero: { ...prev.hero, subtitle: newValue }
                       }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                     placeholder="O mais poderoso de todos os tempos."
                   />
                   <Input
@@ -514,6 +522,9 @@ function EditCatalogContent() {
                         hero: { ...prev.hero, badge: newValue }
                       }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                     placeholder="Novo"
                   />
                   <div>
@@ -567,6 +578,9 @@ function EditCatalogContent() {
                         hero: { ...prev.hero, cta_link: newValue }
                       }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                     placeholder="/comparar"
                   />
                 </div>
@@ -638,6 +652,9 @@ function EditCatalogContent() {
                             video: { ...prev.video, url: newValue } as any
                           }))
                         }}
+                        onClick={(e) => e.stopPropagation()}
+                        onFocus={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
                         placeholder="https://www.youtube.com/watch?v=... ou faça upload abaixo"
                       />
                       <VideoUploader
@@ -666,6 +683,9 @@ function EditCatalogContent() {
                         video: { ...prev.video, title: newValue } as any
                       }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
@@ -679,6 +699,9 @@ function EditCatalogContent() {
                           video: { ...prev.video, description: newValue } as any
                         }))
                       }}
+                      onClick={(e) => e.stopPropagation()}
+                      onFocus={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={3}
                     />
@@ -697,6 +720,9 @@ function EditCatalogContent() {
                       const newValue = e.target.value
                       setSettings(prev => ({ ...prev, features_title: newValue }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                   />
                   <Input
                     key="features-subtitle"
@@ -706,6 +732,9 @@ function EditCatalogContent() {
                       const newValue = e.target.value
                       setSettings(prev => ({ ...prev, features_subtitle: newValue }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                   />
                   <div className="space-y-3">
                     {(settings.features || []).map((feature, index) => (
@@ -738,6 +767,9 @@ function EditCatalogContent() {
                                 return { ...prev, features }
                               })
                             }}
+                            onClick={(e) => e.stopPropagation()}
+                            onFocus={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
                             placeholder="💡"
                           />
                           <Input
@@ -752,6 +784,9 @@ function EditCatalogContent() {
                                 return { ...prev, features }
                               })
                             }}
+                            onClick={(e) => e.stopPropagation()}
+                            onFocus={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
                           />
                           <div>
                             <label className="block text-sm font-medium mb-2">Descrição</label>
@@ -766,6 +801,9 @@ function EditCatalogContent() {
                                   return { ...prev, features }
                                 })
                               }}
+                              onClick={(e) => e.stopPropagation()}
+                              onFocus={(e) => e.stopPropagation()}
+                              onMouseDown={(e) => e.stopPropagation()}
                               className="w-full border rounded-lg px-4 py-2.5"
                               rows={2}
                             />
@@ -800,6 +838,9 @@ function EditCatalogContent() {
                       const newValue = e.target.value
                       setSettings(prev => ({ ...prev, gallery_title: newValue }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Imagens da Galeria</label>
@@ -827,6 +868,9 @@ function EditCatalogContent() {
                         product_showcase: { ...prev.product_showcase, title: newValue } as any
                       }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
@@ -840,6 +884,9 @@ function EditCatalogContent() {
                           product_showcase: { ...prev.product_showcase, description: newValue } as any
                         }))
                       }}
+                      onClick={(e) => e.stopPropagation()}
+                      onFocus={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={3}
                     />
@@ -872,6 +919,9 @@ function EditCatalogContent() {
                           } as any
                         }))
                       }}
+                      onClick={(e) => e.stopPropagation()}
+                      onFocus={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={4}
                       placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
@@ -888,6 +938,9 @@ function EditCatalogContent() {
                         product_showcase: { ...prev.product_showcase, cta_text: newValue } as any
                       }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                     placeholder="Comprar Agora"
                   />
                   <Input
@@ -901,6 +954,9 @@ function EditCatalogContent() {
                         product_showcase: { ...prev.product_showcase, cta_link: newValue } as any
                       }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                     placeholder="/comparar"
                   />
                 </div>
@@ -916,6 +972,9 @@ function EditCatalogContent() {
                     const newValue = e.target.value
                     setSettings(prev => ({ ...prev, featured_subtitle: newValue }))
                   }}
+                  onClick={(e) => e.stopPropagation()}
+                  onFocus={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
                   placeholder="Veja nossa coleção completa"
                 />
               </SectionWrapper>
@@ -967,6 +1026,9 @@ function EditCatalogContent() {
                                     }
                                   }))
                                 }}
+                                onClick={(e) => e.stopPropagation()}
+                                onFocus={(e) => e.stopPropagation()}
+                                onMouseDown={(e) => e.stopPropagation()}
                                 placeholder={product.ecommerce_url || `/produto/${product.slug}`}
                               />
                               <p className="text-xs text-gray-500 mt-1">Deixe vazio para usar: {product.ecommerce_url || `/produto/${product.slug}`}</p>
@@ -990,6 +1052,9 @@ function EditCatalogContent() {
                       const newValue = e.target.value
                       setSettings(prev => ({ ...prev, cta_title: newValue }))
                     }}
+                    onClick={(e) => e.stopPropagation()}
+                    onFocus={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                   />
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
@@ -1000,6 +1065,9 @@ function EditCatalogContent() {
                         const newValue = e.target.value
                         setSettings(prev => ({ ...prev, cta_description: newValue }))
                       }}
+                      onClick={(e) => e.stopPropagation()}
+                      onFocus={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={2}
                     />
