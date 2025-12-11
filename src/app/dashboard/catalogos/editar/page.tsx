@@ -401,11 +401,18 @@ function EditCatalogContent() {
             className="p-6 border-t"
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
+            onScroll={(e) => e.stopPropagation()}
           >
             {children}
           </div>
         )}
       </div>
+    )
+  }, (prevProps, nextProps) => {
+    // Comparação customizada: só re-renderiza se a seção ou o estado de expansão mudarem
+    return (
+      prevProps.section === nextProps.section &&
+      prevProps.index === nextProps.index
     )
   })
 
@@ -474,7 +481,6 @@ function EditCatalogContent() {
               <SectionWrapper section="hero" icon={<Package size={18} />} title="Seção Hero (Topo)" index={0}>
                 <div className="space-y-4">
                   <Input
-                    key="hero-title"
                     label="Título do Hero"
                     value={settings.hero.title}
                     onChange={(e) => {
@@ -485,12 +491,17 @@ function EditCatalogContent() {
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => e.stopPropagation()}
+                    onFocus={(e) => {
+                      e.stopPropagation()
+                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
+                      const target = e.target as HTMLElement
+                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
+                    }}
                     onMouseDown={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
                     placeholder="Smart Watch"
                   />
                   <Input
-                    key="hero-subtitle"
                     label="Subtítulo"
                     value={settings.hero.subtitle}
                     onChange={(e) => {
@@ -501,12 +512,17 @@ function EditCatalogContent() {
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => e.stopPropagation()}
+                    onFocus={(e) => {
+                      e.stopPropagation()
+                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
+                      const target = e.target as HTMLElement
+                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
+                    }}
                     onMouseDown={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
                     placeholder="O mais poderoso de todos os tempos."
                   />
                   <Input
-                    key="hero-badge"
                     label="Badge (ex: Novo)"
                     value={settings.hero.badge}
                     onChange={(e) => {
@@ -517,8 +533,14 @@ function EditCatalogContent() {
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => e.stopPropagation()}
+                    onFocus={(e) => {
+                      e.stopPropagation()
+                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
+                      const target = e.target as HTMLElement
+                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
+                    }}
                     onMouseDown={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
                     placeholder="Novo"
                   />
                   <div>
@@ -549,7 +571,6 @@ function EditCatalogContent() {
                     />
                   </div>
                   <Input
-                    key="hero-cta-text"
                     label="Texto do Botão CTA"
                     value={settings.hero.cta_text || ''}
                     onChange={(e) => {
@@ -562,7 +583,6 @@ function EditCatalogContent() {
                     placeholder="Comprar Agora"
                   />
                   <Input
-                    key="hero-cta-link"
                     label="Link do Botão CTA"
                     value={settings.hero.cta_link || ''}
                     onChange={(e) => {
@@ -573,8 +593,14 @@ function EditCatalogContent() {
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => e.stopPropagation()}
+                    onFocus={(e) => {
+                      e.stopPropagation()
+                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
+                      const target = e.target as HTMLElement
+                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
+                    }}
                     onMouseDown={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
                     placeholder="/comparar"
                   />
                 </div>
@@ -637,7 +663,6 @@ function EditCatalogContent() {
                     <label className="block text-sm font-medium mb-2">URL do Vídeo (YouTube) ou Upload</label>
                     <div className="space-y-2">
                       <Input
-                        key="video-url"
                         value={settings.video?.url || ''}
                         onChange={(e) => {
                           const newValue = e.target.value
@@ -667,7 +692,6 @@ function EditCatalogContent() {
                     </div>
                   </div>
                   <Input
-                    key="video-title"
                     label="Título"
                     value={settings.video?.title || ''}
                     onChange={(e) => {
@@ -684,7 +708,6 @@ function EditCatalogContent() {
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea
-                      key="video-description"
                       value={settings.video?.description || ''}
                       onChange={(e) => {
                         const newValue = e.target.value
@@ -694,8 +717,14 @@ function EditCatalogContent() {
                         }))
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      onFocus={(e) => e.stopPropagation()}
+                      onFocus={(e) => {
+                        e.stopPropagation()
+                        // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
+                        const target = e.target as HTMLElement
+                        target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
+                      }}
                       onMouseDown={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={3}
                     />
@@ -707,7 +736,6 @@ function EditCatalogContent() {
               <SectionWrapper section="features" icon={<Package size={18} />} title={`Features (${settings.features?.length || 0})`} index={3}>
                 <div className="space-y-4">
                   <Input
-                    key="features-title"
                     label="Título da Seção"
                     value={settings.features_title || ''}
                     onChange={(e) => {
@@ -719,7 +747,6 @@ function EditCatalogContent() {
                     onMouseDown={(e) => e.stopPropagation()}
                   />
                   <Input
-                    key="features-subtitle"
                     label="Subtítulo"
                     value={settings.features_subtitle || ''}
                     onChange={(e) => {
@@ -750,7 +777,6 @@ function EditCatalogContent() {
                         </div>
                         <div className="space-y-3">
                           <Input
-                            key={`feature-icon-${index}`}
                             label="Ícone (emoji ou texto)"
                             value={feature.icon || ''}
                             onChange={(e) => {
@@ -767,7 +793,6 @@ function EditCatalogContent() {
                             placeholder="💡"
                           />
                           <Input
-                            key={`feature-title-${index}`}
                             label="Título"
                             value={feature.title}
                             onChange={(e) => {
@@ -785,7 +810,6 @@ function EditCatalogContent() {
                           <div>
                             <label className="block text-sm font-medium mb-2">Descrição</label>
                             <textarea
-                              key={`feature-desc-${index}`}
                               value={feature.description}
                               onChange={(e) => {
                                 const newValue = e.target.value
@@ -825,7 +849,6 @@ function EditCatalogContent() {
               <SectionWrapper section="gallery" icon={<Package size={18} />} title={`Galeria (${settings.gallery?.length || 0})`} index={4}>
                 <div className="space-y-4">
                   <Input
-                    key="gallery-title"
                     label="Título da Galeria"
                     value={settings.gallery_title || ''}
                     onChange={(e) => {
@@ -852,7 +875,6 @@ function EditCatalogContent() {
               <SectionWrapper section="showcase" icon={<Package size={18} />} title="Destaque de Produto" index={5}>
                 <div className="space-y-4">
                   <Input
-                    key="showcase-title"
                     label="Título"
                     value={settings.product_showcase?.title || ''}
                     onChange={(e) => {
@@ -869,7 +891,6 @@ function EditCatalogContent() {
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea
-                      key="showcase-description"
                       value={settings.product_showcase?.description || ''}
                       onChange={(e) => {
                         const newValue = e.target.value
@@ -879,8 +900,14 @@ function EditCatalogContent() {
                         }))
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      onFocus={(e) => e.stopPropagation()}
+                      onFocus={(e) => {
+                        e.stopPropagation()
+                        // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
+                        const target = e.target as HTMLElement
+                        target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
+                      }}
                       onMouseDown={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={3}
                     />
@@ -901,7 +928,6 @@ function EditCatalogContent() {
                   <div>
                     <label className="block text-sm font-medium mb-2">Features (uma por linha)</label>
                     <textarea
-                      key="showcase-features"
                       value={(settings.product_showcase?.features || []).join('\n')}
                       onChange={(e) => {
                         const newValue = e.target.value
@@ -914,15 +940,20 @@ function EditCatalogContent() {
                         }))
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      onFocus={(e) => e.stopPropagation()}
+                      onFocus={(e) => {
+                        e.stopPropagation()
+                        // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
+                        const target = e.target as HTMLElement
+                        target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
+                      }}
                       onMouseDown={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={4}
                       placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
                     />
                   </div>
                   <Input
-                    key="showcase-cta-text"
                     label="Texto do Botão CTA"
                     value={settings.product_showcase?.cta_text || ''}
                     onChange={(e) => {
@@ -933,12 +964,17 @@ function EditCatalogContent() {
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => e.stopPropagation()}
+                    onFocus={(e) => {
+                      e.stopPropagation()
+                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
+                      const target = e.target as HTMLElement
+                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
+                    }}
                     onMouseDown={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
                     placeholder="Comprar Agora"
                   />
                   <Input
-                    key="showcase-cta-link"
                     label="Link do Botão CTA"
                     value={settings.product_showcase?.cta_link || ''}
                     onChange={(e) => {
@@ -949,8 +985,14 @@ function EditCatalogContent() {
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => e.stopPropagation()}
+                    onFocus={(e) => {
+                      e.stopPropagation()
+                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
+                      const target = e.target as HTMLElement
+                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
+                    }}
                     onMouseDown={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
                     placeholder="/comparar"
                   />
                 </div>
@@ -959,7 +1001,6 @@ function EditCatalogContent() {
               {/* Produtos em Destaque - Subtítulo */}
               <SectionWrapper section="featured_subtitle" icon={<Package size={18} />} title="Subtítulo dos Produtos em Destaque" index={6}>
                 <Input
-                  key="featured-subtitle"
                   label="Subtítulo"
                   value={settings.featured_subtitle || ''}
                   onChange={(e) => {
@@ -1007,7 +1048,6 @@ function EditCatalogContent() {
                             <div key={productId} className="border rounded-lg p-3">
                               <label className="block text-sm font-medium mb-1">{product.name}</label>
                               <Input
-                                key={`featured-link-${productId}`}
                                 type="url"
                                 value={settings.featured_products_links?.[productId] || ''}
                                 onChange={(e) => {
@@ -1039,7 +1079,6 @@ function EditCatalogContent() {
               <SectionWrapper section="cta" icon={<Package size={18} />} title="CTA Final" index={7}>
                 <div className="space-y-4">
                   <Input
-                    key="cta-title"
                     label="Título"
                     value={settings.cta_title || ''}
                     onChange={(e) => {
@@ -1053,21 +1092,25 @@ function EditCatalogContent() {
                   <div>
                     <label className="block text-sm font-medium mb-2">Descrição</label>
                     <textarea
-                      key="cta-description"
                       value={settings.cta_description || ''}
                       onChange={(e) => {
                         const newValue = e.target.value
                         setSettings(prev => ({ ...prev, cta_description: newValue }))
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      onFocus={(e) => e.stopPropagation()}
+                      onFocus={(e) => {
+                        e.stopPropagation()
+                        // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
+                        const target = e.target as HTMLElement
+                        target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
+                      }}
                       onMouseDown={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
                       rows={2}
                     />
                   </div>
                   <Input
-                    key="cta-text"
                     label="Texto do Botão"
                     value={settings.cta_text || ''}
                     onChange={(e) => {
@@ -1077,7 +1120,6 @@ function EditCatalogContent() {
                     placeholder="Ver todos os produtos"
                   />
                   <Input
-                    key="cta-link"
                     label="Link do Botão"
                     value={settings.cta_link || ''}
                     onChange={(e) => {
