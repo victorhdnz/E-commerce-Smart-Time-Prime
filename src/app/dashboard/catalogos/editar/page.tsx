@@ -594,7 +594,7 @@ function EditCatalogContent() {
                     value={settings.hero.cta_link || ''}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({
+                      updateSettingsWithScrollProtection(prev => ({
                         ...prev,
                         hero: { ...prev.hero, cta_link: newValue }
                       }))
@@ -668,7 +668,7 @@ function EditCatalogContent() {
                         value={settings.video?.url || ''}
                         onChange={(e) => {
                           const newValue = e.target.value
-                          setSettings(prev => ({
+                          updateSettingsWithScrollProtection(prev => ({
                             ...prev,
                             video: { ...prev.video, url: newValue } as any
                           }))
@@ -681,11 +681,11 @@ function EditCatalogContent() {
                       <VideoUploader
                         value={settings.video?.url || ''}
                         orientation={settings.video?.orientation || 'horizontal'}
-                        onOrientationChange={(orientation) => setSettings(prev => ({
+                        onOrientationChange={(orientation) => updateSettingsWithScrollProtection(prev => ({
                           ...prev,
                           video: { ...prev.video, orientation, url: prev.video?.url || '' } as any
                         }))}
-                        onChange={(url) => setSettings(prev => ({
+                        onChange={(url) => updateSettingsWithScrollProtection(prev => ({
                           ...prev,
                           video: { ...prev.video, url: url, orientation: prev.video?.orientation || 'horizontal' } as any
                         }))}
@@ -698,7 +698,7 @@ function EditCatalogContent() {
                     value={settings.video?.title || ''}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({
+                      updateSettingsWithScrollProtection(prev => ({
                         ...prev,
                         video: { ...prev.video, title: newValue } as any
                       }))
@@ -713,18 +713,13 @@ function EditCatalogContent() {
                       value={settings.video?.description || ''}
                       onChange={(e) => {
                         const newValue = e.target.value
-                        setSettings(prev => ({
+                        updateSettingsWithScrollProtection(prev => ({
                           ...prev,
                           video: { ...prev.video, description: newValue } as any
                         }))
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      onFocus={(e) => {
-                        e.stopPropagation()
-                        // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                        const target = e.target as HTMLElement
-                        target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                      }}
+                      onFocus={(e) => e.stopPropagation()}
                       onMouseDown={(e) => e.stopPropagation()}
                       onKeyDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
@@ -742,7 +737,7 @@ function EditCatalogContent() {
                     value={settings.features_title || ''}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({ ...prev, features_title: newValue }))
+                      updateSettingsWithScrollProtection(prev => ({ ...prev, features_title: newValue }))
                     }}
                     onClick={(e) => e.stopPropagation()}
                     onFocus={(e) => e.stopPropagation()}
@@ -753,7 +748,7 @@ function EditCatalogContent() {
                     value={settings.features_subtitle || ''}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({ ...prev, features_subtitle: newValue }))
+                      updateSettingsWithScrollProtection(prev => ({ ...prev, features_subtitle: newValue }))
                     }}
                     onClick={(e) => e.stopPropagation()}
                     onFocus={(e) => e.stopPropagation()}
@@ -783,7 +778,7 @@ function EditCatalogContent() {
                             value={feature.icon || ''}
                             onChange={(e) => {
                               const newValue = e.target.value
-                              setSettings(prev => {
+                              updateSettingsWithScrollProtection(prev => {
                                 const features = [...(prev.features || [])]
                                 features[index] = { ...features[index], icon: newValue }
                                 return { ...prev, features }
@@ -799,7 +794,7 @@ function EditCatalogContent() {
                             value={feature.title}
                             onChange={(e) => {
                               const newValue = e.target.value
-                              setSettings(prev => {
+                              updateSettingsWithScrollProtection(prev => {
                                 const features = [...(prev.features || [])]
                                 features[index] = { ...features[index], title: newValue }
                                 return { ...prev, features }
@@ -815,7 +810,7 @@ function EditCatalogContent() {
                               value={feature.description}
                               onChange={(e) => {
                                 const newValue = e.target.value
-                                setSettings(prev => {
+                                updateSettingsWithScrollProtection(prev => {
                                   const features = [...(prev.features || [])]
                                   features[index] = { ...features[index], description: newValue }
                                   return { ...prev, features }
@@ -855,7 +850,7 @@ function EditCatalogContent() {
                     value={settings.gallery_title || ''}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({ ...prev, gallery_title: newValue }))
+                      updateSettingsWithScrollProtection(prev => ({ ...prev, gallery_title: newValue }))
                     }}
                     onClick={(e) => e.stopPropagation()}
                     onFocus={(e) => e.stopPropagation()}
@@ -865,7 +860,7 @@ function EditCatalogContent() {
                     <label className="block text-sm font-medium mb-2">Imagens da Galeria</label>
                     <ArrayImageManager
                       value={settings.gallery || []}
-                      onChange={(images) => setSettings(prev => ({ ...prev, gallery: images }))}
+                      onChange={(images) => updateSettingsWithScrollProtection(prev => ({ ...prev, gallery: images }))}
                       maxImages={10}
                       label=""
                     />
@@ -881,7 +876,7 @@ function EditCatalogContent() {
                     value={settings.product_showcase?.title || ''}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({
+                      updateSettingsWithScrollProtection(prev => ({
                         ...prev,
                         product_showcase: { ...prev.product_showcase, title: newValue } as any
                       }))
@@ -896,18 +891,13 @@ function EditCatalogContent() {
                       value={settings.product_showcase?.description || ''}
                       onChange={(e) => {
                         const newValue = e.target.value
-                        setSettings(prev => ({
+                        updateSettingsWithScrollProtection(prev => ({
                           ...prev,
                           product_showcase: { ...prev.product_showcase, description: newValue } as any
                         }))
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      onFocus={(e) => {
-                        e.stopPropagation()
-                        // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                        const target = e.target as HTMLElement
-                        target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                      }}
+                      onFocus={(e) => e.stopPropagation()}
                       onMouseDown={(e) => e.stopPropagation()}
                       onKeyDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
@@ -918,7 +908,7 @@ function EditCatalogContent() {
                     <label className="block text-sm font-medium mb-2">Imagem</label>
                     <ImageUploader
                       value={settings.product_showcase?.image || ''}
-                      onChange={(url) => setSettings(prev => ({
+                      onChange={(url) => updateSettingsWithScrollProtection(prev => ({
                         ...prev,
                         product_showcase: { ...prev.product_showcase, image: url } as any
                       }))}
@@ -933,7 +923,7 @@ function EditCatalogContent() {
                       value={(settings.product_showcase?.features || []).join('\n')}
                       onChange={(e) => {
                         const newValue = e.target.value
-                        setSettings(prev => ({
+                        updateSettingsWithScrollProtection(prev => ({
                           ...prev,
                           product_showcase: { 
                             ...prev.product_showcase, 
@@ -942,12 +932,7 @@ function EditCatalogContent() {
                         }))
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      onFocus={(e) => {
-                        e.stopPropagation()
-                        // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                        const target = e.target as HTMLElement
-                        target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                      }}
+                      onFocus={(e) => e.stopPropagation()}
                       onMouseDown={(e) => e.stopPropagation()}
                       onKeyDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
@@ -960,7 +945,7 @@ function EditCatalogContent() {
                     value={settings.product_showcase?.cta_text || ''}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({
+                      updateSettingsWithScrollProtection(prev => ({
                         ...prev,
                         product_showcase: { ...prev.product_showcase, cta_text: newValue } as any
                       }))
@@ -997,7 +982,7 @@ function EditCatalogContent() {
                   value={settings.featured_subtitle || ''}
                   onChange={(e) => {
                     const newValue = e.target.value
-                    setSettings(prev => ({ ...prev, featured_subtitle: newValue }))
+                    updateSettingsWithScrollProtection(prev => ({ ...prev, featured_subtitle: newValue }))
                   }}
                   onClick={(e) => e.stopPropagation()}
                   onFocus={(e) => e.stopPropagation()}
@@ -1044,7 +1029,7 @@ function EditCatalogContent() {
                                 value={settings.featured_products_links?.[productId] || ''}
                                 onChange={(e) => {
                                   const newValue = e.target.value
-                                  setSettings(prev => ({
+                                  updateSettingsWithScrollProtection(prev => ({
                                     ...prev,
                                     featured_products_links: {
                                       ...prev.featured_products_links,
@@ -1075,7 +1060,7 @@ function EditCatalogContent() {
                     value={settings.cta_title || ''}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({ ...prev, cta_title: newValue }))
+                      updateSettingsWithScrollProtection(prev => ({ ...prev, cta_title: newValue }))
                     }}
                     onClick={(e) => e.stopPropagation()}
                     onFocus={(e) => e.stopPropagation()}
@@ -1087,15 +1072,10 @@ function EditCatalogContent() {
                       value={settings.cta_description || ''}
                       onChange={(e) => {
                         const newValue = e.target.value
-                        setSettings(prev => ({ ...prev, cta_description: newValue }))
+                        updateSettingsWithScrollProtection(prev => ({ ...prev, cta_description: newValue }))
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      onFocus={(e) => {
-                        e.stopPropagation()
-                        // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                        const target = e.target as HTMLElement
-                        target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                      }}
+                      onFocus={(e) => e.stopPropagation()}
                       onMouseDown={(e) => e.stopPropagation()}
                       onKeyDown={(e) => e.stopPropagation()}
                       className="w-full border rounded-lg px-4 py-2.5"
@@ -1107,7 +1087,7 @@ function EditCatalogContent() {
                     value={settings.cta_text || ''}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({ ...prev, cta_text: newValue }))
+                      updateSettingsWithScrollProtection(prev => ({ ...prev, cta_text: newValue }))
                     }}
                     placeholder="Ver todos os produtos"
                   />
@@ -1116,7 +1096,7 @@ function EditCatalogContent() {
                     value={settings.cta_link || ''}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({ ...prev, cta_link: newValue }))
+                      updateSettingsWithScrollProtection(prev => ({ ...prev, cta_link: newValue }))
                     }}
                     placeholder="/comparar"
                   />
@@ -1140,19 +1120,19 @@ function EditCatalogContent() {
                       <input
                         type="color"
                         value={value}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          theme_colors: { ...settings.theme_colors, [key]: e.target.value }
-                        })}
+                        onChange={(e) => updateSettingsWithScrollProtection(prev => ({
+                          ...prev,
+                          theme_colors: { ...prev.theme_colors, [key]: e.target.value }
+                        }))}
                         className="w-12 h-10 rounded border cursor-pointer"
                       />
                       <input
                         type="text"
                         value={value}
-                        onChange={(e) => setSettings({
-                          ...settings,
-                          theme_colors: { ...settings.theme_colors, [key]: e.target.value }
-                        })}
+                        onChange={(e) => updateSettingsWithScrollProtection(prev => ({
+                          ...prev,
+                          theme_colors: { ...prev.theme_colors, [key]: e.target.value }
+                        }))}
                         className="flex-1 border rounded-lg px-3 py-2 text-sm"
                       />
                     </div>
