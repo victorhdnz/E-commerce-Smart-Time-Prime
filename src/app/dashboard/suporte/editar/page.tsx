@@ -273,10 +273,13 @@ function EditSupportContent() {
     steps: '📋',
   }
 
-  const SectionEditor = memo(({ section, index }: { section: SupportSection; index: number }) => {
-    const isExpanded = editingSectionIndex === index
+  const SectionEditor = memo(({ section, index, isExpanded, onToggleExpand }: { section: SupportSection; index: number; isExpanded: boolean; onToggleExpand: (index: number | null) => void }) => {
     const emojiIcon = sectionTypeIcons[section.type] || '📄'
     const sectionLabel = section.type === 'steps' ? 'Tópico' : section.type
+    
+    const handleToggleExpand = useCallback(() => {
+      onToggleExpand(isExpanded ? null : index)
+    }, [isExpanded, index, onToggleExpand])
     
     return (
       <div
@@ -286,7 +289,7 @@ function EditSupportContent() {
         {/* Header da Seção - Estilo Apple */}
         <div
           className="p-4 flex items-center justify-between bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-          onClick={() => setEditingSectionIndex(isExpanded ? null : index)}
+          onClick={handleToggleExpand}
         >
           <div className="flex items-center gap-3 flex-1">
             <GripVertical size={18} className="text-gray-400" />
@@ -337,17 +340,14 @@ function EditSupportContent() {
           >
             {/* Tipo de seção */}
             <div>
-              <label className="block text-sm font-medium mb-2">Tipo de Seção</label>
+              <label htmlFor={`section-type-${index}`} className="block text-sm font-medium mb-2">Tipo de Seção</label>
               <select
+                id={`section-type-${index}`}
+                name={`section-type-${index}`}
                 value={section.type}
                 onChange={(e) => updateSection(index, { type: e.target.value as SupportSection['type'] })}
                 onClick={(e) => e.stopPropagation()}
-                onFocus={(e) => {
-                  e.stopPropagation()
-                  // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                  const target = e.target as HTMLElement
-                  target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                }}
+                onFocus={(e) => e.stopPropagation()}
                 onMouseDown={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
                 className="w-full border rounded-lg px-4 py-2.5"
@@ -359,18 +359,15 @@ function EditSupportContent() {
             {/* Campos comuns */}
             <Input
               label="Título"
+              id={`section-title-${index}`}
+              name={`section-title-${index}`}
               value={section.title || ''}
               onChange={(e) => {
                 const newValue = e.target.value
                 updateSection(index, { title: newValue })
               }}
               onClick={(e) => e.stopPropagation()}
-              onFocus={(e) => {
-                e.stopPropagation()
-                // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                const target = e.target as HTMLElement
-                target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-              }}
+              onFocus={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
               onKeyDown={(e) => e.stopPropagation()}
             />
@@ -378,6 +375,8 @@ function EditSupportContent() {
             {section.type === 'steps' && (
               <Input
                 label="Subtítulo (opcional)"
+                id={`section-subtitle-${index}`}
+                name={`section-subtitle-${index}`}
                 value={section.subtitle || ''}
                 onChange={(e) => {
                   const newValue = e.target.value
@@ -392,8 +391,10 @@ function EditSupportContent() {
             {/* Campos específicos por tipo */}
             {(section.type === 'text' || section.type === 'feature-card') && (
               <div>
-                <label className="block text-sm font-medium mb-2">Conteúdo</label>
+                <label htmlFor={`section-content-${index}`} className="block text-sm font-medium mb-2">Conteúdo</label>
                 <textarea
+                  id={`section-content-${index}`}
+                  name={`section-content-${index}`}
                   value={section.content || ''}
                   onChange={(e) => {
                     const newValue = e.target.value
@@ -425,6 +426,8 @@ function EditSupportContent() {
             {section.type === 'video' && (
               <Input
                 label="URL do Vídeo (YouTube, Vimeo)"
+                id={`section-video-${index}`}
+                name={`section-video-${index}`}
                 value={section.video || ''}
                 onChange={(e) => {
                   const newValue = e.target.value
@@ -441,6 +444,8 @@ function EditSupportContent() {
               <>
                 <Input
                   label="URL do Link"
+                  id={`section-link-${index}`}
+                  name={`section-link-${index}`}
                   value={section.link || ''}
                   onChange={(e) => {
                     const newValue = e.target.value
@@ -453,6 +458,8 @@ function EditSupportContent() {
                 />
                 <Input
                   label="Texto do Link"
+                  id={`section-link-text-${index}`}
+                  name={`section-link-text-${index}`}
                   value={section.linkText || ''}
                   onChange={(e) => {
                     const newValue = e.target.value
@@ -494,6 +501,8 @@ function EditSupportContent() {
                       <div className="space-y-2">
                         <Input
                           label="Título"
+                          id={`item-title-${index}-${itemIndex}`}
+                          name={`item-title-${index}-${itemIndex}`}
                           value={item.title}
                           onChange={(e) => {
                             const newValue = e.target.value
@@ -512,11 +521,7 @@ function EditSupportContent() {
                               updateItemInSection(index, itemIndex, { description: newValue })
                             }}
                             onClick={(e) => e.stopPropagation()}
-                            onFocus={(e) => {
-                              e.stopPropagation()
-                              // Prevenir scroll automático quando o textarea ganha foco
-                              e.target.scrollIntoView({ behavior: 'instant', block: 'nearest' })
-                            }}
+                            onFocus={(e) => e.stopPropagation()}
                             onMouseDown={(e) => e.stopPropagation()}
                             onKeyDown={(e) => e.stopPropagation()}
                             className="w-full border rounded-lg px-3 py-2 text-sm"
@@ -545,8 +550,10 @@ function EditSupportContent() {
                               
                               {/* Descrição Completa */}
                               <div>
-                                <label className="block text-sm font-medium mb-2">Descrição Completa</label>
+                                <label htmlFor={`item-full-description-${index}-${itemIndex}`} className="block text-sm font-medium mb-2">Descrição Completa</label>
                                 <textarea
+                                  id={`item-full-description-${index}-${itemIndex}`}
+                                  name={`item-full-description-${index}-${itemIndex}`}
                                   value={item.detailed_content?.full_description || ''}
                                   onChange={(e) => {
                                     const newValue = e.target.value
@@ -558,12 +565,7 @@ function EditSupportContent() {
                                     })
                                   }}
                             onClick={(e) => e.stopPropagation()}
-                            onFocus={(e) => {
-                              e.stopPropagation()
-                              // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                              const target = e.target as HTMLElement
-                              target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                            }}
+                            onFocus={(e) => e.stopPropagation()}
                             onMouseDown={(e) => e.stopPropagation()}
                             onKeyDown={(e) => e.stopPropagation()}
                             className="w-full border rounded-lg px-3 py-2 text-sm"
@@ -670,6 +672,8 @@ function EditSupportContent() {
                                       </div>
                                       <Input
                                         label="Título"
+                                        id={`substep-title-${index}-${itemIndex}-${subIdx}`}
+                                        name={`substep-title-${index}-${itemIndex}-${subIdx}`}
                                         value={subStep.title || ''}
                                         onChange={(e) => {
                                           const currentSteps = item.detailed_content?.steps || []
@@ -687,8 +691,10 @@ function EditSupportContent() {
                                         onMouseDown={(e) => e.stopPropagation()}
                                       />
                                       <div className="mt-2">
-                                        <label className="block text-sm font-medium mb-1">Descrição</label>
+                                        <label htmlFor={`substep-description-${index}-${itemIndex}-${subIdx}`} className="block text-sm font-medium mb-1">Descrição</label>
                                         <textarea
+                                          id={`substep-description-${index}-${itemIndex}-${subIdx}`}
+                                          name={`substep-description-${index}-${itemIndex}-${subIdx}`}
                                           value={subStep.description || ''}
                                           onChange={(e) => {
                                             const currentSteps = item.detailed_content?.steps || []
@@ -702,12 +708,7 @@ function EditSupportContent() {
                                             })
                                           }}
                             onClick={(e) => e.stopPropagation()}
-                            onFocus={(e) => {
-                              e.stopPropagation()
-                              // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                              const target = e.target as HTMLElement
-                              target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                            }}
+                            onFocus={(e) => e.stopPropagation()}
                             onMouseDown={(e) => e.stopPropagation()}
                             onKeyDown={(e) => e.stopPropagation()}
                             className="w-full border rounded-lg px-3 py-2 text-sm"
@@ -767,12 +768,20 @@ function EditSupportContent() {
       </div>
     )
   }, (prevProps, nextProps) => {
-    // Comparação customizada: só re-renderiza se o id, index ou tipo mudarem
-    // Ignora mudanças no conteúdo da seção para evitar re-renders desnecessários
+    // Comparação customizada: só re-renderiza se realmente necessário
+    // Inclui isExpanded para evitar re-renders quando outras seções são expandidas
+    if (prevProps.isExpanded !== nextProps.isExpanded) return false
+    if (prevProps.index !== nextProps.index) return false
+    if (prevProps.section.id !== nextProps.section.id) return false
+    if (prevProps.section.type !== nextProps.section.type) return false
+    // Se a seção está expandida, comparar todo o conteúdo
+    if (prevProps.isExpanded) {
+      return JSON.stringify(prevProps.section) === JSON.stringify(nextProps.section)
+    }
+    // Se não está expandida, só comparar campos básicos
     return (
-      prevProps.section.id === nextProps.section.id &&
-      prevProps.index === nextProps.index &&
-      prevProps.section.type === nextProps.section.type
+      prevProps.section.title === nextProps.section.title &&
+      prevProps.section.subtitle === nextProps.section.subtitle
     )
   })
 
@@ -855,7 +864,13 @@ function EditSupportContent() {
               ) : (
                 <div>
                   {sections.map((section, index) => (
-                    <SectionEditor key={section.id || index} section={section} index={index} />
+                    <SectionEditor 
+                      key={section.id || index} 
+                      section={section} 
+                      index={index}
+                      isExpanded={editingSectionIndex === index}
+                      onToggleExpand={setEditingSectionIndex}
+                    />
                   ))}
                 </div>
               )}

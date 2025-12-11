@@ -368,10 +368,13 @@ function EditCatalogContent() {
   const sectionOrder = ['hero', 'video', 'features', 'gallery', 'showcase', 'featured_subtitle', 'featured', 'cta']
   const sectionIndexMap = new Map(sectionOrder.map((s, i) => [s, i]))
 
-  const SectionWrapper = memo(({ section, icon, title, children, index }: any) => {
-    const isExpanded = expandedSection === section
+  const SectionWrapper = memo(({ section, icon, title, children, index, isExpanded, onToggleExpand }: any) => {
     const sectionIndex = sectionIndexMap.get(section) ?? index ?? 0
     const emojiIcon = sectionIcons[section] || '📄'
+    
+    const handleToggleExpand = useCallback(() => {
+      onToggleExpand(isExpanded ? null : section)
+    }, [isExpanded, section, onToggleExpand])
     
     return (
       <div
@@ -380,7 +383,7 @@ function EditCatalogContent() {
         {/* Header da Seção - Estilo Apple */}
         <div
           className="p-4 flex items-center justify-between bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-          onClick={() => setExpandedSection(isExpanded ? null : section)}
+          onClick={handleToggleExpand}
         >
           <div className="flex items-center gap-3">
             <GripVertical size={18} className="text-gray-400" />
@@ -409,11 +412,15 @@ function EditCatalogContent() {
       </div>
     )
   }, (prevProps, nextProps) => {
-    // Comparação customizada: só re-renderiza se a seção ou o estado de expansão mudarem
-    return (
-      prevProps.section === nextProps.section &&
-      prevProps.index === nextProps.index
-    )
+    // Comparação customizada: só re-renderiza se realmente necessário
+    if (prevProps.isExpanded !== nextProps.isExpanded) return false
+    if (prevProps.index !== nextProps.index) return false
+    if (prevProps.section !== nextProps.section) return false
+    // Se está expandida, comparar children (conteúdo)
+    if (prevProps.isExpanded && nextProps.isExpanded) {
+      return prevProps.children === nextProps.children
+    }
+    return true
   })
 
   return (
@@ -478,7 +485,7 @@ function EditCatalogContent() {
               </div>
 
               {/* Hero */}
-              <SectionWrapper section="hero" icon={<Package size={18} />} title="Seção Hero (Topo)" index={0}>
+              <SectionWrapper section="hero" icon={<Package size={18} />} title="Seção Hero (Topo)" index={0} isExpanded={expandedSection === "hero"} onToggleExpand={setExpandedSection}>
                 <div className="space-y-4">
                   <Input
                     label="Título do Hero"
@@ -607,7 +614,7 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* Vídeo */}
-              <SectionWrapper section="video" icon={<Package size={18} />} title="Seção de Vídeo" index={2}>
+              <SectionWrapper section="video" icon={<Package size={18} />} title="Seção de Vídeo" index={2} isExpanded={expandedSection === "video"} onToggleExpand={setExpandedSection}>
                 <div className="space-y-4">
                   {/* Preview do Vídeo - Sempre mostra */}
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
@@ -733,7 +740,7 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* Features */}
-              <SectionWrapper section="features" icon={<Package size={18} />} title={`Features (${settings.features?.length || 0})`} index={3}>
+              <SectionWrapper section="features" icon={<Package size={18} />} title={`Features (${settings.features?.length || 0})`} index={3} isExpanded={expandedSection === "features"} onToggleExpand={setExpandedSection}>
                 <div className="space-y-4">
                   <Input
                     label="Título da Seção"
@@ -846,7 +853,7 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* Gallery */}
-              <SectionWrapper section="gallery" icon={<Package size={18} />} title={`Galeria (${settings.gallery?.length || 0})`} index={4}>
+              <SectionWrapper section="gallery" icon={<Package size={18} />} title={`Galeria (${settings.gallery?.length || 0})`} index={4} isExpanded={expandedSection === "gallery"} onToggleExpand={setExpandedSection}>
                 <div className="space-y-4">
                   <Input
                     label="Título da Galeria"
@@ -872,7 +879,7 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* Product Showcase */}
-              <SectionWrapper section="showcase" icon={<Package size={18} />} title="Destaque de Produto" index={5}>
+              <SectionWrapper section="showcase" icon={<Package size={18} />} title="Destaque de Produto" index={5} isExpanded={expandedSection === "showcase"} onToggleExpand={setExpandedSection}>
                 <div className="space-y-4">
                   <Input
                     label="Título"
@@ -999,7 +1006,7 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* Produtos em Destaque - Subtítulo */}
-              <SectionWrapper section="featured_subtitle" icon={<Package size={18} />} title="Subtítulo dos Produtos em Destaque" index={6}>
+              <SectionWrapper section="featured_subtitle" icon={<Package size={18} />} title="Subtítulo dos Produtos em Destaque" index={6} isExpanded={expandedSection === "featured_subtitle"} onToggleExpand={setExpandedSection}>
                 <Input
                   label="Subtítulo"
                   value={settings.featured_subtitle || ''}
@@ -1015,7 +1022,7 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* Produtos em Destaque */}
-              <SectionWrapper section="featured" icon={<Package size={18} />} title={`Produtos em Destaque (${settings.featured_products.length})`} index={7}>
+              <SectionWrapper section="featured" icon={<Package size={18} />} title={`Produtos em Destaque (${settings.featured_products.length})`} index={7} isExpanded={expandedSection === "featured"} onToggleExpand={setExpandedSection}>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto mb-4">
                     {products.map(product => (
@@ -1076,7 +1083,7 @@ function EditCatalogContent() {
               </SectionWrapper>
 
               {/* CTA Final */}
-              <SectionWrapper section="cta" icon={<Package size={18} />} title="CTA Final" index={7}>
+              <SectionWrapper section="cta" icon={<Package size={18} />} title="CTA Final" index={7} isExpanded={expandedSection === "cta"} onToggleExpand={setExpandedSection}>
                 <div className="space-y-4">
                   <Input
                     label="Título"
