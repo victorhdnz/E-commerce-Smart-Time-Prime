@@ -248,6 +248,21 @@ function EditCatalogContent() {
     }
   }
 
+  // Função helper para prevenir scroll durante atualizações
+  const updateSettingsWithScrollProtection = useCallback((updater: (prev: CatalogSettings) => CatalogSettings) => {
+    const activeElement = document.activeElement as HTMLElement
+    const scrollPosition = window.scrollY
+    
+    setSettings(updater)
+    
+    requestAnimationFrame(() => {
+      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+        activeElement.focus()
+        window.scrollTo({ top: scrollPosition, behavior: 'instant' })
+      }
+    })
+  }, [])
+
   const loadProducts = async () => {
     try {
       const { data, error } = await supabase
@@ -492,18 +507,13 @@ function EditCatalogContent() {
                     value={settings.hero.title}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({
+                      updateSettingsWithScrollProtection(prev => ({
                         ...prev,
                         hero: { ...prev.hero, title: newValue }
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => {
-                      e.stopPropagation()
-                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                      const target = e.target as HTMLElement
-                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                    }}
+                    onFocus={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
                     onKeyDown={(e) => e.stopPropagation()}
                     placeholder="Smart Watch"
@@ -513,18 +523,13 @@ function EditCatalogContent() {
                     value={settings.hero.subtitle}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({
+                      updateSettingsWithScrollProtection(prev => ({
                         ...prev,
                         hero: { ...prev.hero, subtitle: newValue }
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => {
-                      e.stopPropagation()
-                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                      const target = e.target as HTMLElement
-                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                    }}
+                    onFocus={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
                     onKeyDown={(e) => e.stopPropagation()}
                     placeholder="O mais poderoso de todos os tempos."
@@ -534,18 +539,13 @@ function EditCatalogContent() {
                     value={settings.hero.badge}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({
+                      updateSettingsWithScrollProtection(prev => ({
                         ...prev,
                         hero: { ...prev.hero, badge: newValue }
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => {
-                      e.stopPropagation()
-                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                      const target = e.target as HTMLElement
-                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                    }}
+                    onFocus={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
                     onKeyDown={(e) => e.stopPropagation()}
                     placeholder="Novo"
@@ -582,7 +582,7 @@ function EditCatalogContent() {
                     value={settings.hero.cta_text || ''}
                     onChange={(e) => {
                       const newValue = e.target.value
-                      setSettings(prev => ({
+                      updateSettingsWithScrollProtection(prev => ({
                         ...prev,
                         hero: { ...prev.hero, cta_text: newValue }
                       }))
@@ -600,12 +600,7 @@ function EditCatalogContent() {
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => {
-                      e.stopPropagation()
-                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                      const target = e.target as HTMLElement
-                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                    }}
+                    onFocus={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
                     onKeyDown={(e) => e.stopPropagation()}
                     placeholder="/comparar"
@@ -971,12 +966,7 @@ function EditCatalogContent() {
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => {
-                      e.stopPropagation()
-                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                      const target = e.target as HTMLElement
-                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                    }}
+                    onFocus={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
                     onKeyDown={(e) => e.stopPropagation()}
                     placeholder="Comprar Agora"
@@ -992,12 +982,7 @@ function EditCatalogContent() {
                       }))
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    onFocus={(e) => {
-                      e.stopPropagation()
-                      // Prevenir scroll automático - manter o elemento visível sem scroll desnecessário
-                      const target = e.target as HTMLElement
-                      target.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'nearest' })
-                    }}
+                    onFocus={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
                     onKeyDown={(e) => e.stopPropagation()}
                     placeholder="/comparar"

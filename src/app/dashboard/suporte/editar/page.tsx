@@ -201,10 +201,23 @@ function EditSupportContent() {
   }
 
   const updateSection = useCallback((index: number, updates: Partial<SupportSection>) => {
+    // Prevenir scroll automático durante atualização
+    const activeElement = document.activeElement as HTMLElement
+    const scrollPosition = window.scrollY
+    
     setSections(prev => {
       const updated = [...prev]
       updated[index] = { ...updated[index], ...updates }
       return updated
+    })
+    
+    // Restaurar scroll e foco após atualização
+    requestAnimationFrame(() => {
+      if (activeElement && activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
+        activeElement.focus()
+        // Manter a posição de scroll
+        window.scrollTo({ top: scrollPosition, behavior: 'instant' })
+      }
     })
   }, [])
 
@@ -237,6 +250,10 @@ function EditSupportContent() {
   }
 
   const updateItemInSection = useCallback((sectionIndex: number, itemIndex: number, updates: any) => {
+    // Prevenir scroll automático durante atualização
+    const activeElement = document.activeElement as HTMLElement
+    const scrollPosition = window.scrollY
+    
     setSections(prev => {
       const updated = [...prev]
       if (!updated[sectionIndex].items) return prev
@@ -245,6 +262,15 @@ function EditSupportContent() {
       items[itemIndex] = { ...items[itemIndex], ...updates }
       updated[sectionIndex].items = items
       return updated
+    })
+    
+    // Restaurar scroll e foco após atualização
+    requestAnimationFrame(() => {
+      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+        activeElement.focus()
+        // Manter a posição de scroll
+        window.scrollTo({ top: scrollPosition, behavior: 'instant' })
+      }
     })
   }, [])
 
@@ -412,8 +438,9 @@ function EditSupportContent() {
 
             {(section.type === 'hero' || section.type === 'image' || section.type === 'feature-card') && (
               <div>
-                <label className="block text-sm font-medium mb-2">Imagem</label>
+                <label id={`section-image-label-${index}`} className="block text-sm font-medium mb-2">Imagem</label>
                 <ImageUploader
+                  aria-labelledby={`section-image-label-${index}`}
                   value={section.image || ''}
                   onChange={(url) => updateSection(index, { image: url })}
                   placeholder="Clique para fazer upload da imagem"
@@ -477,7 +504,7 @@ function EditSupportContent() {
             {(section.type === 'list' || section.type === 'accordion' || section.type === 'steps') && (
               <div>
                 <div className="flex justify-between items-center mb-3">
-                  <label className="block text-sm font-medium">Itens ({section.items?.length || 0})</label>
+                  <label id={`section-items-label-${index}`} className="block text-sm font-medium">Itens ({section.items?.length || 0})</label>
                   <button
                     onClick={() => addItemToSection(index)}
                     className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
@@ -531,8 +558,9 @@ function EditSupportContent() {
                         {section.type === 'steps' && (
                           <>
                             <div>
-                              <label className="block text-sm font-medium mb-2">Imagem (opcional)</label>
+                              <label id={`item-image-label-${index}-${itemIndex}`} className="block text-sm font-medium mb-2">Imagem (opcional)</label>
                               <ImageUploader
+                                aria-labelledby={`item-image-label-${index}-${itemIndex}`}
                                 value={item.image || ''}
                                 onChange={(url) => updateItemInSection(index, itemIndex, { image: url })}
                                 placeholder="Clique para fazer upload da imagem"
@@ -576,10 +604,12 @@ function EditSupportContent() {
 
                               {/* Vídeo */}
                               <div>
-                                <label className="block text-sm font-medium mb-2">Vídeo Explicativo (YouTube ou Upload)</label>
-                                <div className="space-y-2">
+                                <label id={`item-video-label-${index}-${itemIndex}`} className="block text-sm font-medium mb-2">Vídeo Explicativo (YouTube ou Upload)</label>
+                                <div className="space-y-2" aria-labelledby={`item-video-label-${index}-${itemIndex}`}>
                                   <Input
                                     type="url"
+                                    id={`item-video-url-${index}-${itemIndex}`}
+                                    name={`item-video-url-${index}-${itemIndex}`}
                                     value={item.detailed_content?.video || ''}
                                     onChange={(e) => {
                                       const newValue = e.target.value
@@ -596,6 +626,7 @@ function EditSupportContent() {
                                     placeholder="https://www.youtube.com/watch?v=... ou faça upload abaixo"
                                   />
                                   <VideoUploader
+                                    aria-labelledby={`item-video-label-${index}-${itemIndex}`}
                                     value={item.detailed_content?.video || ''}
                                     orientation={item.detailed_content?.video_orientation || 'horizontal'}
                                     onOrientationChange={(orientation) => {
@@ -626,8 +657,9 @@ function EditSupportContent() {
 
                               {/* Imagens Adicionais */}
                               <div>
-                                <label className="block text-sm font-medium mb-2">Imagens Adicionais</label>
+                                <label id={`item-additional-images-label-${index}-${itemIndex}`} className="block text-sm font-medium mb-2">Imagens Adicionais</label>
                                 <ArrayImageManager
+                                  aria-labelledby={`item-additional-images-label-${index}-${itemIndex}`}
                                   value={item.detailed_content?.additional_images || []}
                                   onChange={(images) => {
                                     updateItemInSection(index, itemIndex, {
@@ -649,7 +681,7 @@ function EditSupportContent() {
 
                               {/* Sub-passos */}
                               <div>
-                                <label className="block text-sm font-medium mb-2">Sub-passos Detalhados</label>
+                                <label id={`item-steps-label-${index}-${itemIndex}`} className="block text-sm font-medium mb-2">Sub-passos Detalhados</label>
                                 <div className="space-y-3">
                                   {(item.detailed_content?.steps || []).map((subStep: any, subIdx: number) => (
                                     <div key={subIdx} className="border rounded-lg p-3 bg-gray-50">
@@ -716,8 +748,9 @@ function EditSupportContent() {
                                         />
                                       </div>
                                       <div className="mt-2">
-                                        <label className="block text-sm font-medium mb-2">Imagem (opcional)</label>
+                                        <label id={`substep-image-label-${index}-${itemIndex}-${subIdx}`} className="block text-sm font-medium mb-2">Imagem (opcional)</label>
                                         <ImageUploader
+                                          aria-labelledby={`substep-image-label-${index}-${itemIndex}-${subIdx}`}
                                           value={subStep.image || ''}
                                           onChange={(url) => {
                                             const currentSteps = item.detailed_content?.steps || []
