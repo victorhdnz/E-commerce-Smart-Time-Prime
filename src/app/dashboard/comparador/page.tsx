@@ -354,15 +354,14 @@ export default function ComparadorDashboardPage() {
             {bannerEnabled && (
               <div className="space-y-4 pl-8">
                 <div>
+                  <label className="block text-sm font-medium mb-2">Imagem do Banner</label>
                   <ImageUploader
-                    id="banner_image"
-                    name="banner_image"
                     value={bannerImage}
                     onChange={(url) => setBannerImage(url)}
-                    label="Imagem do Banner"
                     placeholder="Clique para fazer upload do banner (1920x400px recomendado)"
                     cropType="banner"
                     aspectRatio={1920/400}
+                    recommendedDimensions="1920x400px (ou proporção similar)"
                   />
                 </div>
                 <div>
