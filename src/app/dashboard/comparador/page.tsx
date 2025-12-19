@@ -10,7 +10,6 @@ import toast from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ImageUploader } from '@/components/ui/ImageUploader'
-import { ImageUploader } from '@/components/ui/ImageUploader'
 
 interface SavedComparison {
   id: string
