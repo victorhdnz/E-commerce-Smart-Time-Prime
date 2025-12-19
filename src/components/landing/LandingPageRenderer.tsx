@@ -179,7 +179,7 @@ export function LandingPageRenderer({ layout, version }: LandingPageRendererProp
   })
 
   return (
-    <div style={colorStyles} className="min-h-screen">
+    <div style={colorStyles}>
       {/* Aplicar fontes via classes Tailwind ou inline */}
       <style jsx global>{`
         :root {

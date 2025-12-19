@@ -178,11 +178,17 @@ export function DefaultLayout({
     )
   }
 
+  // Identificar a última seção visível
+  const visibleSections = sectionOrder.filter(key => settings[`section_${key}_visible`] !== false)
+  const lastVisibleSection = visibleSections[visibleSections.length - 1]
+
   // Renderizar seções na ordem configurada
-  const renderSection = (sectionKey: string) => {
+  const renderSection = (sectionKey: string, index: number) => {
     const isVisible = settings[`section_${sectionKey}_visible`] !== false
 
     if (!isVisible) return null
+
+    const isLastSection = sectionKey === lastVisibleSection
 
     switch (sectionKey) {
       case 'hero':
@@ -302,6 +308,7 @@ export function DefaultLayout({
             locationZip={settings.contact_location_zip}
             backgroundColor={settings.contact_bg_color}
             textColor={settings.contact_text_color}
+            isLastSection={isLastSection}
           />
         )
       
@@ -313,6 +320,7 @@ export function DefaultLayout({
             faqs={faqs}
             backgroundColor={settings.faq_bg_color}
             textColor={settings.faq_text_color}
+            isLastSection={isLastSection}
           />
         )
       
@@ -333,7 +341,7 @@ export function DefaultLayout({
       )}
 
       {/* Renderizar seções na ordem configurada */}
-      {sectionOrder.map(sectionKey => renderSection(sectionKey))}
+      {sectionOrder.map((sectionKey, index) => renderSection(sectionKey, index))}
 
       {/* Exit Popup */}
       {settings.exit_popup_enabled && settings.timer_enabled && settings.timer_end_date && (

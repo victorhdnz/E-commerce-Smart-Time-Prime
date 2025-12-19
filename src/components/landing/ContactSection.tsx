@@ -15,6 +15,7 @@ interface ContactSectionProps {
   locationZip?: string
   backgroundColor?: string
   textColor?: string
+  isLastSection?: boolean
   elementVisibility?: {
     title?: boolean
     description?: boolean
@@ -40,6 +41,7 @@ export function ContactSection({
   locationZip = 'CEP: 38413-109',
   backgroundColor = '#000000',
   textColor = '#ffffff',
+  isLastSection = false,
   elementVisibility = {
     title: true,
     description: true,
@@ -50,7 +52,7 @@ export function ContactSection({
   }
 }: ContactSectionProps) {
   return (
-    <section id="contato" className="py-20" style={{ backgroundColor, color: textColor }}>
+    <section id="contato" className={`pt-20 ${isLastSection ? 'pb-0' : 'pb-20'}`} style={{ backgroundColor, color: textColor }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           {elementVisibility.title && (

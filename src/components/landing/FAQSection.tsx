@@ -10,6 +10,7 @@ interface FAQSectionProps {
   title?: string
   backgroundColor?: string
   textColor?: string
+  isLastSection?: boolean
   elementVisibility?: {
     title?: boolean
   }
@@ -20,6 +21,7 @@ export const FAQSection = ({
   title = 'Perguntas Frequentes',
   backgroundColor = '#000000',
   textColor = '#ffffff',
+  isLastSection = false,
   elementVisibility = {
     title: true,
   },
@@ -27,7 +29,7 @@ export const FAQSection = ({
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section className="py-20" style={{ backgroundColor, color: textColor }}>
+    <section className={`pt-20 ${isLastSection ? 'pb-0' : 'pb-20'}`} style={{ backgroundColor, color: textColor }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {elementVisibility.title !== false && (
           <motion.div
