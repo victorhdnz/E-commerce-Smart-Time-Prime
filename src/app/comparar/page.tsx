@@ -36,26 +36,48 @@ function ComparePageContent() {
   const [productGifts, setProductGifts] = useState<Record<string, ProductGift[]>>({})
   const [selectedGiftImage, setSelectedGiftImage] = useState<{ name: string; image: string } | null>(null)
   const [ecommerceUrl, setEcommerceUrl] = useState<string>('')
+  const [bannerEnabled, setBannerEnabled] = useState(false)
+  const [bannerImage, setBannerImage] = useState('')
+  const [bannerLink, setBannerLink] = useState('')
+  const [footerEnabled, setFooterEnabled] = useState(false)
+  const [footerContent, setFooterContent] = useState('')
   const supabase = createClient()
 
-  // Carregar URL do e-commerce das configurações
+  // Carregar configurações do comparador
   useEffect(() => {
-    const loadEcommerceUrl = async () => {
+    const loadComparatorConfig = async () => {
       try {
-        const { data } = await supabase
+        // Carregar URL do e-commerce
+        const { data: urlData } = await supabase
           .from('site_settings')
           .select('value')
           .eq('key', 'comparator_ecommerce_url')
           .maybeSingle()
         
-        if (data?.value) {
-          setEcommerceUrl(data.value as string)
+        if (urlData?.value) {
+          setEcommerceUrl(urlData.value as string)
+        }
+
+        // Carregar configurações de banner e rodapé
+        const { data: configData } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'comparator_config')
+          .maybeSingle()
+        
+        if (configData?.value) {
+          const config = configData.value as any
+          setBannerEnabled(config.banner_enabled || false)
+          setBannerImage(config.banner_image || '')
+          setBannerLink(config.banner_link || '')
+          setFooterEnabled(config.footer_enabled || false)
+          setFooterContent(config.footer_content || '')
         }
       } catch (error) {
-        console.error('Erro ao carregar URL do e-commerce:', error)
+        console.error('Erro ao carregar configurações do comparador:', error)
       }
     }
-    loadEcommerceUrl()
+    loadComparatorConfig()
   }, [])
 
   // Carregar produtos da URL (se houver)
@@ -382,6 +404,44 @@ function ComparePageContent() {
 
   return (
     <div className="container mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-12">
+      {/* Banner Promocional */}
+      {bannerEnabled && bannerImage && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 rounded-xl overflow-hidden"
+        >
+          {bannerLink ? (
+            <a
+              href={bannerLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full"
+            >
+              <div className="relative w-full h-32 sm:h-48 md:h-64">
+                <Image
+                  src={bannerImage}
+                  alt="Banner promocional"
+                  fill
+                  className="object-cover"
+                  sizes="100vw"
+                />
+              </div>
+            </a>
+          ) : (
+            <div className="relative w-full h-32 sm:h-48 md:h-64">
+              <Image
+                src={bannerImage}
+                alt="Banner promocional"
+                fill
+                className="object-cover"
+                sizes="100vw"
+              />
+            </div>
+          )}
+        </motion.div>
+      )}
+
       {/* Banner de retorno ao E-commerce */}
       {ecommerceUrl && (
         <motion.div
@@ -837,6 +897,16 @@ function ComparePageContent() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Rodapé */}
+      {footerEnabled && footerContent && (
+        <footer className="mt-12 pt-8 border-t border-gray-200">
+          <div 
+            className="text-sm text-gray-600 prose prose-sm max-w-none"
+            dangerouslySetInnerHTML={{ __html: footerContent }}
+          />
+        </footer>
+      )}
 
     </div>
   )

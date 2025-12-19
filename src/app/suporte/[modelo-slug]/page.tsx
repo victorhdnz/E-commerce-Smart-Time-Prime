@@ -41,17 +41,7 @@ export default function SupportPage() {
   useEffect(() => {
     const loadPage = async () => {
       try {
-        // Buscar número do WhatsApp das configurações
-        const { data: settingsData } = await supabase
-          .from('site_settings')
-          .select('contact_whatsapp')
-          .eq('key', 'site_settings')
-          .single()
-        
-        if (settingsData?.contact_whatsapp) {
-          setWhatsappNumber(settingsData.contact_whatsapp)
-        }
-
+        // Buscar página de suporte
         const { data, error } = await supabase
           .from('product_support_pages')
           .select(`
@@ -66,6 +56,34 @@ export default function SupportPage() {
           setSupportPage(null)
         } else {
           setSupportPage(data as any)
+          
+          // Buscar número do WhatsApp do conteúdo da página
+          const content = (data.content as any) || {}
+          if (content.contact_link || content.contact_whatsapp) {
+            const contactValue = content.contact_link || content.contact_whatsapp
+            // Se for um link completo, extrair o número, senão usar o valor direto
+            if (contactValue.startsWith('http')) {
+              const match = contactValue.match(/wa\.me\/(\d+)/)
+              if (match) {
+                setWhatsappNumber(match[1])
+              } else {
+                setWhatsappNumber(contactValue)
+              }
+            } else {
+              setWhatsappNumber(contactValue)
+            }
+          } else {
+            // Se não encontrou no conteúdo da página, buscar das configurações gerais
+            const { data: settingsData } = await supabase
+              .from('site_settings')
+              .select('contact_whatsapp')
+              .eq('key', 'general')
+              .maybeSingle()
+            
+            if (settingsData?.contact_whatsapp) {
+              setWhatsappNumber(settingsData.contact_whatsapp)
+            }
+          }
         }
       } catch (error) {
         console.error('Erro ao buscar página de suporte:', error)

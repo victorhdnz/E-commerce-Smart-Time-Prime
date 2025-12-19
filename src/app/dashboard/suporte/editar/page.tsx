@@ -53,6 +53,7 @@ function EditSupportContent() {
   const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null)
 
   const [sections, setSections] = useState<SupportSection[]>([])
+  const [contactLink, setContactLink] = useState<string>('')
 
   useEffect(() => {
     if (authLoading) return
@@ -89,6 +90,7 @@ function EditSupportContent() {
       setSupportPage(data as ProductSupportPage)
       const content = (data.content as any) || {}
       let sectionsToLoad = content.sections || []
+      setContactLink(content.contact_link || content.contact_whatsapp || '')
       
       // Sempre garantir estrutura mínima pré-definida
       if (sectionsToLoad.length === 0) {
@@ -164,6 +166,7 @@ function EditSupportContent() {
     try {
       const content = {
         sections: sections,
+        contact_link: contactLink,
       }
 
       const { error } = await supabase

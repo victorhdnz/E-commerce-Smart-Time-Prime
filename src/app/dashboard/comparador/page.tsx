@@ -9,6 +9,7 @@ import { Plus, Edit, Trash2, Eye, ArrowLeft, GitCompare, Search, Image as ImageI
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
+import { ImageUploader } from '@/components/ui/ImageUploader'
 
 interface SavedComparison {
   id: string
@@ -31,6 +32,12 @@ export default function ComparadorDashboardPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [ecommerceUrl, setEcommerceUrl] = useState('')
   const [savingUrl, setSavingUrl] = useState(false)
+  const [bannerEnabled, setBannerEnabled] = useState(false)
+  const [bannerImage, setBannerImage] = useState('')
+  const [bannerLink, setBannerLink] = useState('')
+  const [footerEnabled, setFooterEnabled] = useState(false)
+  const [footerContent, setFooterContent] = useState('')
+  const [savingConfig, setSavingConfig] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -81,6 +88,22 @@ export default function ComparadorDashboardPage() {
       if (urlData?.value) {
         setEcommerceUrl(urlData.value as string)
       }
+
+      // Carregar configurações do comparador
+      const { data: configData } = await supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'comparator_config')
+        .maybeSingle()
+      
+      if (configData?.value) {
+        const config = configData.value as any
+        setBannerEnabled(config.banner_enabled || false)
+        setBannerImage(config.banner_image || '')
+        setBannerLink(config.banner_link || '')
+        setFooterEnabled(config.footer_enabled || false)
+        setFooterContent(config.footer_content || '')
+      }
     } catch (error: any) {
       console.error('Erro ao carregar dados:', error)
       toast.error('Erro ao carregar dados')
@@ -111,6 +134,39 @@ export default function ComparadorDashboardPage() {
       toast.error('Erro ao salvar URL')
     } finally {
       setSavingUrl(false)
+    }
+  }
+
+  const saveComparatorConfig = async () => {
+    try {
+      setSavingConfig(true)
+      
+      const config = {
+        banner_enabled: bannerEnabled,
+        banner_image: bannerImage,
+        banner_link: bannerLink,
+        footer_enabled: footerEnabled,
+        footer_content: footerContent,
+      }
+      
+      const { error } = await supabase
+        .from('site_settings')
+        .upsert({
+          key: 'comparator_config',
+          value: config,
+          description: 'Configurações do comparador de produtos (banner e rodapé)',
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'key'
+        })
+      
+      if (error) throw error
+      toast.success('Configurações do comparador salvas!')
+    } catch (error: any) {
+      console.error('Erro ao salvar configurações:', error)
+      toast.error('Erro ao salvar configurações')
+    } finally {
+      setSavingConfig(false)
     }
   }
 
@@ -275,6 +331,97 @@ export default function ComparadorDashboardPage() {
               ✓ Banner de retorno ativo no comparador
             </p>
           )}
+        </div>
+
+        {/* Configurações de Banner e Rodapé */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">🎨 Banner e Rodapé do Comparador</h2>
+          
+          {/* Banner */}
+          <div className="mb-6 pb-6 border-b">
+            <div className="flex items-center gap-3 mb-4">
+              <input
+                type="checkbox"
+                id="banner_enabled"
+                checked={bannerEnabled}
+                onChange={(e) => setBannerEnabled(e.target.checked)}
+                className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+              />
+              <label htmlFor="banner_enabled" className="font-medium cursor-pointer">
+                Ativar Banner Promocional
+              </label>
+            </div>
+            {bannerEnabled && (
+              <div className="space-y-4 pl-8">
+                <div>
+                  <ImageUploader
+                    id="banner_image"
+                    name="banner_image"
+                    value={bannerImage}
+                    onChange={(url) => setBannerImage(url)}
+                    label="Imagem do Banner"
+                    placeholder="Clique para fazer upload do banner (1920x400px recomendado)"
+                    cropType="banner"
+                    aspectRatio={1920/400}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Link do Banner (opcional)</label>
+                  <input
+                    type="url"
+                    value={bannerLink}
+                    onChange={(e) => setBannerLink(e.target.value)}
+                    placeholder="https://exemplo.com/produto"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Se preenchido, o banner será clicável e redirecionará para este link
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Rodapé */}
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <input
+                type="checkbox"
+                id="footer_enabled"
+                checked={footerEnabled}
+                onChange={(e) => setFooterEnabled(e.target.checked)}
+                className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+              />
+              <label htmlFor="footer_enabled" className="font-medium cursor-pointer">
+                Ativar Rodapé com Informações da Empresa
+              </label>
+            </div>
+            {footerEnabled && (
+              <div className="pl-8">
+                <label className="block text-sm font-medium mb-2">Conteúdo do Rodapé</label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Use HTML básico para formatar (ex: &lt;strong&gt;, &lt;a&gt;, &lt;br&gt;)
+                </p>
+                <textarea
+                  value={footerContent}
+                  onChange={(e) => setFooterContent(e.target.value)}
+                  placeholder="Ex: Smart Time Prime - Av. Imbaúba, 1676 - Uberlândia/MG - (34) 8413-6291"
+                  rows={6}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 pt-6 border-t">
+            <button
+              onClick={saveComparatorConfig}
+              disabled={savingConfig}
+              className="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+            >
+              {savingConfig ? 'Salvando...' : 'Salvar Configurações'}
+            </button>
+          </div>
         </div>
 
         {/* Produtos Selecionados */}
