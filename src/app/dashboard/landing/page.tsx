@@ -452,7 +452,8 @@ interface SectionWrapperProps {
   showColorEditor: string | null
   setShowColorEditor: (section: string | null) => void
   index: number
-  moveSection: (index: number, direction: 'up' | 'down') => void
+  moveSection: (sectionId: string, direction: 'up' | 'down') => void
+  sectionOrder: string[]
   totalSections: number
   sectionColors: Record<string, SectionColors>
   updateSectionColor: (section: string, colorKey: keyof SectionColors, value: string) => void
@@ -471,6 +472,7 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
   setShowColorEditor,
   index,
   moveSection,
+  sectionOrder,
   totalSections,
   sectionColors,
   updateSectionColor
@@ -478,12 +480,28 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
   const isExpanded = expandedSection === section
   const isVisible = (settings[`section_${section}_visible` as keyof LandingSettings] ?? true) as boolean
 
+  // Calcular order CSS baseado na posição no sectionOrder
+  // Seções especiais (timer, exit_popup, visibility) ficam nas primeiras posições
+  // Seções reordenáveis ficam depois, ordenadas pelo sectionOrder
+  let cssOrder = index
+  if (section === 'timer') {
+    cssOrder = 0
+  } else if (section === 'exit_popup') {
+    cssOrder = 1
+  } else if (section === 'visibility') {
+    cssOrder = 2
+  } else if (sectionOrder.includes(section)) {
+    // Seções reordenáveis: ordem baseada no sectionOrder + offset para ficar depois das especiais
+    cssOrder = sectionOrder.indexOf(section) + 3
+  }
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       className={`bg-white rounded-lg shadow-md overflow-hidden ${!isVisible ? 'opacity-50' : ''}`}
+      style={{ order: cssOrder }}
     >
       {/* Header da Seção - Estilo Apple */}
       <div
@@ -517,17 +535,17 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
           </button>
           {/* Setas de Ordenação */}
           <button
-            onClick={(e) => { e.stopPropagation(); moveSection(index, 'up') }}
+            onClick={(e) => { e.stopPropagation(); moveSection(section, 'up') }}
             className="p-2 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-30"
-            disabled={index === 0}
+            disabled={!sectionOrder.includes(section) || sectionOrder.indexOf(section) === 0}
             title="Mover para cima"
           >
             <ChevronUp size={18} />
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); moveSection(index, 'down') }}
+            onClick={(e) => { e.stopPropagation(); moveSection(section, 'down') }}
             className="p-2 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-30"
-            disabled={index === totalSections - 1}
+            disabled={!sectionOrder.includes(section) || sectionOrder.indexOf(section) === sectionOrder.length - 1}
             title="Mover para baixo"
           >
             <ChevronDown size={18} />
@@ -645,13 +663,16 @@ function EditLandingPageContent() {
   }
 
   // Função para reordenar seções
-  const moveSectionInOrder = (index: number, direction: 'up' | 'down') => {
-    const newOrder = [...sectionOrder]
-    const newIndex = direction === 'up' ? index - 1 : index + 1
-    if (newIndex < 0 || newIndex >= newOrder.length) return
+  const moveSectionInOrder = (sectionId: string, direction: 'up' | 'down') => {
+    const currentIndex = sectionOrder.indexOf(sectionId)
+    if (currentIndex === -1) return
     
-    const temp = newOrder[index]
-    newOrder[index] = newOrder[newIndex]
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+    if (newIndex < 0 || newIndex >= sectionOrder.length) return
+    
+    const newOrder = [...sectionOrder]
+    const temp = newOrder[currentIndex]
+    newOrder[currentIndex] = newOrder[newIndex]
     newOrder[newIndex] = temp
     setSectionOrder(newOrder)
     toast.success('Ordem alterada! Clique em "Salvar Alterações" para aplicar.')
@@ -671,8 +692,8 @@ function EditLandingPageContent() {
     hero_viewer_count_text: 'pessoas vendo agora',
     hero_timer_text: 'Oferta termina em:',
     hero_viewer_count_enabled: true,
-    hero_bg_color: '#000000',
-    hero_text_color: '#FFFFFF',
+    hero_bg_color: '#FFFFFF',
+    hero_text_color: '#000000',
     hero_images: [],
     hero_banner: '',
     hero_banners: [],
@@ -695,8 +716,8 @@ function EditLandingPageContent() {
     exit_popup_text_color: '#FFFFFF',
     // Media Showcase
     media_showcase_title: '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO',
-    media_showcase_bg_color: '#000000',
-    media_showcase_text_color: '#FFFFFF',
+    media_showcase_bg_color: '#F5F5F5',
+    media_showcase_text_color: '#111827',
     media_showcase_features: [
       { icon: '📱', text: 'Responda mensagens e chamadas direto do relógio' },
       { icon: '❤️', text: 'Monitore batimentos, sono e pressão arterial' },
@@ -731,16 +752,16 @@ function EditLandingPageContent() {
           value_package_whatsapp_number: '5534984136291',
     value_package_discount_text: '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
     value_package_promotion_text: '🕒 Promoção válida enquanto durar o estoque.',
-    value_package_bg_color: '#000000',
-    value_package_text_color: '#FFFFFF',
+    value_package_bg_color: '#FFFFFF',
+    value_package_text_color: '#000000',
     // Story
     story_title: '✍️ NOSSA HISTÓRIA',
     story_content: 'A Smart Time Prime nasceu em Uberlândia com o propósito de unir estilo e tecnologia no dia a dia das pessoas.\n\nHoje somos uma das lojas mais lembradas quando o assunto é smartwatch e confiança.',
     story_images: [],
     story_image: '',
     story_founders_names: 'Guilherme e Letícia',
-    story_bg_color: '#000000',
-    story_text_color: '#FFFFFF',
+    story_bg_color: '#FFFFFF',
+    story_text_color: '#000000',
     // About Us
     about_us_title: '🏪 SOBRE A SMART TIME PRIME',
     about_us_description: 'A Smart Time Prime é uma loja de tecnologia localizada em Uberlândia/MG, dentro do Shopping Planalto.\n\nSomos referência em smartwatches e acessórios tecnológicos, com atendimento humano, entrega rápida e garantia total.',
@@ -749,8 +770,8 @@ function EditLandingPageContent() {
     about_us_founders_image: '',
     about_us_founders_names: 'Guilherme e Letícia',
     about_us_location: 'Shopping Planalto, Uberlândia/MG',
-    about_us_bg_color: '#000000',
-    about_us_text_color: '#FFFFFF',
+    about_us_bg_color: '#F9FAFB',
+    about_us_text_color: '#111827',
     // Social Proof
     social_proof_title: '⭐ CLIENTES DE UBERLÂNDIA QUE JÁ ESTÃO USANDO',
     social_proof_google_icon: true,
@@ -806,8 +827,8 @@ function EditLandingPageContent() {
     contact_email_visible: true,
     contact_schedule_visible: true,
     contact_location_visible: true,
-    contact_bg_color: '#000000',
-    contact_text_color: '#FFFFFF',
+    contact_bg_color: '#FFFFFF',
+    contact_text_color: '#000000',
     // FAQ
     faq_title: 'Perguntas Frequentes',
     faq_bg_color: '#000000',
@@ -1341,8 +1362,8 @@ function EditLandingPageContent() {
           hero_viewer_count_text: savedSettings.hero_viewer_count_text || 'pessoas vendo agora',
           hero_viewer_count_enabled: savedSettings.hero_viewer_count_enabled !== undefined ? savedSettings.hero_viewer_count_enabled : true,
           hero_timer_text: savedSettings.hero_timer_text || 'Oferta termina em:',
-          hero_bg_color: savedSettings.hero_bg_color || '#000000',
-          hero_text_color: savedSettings.hero_text_color || '#FFFFFF',
+          hero_bg_color: savedSettings.hero_bg_color || '#FFFFFF',
+          hero_text_color: savedSettings.hero_text_color || '#000000',
           hero_images: Array.isArray(savedSettings.hero_images) ? savedSettings.hero_images : [],
           hero_banner: savedSettings.hero_banner || '',
           hero_banners: Array.isArray(savedSettings.hero_banners) ? savedSettings.hero_banners : [],
@@ -1377,8 +1398,8 @@ function EditLandingPageContent() {
           exit_popup_text_color: savedSettings.exit_popup_text_color || '#FFFFFF',
           // Media Showcase
           media_showcase_title: savedSettings.media_showcase_title || '💡 TECNOLOGIA, ESTILO E PRATICIDADE — TUDO NO SEU PULSO',
-          media_showcase_bg_color: savedSettings.media_showcase_bg_color || '#000000',
-          media_showcase_text_color: savedSettings.media_showcase_text_color || '#FFFFFF',
+          media_showcase_bg_color: savedSettings.media_showcase_bg_color || '#F5F5F5',
+          media_showcase_text_color: savedSettings.media_showcase_text_color || '#111827',
           media_showcase_features: Array.isArray(savedSettings.media_showcase_features) 
             ? savedSettings.media_showcase_features 
             : [
@@ -1425,16 +1446,16 @@ function EditLandingPageContent() {
           value_package_whatsapp_number: savedSettings.value_package_whatsapp_number || '5534984136291',
           value_package_discount_text: savedSettings.value_package_discount_text || '🎯 De R$ 499 → por R$ 299 + 4 brindes grátis!',
           value_package_promotion_text: savedSettings.value_package_promotion_text || '🕒 Promoção válida enquanto durar o estoque.',
-          value_package_bg_color: savedSettings.value_package_bg_color || '#000000',
-          value_package_text_color: savedSettings.value_package_text_color || '#FFFFFF',
+          value_package_bg_color: savedSettings.value_package_bg_color || '#FFFFFF',
+          value_package_text_color: savedSettings.value_package_text_color || '#000000',
           // Story
           story_title: savedSettings.story_title || '✍️ NOSSA HISTÓRIA',
           story_content: savedSettings.story_content || 'A Smart Time Prime nasceu em Uberlândia com o propósito de unir estilo e tecnologia no dia a dia das pessoas.\n\nHoje somos uma das lojas mais lembradas quando o assunto é smartwatch e confiança.',
           story_images: Array.isArray(savedSettings.story_images) ? savedSettings.story_images : (savedSettings.story_image ? [savedSettings.story_image] : []),
           story_image: savedSettings.story_image || '',
           story_founders_names: savedSettings.story_founders_names || 'Guilherme e Letícia',
-          story_bg_color: savedSettings.story_bg_color || '#000000',
-          story_text_color: savedSettings.story_text_color || '#FFFFFF',
+          story_bg_color: savedSettings.story_bg_color || '#FFFFFF',
+          story_text_color: savedSettings.story_text_color || '#000000',
           // About Us
           about_us_title: savedSettings.about_us_title || '🏪 SOBRE A SMART TIME PRIME',
           about_us_description: savedSettings.about_us_description || 'A Smart Time Prime é uma loja de tecnologia localizada em Uberlândia/MG, dentro do Shopping Planalto.\n\nSomos referência em smartwatches e acessórios tecnológicos, com atendimento humano, entrega rápida e garantia total.',
@@ -1443,8 +1464,8 @@ function EditLandingPageContent() {
           about_us_founders_image: savedSettings.about_us_founders_image || '',
           about_us_founders_names: savedSettings.about_us_founders_names || 'Guilherme e Letícia',
           about_us_location: savedSettings.about_us_location || 'Shopping Planalto, Uberlândia/MG',
-          about_us_bg_color: savedSettings.about_us_bg_color || '#000000',
-          about_us_text_color: savedSettings.about_us_text_color || '#FFFFFF',
+          about_us_bg_color: savedSettings.about_us_bg_color || '#F9FAFB',
+          about_us_text_color: savedSettings.about_us_text_color || '#111827',
           // Social Proof
           social_proof_title: savedSettings.social_proof_title || '⭐ CLIENTES DE UBERLÂNDIA QUE JÁ ESTÃO USANDO',
           social_proof_google_icon: savedSettings.social_proof_google_icon !== undefined ? savedSettings.social_proof_google_icon : true,
@@ -1502,8 +1523,8 @@ function EditLandingPageContent() {
           contact_email_visible: savedSettings.contact_email_visible !== undefined ? savedSettings.contact_email_visible : true,
           contact_schedule_visible: savedSettings.contact_schedule_visible !== undefined ? savedSettings.contact_schedule_visible : true,
           contact_location_visible: savedSettings.contact_location_visible !== undefined ? savedSettings.contact_location_visible : true,
-          contact_bg_color: savedSettings.contact_bg_color || '#000000',
-          contact_text_color: savedSettings.contact_text_color || '#FFFFFF',
+          contact_bg_color: savedSettings.contact_bg_color || '#FFFFFF',
+          contact_text_color: savedSettings.contact_text_color || '#000000',
           // FAQ
           faq_title: savedSettings.faq_title || 'Perguntas Frequentes',
           faq_bg_color: savedSettings.faq_bg_color || '#000000',
@@ -1776,7 +1797,7 @@ function EditLandingPageContent() {
         {/* Layout Grid igual ao Apple Editor */}
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Seções Editáveis - Coluna Esquerda (2 colunas) */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 flex flex-col gap-4">
             {/* Dica */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
               <p className="text-sm text-blue-800">
@@ -1797,6 +1818,7 @@ function EditLandingPageContent() {
               setShowColorEditor={setShowColorEditor}
               index={0}
               moveSection={moveSectionInOrder}
+              sectionOrder={sectionOrder}
               totalSections={12}
               sectionColors={sectionColors}
               updateSectionColor={updateSectionColor}
@@ -1850,6 +1872,7 @@ function EditLandingPageContent() {
             setShowColorEditor={setShowColorEditor}
             index={1}
             moveSection={moveSectionInOrder}
+            sectionOrder={sectionOrder}
             totalSections={12}
             sectionColors={sectionColors}
             updateSectionColor={updateSectionColor}
@@ -1905,22 +1928,23 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Hero Section */}
-          <SectionWrapper 
-            section="hero" 
-            icon="🏠" 
-            title="Seção Principal (Hero)" 
-            expandedSection={expandedSection} 
-            setExpandedSection={setExpandedSection} 
-            toggleSectionVisibility={toggleSectionVisibility} 
-            settings={settings}
-            showColorEditor={showColorEditor}
-            setShowColorEditor={setShowColorEditor}
-            index={2}
-            moveSection={moveSectionInOrder}
-            totalSections={12}
-            sectionColors={sectionColors}
-            updateSectionColor={updateSectionColor}
-          >
+            <SectionWrapper 
+              section="hero" 
+              icon="🏠" 
+              title="Seção Principal (Hero)" 
+              expandedSection={expandedSection} 
+              setExpandedSection={setExpandedSection} 
+              toggleSectionVisibility={toggleSectionVisibility} 
+              settings={settings}
+              showColorEditor={showColorEditor}
+              setShowColorEditor={setShowColorEditor}
+              index={sectionOrder.indexOf('hero') >= 0 ? sectionOrder.indexOf('hero') : 2}
+              moveSection={moveSectionInOrder}
+              sectionOrder={sectionOrder}
+              totalSections={12}
+              sectionColors={sectionColors}
+              updateSectionColor={updateSectionColor}
+            >
             
             <div className="space-y-4">
               {/* Visibilidade de elementos individuais */}
@@ -2057,7 +2081,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Contact Section */}
-          <SectionWrapper 
+            <SectionWrapper 
             section="contact" 
             icon="📞" 
             title="Entre em Contato" 
@@ -2067,8 +2091,9 @@ function EditLandingPageContent() {
             settings={settings}
             showColorEditor={showColorEditor}
             setShowColorEditor={setShowColorEditor}
-            index={3}
+            index={sectionOrder.indexOf('contact') >= 0 ? sectionOrder.indexOf('contact') : 3}
             moveSection={moveSectionInOrder}
+            sectionOrder={sectionOrder}
             totalSections={12}
             sectionColors={sectionColors}
             updateSectionColor={updateSectionColor}
@@ -2221,7 +2246,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* FAQ Section */}
-          <SectionWrapper 
+            <SectionWrapper 
             section="faq" 
             icon="❓" 
             title="Perguntas Frequentes (FAQ)" 
@@ -2231,8 +2256,9 @@ function EditLandingPageContent() {
             settings={settings}
             showColorEditor={showColorEditor}
             setShowColorEditor={setShowColorEditor}
-            index={4}
+            index={sectionOrder.indexOf('faq') >= 0 ? sectionOrder.indexOf('faq') : 4}
             moveSection={moveSectionInOrder}
+            sectionOrder={sectionOrder}
             totalSections={12}
             sectionColors={sectionColors}
             updateSectionColor={updateSectionColor}
@@ -2372,7 +2398,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Media Showcase Section */}
-          <SectionWrapper 
+            <SectionWrapper 
             section="media_showcase" 
             icon="📸" 
             title="Galeria de Destaques" 
@@ -2382,8 +2408,9 @@ function EditLandingPageContent() {
             settings={settings}
             showColorEditor={showColorEditor}
             setShowColorEditor={setShowColorEditor}
-            index={5}
+            index={sectionOrder.indexOf('media_showcase') >= 0 ? sectionOrder.indexOf('media_showcase') : 5}
             moveSection={moveSectionInOrder}
+            sectionOrder={sectionOrder}
             totalSections={12}
             sectionColors={sectionColors}
             updateSectionColor={updateSectionColor}
@@ -2667,7 +2694,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Value Package Section */}
-          <SectionWrapper 
+            <SectionWrapper 
             section="value_package" 
             icon="💎" 
             title="Pacote de Valor" 
@@ -2677,8 +2704,9 @@ function EditLandingPageContent() {
             settings={settings}
             showColorEditor={showColorEditor}
             setShowColorEditor={setShowColorEditor}
-            index={6}
+            index={sectionOrder.indexOf('value_package') >= 0 ? sectionOrder.indexOf('value_package') : 6}
             moveSection={moveSectionInOrder}
+            sectionOrder={sectionOrder}
             totalSections={12}
             sectionColors={sectionColors}
             updateSectionColor={updateSectionColor}
@@ -2847,7 +2875,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Story Section */}
-          <SectionWrapper 
+            <SectionWrapper 
             section="story" 
             icon="📖" 
             title="Nossa História" 
@@ -2857,8 +2885,9 @@ function EditLandingPageContent() {
             settings={settings}
             showColorEditor={showColorEditor}
             setShowColorEditor={setShowColorEditor}
-            index={7}
+            index={sectionOrder.indexOf('story') >= 0 ? sectionOrder.indexOf('story') : 7}
             moveSection={moveSectionInOrder}
+            sectionOrder={sectionOrder}
             totalSections={12}
             sectionColors={sectionColors}
             updateSectionColor={updateSectionColor}
@@ -2928,7 +2957,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* About Us Section */}
-          <SectionWrapper 
+            <SectionWrapper 
             section="about_us" 
             icon="ℹ️" 
             title="Quem Somos" 
@@ -2938,8 +2967,9 @@ function EditLandingPageContent() {
             settings={settings}
             showColorEditor={showColorEditor}
             setShowColorEditor={setShowColorEditor}
-            index={8}
+            index={sectionOrder.indexOf('about_us') >= 0 ? sectionOrder.indexOf('about_us') : 8}
             moveSection={moveSectionInOrder}
+            sectionOrder={sectionOrder}
             totalSections={12}
             sectionColors={sectionColors}
             updateSectionColor={updateSectionColor}
@@ -3016,7 +3046,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Controles de Visibilidade das Seções */}
-          <SectionWrapper 
+            <SectionWrapper 
             section="visibility" 
             icon="👁️" 
             title="Visibilidade e Ordem das Seções" 
@@ -3028,6 +3058,7 @@ function EditLandingPageContent() {
             setShowColorEditor={setShowColorEditor}
             index={10}
             moveSection={moveSectionInOrder}
+            sectionOrder={sectionOrder}
             totalSections={12}
             sectionColors={sectionColors}
             updateSectionColor={updateSectionColor}
@@ -3130,7 +3161,7 @@ function EditLandingPageContent() {
           </SectionWrapper>
 
           {/* Social Proof Section */}
-          <SectionWrapper
+            <SectionWrapper
             section="social_proof"
             icon="⭐" 
             title="Avaliações (Social Proof)" 
@@ -3140,8 +3171,9 @@ function EditLandingPageContent() {
             settings={settings}
             showColorEditor={showColorEditor}
             setShowColorEditor={setShowColorEditor}
-            index={11}
+            index={sectionOrder.indexOf('social_proof') >= 0 ? sectionOrder.indexOf('social_proof') : 11}
             moveSection={moveSectionInOrder}
+            sectionOrder={sectionOrder}
             totalSections={12}
             sectionColors={sectionColors}
             updateSectionColor={updateSectionColor}

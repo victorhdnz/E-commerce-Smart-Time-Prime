@@ -29,7 +29,7 @@ export const FAQSection = ({
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section className={`pt-20 ${isLastSection ? 'pb-0' : 'pb-20'}`} style={{ backgroundColor, color: textColor }}>
+    <section className={`pt-20 ${isLastSection ? 'pb-12' : 'pb-20'}`} style={{ backgroundColor, color: textColor }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {elementVisibility.title !== false && (
           <motion.div

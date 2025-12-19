@@ -52,7 +52,7 @@ export function ContactSection({
   }
 }: ContactSectionProps) {
   return (
-    <section id="contato" className={`pt-20 ${isLastSection ? 'pb-0' : 'pb-20'}`} style={{ backgroundColor, color: textColor }}>
+    <section id="contato" className={`pt-20 ${isLastSection ? 'pb-12' : 'pb-20'}`} style={{ backgroundColor, color: textColor }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           {elementVisibility.title && (
