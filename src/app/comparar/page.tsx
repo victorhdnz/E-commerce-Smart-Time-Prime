@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils/format'
 import { Product } from '@/types'
 import Image from 'next/image'
-import { X, Check, XCircle, GitCompare, Star, Link2, Copy, Gift, ShoppingCart } from 'lucide-react'
+import { X, Check, XCircle, GitCompare, Star, Link2, Copy, Gift, ShoppingCart, MessageCircle, Instagram } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
@@ -424,23 +424,23 @@ function ComparePageContent() {
               rel="noopener noreferrer"
               className="block w-full"
             >
-              <div className="relative w-full" style={{ aspectRatio: '1920/400' }}>
+              <div className="relative w-full" style={{ aspectRatio: '1920/300', maxHeight: '200px' }}>
                 <Image
                   src={bannerImage}
                   alt="Banner promocional"
                   fill
-                  className="object-contain"
+                  className="object-cover"
                   sizes="100vw"
                 />
               </div>
             </a>
           ) : (
-            <div className="relative w-full" style={{ aspectRatio: '1920/400' }}>
+            <div className="relative w-full" style={{ aspectRatio: '1920/300', maxHeight: '200px' }}>
               <Image
                 src={bannerImage}
                 alt="Banner promocional"
                 fill
-                className="object-contain"
+                className="object-cover"
                 sizes="100vw"
               />
             </div>
@@ -907,23 +907,23 @@ function ComparePageContent() {
       {/* Rodapé */}
       {footerEnabled && (footerLogo || footerCompanyName || footerWhatsapp || footerInstagram) && (
         <footer className="mt-12 pt-8 border-t border-gray-200">
-          <div className="flex flex-col items-center gap-4 py-6">
+          <div className="flex flex-col items-center gap-6 py-6">
             {/* Logo */}
             {footerLogo && (
-              <div className="relative w-12 h-12">
+              <div className="relative w-24 h-24">
                 <Image
                   src={footerLogo}
                   alt="Logo"
                   fill
                   className="object-contain"
-                  sizes="48px"
+                  sizes="96px"
                 />
               </div>
             )}
 
             {/* Nome da Empresa */}
             {footerCompanyName && (
-              <h3 className="text-lg font-bold text-gray-900 text-center">
+              <h3 className="text-xl font-bold text-gray-900 text-center">
                 {footerCompanyName}
               </h3>
             )}
@@ -935,9 +935,9 @@ function ComparePageContent() {
                   href={`https://wa.me/${footerWhatsapp.replace(/\D/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
                 >
-                  <span className="text-xl">📱</span>
+                  <MessageCircle size={20} />
                   <span className="text-sm font-medium">WhatsApp</span>
                 </a>
               )}
@@ -947,9 +947,9 @@ function ComparePageContent() {
                   href={footerInstagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity"
+                  className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
                 >
-                  <span className="text-xl">📷</span>
+                  <Instagram size={20} />
                   <span className="text-sm font-medium">Instagram</span>
                 </a>
               )}
