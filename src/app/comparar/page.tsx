@@ -40,7 +40,10 @@ function ComparePageContent() {
   const [bannerImage, setBannerImage] = useState('')
   const [bannerLink, setBannerLink] = useState('')
   const [footerEnabled, setFooterEnabled] = useState(false)
-  const [footerContent, setFooterContent] = useState('')
+  const [footerLogo, setFooterLogo] = useState('')
+  const [footerCompanyName, setFooterCompanyName] = useState('')
+  const [footerWhatsapp, setFooterWhatsapp] = useState('')
+  const [footerInstagram, setFooterInstagram] = useState('')
   const supabase = createClient()
 
   // Carregar configurações do comparador
@@ -71,7 +74,10 @@ function ComparePageContent() {
           setBannerImage(config.banner_image || '')
           setBannerLink(config.banner_link || '')
           setFooterEnabled(config.footer_enabled || false)
-          setFooterContent(config.footer_content || '')
+          setFooterLogo(config.footer_logo || '')
+          setFooterCompanyName(config.footer_company_name || '')
+          setFooterWhatsapp(config.footer_whatsapp || '')
+          setFooterInstagram(config.footer_instagram || '')
         }
       } catch (error) {
         console.error('Erro ao carregar configurações do comparador:', error)
@@ -418,23 +424,23 @@ function ComparePageContent() {
               rel="noopener noreferrer"
               className="block w-full"
             >
-              <div className="relative w-full h-32 sm:h-48 md:h-64">
+              <div className="relative w-full" style={{ aspectRatio: '1920/400' }}>
                 <Image
                   src={bannerImage}
                   alt="Banner promocional"
                   fill
-                  className="object-cover"
+                  className="object-contain"
                   sizes="100vw"
                 />
               </div>
             </a>
           ) : (
-            <div className="relative w-full h-32 sm:h-48 md:h-64">
+            <div className="relative w-full" style={{ aspectRatio: '1920/400' }}>
               <Image
                 src={bannerImage}
                 alt="Banner promocional"
                 fill
-                className="object-cover"
+                className="object-contain"
                 sizes="100vw"
               />
             </div>
@@ -899,12 +905,56 @@ function ComparePageContent() {
       </AnimatePresence>
 
       {/* Rodapé */}
-      {footerEnabled && footerContent && (
+      {footerEnabled && (footerLogo || footerCompanyName || footerWhatsapp || footerInstagram) && (
         <footer className="mt-12 pt-8 border-t border-gray-200">
-          <div 
-            className="text-sm text-gray-600 prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: footerContent }}
-          />
+          <div className="flex flex-col items-center gap-4 py-6">
+            {/* Logo */}
+            {footerLogo && (
+              <div className="relative w-12 h-12">
+                <Image
+                  src={footerLogo}
+                  alt="Logo"
+                  fill
+                  className="object-contain"
+                  sizes="48px"
+                />
+              </div>
+            )}
+
+            {/* Nome da Empresa */}
+            {footerCompanyName && (
+              <h3 className="text-lg font-bold text-gray-900 text-center">
+                {footerCompanyName}
+              </h3>
+            )}
+
+            {/* Links Sociais */}
+            <div className="flex items-center gap-4 flex-wrap justify-center">
+              {footerWhatsapp && (
+                <a
+                  href={`https://wa.me/${footerWhatsapp.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  <span className="text-xl">📱</span>
+                  <span className="text-sm font-medium">WhatsApp</span>
+                </a>
+              )}
+
+              {footerInstagram && (
+                <a
+                  href={footerInstagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition-opacity"
+                >
+                  <span className="text-xl">📷</span>
+                  <span className="text-sm font-medium">Instagram</span>
+                </a>
+              )}
+            </div>
+          </div>
         </footer>
       )}
 

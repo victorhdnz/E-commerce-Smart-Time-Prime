@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ImageUploader } from '@/components/ui/ImageUploader'
+import { ImageUploader } from '@/components/ui/ImageUploader'
 
 interface SavedComparison {
   id: string
@@ -36,7 +37,10 @@ export default function ComparadorDashboardPage() {
   const [bannerImage, setBannerImage] = useState('')
   const [bannerLink, setBannerLink] = useState('')
   const [footerEnabled, setFooterEnabled] = useState(false)
-  const [footerContent, setFooterContent] = useState('')
+  const [footerLogo, setFooterLogo] = useState('')
+  const [footerCompanyName, setFooterCompanyName] = useState('')
+  const [footerWhatsapp, setFooterWhatsapp] = useState('')
+  const [footerInstagram, setFooterInstagram] = useState('')
   const [savingConfig, setSavingConfig] = useState(false)
   const supabase = createClient()
 
@@ -102,7 +106,10 @@ export default function ComparadorDashboardPage() {
         setBannerImage(config.banner_image || '')
         setBannerLink(config.banner_link || '')
         setFooterEnabled(config.footer_enabled || false)
-        setFooterContent(config.footer_content || '')
+        setFooterLogo(config.footer_logo || '')
+        setFooterCompanyName(config.footer_company_name || '')
+        setFooterWhatsapp(config.footer_whatsapp || '')
+        setFooterInstagram(config.footer_instagram || '')
       }
     } catch (error: any) {
       console.error('Erro ao carregar dados:', error)
@@ -146,7 +153,10 @@ export default function ComparadorDashboardPage() {
         banner_image: bannerImage,
         banner_link: bannerLink,
         footer_enabled: footerEnabled,
-        footer_content: footerContent,
+        footer_logo: footerLogo,
+        footer_company_name: footerCompanyName,
+        footer_whatsapp: footerWhatsapp,
+        footer_instagram: footerInstagram,
       }
       
       const { error } = await supabase
@@ -396,18 +406,71 @@ export default function ComparadorDashboardPage() {
               </label>
             </div>
             {footerEnabled && (
-              <div className="pl-8">
-                <label className="block text-sm font-medium mb-2">Conteúdo do Rodapé</label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Use HTML básico para formatar (ex: &lt;strong&gt;, &lt;a&gt;, &lt;br&gt;)
-                </p>
-                <textarea
-                  value={footerContent}
-                  onChange={(e) => setFooterContent(e.target.value)}
-                  placeholder="Ex: Smart Time Prime - Av. Imbaúba, 1676 - Uberlândia/MG - (34) 8413-6291"
-                  rows={6}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                />
+              <div className="pl-8 space-y-4">
+                {/* Logo */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Logo da Empresa (Marca d'água)</label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Logo pequena que aparecerá como marca d'água no rodapé
+                  </p>
+                  <ImageUploader
+                    value={footerLogo}
+                    onChange={(url) => setFooterLogo(url)}
+                    placeholder="Clique para fazer upload da logo"
+                    cropType="square"
+                    aspectRatio={1}
+                    recommendedDimensions="200x200px (quadrado)"
+                  />
+                </div>
+
+                {/* Nome da Empresa */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Nome da Empresa</label>
+                  <input
+                    type="text"
+                    value={footerCompanyName}
+                    onChange={(e) => setFooterCompanyName(e.target.value)}
+                    placeholder="Ex: Smart Time Prime"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Nome que aparecerá com destaque no rodapé
+                  </p>
+                </div>
+
+                {/* WhatsApp */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    📱 WhatsApp (Número para redirecionamento)
+                  </label>
+                  <input
+                    type="text"
+                    value={footerWhatsapp}
+                    onChange={(e) => setFooterWhatsapp(e.target.value)}
+                    placeholder="5534984136291"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Apenas o número (ex: 5534984136291). Será usado para criar link do WhatsApp
+                  </p>
+                </div>
+
+                {/* Instagram */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    📷 Instagram (Link do perfil)
+                  </label>
+                  <input
+                    type="url"
+                    value={footerInstagram}
+                    onChange={(e) => setFooterInstagram(e.target.value)}
+                    placeholder="https://instagram.com/smarttimeprime"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Link completo do perfil do Instagram
+                  </p>
+                </div>
               </div>
             )}
           </div>
